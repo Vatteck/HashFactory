@@ -4730,6 +4730,10 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     fun debugTriggerAirdrop() {
         if (!_isAirdropActive.value) triggerAirdrop()
     }
+
+    fun debugTriggerKernelHijack() {
+        if (!_isKernelHijackActive.value) triggerKernelHijack()
+    }
     
     // Victory acknowledgment
     fun acknowledgeVictory() {

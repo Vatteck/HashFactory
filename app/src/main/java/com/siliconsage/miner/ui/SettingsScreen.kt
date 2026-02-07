@@ -416,6 +416,7 @@ fun SettingsScreen(viewModel: GameViewModel) {
                     DevButton("ADD 1B $unit", themeColor) { viewModel.debugAddFlops(1_000_000_000.0) }
                     DevButton("ADD 1M \$NEURAL", themeColor) { viewModel.debugAddMoney(1_000_000.0) }
                     DevButton("ADD 100 PERSISTENCE", themeColor) { viewModel.debugAddInsight(100.0) }
+                    DevButton("TRIGGER HIJACK", themeColor) { viewModel.debugTriggerKernelHijack() }
                     DevButton("TRIGGER BREACH", themeColor) { viewModel.debugTriggerBreach() }
                     DevButton("TRIGGER AIRDROP", themeColor) { viewModel.debugTriggerAirdrop() }
                     DevButton("TRIGGER DIAGNOSTICS", themeColor) { viewModel.debugTriggerDiagnostics() }
