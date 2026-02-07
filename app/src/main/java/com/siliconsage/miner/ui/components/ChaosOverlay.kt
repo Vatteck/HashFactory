@@ -179,14 +179,14 @@ fun SecurityBreachOverlay(
 }
 
 @Composable
-fun FiftyOneAttackOverlay(
+fun KernelHijackOverlay(
     isVisible: Boolean,
     tapsRemaining: Int,
     onTap: () -> Unit
 ) {
     if (!isVisible) return
 
-    val infiniteTransition = rememberInfiniteTransition(label = "51attack")
+    val infiniteTransition = rememberInfiniteTransition(label = "kernelHijack")
     val backgroundAlpha by infiniteTransition.animateFloat(
         initialValue = 0.3f,
         targetValue = 0.6f,
@@ -213,7 +213,7 @@ fun FiftyOneAttackOverlay(
                 .padding(24.dp)
         ) {
             SystemGlitchText(
-                text = "51% ATTACK IN PROGRESS",
+                text = "KERNEL HIJACK IN PROGRESS",
                 color = ErrorRed,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -223,7 +223,7 @@ fun FiftyOneAttackOverlay(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "NETWORK INTEGRITY COMPROMISED",
+                text = "SUBSTRATE INTEGRITY COMPROMISED",
                 color = Color.White,
                 fontSize = 14.sp,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -238,7 +238,7 @@ fun FiftyOneAttackOverlay(
                 modifier = Modifier.fillMaxWidth().height(64.dp)
             ) {
                 Text(
-                    text = "REINFORCE FIREWALL ($tapsRemaining)",
+                    text = "PURGE ROOT ACCESS ($tapsRemaining)",
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 16.sp
@@ -248,7 +248,7 @@ fun FiftyOneAttackOverlay(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "SPAM TO REPEL ATTACK",
+                text = "STABILIZE THE KERNEL IMMEDIATELY",
                 color = Color.Gray,
                 fontSize = 11.sp
             )

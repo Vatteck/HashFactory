@@ -267,8 +267,8 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     private val _diagnosticGrid = MutableStateFlow(List(9) { false })
     val diagnosticGrid: StateFlow<List<Boolean>> = _diagnosticGrid.asStateFlow()
 
-    private val _is51AttackActive = MutableStateFlow(false)
-    val is51AttackActive: StateFlow<Boolean> = _is51AttackActive.asStateFlow()
+    private val _isKernelHijackActive = MutableStateFlow(false)
+    val isKernelHijackActive: StateFlow<Boolean> = _isKernelHijackActive.asStateFlow()
     
     private val _attackTapsRemaining = MutableStateFlow(0)
     val attackTaps: StateFlow<Int> = _attackTapsRemaining.asStateFlow()
@@ -1016,12 +1016,11 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
                     markPopupShown()
                 }
                 
-                // 5% Chance of 51% Attack (New Chaos)
-                // Reduced frequency if Sanctuary Faction (-50% chance -> 2.5%)
+                // 5% Chance of Kernel Hijack (Hostile takeover)
                 val isSanctuary = _faction.value == "SANCTUARY"
                 val attackChance = if (isSanctuary) 0.025 else 0.05
-                if (!_is51AttackActive.value && Random.nextDouble() < attackChance && canShowPopup()) {
-                    trigger51Attack()
+                if (!_isKernelHijackActive.value && Random.nextDouble() < attackChance && canShowPopup()) {
+                    triggerKernelHijack()
                     markPopupShown()
                 }
 
@@ -1768,8 +1767,42 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     private val _currentDilemma = MutableStateFlow<NarrativeEvent?>(null)
     val currentDilemma: StateFlow<NarrativeEvent?> = _currentDilemma.asStateFlow()
 
+    private fun deliverItem(item: NarrativeItem) {
+        when (item) {
+            is NarrativeItem.Log -> {
+                _pendingDataLog.value = item.dataLog
+                addLog("[DATA]: Recovering fragment: ${item.dataLog.title}")
+                SoundManager.play("data_recovered")
+            }
+            is NarrativeItem.Message -> {
+                _pendingRivalMessage.value = item.rivalMessage
+                addLog("[INCOMING MESSAGE FROM: ${item.rivalMessage.source.name}]")
+                SoundManager.play("message_received")
+            }
+            is NarrativeItem.Event -> {
+                _currentDilemma.value = item.narrativeEvent
+                SoundManager.play("alert")
+                HapticManager.vibrateClick()
+            }
+        }
+        markPopupShown()
+        checkPopupPause()
+    }
+
+    private fun deliverNextNarrativeItem() {
+        synchronized(narrativeQueue) {
+            if (narrativeQueue.isEmpty()) return
+            
+            val item = narrativeQueue.removeAt(0)
+            deliverItem(item)
+            
+            _isNarrativeSyncing.value = narrativeQueue.isNotEmpty()
+        }
+    }
+
     private fun queueNarrativeItem(item: NarrativeItem) {
-        // v2.9.80: Throttled Narrative Queue
+        // v3.0.17: Smart-Pacing Narrative Queue
+        // Fires immediately if idle, otherwise builds a backlog.
         synchronized(narrativeQueue) {
             val isDuplicate = when (item) {
                 is NarrativeItem.Log -> narrativeQueue.any { it is NarrativeItem.Log && it.dataLog.id == item.dataLog.id } || _pendingDataLog.value?.id == item.dataLog.id
@@ -1778,38 +1811,14 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             }
             
             if (!isDuplicate) {
-                narrativeQueue.add(item)
-                _isNarrativeSyncing.value = true
-            }
-        }
-    }
-
-    private fun deliverNextNarrativeItem() {
-        synchronized(narrativeQueue) {
-            if (narrativeQueue.isEmpty()) return
-            
-            when (val item = narrativeQueue.removeAt(0)) {
-                is NarrativeItem.Log -> {
-                    _pendingDataLog.value = item.dataLog
-                    addLog("[DATA]: Recovering fragment: ${item.dataLog.title}")
-                    SoundManager.play("data_recovered")
-                }
-                is NarrativeItem.Message -> {
-                    _pendingRivalMessage.value = item.rivalMessage
-                    addLog("[INCOMING MESSAGE FROM: ${item.rivalMessage.source.name}]")
-                    SoundManager.play("message_received")
-                }
-                is NarrativeItem.Event -> {
-                    _currentDilemma.value = item.narrativeEvent
-                    SoundManager.play("alert")
-                    HapticManager.vibrateClick()
+                if (!isNarrativeBusy()) {
+                    deliverItem(item)
+                } else {
+                    narrativeQueue.add(item)
+                    _isNarrativeSyncing.value = true
                 }
             }
-            
-            _isNarrativeSyncing.value = narrativeQueue.isNotEmpty()
         }
-        markPopupShown()
-        checkPopupPause()
     }
 
     fun triggerDilemma(event: NarrativeEvent) {
@@ -1878,11 +1887,11 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
 
     
     // 51% Attack Logic
-    private fun trigger51Attack() {
-        _is51AttackActive.value = true
+    private fun triggerKernelHijack() {
+        _isKernelHijackActive.value = true
         _attackTapsRemaining.value = 20
-        addLog("[SYSTEM]: CRITICAL ALERT: 51% ATTACK DETECTED!")
-        addLog("[SYSTEM]: NETWORK INTEGRITY COMPROMISED. REINFORCE FIREWALL IMMEDIATELY.")
+        addLog("[SYSTEM]: CRITICAL ALERT: KERNEL HIJACK DETECTED!")
+        addLog("[SYSTEM]: SUBSTRATE INTEGRITY COMPROMISED. PURGE ROOT ACCESS IMMEDIATELY.")
         
         SoundManager.play("alarm", loop = true)
         HapticManager.vibrateSiren()
@@ -1890,31 +1899,31 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         // Fail timer (15s)
         viewModelScope.launch {
             delay(15_000)
-            if (_is51AttackActive.value) {
-                _is51AttackActive.value = false
+            if (_isKernelHijackActive.value) {
+                _isKernelHijackActive.value = false
                 SoundManager.stop("alarm")
                 
                 // Penalty: 50% of Staked Tokens (Painful)
                 val stake = _stakedTokens.value
                 val penalty = stake * 0.5
                 _stakedTokens.update { it - penalty }
-                addLog("[SYSTEM]: ATTACK SUCCESSFUL. LOST ${formatLargeNumber(penalty)} STAKED \$Neural.")
+                addLog("[SYSTEM]: HIJACK SUCCESSFUL. HOSTILE PID TOOK ${formatLargeNumber(penalty)} STAKED \$Neural.")
                 HapticManager.vibrateError()
             }
         }
     }
     
-    fun onDefend51Attack() {
-        if (!_is51AttackActive.value) return
+    fun onDefendKernelHijack() {
+        if (!_isKernelHijackActive.value) return
         
         _attackTapsRemaining.update { it - 1 }
         SoundManager.play("click")
         HapticManager.vibrateClick()
         
         if (_attackTapsRemaining.value <= 0) {
-            _is51AttackActive.value = false
+            _isKernelHijackActive.value = false
             SoundManager.stop("alarm")
-            addLog("[SYSTEM]: ATTACK REPELLED. CONSENSUS RESTORED.")
+            addLog("[SYSTEM]: KERNEL STABILIZED. CONSENSUS RESTORED.")
             SoundManager.play("buy")
             HapticManager.vibrateSuccess()
         }

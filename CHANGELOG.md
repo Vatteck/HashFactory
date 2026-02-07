@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 ## [3.0.1] - 2026-02-07
 
 ### Added
+- **KERNEL HIJACK Event**: Renamed the "51% Attack" to a more hardware-centric identity. Someone is now attempting root substrate takeover.
+- **Smart-Pacing Narrative Queue**: 
+  - Narrative fragments (logs/events) now fire **immediately** upon being earned if the system is idle.
+  - Pacing timers only activate when a backlog is detected or the user is already viewing a popup.
 - **PERSISTENCE Data Scaling**: Prestige currency now scales and formats as data bytes (B, KB, MB, GB, etc.).
 - **Hardware-Aware Click Balancing**: 
   - Manual clicks now scale based on total hardware levels and current production scale.

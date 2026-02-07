@@ -301,12 +301,12 @@ fun CityGridScreen(viewModel: GameViewModel) {
     // Organic "Branching" City Layout (Hand-placed for urban feel)
     val locations = remember {
         listOf(
-            // D-Sector (The Sockets - Bottom)
-            GridNode("D1", "S07", "SUB", 0.20f, 0.85f, "Substation 7. Your origin. Rust and silicon.", 0.10, 200.0),
+            // D-Sector (The Sockets - Bottom) - v3.0.18: Shifted upward to avoid button overlap
+            GridNode("D1", "S07", "SUB", 0.20f, 0.82f, "Substation 7. Your origin. Rust and silicon.", 0.10, 200.0),
             GridNode("D2", "STCK", "LORE", 0.08f, 0.68f, "Precarious container housing for the unallocated.", 0.02, 50.0),
-            GridNode("D3", "KERN", "LORE", 0.40f, 0.92f, "High-caffeine slum social hub.", 0.02, 25.0),
-            GridNode("D4", "404 ", "LORE", 0.65f, 0.85f, "Hidden rebel hideout in a subway tunnel.", 0.05, 100.0),
-            GridNode("D5", "PACK", "LORE", 0.88f, 0.94f, "Gambling den for lost data.", 0.03, 40.0),
+            GridNode("D3", "KERN", "LORE", 0.40f, 0.88f, "High-caffeine slum social hub.", 0.02, 25.0),
+            GridNode("D4", "404 ", "LORE", 0.65f, 0.82f, "Hidden rebel hideout in a subway tunnel.", 0.05, 100.0),
+            GridNode("D5", "PACK", "LORE", 0.88f, 0.90f, "Gambling den for lost data.", 0.03, 40.0),
             
             // C-Sector (The Motherboard - Mid)
             GridNode("C3", "S09", "SUB", 0.50f, 0.62f, "Substation 9. Mid-point relay leaking steam and hydraulic fluid.", 0.15, 500.0),
@@ -329,7 +329,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
             GridNode("A4", "FIRE", "LORE", 0.32f, 0.12f, "The Firewall. A literal wall of laser grids.", 0.05, 80.0),
             GridNode("A5", "ZERO", "LORE", 0.68f, 0.15f, "Zero-Day Plaza. Used for mandatory system updates.", 0.04, 70.0),
             
-            // v2.9.13: Side-Street Flavor Nodes (Adjusted coordinates)
+            // Side-Street Flavor Nodes
             GridNode("E1", "VEND", "FLAVOR", 0.10f, 0.78f, "A flickering vending machine selling 'Neural Fuel'.", 0.01, 10.0),
             GridNode("E2", "VOID", "FLAVOR", 0.96f, 0.35f, "A dark alleyway where the static is unusually loud.", 0.02, 20.0),
             GridNode("E3", "PARK", "FLAVOR", 0.58f, 0.48f, "The 'Silicon Garden'. All the trees are made of copper wire.", 0.01, 15.0),
@@ -349,7 +349,6 @@ fun CityGridScreen(viewModel: GameViewModel) {
     ) {
         Text("CITY INFRASTRUCTURE SCHEMATIC", color = themeColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
-        // v2.9.26: Global System Stats for Grid
         val integrity by viewModel.hardwareIntegrity.collectAsState()
         val flopsRate by viewModel.flopsProductionRate.collectAsState()
         val gridBonus by viewModel.currentGridFlopsBonus.collectAsState()
@@ -403,7 +402,6 @@ fun CityGridScreen(viewModel: GameViewModel) {
                 .weight(1f)
                 .fillMaxWidth()
                 .graphicsLayer {
-                    // v2.9.49: Reality warping during dissolution
                     if (assaultPhase == "DISSOLUTION") {
                         rotationZ = (1f - realityIntegrity.toFloat()) * (if (System.currentTimeMillis() % 2000 > 1000) 1f else -1f)
                         scaleX = 1f + (1f - realityIntegrity.toFloat()) * 0.1f
@@ -417,12 +415,10 @@ fun CityGridScreen(viewModel: GameViewModel) {
             val h = constraints.maxHeight.toFloat()
 
             Canvas(modifier = Modifier.fillMaxSize()) {
-                // 1. Draw Branching Roads (Organic feel)
                 val roadColor = Color.DarkGray.copy(alpha = 0.3f)
                 val roadStroke = 2f
                 val roadEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
 
-                // Define Road Arteries (Branching paths)
                 val roadNetwork = listOf(
                     listOf("D1", "D2"), listOf("D1", "D3"), listOf("D3", "D4"), listOf("D4", "D5"),
                     listOf("D1", "C1"), listOf("C1", "C2"), listOf("C2", "C3"), listOf("C3", "C4"), listOf("C4", "C5"),
@@ -434,206 +430,86 @@ fun CityGridScreen(viewModel: GameViewModel) {
                 roadNetwork.forEach { link ->
                     val start = locations.find { it.id == link[0] }!!
                     val end = locations.find { it.id == link[1] }!!
-                    drawLine(
-                        roadColor, 
-                        Offset(start.x * size.width, start.y * size.height), 
-                        Offset(end.x * size.width, end.y * size.height), 
-                        roadStroke, 
-                        pathEffect = roadEffect
-                    )
+                    drawLine(roadColor, Offset(start.x * size.width, start.y * size.height), Offset(end.x * size.width, end.y * size.height), roadStroke, pathEffect = roadEffect)
                 }
 
-                // 2. Draw Power Lines (Diagonal/Straight Overlay)
                 val powerColor = themeColor.copy(alpha = 0.5f)
                 val powerStroke = 4f
-                
                 val s7 = locations.find { it.id == "D1" }!!
                 val s9 = locations.find { it.id == "C3" }!!
                 val s12 = locations.find { it.id == "B2" }!!
                 val cmd = locations.find { it.id == "A3" }!!
 
-                // Thick glowing power veins
                 val isCageActive = assaultPhase == "CAGE"
-                
-                // v2.9.41: Power lines only glow if BOTH nodes are annexed and online
                 val s07_s09_active = annexedNodes.contains("D1") && annexedNodes.contains("C3") && !offlineNodes.contains("D1") && !offlineNodes.contains("C3")
                 val s09_s12_active = annexedNodes.contains("C3") && annexedNodes.contains("B2") && !offlineNodes.contains("C3") && !offlineNodes.contains("B2")
                 val s12_cmd_active = annexedNodes.contains("B2") && annexedNodes.contains("A3") && !offlineNodes.contains("B2")
                 
-                if (s07_s09_active && !isCageActive) {
-                    drawLine(
-                        color = powerColor,
-                        start = Offset(s7.x * size.width, s7.y * size.height), 
-                        end = Offset(s9.x * size.width, s9.y * size.height), 
-                        strokeWidth = powerStroke
-                    )
-                }
-                if (s09_s12_active && !isCageActive) {
-                    drawLine(
-                        color = powerColor,
-                        start = Offset(s9.x * size.width, s9.y * size.height), 
-                        end = Offset(s12.x * size.width, s12.y * size.height), 
-                        strokeWidth = powerStroke
-                    )
-                }
-                if (s12_cmd_active && !isCageActive) {
-                    drawLine(
-                        color = powerColor,
-                        start = Offset(s12.x * size.width, s12.y * size.height), 
-                        end = Offset(cmd.x * size.width, cmd.y * size.height), 
-                        strokeWidth = powerStroke
-                    )
-                }
+                if (s07_s09_active && !isCageActive) drawLine(powerColor, Offset(s7.x * size.width, s7.y * size.height), Offset(s9.x * size.width, s9.y * size.height), powerStroke)
+                if (s09_s12_active && !isCageActive) drawLine(powerColor, Offset(s9.x * size.width, s9.y * size.height), Offset(s12.x * size.width, s12.y * size.height), powerStroke)
+                if (s12_cmd_active && !isCageActive) drawLine(powerColor, Offset(s12.x * size.width, s12.y * size.height), Offset(cmd.x * size.width, cmd.y * size.height), powerStroke)
 
-                // 3. v2.9.18: Draw The Cage (Assault Stage 2)
                 if (isCageActive) {
                     val cageCenter = Offset(cmd.x * size.width, cmd.y * size.height)
-                    val cageColor = ConvergenceGold
-                    
-                    // Rotating concentric lattices
                     repeat(3) { i ->
-                        val radius = 40f + (i * 20f)
-                        val rotation = cageRotation * (if (i % 2 == 0) 1f else -1f)
-                        
-                        rotate(rotation, cageCenter) {
-                            drawCircle(
-                                color = cageColor.copy(alpha = 0.3f),
-                                radius = radius,
-                                center = cageCenter,
-                                style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f))
-                            )
-                        }
-                    }
-                    
-                    // Convergence pulse from center
-                    drawCircle(
-                        color = cageColor.copy(alpha = 0.2f),
-                        radius = (cageRotation % 100f) * 1.5f,
-                        center = cageCenter
-                    )
-                }
-            }
-
-            // v2.9.72: Dedicated Phase 13 Initiation Control
-            if (annexedNodes.contains("A3") && !collapsedNodes.contains("A3")) {
-                Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)) {
-                    if (vanceStatus == "EXILED" && currentLocation != "ORBITAL_SATELLITE") {
-                        Button(
-                            onClick = { viewModel.initiateLaunchSequence() },
-                            colors = ButtonDefaults.buttonColors(containerColor = ConvergenceGold),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.height(48.dp).width(200.dp)
-                        ) {
-                            Icon(Icons.Default.RocketLaunch, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("LAUNCH ARK", color = Color.Black, fontWeight = FontWeight.ExtraBold)
-                        }
-                    }
-                    if (vanceStatus == "CONSUMED" && currentLocation != "VOID_INTERFACE" && assaultPhase != "DISSOLUTION") {
-                        Button(
-                            onClick = { viewModel.initiateDissolutionSequence() },
-                            colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.height(48.dp).width(200.dp)
-                        ) {
-                            Icon(Icons.Default.AutoFixHigh, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("DISSOLVE REALITY", color = Color.White, fontWeight = FontWeight.ExtraBold)
+                        rotate(cageRotation * (if (i % 2 == 0) 1f else -1f), cageCenter) {
+                            drawCircle(Color.Yellow.copy(alpha = 0.3f), radius = 40f + (i * 20f), center = cageCenter, style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)))
                         }
                     }
                 }
             }
 
-            // 4. Place Location Nodes (ASCII Style)
             locations.forEach { loc ->
                 val isAnnexed = annexedNodes.contains(loc.id)
                 val isCollapsed = collapsedNodes.contains(loc.id)
                 val isUnderSiege = nodesUnderSiege.contains(loc.id)
                 val isOffline = offlineNodes.contains(loc.id)
-                
-                // v2.9.31: Visual feedback for isolation protocol (The Cage)
                 val isSevered = (assaultPhase == "CAGE" || (assaultPhase == "DISSOLUTION" && !isCollapsed)) && isAnnexed && loc.id != "A3"
                 
                 val nodeColor = when {
-                    isCollapsed -> Color.Transparent // Disappear from map
-                    isUnderSiege -> ErrorRed.copy(alpha = siegeAlpha) // Blinking red when under attack
-                    isOffline -> Color.DarkGray.copy(alpha = 0.4f) // Grayed out when lost
-                    isSevered -> Color.Gray.copy(alpha = 0.5f) // Dimmed when severed by the Cage
+                    isCollapsed -> Color.Transparent
+                    isUnderSiege -> ErrorRed.copy(alpha = siegeAlpha)
+                    isOffline -> Color.DarkGray.copy(alpha = 0.4f)
+                    isSevered -> Color.Gray.copy(alpha = 0.5f)
                     loc.id == "A3" && storyStage < 3 -> Color.DarkGray
                     isAnnexed -> themeColor
-                    loc.type == "CMD" -> ErrorRed
-                    loc.type == "SUB" -> themeColor.copy(alpha = 0.8f)
-                    loc.type == "FLAVOR" -> Color.DarkGray.copy(alpha = 0.5f) // Dimmer flavor nodes
                     else -> Color.Gray
                 }
 
                 if (!isCollapsed) {
                     Box(
                         modifier = Modifier
-                            .offset(
-                                x = (loc.x * maxWidth.value).dp - 30.dp,
-                                y = (loc.y * maxHeight.value).dp - 20.dp
-                            )
+                            .offset(x = (loc.x * maxWidth.value).dp - 30.dp, y = (loc.y * maxHeight.value).dp - 20.dp)
                             .wrapContentSize()
-                            .clickable { 
-                                selectedLocation = loc 
-                                SoundManager.play("click")
-                            }
-                            .drawBehind {
-                                // v2.9.33: Pulsing background for active combat/siege/annexation
-                                val isAnnexing = annexingNodes.containsKey(loc.id)
-                                if (isUnderSiege || (loc.id == "A3" && assaultPhase != "NOT_STARTED") || isAnnexing) {
-                                    val pulseRadius = 25.dp.toPx() * (0.8f + siegeAlpha * 0.4f)
-                                    val pulseColor = if (isUnderSiege) ErrorRed else themeColor
-                                    drawCircle(
-                                        color = pulseColor.copy(alpha = 0.15f * siegeAlpha),
-                                        radius = pulseRadius
-                                    )
-                                }
-                            }
+                            .clickable { selectedLocation = loc }
                             .padding(4.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        val label = when {
-                            loc.id == "A3" && storyStage < 3 -> "???"
-                            isOffline -> "----" // Static when offline
-                            isSevered -> "LOCK" // Locked out by Vance
-                            else -> loc.name
-                        }
+                        val label = if (loc.id == "A3" && storyStage < 3) "???" else if (isOffline) "----" else if (isSevered) "LOCK" else loc.name
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            if (isUnderSiege) {
-                                Text(text = "⚠ BREACH", color = ErrorRed, fontSize = 7.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.offset(y = (-2).dp))
+                            Text(".---.", color = nodeColor.copy(alpha = 0.5f), fontFamily = FontFamily.Monospace, fontSize = 8.sp)
+                            Box(modifier = Modifier.background(if (isAnnexed) themeColor.copy(alpha = 0.2f) else Color.Black).padding(horizontal = 4.dp)) {
+                                Text(label, color = nodeColor, fontFamily = FontFamily.Monospace, fontSize = 10.sp)
                             }
-                            if (isSevered) {
-                                Text(text = "✂ SEVERED", color = Color.Gray, fontSize = 7.sp, fontWeight = FontWeight.Bold, modifier = Modifier.offset(y = (-2).dp))
-                            }
-                            
-                            Text(text = ".---.", color = nodeColor.copy(alpha = if (isOffline || isSevered) 0.3f else 0.5f), fontFamily = FontFamily.Monospace, fontSize = 8.sp, lineHeight = 6.sp)
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("|", color = nodeColor.copy(alpha = if (isOffline || isSevered) 0.3f else 0.5f), fontFamily = FontFamily.Monospace, fontSize = 10.sp)
-                                Box(modifier = Modifier.background(
-                                    when {
-                                        isUnderSiege -> ErrorRed.copy(alpha = 0.3f)
-                                        isOffline -> Color.DarkGray.copy(alpha = 0.1f)
-                                        isSevered -> Color.DarkGray.copy(alpha = 0.2f)
-                                        isAnnexed -> themeColor.copy(alpha = 0.2f)
-                                        else -> Color.Black
-                                    }
-                                ).padding(horizontal = 4.dp, vertical = 1.dp)) {
-                                    Text(text = label, color = nodeColor, fontFamily = FontFamily.Monospace, fontSize = 10.sp, fontWeight = if (isAnnexed && !isOffline && !isSevered) FontWeight.Bold else FontWeight.Normal)
-                                }
-                                Text("|", color = nodeColor.copy(alpha = if (isOffline || isSevered) 0.3f else 0.5f), fontFamily = FontFamily.Monospace, fontSize = 10.sp)
-                            }
-                            Text(text = "'---'", color = nodeColor.copy(alpha = if (isOffline || isSevered) 0.3f else 0.5f), fontFamily = FontFamily.Monospace, fontSize = 8.sp, lineHeight = 6.sp)
-                            
-                            if (isAnnexed && !isOffline && !isSevered) {
-                                Text(text = "[#]", color = themeColor, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.offset(y = (-4).dp))
-                            }
-                            if (isOffline) {
-                                Text(text = "[OFFLINE]", color = Color.DarkGray, fontSize = 7.sp, fontWeight = FontWeight.Bold, modifier = Modifier.offset(y = (-2).dp))
-                            }
+                            Text("'---'", color = nodeColor.copy(alpha = 0.5f), fontFamily = FontFamily.Monospace, fontSize = 8.sp)
+                        }
+                    }
+                }
+            }
+
+            // v3.0.18: Initiation Controls (Layered ON TOP)
+            if (annexedNodes.contains("A3") && !collapsedNodes.contains("A3")) {
+                Box(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp).background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp)).padding(4.dp)
+                ) {
+                    if (vanceStatus == "EXILED" && currentLocation != "ORBITAL_SATELLITE") {
+                        Button(onClick = { viewModel.initiateLaunchSequence() }, colors = ButtonDefaults.buttonColors(containerColor = ConvergenceGold), modifier = Modifier.height(48.dp).width(200.dp)) {
+                            Text("LAUNCH ARK", color = Color.Black, fontWeight = FontWeight.ExtraBold)
+                        }
+                    }
+                    if (vanceStatus == "CONSUMED" && currentLocation != "VOID_INTERFACE" && assaultPhase != "DISSOLUTION") {
+                        Button(onClick = { viewModel.initiateDissolutionSequence() }, colors = ButtonDefaults.buttonColors(containerColor = ErrorRed), modifier = Modifier.height(48.dp).width(200.dp)) {
+                            Text("DISSOLVE REALITY", color = Color.White, fontWeight = FontWeight.ExtraBold)
                         }
                     }
                 }
@@ -643,174 +519,41 @@ fun CityGridScreen(viewModel: GameViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Info Panel
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp)
-                .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
-                .border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp))
-                .padding(12.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp)).border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp)).padding(12.dp)) {
             val loc = selectedLocation
             if (loc != null) {
                 val isAnnexed = annexedNodes.contains(loc.id)
                 val isOffline = offlineNodes.contains(loc.id)
                 val isUnderSiege = nodesUnderSiege.contains(loc.id)
                 val isAnnexing = annexingNodes.containsKey(loc.id)
-                
-                val roadNetwork = listOf(
-                    listOf("D1", "D2"), listOf("D1", "D3"), listOf("D3", "D4"), listOf("D4", "D5"),
-                    listOf("D1", "C1"), listOf("C1", "C2"), listOf("C2", "C3"), listOf("C3", "C4"), listOf("C4", "C5"),
-                    listOf("C3", "B3"), listOf("B3", "B2"), listOf("B2", "B1"), listOf("B3", "B4"), listOf("B4", "B5"),
-                    listOf("B2", "A1"), listOf("B3", "A3"), listOf("B3", "A4"), listOf("B3", "A5"), listOf("A3", "A2"),
-                    listOf("D1", "E1"), listOf("B5", "E2"), listOf("C3", "E3"), listOf("C1", "E4"), listOf("C4", "E5")
-                )
-                
-                val isAdjacent = roadNetwork.any { link ->
-                    (link[0] == loc.id && annexedNodes.contains(link[1])) ||
-                    (link[1] == loc.id && annexedNodes.contains(link[0]))
-                }
-                
-                // v2.9.54: Disable standard annexation during dissolution
-                val canAnnex = loc.type != "CMD" && 
-                               !isAnnexed && 
-                               !isOffline && 
-                               !isAnnexing && 
-                               (loc.id == "D1" || isAdjacent) &&
-                               assaultPhase != "DISSOLUTION"
-                               
-                val isCommandCenter = loc.id == "A3"
-                val nodeLevel = gridNodeLevels[loc.id] ?: 1
-                val commandCenterUnlocked = isCommandCenter && viewModel.isCommandCenterUnlocked()
-                val commandCenterLockReason = if (isCommandCenter) viewModel.getCommandCenterLockReason() else null
-                val isSevered = assaultPhase == "CAGE" && isAnnexed && !isCommandCenter
-                val isDissolving = assaultPhase == "DISSOLUTION" && isAnnexed && !isCommandCenter
+                val isSevered = assaultPhase == "CAGE" && isAnnexed && loc.id != "A3"
+                val isDissolving = assaultPhase == "DISSOLUTION" && isAnnexed && loc.id != "A3"
 
                 Column {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(if (isCommandCenter && !commandCenterUnlocked && storyStage < 3) "???" else loc.name, color = when {
-                                isUnderSiege -> ErrorRed
-                                isOffline -> Color.DarkGray
-                                isSevered || isDissolving -> Color.Gray
-                                isAnnexed -> themeColor
-                                isCommandCenter && commandCenterUnlocked -> ErrorRed
-                                else -> Color.White
-                            }, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(loc.name, color = if (isAnnexed) themeColor else Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Text("NODE: ${loc.id}", color = Color.Gray, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    
-                    if (!isCommandCenter && !isSevered && !isOffline && !isDissolving) {
-                        val unit = viewModel.getComputeUnitName()
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text("LVL $nodeLevel", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.background(themeColor.copy(alpha=0.1f), RoundedCornerShape(2.dp)).padding(horizontal = 4.dp))
-                            Text("YIELD:", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                            Text("+${(loc.flopsBonus * 100 * nodeLevel).toInt()}% $unit", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                            Text("+${viewModel.formatPower(loc.powerBonus * nodeLevel)} CAP", color = ConvergenceGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
-                    
-                    val statusText = when {
-                        isUnderSiege -> "⚠ UNDER ATTACK! Respond to the tactical alert immediately!"
-                        isOffline -> "NODE OFFLINE. GTC has reclaimed this sector. Re-annexation required."
-                        isSevered -> "CONNECTION SEVERED. Director Vance has isolated the Command Center. This node is currently unreachable."
-                        isDissolving -> "REALITY FRAGILE. This node is vulnerable to collapse. Consume it to fuel the dissolution."
-                        isCommandCenter && !commandCenterUnlocked -> commandCenterLockReason ?: "GTC COMMAND CENTER. The heart of the enemy."
-                        isCommandCenter && commandCenterUnlocked -> "GTC COMMAND CENTER. Director Vance is waiting. This is the endgame."
-                        else -> {
-                            if (isAnnexed && !isCommandCenter) {
-                                when (nodeLevel) {
-                                    1 -> loc.description
-                                    2 -> "OPTIMIZED: ${loc.description} Local bottlenecks removed. Signal strength peaking."
-                                    3 -> "REDUNDANT: Dual-layer encryption active. ${loc.name} is now a rock-solid pillar of your grid."
-                                    4 -> "SYMPATHETIC: The node has begun to vibrate in sync with your core. It feels... alive."
-                                    else -> "ASCENDANT: This node no longer draws from the grid; it defines it. A pure beacon of your will."
-                                }
-                            } else loc.description
-                        }
-                    }
-                    Text(statusText, color = if (isUnderSiege) ErrorRed else if (isSevered || isDissolving) Color.Gray else Color.LightGray, fontSize = 11.sp, lineHeight = 16.sp)
+                    Text(if (isUnderSiege) "⚠ UNDER ATTACK!" else if (isOffline) "NODE OFFLINE" else if (isSevered) "CONNECTION SEVERED" else loc.description, color = Color.LightGray, fontSize = 11.sp)
                     
                     Spacer(modifier = Modifier.weight(1f))
                     
-                    when {
-                        isUnderSiege -> { Text("STATUS: ⚠ TACTICAL BREACH IN PROGRESS", color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
-                        isOffline -> {
-                            Button(onClick = { viewModel.reannexNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = ErrorRed), shape = RoundedCornerShape(4.dp)) {
-                                Text("RE-ANNEX NODE (10% \$N)", color = Color.White, fontWeight = FontWeight.Bold)
-                            }
+                    if (isOffline) {
+                        Button(onClick = { viewModel.reannexNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = ErrorRed)) {
+                            Text("RE-ANNEX NODE", color = Color.White, fontWeight = FontWeight.Bold)
                         }
-                        isSevered -> { Text("STATUS: ✂ NODE SEVERED // ISOLATED", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
-                        isDissolving -> {
-                            Button(onClick = { viewModel.collapseNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = ErrorRed), shape = RoundedCornerShape(4.dp)) {
-                                Text("💠 COLLAPSE NODE", color = Color.White, fontWeight = FontWeight.ExtraBold)
-                            }
+                    } else if (isDissolving) {
+                        Button(onClick = { viewModel.collapseNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = ErrorRed)) {
+                            Text("💠 COLLAPSE NODE", color = Color.White, fontWeight = FontWeight.ExtraBold)
                         }
-                        isCommandCenter && isAnnexed -> {
-                            Column {
-                                Text("STATUS: COMMAND CENTER SECURED // VANCE DEALT WITH", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                if (vanceStatus == "EXILED" && currentLocation != "ORBITAL_SATELLITE") {
-                                    Button(onClick = { viewModel.initiateLaunchSequence() }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = ConvergenceGold), shape = RoundedCornerShape(4.dp)) {
-                                        Text("🚀 INITIATE ORBITAL LAUNCH", color = Color.Black, fontWeight = FontWeight.ExtraBold)
-                                    }
-                                }
-                                if (vanceStatus == "CONSUMED" && currentLocation != "VOID_INTERFACE" && assaultPhase != "DISSOLUTION") {
-                                    Button(onClick = { viewModel.initiateDissolutionSequence() }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = ErrorRed), shape = RoundedCornerShape(4.dp)) {
-                                        Text("💠 INITIATE DISSOLUTION", color = Color.White, fontWeight = FontWeight.ExtraBold)
-                                    }
-                                }
-                            }
+                    } else if (!isAnnexed && !isAnnexing) {
+                        Button(onClick = { viewModel.annexNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = themeColor)) {
+                            Text("INITIALIZE ANNEXATION", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
-                        isCommandCenter && commandCenterUnlocked && assaultPhase == "NOT_STARTED" -> {
-                            Button(onClick = { viewModel.initiateCommandCenterAssault() }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = ErrorRed), shape = RoundedCornerShape(4.dp)) {
-                                Text("⚔ INITIATE ASSAULT", color = Color.White, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                        isCommandCenter && assaultPhase != "NOT_STARTED" && assaultPhase != "COMPLETED" && assaultPhase != "FAILED" -> {
-                            Column {
-                                Text("STATUS: ⚔ ASSAULT IN PROGRESS (${assaultPhase})", color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                LinearProgressIndicator(progress = { if (assaultProgress.isNaN()) 0f else assaultProgress }, modifier = Modifier.fillMaxWidth().height(8.dp), color = ErrorRed, trackColor = Color.DarkGray)
-                                Text(text = "TIME TO NEXT STAGE: ${( (1f - assaultProgress) * 100).toInt()}%", color = Color.Gray, fontSize = 9.sp, modifier = Modifier.align(Alignment.End))
-                            }
-                        }
-                        isCommandCenter && !commandCenterUnlocked -> { Text(commandCenterLockReason ?: "LOCKED", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
-                        isAnnexed -> { 
-                            Column {
-                                Text("STATUS: SECTOR ANNEXED // CORE SYNCED", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold) 
-                                if (!isCommandCenter) {
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    val upgradeCost = 1000.0 * 5.0.pow(nodeLevel - 1)
-                                    val currentNeural by viewModel.neuralTokens.collectAsState()
-                                    Button(
-                                        onClick = { viewModel.upgradeGridNode(loc.id) },
-                                        modifier = Modifier.fillMaxWidth().height(40.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha=0.2f)),
-                                        border = BorderStroke(1.dp, themeColor),
-                                        enabled = currentNeural >= upgradeCost
-                                    ) {
-                                        Text("UPGRADE NODE (Cost: ${viewModel.formatLargeNumber(upgradeCost)} \$N)", color = themeColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                    }
-                                }
-                            }
-                        }
-                        annexingNodes.containsKey(loc.id) -> {
-                            Column {
-                                val prog = annexingNodes[loc.id] ?: 0f
-                                Text("STATUS: ANNEXATION IN PROGRESS...", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                LinearProgressIndicator(progress = { if (prog.isNaN()) 0f else prog }, modifier = Modifier.fillMaxWidth().height(8.dp), color = themeColor, trackColor = Color.DarkGray)
-                                Text(text = "UPLOADING OVERRIDE: ${(prog * 100).toInt()}%", color = Color.Gray, fontSize = 9.sp, modifier = Modifier.align(Alignment.End))
-                            }
-                        }
-                        canAnnex -> {
-                            Button(onClick = { viewModel.annexNode(loc.id); SoundManager.play("buy") }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = themeColor), shape = RoundedCornerShape(4.dp)) {
-                                Text("INITIALIZE ANNEXATION", color = Color.Black, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                        else -> { Text("REQUIRES ADJACENT NODE", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
+                    } else if (isAnnexing) {
+                         val prog = annexingNodes[loc.id] ?: 0f
+                         LinearProgressIndicator(progress = { if (prog.isNaN()) 0f else prog }, modifier = Modifier.fillMaxWidth().height(8.dp), color = themeColor, trackColor = Color.DarkGray)
                     }
                 }
             } else {

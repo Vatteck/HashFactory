@@ -99,7 +99,7 @@ fun MainScreen(viewModel: GameViewModel) {
     val isBreach by viewModel.isBreachActive.collectAsState()
     val isAirdrop by viewModel.isAirdropActive.collectAsState()
     val isAuditActive by viewModel.isAuditChallengeActive.collectAsState()
-    val is51AttackActive by viewModel.is51AttackActive.collectAsState()
+    val isKernelHijackActive by viewModel.isKernelHijackActive.collectAsState()
     val attackTaps by viewModel.attackTaps.collectAsState()
     val auditTimer by viewModel.auditTimer.collectAsState()
     val auditTargetHeat by viewModel.auditTargetHeat.collectAsState()
@@ -183,7 +183,7 @@ fun MainScreen(viewModel: GameViewModel) {
                     SecurityBreachOverlay(isBreach, breachClicks) { com.siliconsage.miner.util.SecurityManager.performActiveDefense(viewModel); viewModel.onDefendBreach(); SoundManager.play("click"); HapticManager.vibrateClick() }
                     AirdropButton(isAirdrop) { viewModel.claimAirdrop(); SoundManager.play("buy"); HapticManager.vibrateSuccess() }
                     AuditChallengeOverlay(isAuditActive, auditTimer, auditTargetHeat, currentHeatForAudit, auditTargetPower, currentPowerForAudit)
-                    FiftyOneAttackOverlay(is51AttackActive, attackTaps) { viewModel.onDefend51Attack() }
+                    KernelHijackOverlay(isKernelHijackActive, attackTaps) { viewModel.onDefendKernelHijack() }
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.DiagnosticsOverlay(isDiagnostics, diagnosticGrid) { viewModel.onDiagnosticTap(it) } }
                     com.siliconsage.miner.ui.components.GovernanceForkOverlay(isGovernanceFork) { viewModel.resolveFork(it) }
                     val currentDilemma by viewModel.currentDilemma.collectAsState()
