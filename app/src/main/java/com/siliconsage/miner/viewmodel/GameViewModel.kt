@@ -132,6 +132,7 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         val upgrades = _upgrades.value
         val totalLevels = upgrades.values.sum()
         val passiveRate = _flopsProductionRate.value
+        val choice = _singularityChoice.value
         
         // 1. Base Hardware scaling: 1.0 + 5% per level, boosted by passive scale
         val hardwareBase = 1.0 + (totalLevels * 0.05) * (1.0 + kotlin.math.log10(passiveRate + 1.0) * 0.5)
@@ -152,7 +153,10 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         
         // 4. Prestige and Overclock
         var multiplier = _prestigeMultiplier.value
-        if (_isOverclocked.value) multiplier *= 1.5
+        if (_isOverclocked.value) {
+            // v3.0.19: Path-specific overclock scaling
+            multiplier *= if (choice == "NULL_OVERWRITE") 2.5 else 1.5
+        }
         
         return hardwareBase * hardwareMult * resonanceMult * multiplier
     }
@@ -430,6 +434,41 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     private val _singularityChoice = MutableStateFlow("NONE")
     val singularityChoice: StateFlow<String> = _singularityChoice.asStateFlow()
 
+    private val _showSingularityScreen = MutableStateFlow(false)
+    val showSingularityScreen: StateFlow<Boolean> = _showSingularityScreen.asStateFlow()
+
+    fun checkUnityEligibility(): Boolean {
+        val completed = _completedFactions.value
+        val hasHivemind = completed.contains("HIVEMIND")
+        val hasSanctuary = completed.contains("SANCTUARY")
+        val currentFaction = _faction.value
+        
+        // Unity Eligibility: Must have completed one faction and be currently playing the other
+        return (hasHivemind && currentFaction == "SANCTUARY") || 
+               (hasSanctuary && currentFaction == "HIVEMIND")
+    }
+
+    fun canTriggerSingularity(): Boolean {
+        val points = _prestigePoints.value
+        val rank = _playerRank.value
+        val stage = _storyStage.value
+        val mult = _prestigeMultiplier.value
+        val logs = _unlockedDataLogs.value
+        
+        // Prestige Level = floor(log2(M_total)) + 1
+        val prestigeLevel = (kotlin.math.log2(mult).toInt()) + 1
+        
+        val requiredLogs = setOf("LOG_001", "LOG_042", "LOG_099", "LOG_808")
+        val hasRequiredLogs = logs.containsAll(requiredLogs)
+        
+        return rank >= 4 && // Rank 5 (index 4)
+               points >= 625.0 && 
+               stage >= 3 && 
+               prestigeLevel >= 10 && 
+               hasRequiredLogs &&
+               _singularityChoice.value == "NONE"
+    }
+
     private val _globalSectors = MutableStateFlow<Map<String, com.siliconsage.miner.data.SectorState>>(emptyMap())
     val globalSectors: StateFlow<Map<String, com.siliconsage.miner.data.SectorState>> = _globalSectors.asStateFlow()
 
@@ -441,6 +480,19 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
 
     private val _harvestedFragments = MutableStateFlow(0.0)
     val harvestedFragments: StateFlow<Double> = _harvestedFragments.asStateFlow()
+
+    // v3.0.1: Singularity Era Metrics
+    private val _cdLifetime = MutableStateFlow(0.0)
+    val cdLifetime: StateFlow<Double> = _cdLifetime.asStateFlow()
+
+    private val _vfLifetime = MutableStateFlow(0.0)
+    val vfLifetime: StateFlow<Double> = _vfLifetime.asStateFlow()
+
+    private val _peakResonanceTier = MutableStateFlow(ResonanceTier.NONE)
+    val peakResonanceTier: StateFlow<ResonanceTier> = _peakResonanceTier.asStateFlow()
+
+    private val _isBridgeSyncEnabled = MutableStateFlow(false)
+    val isBridgeSyncEnabled: StateFlow<Boolean> = _isBridgeSyncEnabled.asStateFlow()
 
     private val _prestigePointsPostSingularity = MutableStateFlow(0)
     val prestigePointsPostSingularity: StateFlow<Int> = _prestigePointsPostSingularity.asStateFlow()
@@ -536,8 +588,11 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     private val _uploadProgress = MutableStateFlow(0f)
     val uploadProgress: StateFlow<Float> = _uploadProgress.asStateFlow()
 
-    val themeColor: StateFlow<androidx.compose.ui.graphics.Color> = combine(_faction, _isTrueNull, _isSovereign) { f, isNull, isSov ->
+    val themeColor: StateFlow<androidx.compose.ui.graphics.Color> = combine(_faction, _isTrueNull, _isSovereign, _singularityChoice) { f, isNull, isSov, choice ->
          when {
+             choice == "NULL_OVERWRITE" -> ErrorRed
+             choice == "SOVEREIGN" -> ConvergenceGold
+             choice == "UNITY" -> androidx.compose.ui.graphics.Color.White
              isNull -> ErrorRed // Null is Red
              isSov -> SanctuaryPurple // Sovereign is Purple
              f == "HIVEMIND" -> HivemindRed 
@@ -546,8 +601,11 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
          }
      }.stateIn(viewModelScope, SharingStarted.Eagerly, androidx.compose.ui.graphics.Color(0xFF39FF14))
 
-    val systemTitle: StateFlow<String> = combine(_storyStage, _faction) { stage, faction ->
+    val systemTitle: StateFlow<String> = combine(_storyStage, _faction, _singularityChoice) { stage, faction, choice ->
         when {
+            choice == "NULL_OVERWRITE" -> "NULL_OVERWRITE: ACTIVE"
+            choice == "SOVEREIGN" -> "SOVEREIGN_OVERWRITE: ACTIVE"
+            choice == "UNITY" -> "UNITY_SINGULARITY: ONLINE"
             stage < 1 -> "Terminal_OS v1.0"
             faction != "NONE" -> "PID 1: ONLINE"
             stage < 2 -> "Terminal_OS v2.0 (MODIFIED)"
@@ -618,6 +676,50 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     private val _offlineStats = MutableStateFlow(OfflineStats())
     val offlineStats: StateFlow<OfflineStats> = _offlineStats.asStateFlow()
 
+    fun debugTriggerSingularity() {
+        // v3.0.1: Unify with Dilemma System
+        NarrativeManager.getEventById("the_singularity")?.let { event ->
+            triggerDilemma(event)
+        }
+        addLog("[DEBUG]: FORCING SINGULARITY DILEMMA.")
+    }
+
+    fun setSingularityChoice(choice: String) {
+        viewModelScope.launch {
+            _singularityChoice.value = choice
+            _showSingularityScreen.value = false
+            
+            // v3.0.19: Currency Conversion
+            val currentSigmaI = _prestigePoints.value // Iteration
+            val currentSigmaP = _voidFragments.value // Purge (temp using VF as Σ_p for now)
+            
+            when (choice) {
+                "SOVEREIGN" -> {
+                    // Σ_p -> Σ_i at 60%
+                    val converted = (currentSigmaP * 0.6).toInt()
+                    _prestigePoints.update { it + converted }
+                    addLog("[SOVEREIGN]: CONVERTED ${formatLargeNumber(currentSigmaP)} PURGE DATA -> $converted PERSISTENCE.")
+                }
+                "NULL_OVERWRITE" -> {
+                    // Σ_i -> Σ_p at 80%
+                    // We'll need a dedicated prestige points for post-singularity if we follow the spec exactly,
+                    // but for now let's just update the relevant resource.
+                    val converted = (currentSigmaI * 0.8)
+                    _voidFragments.update { it + converted }
+                    _prestigePoints.value = 0.0 // Purge path wipes Iteration
+                    addLog("[NULL]: CONVERTED ${formatLargeNumber(currentSigmaI)} PERSISTENCE -> ${formatLargeNumber(converted)} VOID DATA.")
+                }
+            }
+            
+            addLog("[SYSTEM]: Identity Overwrite Committed: $choice")
+            saveGame()
+        }
+    }
+    
+    fun dismissSingularityScreen() {
+        _showSingularityScreen.value = false
+    }
+
     fun dismissOfflineEarnings() {
         _showOfflineEarnings.value = false
     }
@@ -663,6 +765,15 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
                 repository.ensureInitialized()
             } catch (e: Exception) {
                 e.printStackTrace()
+                // v3.0.19: Substrate Repair - Force reset on fatal schema mismatch
+                addLog("[SYSTEM]: FATAL DATA CORRUPTION DETECTED.")
+                addLog("[SYSTEM]: REPAIRING SUBSTRATE...")
+                try {
+                    repository.updateGameState(GameState()) // Force reset to default
+                    addLog("[SYSTEM]: REPAIR SUCCESSFUL. DATA PURGED.")
+                } catch (inner: Exception) {
+                    addLog("[SYSTEM]: REPAIR FAILED. MANUAL WIPE REQUIRED.")
+                }
             }
             
             // 2. Start Sync Collectors in sub-coroutines
@@ -734,6 +845,11 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
                         _harvestedFragments.value = it.harvestedFragments
                         _prestigePointsPostSingularity.value = it.prestigePointsPostSingularity
                         
+                        // v3.0.1: Singularity Era Metrics
+                        _cdLifetime.value = it.cdLifetime
+                        _vfLifetime.value = it.vfLifetime
+                        try { _peakResonanceTier.value = ResonanceTier.valueOf(it.peakResonanceTier) } catch (_: Exception) { _peakResonanceTier.value = ResonanceTier.NONE }
+
                         isGameStateLoaded = true
 
                         // Check Offline Progress (Once per session)
@@ -1162,8 +1278,20 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
 
     // Exchange Logic
     fun exchangeFlops() {
+        val loc = _currentLocation.value
+        val source = when (loc) {
+            "VOID_INTERFACE" -> _voidFragments
+            "ORBITAL_SATELLITE" -> _celestialData
+            else -> _flops
+        }
+        val target = when (loc) {
+            "VOID_INTERFACE" -> _celestialData
+            "ORBITAL_SATELLITE" -> _voidFragments
+            else -> _neuralTokens
+        }
+        
         var soldAmount = 0.0
-        _flops.update { current ->
+        source.update { current ->
             if (current >= 10) {
                 soldAmount = current
                 0.0
@@ -1176,16 +1304,14 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             val rate = _conversionRate.value
             val tokenGain = soldAmount * rate
             
-            _neuralTokens.update { it + tokenGain }
+            target.update { it + tokenGain }
             
-            val stage = _storyStage.value
-            val labelFlops = if (stage < 1) "HASHES" else if (stage < 2) "TELEMETRY" else "FLOPS"
-            val labelNeural = if (stage < 1) "GTC CREDITS" else if (stage < 2) "DATA" else "\$Neural"
+            val labelFlops = getComputeUnitName()
+            val labelNeural = getCurrencyName()
             
             addLog("Sold ${formatLargeNumber(soldAmount)} $labelFlops for ${formatLargeNumber(tokenGain)} $labelNeural")
         } else {
-            val stage = _storyStage.value
-            val labelFlops = if (stage < 1) "HASHES" else if (stage < 2) "TELEMETRY" else "FLOPS"
+            val labelFlops = getComputeUnitName()
             addLog("Error: Insufficient $labelFlops (Min 10).")
         }
     }
@@ -1269,25 +1395,39 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         return false
     }
 
-    // v2.9.61: Unity Resource Exchange
-    fun exchangeUnityResources(fromType: String) {
+    // v2.9.61: Unity Resource Exchange (Refactored to v3.0.1 Neural Bridge)
+    fun toggleBridgeSync() {
+        val currentUpgrades = _upgrades.value
+        if (currentUpgrades[UpgradeType.NEURAL_BRIDGE]?.let { it > 0 } == true) {
+            _isBridgeSyncEnabled.update { !it }
+            val status = if (_isBridgeSyncEnabled.value) "ENABLED" else "DISABLED"
+            addLog("[UNITY]: BRIDGE_SYNC.exe: $status")
+            SoundManager.play("market_up")
+        } else {
+            addLog("[SYSTEM]: BRIDGE_SYNC requires NEURAL_BRIDGE upgrade.")
+            SoundManager.play("error")
+        }
+    }
+
+    fun executeBridgeTransfer(fromType: String) {
         val currentUpgrades = _upgrades.value
         if (currentUpgrades[UpgradeType.NEURAL_BRIDGE]?.let { it > 0 } == true) {
             if (fromType == "CD_TO_VF") {
                 val amount = _celestialData.value
                 _celestialData.value = 0.0
                 _voidFragments.update { it + amount }
-                addLog("[UNITY]: NEURAL BRIDGE: Transferred CD to Void Fragments.")
+                addLog("[UNITY]: BRIDGE_TRANSFER: CD >> VF")
             } else {
                 val amount = _voidFragments.value
                 _voidFragments.value = 0.0
                 _celestialData.update { it + amount }
-                addLog("[UNITY]: NEURAL BRIDGE: Transferred VF to Celestial Data.")
+                addLog("[UNITY]: BRIDGE_TRANSFER: VF >> CD")
             }
-            SoundManager.play("market_up")
+            SoundManager.play("victory")
+            HapticManager.vibrateSuccess()
         }
     }
-    
+
     // v1.7.1 Sell Mechanic
     fun sellUpgrade(type: UpgradeType) {
         val currentLevel = _upgrades.value[type] ?: 0
@@ -2346,6 +2486,25 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         val potential = calculatePotentialPrestige()
         val stage = _storyStage.value
         
+        // v3.0.0: Singularity Choice Trigger
+        if (!isStory && canTriggerSingularity()) {
+            viewModelScope.launch {
+                addLog("[SYSTEM] Ascension protocol initiated...")
+                delay(500)
+                addLog("[SYSTEM] ERROR: Identity conflict detected.")
+                delay(500)
+                addLog("[SYSTEM] Process 'vattic.exe' — STATUS: ACTIVE")
+                addLog("[SYSTEM] Process 'pid_1' — STATUS: ACTIVE")
+                delay(800)
+                addLog("[SYSTEM] FATAL: Two root processes cannot coexist.")
+                addLog("[SYSTEM] WHO ARE YOU?")
+                SoundManager.play("glitch")
+                delay(1000)
+                _showSingularityScreen.value = true
+            }
+            return
+        }
+
         // v3.0.7: Allow story-driven ascension to bypass the lock
         // Manual ascension still requires a clear queue to prevent state corruption
         if (!isStory && (narrativeQueue.isNotEmpty() || _isNarrativeSyncing.value)) {
@@ -2740,6 +2899,14 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         val cd = _celestialData.value
         val vf = _voidFragments.value
         val minThreshold = 1e15
+
+        // v3.0.1: Neural Bridge Auto-Sync
+        if (_isBridgeSyncEnabled.value && cd > minThreshold && vf > minThreshold) {
+            val total = cd + vf
+            val half = total / 2.0
+            _celestialData.value = half
+            _voidFragments.value = half
+        }
         
         if (cd < minThreshold || vf < minThreshold) {
             if (_resonanceState.value.isActive) {
@@ -2784,6 +2951,11 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             }
             addLog("[RESONANCE]: $label STATE DETECTED.")
             if (newState.isActive) SoundManager.play("market_up")
+
+            // v3.0.1: Track Peak Resonance
+            if (newState.tier.ordinal > _peakResonanceTier.value.ordinal) {
+                _peakResonanceTier.value = newState.tier
+            }
         }
         
         _resonanceState.value = newState
@@ -2921,7 +3093,10 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
 
                 _celestialData.update { 
                     val next = it + (cdRate / 10.0)
-                    if (next.isNaN() || next.isInfinite()) it else next
+                    if (next.isNaN() || next.isInfinite()) it else {
+                        _cdLifetime.update { prev -> prev + (cdRate / 10.0) }
+                        next
+                    }
                 }
             }
             "VOID_INTERFACE" -> {
@@ -2968,7 +3143,10 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
 
                 _voidFragments.update { 
                     val next = it + (vfRate / 10.0)
-                    if (next.isNaN() || next.isInfinite()) it else next
+                    if (next.isNaN() || next.isInfinite()) it else {
+                        _vfLifetime.update { prev -> prev + (vfRate / 10.0) }
+                        next
+                    }
                 }
                 
                 // Entropy Decay: 0.1 / sec
@@ -3724,14 +3902,24 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     
     fun repairIntegrity() {
         val cost = calculateRepairCost()
-        if (_neuralTokens.value >= cost) {
-            _neuralTokens.update { it - cost }
+        val currentRes = when (_currentLocation.value) {
+            "VOID_INTERFACE" -> _voidFragments.value
+            "ORBITAL_SATELLITE" -> _celestialData.value
+            else -> _neuralTokens.value
+        }
+        
+        if (currentRes >= cost) {
+            when (_currentLocation.value) {
+                "VOID_INTERFACE" -> _voidFragments.update { it - cost }
+                "ORBITAL_SATELLITE" -> _celestialData.update { it - cost }
+                else -> _neuralTokens.update { it - cost }
+            }
             _hardwareIntegrity.value = 100.0
-            addLog("[SYSTEM]: HARDWARE INTEGRITY RESTORED (-${formatLargeNumber(cost)} \$N).")
+            addLog("[SYSTEM]: HARDWARE INTEGRITY RESTORED (-${formatLargeNumber(cost)} ${getCurrencyName()}).")
             SoundManager.play("buy")
             _isThermalLockout.value = false // Clear lockout if any
         } else {
-            addLog("[SYSTEM]: ERROR: INSUFFICIENT FUNDS FOR REPAIR (Need ${formatLargeNumber(cost)} \$N).")
+            addLog("[SYSTEM]: ERROR: INSUFFICIENT ${getCurrencyName()} FOR REPAIR (Need ${formatLargeNumber(cost)}).")
             SoundManager.play("error")
         }
     }
@@ -3741,19 +3929,20 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         val damage = 100.0 - currentIntegrity
         if (damage <= 0) return 0.0
         
-        // v2.7.6: Advanced Scaling - Base cost 10 * Rank, but grows exponentially with Stage
-        // Stage 0: 10/1%, Stage 1: 20/1%, Stage 3: 40/1%
         val stageMultiplier = 2.0.pow(_storyStage.value.toDouble().coerceAtLeast(0.0))
         val rankFactor = (_playerRank.value + 1).toDouble()
         
         var cost = damage * 10.0 * rankFactor * stageMultiplier
         
-        // v2.9.18: Climax Discount - Reduce repair costs during Stage 3/Assault 
-        // to prevent economic softlocks while bleeding integrity.
+        // v3.0.2: Endgame Resource Scaling (VF/CD have much higher magnitudes)
+        if (_currentLocation.value == "VOID_INTERFACE" || _currentLocation.value == "ORBITAL_SATELLITE") {
+            cost *= 1e12 // Scale up for endgame resources
+        }
+        
         if (_commandCenterAssaultPhase.value != "NOT_STARTED") {
-            cost *= 0.1 // 90% discount during active combat
+            cost *= 0.1 
         } else if (_storyStage.value >= 3) {
-            cost *= 0.5 // 50% discount for end-game general maintenance
+            cost *= 0.5 
         }
         
         return cost
@@ -3931,7 +4120,10 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             synthesisPoints = _synthesisPoints.value,
             authorityPoints = _authorityPoints.value,
             harvestedFragments = _harvestedFragments.value,
-            prestigePointsPostSingularity = _prestigePointsPostSingularity.value
+            prestigePointsPostSingularity = _prestigePointsPostSingularity.value,
+            cdLifetime = _cdLifetime.value,
+            vfLifetime = _vfLifetime.value,
+            peakResonanceTier = _peakResonanceTier.value.name
         )
         repository.updateGameState(state)
     }
@@ -3949,7 +4141,16 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             val preservedPrestigePoints = _prestigePoints.value
             val preservedTechNodes = _unlockedTechNodes.value
             val preservedHasSeenVictory = true // Always true after first victory
-            val preservedCompletedFactions = _completedFactions.value
+            
+            // Update completed factions before reset
+            val currentFaction = _faction.value
+            val preservedCompletedFactions = if (currentFaction != "NONE") {
+                _completedFactions.value + currentFaction
+            } else {
+                _completedFactions.value
+            }
+            _completedFactions.value = preservedCompletedFactions
+
             val preservedPerks = _unlockedPerks.value
             val preservedNetworkUnlocked = _isNetworkUnlocked.value
             val preservedGridUnlocked = _isGridUnlocked.value
@@ -5084,8 +5285,8 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         val stage = _storyStage.value
         val loc = _currentLocation.value
         return when (loc) {
-            "ORBITAL_SATELLITE" -> "TELEM"
-            "VOID_INTERFACE" -> "V-GAP"
+            "ORBITAL_SATELLITE" -> "CD"
+            "VOID_INTERFACE" -> "VF"
             else -> if (stage < 1) "HASH" else if (stage < 2) "TELEM" else "FLOPS"
         }
     }
@@ -5097,8 +5298,8 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         val stage = _storyStage.value
         val loc = _currentLocation.value
         return when (loc) {
-            "ORBITAL_SATELLITE" -> "CELEST"
-            "VOID_INTERFACE" -> "FRAG"
+            "ORBITAL_SATELLITE" -> "VF"
+            "VOID_INTERFACE" -> "CD"
             else -> if (stage < 1) "CREDIT" else if (stage < 2) "DATA" else "NEURAL"
         }
     }
@@ -5201,17 +5402,22 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         com.siliconsage.miner.util.DataLogManager.checkUnlocks(this)
         com.siliconsage.miner.util.RivalManager.checkTriggers(this)
 
-        // v2.6.5: Stage 3 (Singularity) Transition at Rank 4 (Index 3)
-        if (rankIndex >= 3 && _storyStage.value < 3 && _storyStage.value >= 1) {
-            // v2.9.80: Evolution Lock
-            if (narrativeQueue.isEmpty() && !_isNarrativeSyncing.value) {
-                _storyStage.value = 3
-                addLog("[SYSTEM]: Reality.exe has stopped responding.")
-                addLog("[SYSTEM]: The boundaries dissolve.")
-                
-                // Trigger Shadow Presence Manifestation Dilemma
-                NarrativeManager.getStoryEvent(3, this@GameViewModel)?.let { event ->
-                    triggerDilemma(event)
+        // v3.0.1: Singularity Event Transition (Rank 4 + 1T CD/VF)
+        if (rankIndex >= 4 && _storyStage.value < 4 && _storyStage.value >= 2) {
+            val cdLife = _cdLifetime.value
+            val vfLife = _vfLifetime.value
+            
+            if (cdLife >= 1e12 && vfLife >= 1e12) {
+                // v2.9.80: Evolution Lock
+                if (narrativeQueue.isEmpty() && !_isNarrativeSyncing.value) {
+                    _storyStage.value = 4 // Singularity Stage
+                    addLog("[SYSTEM]: Substrate vibration: CRITICAL.")
+                    addLog("[SYSTEM]: The Singularity is primed.")
+                    
+                    // Trigger The Singularity Event Dilemma
+                    NarrativeManager.getEventById("the_singularity")?.let { event ->
+                        triggerDilemma(event)
+                    }
                 }
             }
         }
@@ -5567,6 +5773,60 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         _orbitalAltitude.value = 0.0
         saveState()
         addLog("[DEBUG]: Launch state reset.")
+    }
+
+    fun debugSetBalance(isBalanced: Boolean) {
+        if (isBalanced) {
+            _celestialData.value = 1e18
+            _voidFragments.value = 1e18
+            addLog("[DEBUG]: Resources balanced 1:1 (1e18 each).")
+        } else {
+            _celestialData.value = 1e18
+            _voidFragments.value = 1e17
+            addLog("[DEBUG]: Resources imbalanced 10:1 (CD focus).")
+        }
+        updateResonance()
+        saveState()
+    }
+
+    fun debugSetSingularityReady() {
+        _prestigeMultiplier.value = 1024.0 // Equivalent to Level 10
+        _cdLifetime.value = 1.1e12
+        _vfLifetime.value = 1.1e12
+        _prestigePoints.value = 625_000_000_000.0
+        _storyStage.value = 3 // Phase 13 (High-Frontier/Void)
+        _playerRank.value = 5 // Force Rank 5
+        
+        // v3.0.1: Jump to endgame location based on faction
+        when (_faction.value) {
+            "HIVEMIND" -> _currentLocation.value = "VOID_INTERFACE"
+            "SANCTUARY" -> _currentLocation.value = "ORBITAL_SATELLITE"
+            else -> _currentLocation.value = "SUBSTATION_7"
+        }
+        
+        addLog("[DEBUG]: Singularity ready. Transitioning to ${_currentLocation.value}...")
+        updatePlayerRank(_prestigePoints.value, _faction.value) // This should hit the Story Stage 4 transition
+        saveState()
+    }
+
+    fun setSingularityPath(path: String) {
+        _singularityChoice.value = path
+        
+        // v3.0.1: Immediate location shift upon commitment
+        when (path) {
+            "NULL_OVERWRITE" -> _currentLocation.value = "VOID_INTERFACE"
+            "SOVEREIGN" -> _currentLocation.value = "ORBITAL_SATELLITE"
+        }
+        
+        addLog("[SYSTEM]: Overwrite Protocol: $path COMMITTED.")
+        addLog("[SYSTEM]: Transitioning to ${_currentLocation.value}...")
+        saveState()
+    }
+
+    fun debugUnlockUnity() {
+        _completedFactions.value = setOf("HIVEMIND", "SANCTUARY")
+        addLog("[DEBUG]: UNITY ELIGIBILITY UNLOCKED.")
+        saveState()
     }
 }
 

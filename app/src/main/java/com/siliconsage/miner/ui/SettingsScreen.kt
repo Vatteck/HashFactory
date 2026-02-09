@@ -527,10 +527,28 @@ fun SettingsScreen(viewModel: GameViewModel) {
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("PHASE 13 TESTING", color = themeColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("SINGULARITY ERA", color = themeColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     
+                    DevButton("SET SINGULARITY READY", themeColor) { viewModel.debugSetSingularityReady() }
+                    
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                         androidx.compose.material3.Button(
+                            onClick = { viewModel.debugSetBalance(true) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                         ) { Text("FORCE 1:1", color = NeonGreen, fontSize = 10.sp) }
+                         
+                         androidx.compose.material3.Button(
+                            onClick = { viewModel.debugSetBalance(false) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                         ) { Text("FORCE 10:1", color = ErrorRed, fontSize = 10.sp) }
+                    }
+
                     DevButton("INITIATE LAUNCH", themeColor) { viewModel.initiateLaunchSequence() }
                     DevButton("GRANT CD/VF (1e18)", themeColor) { viewModel.debugGrantPhase13Resources() }
+                    DevButton("TRIGGER SINGULARITY", themeColor) { viewModel.debugTriggerSingularity() }
+                    DevButton("UNLOCK UNITY PATH", themeColor) { viewModel.debugUnlockUnity() }
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         androidx.compose.material3.Button(

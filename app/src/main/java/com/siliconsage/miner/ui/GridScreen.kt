@@ -15,7 +15,9 @@ import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -82,6 +84,128 @@ fun GridScreen(viewModel: GameViewModel) {
                  if (currentLocation == "ORBITAL_SATELLITE") OrbitalGridScreen(viewModel) else VoidGridScreen(viewModel)
             }
             else -> CityGridScreen(viewModel)
+        }
+    }
+}
+
+@Composable
+fun ResonanceTuner(state: com.siliconsage.miner.viewmodel.ResonanceState, viewModel: GameViewModel) {
+    val isBridgeSyncEnabled by viewModel.isBridgeSyncEnabled.collectAsState()
+    
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+            .border(1.dp, Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+            .padding(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "RESONANCE TUNER v3.0",
+                color = if (state.isActive) ConvergenceGold else Color.Gray,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace
+            )
+            
+            // Sync Toggle
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (isBridgeSyncEnabled) "SYNC: ACTIVE" else "SYNC: OFF",
+                    color = if (isBridgeSyncEnabled) NeonGreen else Color.Gray,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Switch(
+                    checked = isBridgeSyncEnabled,
+                    onCheckedChange = { viewModel.toggleBridgeSync() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = NeonGreen,
+                        checkedTrackColor = NeonGreen.copy(alpha = 0.3f)
+                    ),
+                    modifier = Modifier.scale(0.7f)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Harmonic Spectrum (Visual Slider Representation)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(40.dp)
+                .background(Color.DarkGray.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(4.dp))
+        ) {
+            // Neutral Center Zone
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(4.dp)
+                    .align(Alignment.Center)
+                    .background(Color.White.copy(alpha = 0.2f))
+            )
+
+            // Current Ratio Indicator
+            val ratio = state.ratio.toFloat()
+            val alignment = if (state.isActive) Alignment.Center else Alignment.Center
+            
+            // We use the ratio to position a glow effect
+            val infiniteTransition = rememberInfiniteTransition(label = "tuner_glow")
+            val glowAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.3f,
+                targetValue = 0.8f,
+                animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
+                label = "glow"
+            )
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val center = size.width / 2
+                val indicatorX = center + ((ratio - 1.0f) * center) // Basic mapping
+                
+                if (state.isActive) {
+                    drawCircle(
+                        color = ConvergenceGold,
+                        radius = 8.dp.toPx(),
+                        center = Offset(indicatorX.coerceIn(0f, size.width), size.height / 2),
+                        alpha = glowAlpha
+                    )
+                }
+            }
+        }
+        
+        Text(
+            "TUNE: Adjust BRIDGE_TRANSFER to align Celestial/Void frequencies.",
+            color = Color.Gray,
+            fontSize = 9.sp,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Button(
+                onClick = { viewModel.executeBridgeTransfer("CD_TO_VF") },
+                modifier = Modifier.weight(1f).padding(4.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Text("CD >> VF", fontSize = 10.sp)
+            }
+            Button(
+                onClick = { viewModel.executeBridgeTransfer("VF_TO_CD") },
+                modifier = Modifier.weight(1f).padding(4.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Text("VF >> CD", fontSize = 10.sp)
+            }
         }
     }
 }
@@ -183,6 +307,11 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // v3.0.1: Resonance Tuner Slider
+        ResonanceTuner(resonanceState, viewModel)
 
         Spacer(modifier = Modifier.height(16.dp))
 

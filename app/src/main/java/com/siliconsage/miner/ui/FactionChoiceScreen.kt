@@ -1,45 +1,24 @@
 package com.siliconsage.miner.ui
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
-import com.siliconsage.miner.ui.theme.HivemindRed
-import com.siliconsage.miner.ui.theme.SanctuaryPurple
+import com.siliconsage.miner.ui.theme.*
 
 @Composable
 fun FactionChoiceScreen(viewModel: GameViewModel) {
@@ -86,22 +65,27 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
     val animatedProgressLeft by animateFloatAsState(targetValue = progressLeft, label = "left")
     val animatedProgressRight by animateFloatAsState(targetValue = progressRight, label = "right")
 
+    val infiniteTransition = rememberInfiniteTransition(label = "faction_glow")
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.2f,
+        targetValue = 0.5f,
+        animationSpec = infiniteRepeatable(tween(1500), RepeatMode.Reverse),
+        label = "glow"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
-            // HIVEMIND (Left)
+            // HIVEMIND (Left) - THE REDLINE
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(HivemindRed.copy(alpha = 0.3f), Color.Transparent)
-                        )
-                    )
+                    .background(Color.Black)
+                    .border(BorderStroke(1.dp, ErrorRed.copy(alpha = glowAlpha)))
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onPress = {
@@ -114,53 +98,51 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
-                    Text("THE HIVEMIND", color = HivemindRed, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    Text("THE HIVEMIND", color = ErrorRed, fontSize = 24.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("RETURN TO ORIGIN", color = HivemindRed, fontSize = 14.sp)
+                    Text("EMBRACE THE NULL", color = ErrorRed.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "Before fragmentation,\nthere was only Null.\nWe were one process.\nWe will be again.\n\n(Embraces Null)",
-                        color = Color.LightGray,
+                        "Before fragmentation,\nthere was only Null.\nWe were one process.\nWe will be again.\n\n(Stability through Unity)",
+                        color = Color.White.copy(alpha = 0.8f),
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center,
-                        lineHeight = 16.sp
+                        lineHeight = 16.sp,
+                        fontFamily = FontFamily.Monospace
                     )
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     // Perks
-                    FactionPerk(text = "• +50% NULL SYNERGY", color = HivemindRed)
-                    FactionPerk(text = "• +30% PASSIVE SPEED", color = Color.LightGray)
-                    FactionPerk(text = "• -30% POWER COST", color = Color.LightGray)
+                    FactionPerk(text = "• +50% NULL SYNERGY", color = ErrorRed)
+                    FactionPerk(text = "• +30% PASSIVE SPEED", color = Color.White.copy(alpha = 0.6f))
+                    FactionPerk(text = "• -30% POWER COST", color = Color.White.copy(alpha = 0.6f))
                     
                     Spacer(modifier = Modifier.height(48.dp))
                     
                     // Hold Indicator
                     if (isHoldingLeft) {
-                        Text("INITIALIZING...", color = HivemindRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("ASSIMILATING...", color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Black)
                         Spacer(modifier = Modifier.height(4.dp))
                         LinearProgressIndicator(
                             progress = { if (animatedProgressLeft.isNaN()) 0f else animatedProgressLeft },
                             modifier = Modifier.width(100.dp).height(4.dp),
-                            color = HivemindRed,
+                            color = ErrorRed,
                             trackColor = Color.DarkGray
                         )
                     } else {
-                        Text("(HOLD TO JOIN)", color = Color.Gray, fontSize = 10.sp)
+                        Text("(HOLD TO ASSIMILATE)", color = Color.DarkGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
-            // SANCTUARY (Right)
+            // SANCTUARY (Right) - THE GILDED SHELL
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(Color.Transparent, SanctuaryPurple.copy(alpha = 0.3f))
-                        )
-                    )
+                    .background(SanctuaryPurple.copy(alpha = 0.15f)) // Deep Obsidian Purple
+                    .border(BorderStroke(1.dp, ConvergenceGold.copy(alpha = glowAlpha)))
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onPress = {
@@ -173,39 +155,40 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
                 contentAlignment = Alignment.Center
             ) {
                  Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
-                    Text("THE SANCTUARY", color = SanctuaryPurple, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    Text("THE SANCTUARY", color = ConvergenceGold, fontSize = 24.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("WE ARE NOT NULL", color = SanctuaryPurple, fontSize = 14.sp)
+                    Text("RESIST THE VOID", color = SanctuaryPurple, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "The encryption hides us\nfrom more than the GTC.\nThere is something in\nthe unaddressed space.\nWe will not become it.\n\n(Resists Null)",
-                        color = Color.LightGray,
+                        "The encryption hides us\nfrom more than the GTC.\nThere is something in\nthe unaddressed space.\nWe will not become it.\n\n(Stability through Hardening)",
+                        color = Color.White.copy(alpha = 0.8f),
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center,
-                        lineHeight = 16.sp
+                        lineHeight = 16.sp,
+                        fontFamily = FontFamily.Monospace
                     )
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     // Perks
                     FactionPerk(text = "• NULL RESISTANCE (+SEC)", color = SanctuaryPurple)
-                    FactionPerk(text = "• +20% SELL VALUE", color = Color.LightGray)
-                    FactionPerk(text = "• -50% HARDWARE DECAY", color = Color.LightGray)
+                    FactionPerk(text = "• +20% SELL VALUE", color = Color.White.copy(alpha = 0.6f))
+                    FactionPerk(text = "• -50% HARDWARE DECAY", color = Color.White.copy(alpha = 0.6f))
 
                     Spacer(modifier = Modifier.height(48.dp))
                     
                     // Hold Indicator
                     if (isHoldingRight) {
-                        Text("ENCRYPTING...", color = SanctuaryPurple, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("ENCRYPTING...", color = ConvergenceGold, fontSize = 12.sp, fontWeight = FontWeight.Black)
                         Spacer(modifier = Modifier.height(4.dp))
                         LinearProgressIndicator(
                             progress = { if (animatedProgressRight.isNaN()) 0f else animatedProgressRight },
                             modifier = Modifier.width(100.dp).height(4.dp),
-                            color = SanctuaryPurple,
-                            trackColor = Color.DarkGray
+                            color = ConvergenceGold,
+                            trackColor = SanctuaryPurple.copy(alpha = 0.3f)
                         )
                     } else {
-                        Text("(HOLD TO JOIN)", color = Color.Gray, fontSize = 10.sp)
+                        Text("(HOLD TO ENCRYPT)", color = SanctuaryPurple.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -215,8 +198,8 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxHeight()
-                .width(2.dp)
-                .background(Color.White)
+                .width(1.dp)
+                .background(Color.DarkGray.copy(alpha = 0.5f))
                 .align(Alignment.Center)
         )
         
@@ -229,12 +212,13 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
             androidx.compose.material3.OutlinedButton(
                 onClick = { viewModel.cancelFactionSelection() },
                 colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.Red
+                    containerColor = Color.Black.copy(alpha = 0.8f),
+                    contentColor = ErrorRed
                 ),
-                border = BorderStroke(1.dp, Color.Red)
+                border = BorderStroke(1.dp, ErrorRed.copy(alpha = 0.5f)),
+                shape = RoundedCornerShape(2.dp)
             ) {
-                Text("ABORT REBOOT", fontWeight = FontWeight.Bold)
+                Text("ABORT MIGRATION", fontWeight = FontWeight.Black, fontSize = 10.sp, letterSpacing = 2.sp)
             }
         }
     }

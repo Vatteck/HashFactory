@@ -83,13 +83,20 @@ data class GameState(
     // v3.0.0: Resonance & Global Grid
     val resonanceActive: Boolean = false,
     val resonanceTier: String = "NONE", // NONE, HARMONIC, SYMPHONIC, TRANSCENDENT
-    val singularityChoice: String = "NONE", // NONE, UNITY, SOVEREIGN
+    val singularityChoice: String = "NONE", // NONE, UNITY, SOVEREIGN, NULL_OVERWRITE
+    val hasCompletedHivemindRun: Boolean = false,
+    val hasCompletedSanctuaryRun: Boolean = false,
     val globalSectors: Map<String, SectorState> = emptyMap(),
     val synthesisPoints: Double = 0.0, // Unity Resource
     val authorityPoints: Double = 0.0, // Sovereign Primary Resource
     val harvestedFragments: Double = 0.0, // Sovereign Secondary Resource
     val prestigePointsPostSingularity: Int = 0, // IP or CT
-    val prestigeCountPostSingularity: Int = 0
+    val prestigeCountPostSingularity: Int = 0,
+
+    // v3.0.1: Singularity Era Metrics
+    val cdLifetime: Double = 0.0,
+    val vfLifetime: Double = 0.0,
+    val peakResonanceTier: String = "NONE"
 )
 
 @Serializable

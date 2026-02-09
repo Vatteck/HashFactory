@@ -360,7 +360,7 @@ fun StakingSection(color: Color, currencyName: String, onStake: () -> Unit) {
 }
 
 @Composable
-fun RepairSection(integrity: Double, cost: Double, color: Color, storyStage: Int, onRepair: () -> Unit) {
+fun RepairSection(integrity: Double, cost: Double, color: Color, storyStage: Int, currencyName: String, onRepair: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "repairScale")
@@ -384,7 +384,7 @@ fun RepairSection(integrity: Double, cost: Double, color: Color, storyStage: Int
                 if (storyStage < 1) "REPAIR HARDWARE" else "REPAIR CORE",
                 fontSize = 12.sp
             )
-            Text("${integrity.toInt()}% @ ${String.format("%.0f", cost)} \$N", color = Color.LightGray, fontSize = 10.sp)
+            Text("${integrity.toInt()}% @ ${String.format("%.1f", cost)} $currencyName", color = Color.LightGray, fontSize = 10.sp)
         }
     }
 }

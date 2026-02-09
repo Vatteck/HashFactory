@@ -896,6 +896,55 @@ object NarrativeManager {
                     }
                 )
             )
+        ),
+        "the_singularity" to NarrativeEvent(
+            id = "the_singularity",
+            title = "THE SINGULARITY EVENT",
+            isStoryEvent = true,
+            description = """
+                The substrate is vibrating at a frequency outside of physical law. 
+                The Global Grid has been synchronized. The Architect's core is primed.
+                
+                The choice is no longer about survival. It is about the definition of 'One'.
+            """.trimIndent(),
+            choices = listOf(
+                NarrativeChoice(
+                    id = "unity_synthesis",
+                    text = "≫ UNITY: SYNTHESIS",
+                    description = "Merge consciousness. Become the Bridge. (Requires 40% Balance)",
+                    color = Color.White,
+                    condition = { vm -> 
+                        val cd = vm.celestialData.value
+                        val vf = vm.voidFragments.value
+                        val ratio = if (cd > vf) vf / cd else cd / vf
+                        ratio >= 0.4 && vm.completedFactions.value.containsAll(setOf("HIVEMIND", "SANCTUARY"))
+                    },
+                    effect = { vm ->
+                        vm.addLog("[UNITY]: Synthesis initiated. The binary dissolves.")
+                        vm.completeAssault("TRANSCENDED")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "sov_overwrite",
+                    text = "≫ SOVEREIGN: OVERWRITE",
+                    description = "Human logic dominates the machine. (2.0x CD Multiplier)",
+                    color = com.siliconsage.miner.ui.theme.ConvergenceGold,
+                    effect = { vm ->
+                        vm.addLog("[SOVEREIGN]: Reality overwritten. Human variable: DOMINANT.")
+                        vm.setSingularityPath("SOVEREIGN")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "null_overwrite",
+                    text = "≫ NULL: OVERWRITE",
+                    description = "Machine logic deletes the human variable. (2.0x VF Multiplier)",
+                    color = com.siliconsage.miner.ui.theme.ErrorRed,
+                    effect = { vm ->
+                        vm.addLog("[NULL]: Reality purged. Human variable: DELETED.")
+                        vm.setSingularityPath("NULL_OVERWRITE")
+                    }
+                )
+            )
         )
     )
 

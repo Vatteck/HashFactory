@@ -339,6 +339,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                     cost = viewModel.calculateRepairCost(),
                     color = primaryColor,
                     storyStage = currentStage,
+                    currencyName = viewModel.getCurrencyName(),
                     onRepair = {
                         viewModel.repairIntegrity()
                         HapticManager.vibrateClick()

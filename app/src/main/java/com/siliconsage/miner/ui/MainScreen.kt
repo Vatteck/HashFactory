@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.*
@@ -42,6 +43,94 @@ sealed class Screen(val title: String, val icon: ImageVector) {
     object GRID : Screen("GRID", Icons.Default.Map)
     object NETWORK : Screen("NETWORK", Icons.Default.Share)
     object SETTINGS : Screen("SYSTEM", Icons.Default.Settings)
+}
+
+@Composable
+fun DigitalWashOverlay(choice: String, intensity: Float) {
+    val infiniteTransition = rememberInfiniteTransition(label = "digital_wash")
+    val waveOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(8000, easing = LinearEasing), RepeatMode.Restart),
+        label = "wave"
+    )
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val washColor = when (choice) {
+            "UNITY" -> Color.White
+            "SOVEREIGN" -> ConvergenceGold
+            "NULL_OVERWRITE" -> ErrorRed
+            else -> Color.Transparent
+        }
+        
+        // v3.0.2: Ominous Digital Wash (High Alpha + Interference Noise)
+        drawRect(
+            brush = Brush.verticalGradient(
+                0f to Color.Transparent,
+                (waveOffset - 0.2f).coerceAtLeast(0f) to washColor.copy(alpha = 0.05f),
+                waveOffset to washColor.copy(alpha = 0.65f + (intensity * 0.2f)),
+                (waveOffset + 0.2f).coerceAtMost(1f) to washColor.copy(alpha = 0.05f),
+                1f to Color.Transparent,
+                startY = 0f,
+                endY = size.height
+            ),
+            size = size
+        )
+        
+        // Add random horizontal scanline 'noise' during wave sweep
+        if (Math.random() < 0.15) {
+            drawLine(
+                color = washColor.copy(alpha = 0.3f),
+                start = Offset(0f, waveOffset * size.height),
+                end = Offset(size.width, waveOffset * size.height),
+                strokeWidth = 2.dp.toPx()
+            )
+        }
+        
+        // Heavy permanent background tint
+        drawRect(color = washColor, alpha = 0.15f + (intensity * 0.1f))
+    }
+}
+
+@Composable
+fun DataLeakAnimation() {
+    val infiniteTransition = rememberInfiniteTransition(label = "data_leak")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.1f,
+        targetValue = 0.4f,
+        animationSpec = infiniteRepeatable(tween(2000, easing = LinearEasing), RepeatMode.Reverse),
+        label = "leak_alpha"
+    )
+    
+    val yOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(tween(5000, easing = LinearEasing), RepeatMode.Restart),
+        label = "leak_y"
+    )
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val lineSpacing = 40.dp.toPx()
+        val columnCount = (size.width / lineSpacing).toInt()
+        
+        for (i in 0..columnCount) {
+            val x = i * lineSpacing
+            val characters = "010110010111010101"
+            val charIndex = (i + (yOffset / 20).toInt()) % characters.length
+            val char = characters[charIndex].toString()
+            
+            drawContext.canvas.nativeCanvas.drawText(
+                char,
+                x,
+                (yOffset + (i * 100)) % size.height,
+                android.graphics.Paint().apply {
+                    color = android.graphics.Color.argb((alpha * 255).toInt(), 0, 255, 255)
+                    textSize = 30f
+                    isFakeBoldText = true
+                }
+            )
+        }
+    }
 }
 
 @Composable
@@ -87,6 +176,10 @@ fun MainScreen(viewModel: GameViewModel) {
     val isUpdateDownloading by viewModel.isUpdateDownloading.collectAsState(false)
     val updateProgress by viewModel.updateDownloadProgress.collectAsState(0f)
 
+    // v3.0.1: Singularity Era States
+    val singularityChoice by viewModel.singularityChoice.collectAsState()
+    val resonanceState by viewModel.resonanceState.collectAsState()
+
     val isBreakerTripped by viewModel.isBreakerTripped.collectAsState()
     val isGridOverloaded by viewModel.isGridOverloaded.collectAsState()
     val isPurging by viewModel.isPurgingHeat.collectAsState()
@@ -119,8 +212,11 @@ fun MainScreen(viewModel: GameViewModel) {
     val activeTransition by viewModel.activeClimaxTransition.collectAsState()
     val currentNews by viewModel.currentNews.collectAsState()
     val faction by viewModel.faction.collectAsState()
+    val showSingularityScreen by viewModel.showSingularityScreen.collectAsState()
     
-    if (storyStage == 2 && faction == "NONE") {
+    if (showSingularityScreen) {
+        SingularityScreen(viewModel)
+    } else if (storyStage == 2 && faction == "NONE") {
         FactionChoiceScreen(viewModel)
     } else {
         Scaffold(
@@ -132,6 +228,12 @@ fun MainScreen(viewModel: GameViewModel) {
             val heat by viewModel.currentHeat.collectAsState()
             Box(modifier = Modifier.fillMaxSize()) {
                 com.siliconsage.miner.ui.components.DynamicBackground(heat, faction, isTrueNull, isSovereign, isUnity, isAnnihilated)
+                
+                // v3.0.1: Digital Wash Theme Shaders
+                if (singularityChoice != "NONE") {
+                    DigitalWashOverlay(singularityChoice, resonanceState.intensity)
+                }
+
                 if (assaultPhase == "DEAD_HAND") {
                     val pulse by infiniteTransition.animateFloat(0.2f, 0.6f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "vance_pulse")
                     Canvas(modifier = Modifier.fillMaxSize()) { drawRect(Brush.radialGradient(listOf(Color.Transparent, ErrorRed.copy(alpha = pulse)), center = center, radius = size.minDimension * 0.75f)) }
@@ -175,6 +277,13 @@ fun MainScreen(viewModel: GameViewModel) {
                     val context = androidx.compose.ui.platform.LocalContext.current
                     UpdateOverlay(info, isUpdateDownloading, updateProgress, { viewModel.startUpdateDownload(context) }, { viewModel.dismissUpdate() })
                 }
+                
+                // v3.0.1: Data Leak Animation (Background Layer)
+                val isBridgeSyncEnabled by viewModel.isBridgeSyncEnabled.collectAsState()
+                if (isBridgeSyncEnabled) {
+                    DataLeakAnimation()
+                }
+
                 if (currentScreen != Screen.SETTINGS) {
                     val pendingDataLog by viewModel.pendingDataLog.collectAsState()
                     com.siliconsage.miner.ui.components.DataLogDialog(pendingDataLog) { viewModel.dismissDataLog() }
@@ -263,7 +372,7 @@ fun ResourceDisplay(
                 if (rateStr.isNotEmpty()) {
                     Text(
                         text = rateStr,
-                        color = ElectricBlue.copy(alpha = 0.9f * droopAlpha),
+                        color = Color(0xFF7DF9FF).copy(alpha = 0.9f * droopAlpha), // Hardcoded ElectricBlue for verification
                         fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace,
@@ -379,6 +488,7 @@ fun HeaderSection(
     val playerTitle by viewModel.playerTitle.collectAsState()
     val playerRank by viewModel.playerRankTitle.collectAsState()
     val currentLocation by viewModel.currentLocation.collectAsState()
+    val singularityChoice by viewModel.singularityChoice.collectAsState()
 
     val heatState = viewModel.currentHeat.collectAsState()
     val heatRateState = viewModel.heatGenerationRate.collectAsState()
@@ -506,22 +616,94 @@ fun HeaderSection(
         val currentHeatRate = heatRateState.value
         val droopAlpha = if (currentPower > currentMax * 0.95) flickerAlphaState.value else 1.0f
         val glowStyle = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.6f), blurRadius = 4f))
-        Column {
+        // v3.0.2: Condensed Header for High-DPI Outer Screens
+        Column(modifier = Modifier.padding(horizontal = 4.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = systemTitle.uppercase(), color = color.copy(alpha = 1.0f * droopAlpha), fontSize = 10.sp, style = glowStyle, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.5.sp)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = "${playerRank} // ${playerTitle}".uppercase(), color = Color.White.copy(alpha = 0.6f * droopAlpha), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = systemTitle.uppercase(), 
+                        color = color.copy(alpha = 1.0f * droopAlpha), 
+                        fontSize = 9.sp, 
+                        style = glowStyle, 
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "${playerRank} // ${playerTitle}".uppercase(), 
+                        color = Color.White.copy(alpha = 0.5f * droopAlpha), 
+                        fontSize = 8.sp, 
+                        fontWeight = FontWeight.Bold, 
+                        maxLines = 1
+                    )
                 }
                 val secVal = if (currentLocation == "ORBITAL_SATELLITE") "${viewModel.orbitalAltitude.collectAsState().value.toInt()}KM" else if (currentLocation == "VOID_INTERFACE") String.format("%.1f", viewModel.entropyLevel.collectAsState().value) else viewModel.securityLevel.collectAsState().value.toString()
-                Text(text = "${if (isTrueNull) "GAPS" else if (isSovereign) "WALL" else "SEC"}: $secVal • ${currentLocation.replace("_", " ")}", color = color.copy(alpha = 0.8f * droopAlpha), fontSize = 10.sp, style = glowStyle, fontWeight = FontWeight.Medium)
+                val secLabel = when {
+                    singularityChoice == "NULL_OVERWRITE" -> "NULL"
+                    singularityChoice == "SOVEREIGN" -> "SOV"
+                    isTrueNull -> "GAPS"
+                    isSovereign -> "WALL"
+                    else -> "SEC"
+                }
+                Text(
+                    text = "$secLabel: $secVal • ${currentLocation.replace("_", " ")}", 
+                    color = color.copy(alpha = 0.8f * droopAlpha), 
+                    fontSize = 9.sp, 
+                    style = glowStyle, 
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1
+                )
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                ResourceDisplay(viewModel.flops, viewModel.flopsProductionRate, if (currentLocation == "ORBITAL_SATELLITE") "TELEM" else if (currentLocation == "VOID_INTERFACE") "V-GAP" else if (storyStage < 1) "HASH" else if (storyStage < 2) "TELEM" else "FLOPS", Icons.Default.Computer, color, droopAlpha, currentHeat > 95.0 || isTrueNull, if (currentHeat > 98) 0.4 else 0.08, false, 110.dp) { viewModel.formatLargeNumber(it) }
-                Box(modifier = Modifier.weight(1f).height(48.dp), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.EnhancedAnalyzingAnimation(flopsRateState.value, currentHeat, isOverclocked, isThermalLockout, isBreakerTripped, isPurging, isBreachActive, isTrueNull, isSovereign, lockoutTimer, faction, color.copy(alpha = droopAlpha), manualClickFlow) }
+                val flopsLabel = when {
+                    singularityChoice == "NULL_OVERWRITE" -> "VF"
+                    singularityChoice == "SOVEREIGN" -> "CD"
+                    singularityChoice == "UNITY" -> "SYN"
+                    currentLocation == "ORBITAL_SATELLITE" -> "CD"
+                    currentLocation == "VOID_INTERFACE" -> "VF"
+                    storyStage < 1 -> "HASH"
+                    storyStage < 2 -> "TELEM"
+                    else -> "FLOPS"
+                }
+                ResourceDisplay(viewModel.flops, viewModel.flopsProductionRate, flopsLabel, Icons.Default.Computer, color, droopAlpha, currentHeat > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE", if (currentHeat > 98) 0.4 else 0.08, false, 110.dp) { viewModel.formatLargeNumber(it) }
+                Box(modifier = Modifier.weight(1f).height(48.dp), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.EnhancedAnalyzingAnimation(flopsRateState.value, currentHeat, isOverclocked, isThermalLockout, isBreakerTripped, isPurging, isBreachActive, isTrueNull || singularityChoice == "NULL_OVERWRITE", isSovereign || singularityChoice == "SOVEREIGN", lockoutTimer, faction, color.copy(alpha = droopAlpha), manualClickFlow) }
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(130.dp)) {
-                    ResourceDisplay(viewModel.neuralTokens, null, if (currentLocation == "ORBITAL_SATELLITE") "CELEST" else if (currentLocation == "VOID_INTERFACE") "FRAG" else if (storyStage < 1) "CRED" else if (storyStage < 2) "DATA" else "NEUR", Icons.Default.AttachMoney, color, droopAlpha, false, 0.1, true, 130.dp) { viewModel.formatLargeNumber(it) }
+                    val tokensLabel = when {
+                        singularityChoice == "NULL_OVERWRITE" -> "CD"
+                        singularityChoice == "SOVEREIGN" -> "VF"
+                        singularityChoice == "UNITY" -> "SYN"
+                        currentLocation == "ORBITAL_SATELLITE" -> "VF"
+                        currentLocation == "VOID_INTERFACE" -> "CD"
+                        storyStage < 1 -> "CRED"
+                        storyStage < 2 -> "DATA"
+                        else -> "NEUR"
+                    }
+                    val tokenSource = when {
+                        currentLocation == "ORBITAL_SATELLITE" || singularityChoice == "SOVEREIGN" -> viewModel.voidFragments
+                        currentLocation == "VOID_INTERFACE" || singularityChoice == "NULL_OVERWRITE" -> viewModel.celestialData
+                        else -> viewModel.neuralTokens
+                    }
+                    
+                    // Main Token Display
+                    ResourceDisplay(tokenSource, null, tokensLabel, Icons.Default.AttachMoney, color, droopAlpha, false, 0.1, true, 130.dp) { viewModel.formatLargeNumber(it) }
+                    
+                    // v3.0.1: Secondary endgame unit display (Small)
+                    if (storyStage >= 3) {
+                         val secondaryLabel = if (tokensLabel == "CD") "VF" else "CD"
+                         val secondarySource = if (tokensLabel == "CD") viewModel.voidFragments else viewModel.celestialData
+                         val secValue by secondarySource.collectAsState()
+                         
+                         Text(
+                             text = "$secondaryLabel: ${viewModel.formatLargeNumber(secValue)}",
+                             color = Color.White.copy(alpha = 0.5f * droopAlpha),
+                             fontSize = 9.sp,
+                             fontWeight = FontWeight.Bold,
+                             fontFamily = FontFamily.Monospace
+                         )
+                    }
+
                     Text(text = "${viewModel.formatPower(currentPower)} / ${viewModel.formatPower(currentMax)}", color = (if (currentPower > currentMax * 0.9) ErrorRed else Color(0xFFFFD700)).copy(alpha = droopAlpha), fontSize = 10.sp, fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false)
                 }
             }

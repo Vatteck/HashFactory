@@ -256,7 +256,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
                             
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Button(
-                                    onClick = { viewModel.exchangeUnityResources("CD_TO_VF") },
+                                    onClick = { viewModel.executeBridgeTransfer("CD_TO_VF") },
                                     colors = ButtonDefaults.buttonColors(containerColor = ConvergenceGold.copy(alpha = 0.2f)),
                                     modifier = Modifier.weight(1f)
                                 ) {
@@ -264,7 +264,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Button(
-                                    onClick = { viewModel.exchangeUnityResources("VF_TO_CD") },
+                                    onClick = { viewModel.executeBridgeTransfer("VF_TO_CD") },
                                     colors = ButtonDefaults.buttonColors(containerColor = ConvergenceGold.copy(alpha = 0.2f)),
                                     modifier = Modifier.weight(1f)
                                 ) {
