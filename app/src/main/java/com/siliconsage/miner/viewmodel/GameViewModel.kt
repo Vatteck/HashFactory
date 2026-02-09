@@ -3327,19 +3327,23 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
                     
                     if (isVacuum && isConvectionCooling) {
                         // Convection cooling provides 0% effect in a vacuum
+                        // v3.1.8-dev: Actually show its failure by letting heat accumulate
+                        netChangeUnits += (Math.abs(type.baseHeat) * 0.1) * count // Residual heat from stagnant fans
                     } else {
                         // If Overclocked, Hardware Heat x2
                         var heat = type.baseHeat
                         
                         // v2.9.49: Radiator Fins (Vacuum cooling)
                         if (isVacuum && type == UpgradeType.RADIATOR_FINS) {
-                            // Radiators provide cooling even in a vacuum
+                            // Radiators provide 2x cooling in the absolute zero of space
+                            heat *= 2.0
                         }
 
                         if (_isOverclocked.value && heat > 0) heat *= 2.0
                         
                         netChangeUnits += heat * count
                     }
+
                 }
             }
         }
@@ -3388,7 +3392,15 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         // Removed 0.1 scaling to maintain 1:1 Unit ratio with upgrades
         val percentChange = (netChangeUnits / totalThermalBuffer) * 100.0 
         
+        // v3.1.8-dev: Void Entropy Logic
+        if (loc == "VOID_INTERFACE" && netChangeUnits < 0) {
+            // In the Void, heat dissipation feeds the Entropy level
+            val conversionValue = Math.abs(netChangeUnits) * 0.005 
+            _entropyLevel.value += conversionValue
+        }
+
         return Triple(netChangeUnits, totalThermalBuffer, percentChange)
+
     }
 
     private fun refreshProductionRates() {
