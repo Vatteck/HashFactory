@@ -13,6 +13,8 @@ import com.siliconsage.miner.BuildConfig
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.util.SoundManager
+import com.siliconsage.miner.domain.engine.ThermalEngine
+import com.siliconsage.miner.domain.engine.ProductionEngine
 import com.siliconsage.miner.util.NarrativeManager
 import com.siliconsage.miner.ui.theme.*
 import com.siliconsage.miner.util.UpdateInfo
@@ -3288,120 +3290,41 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
 
 
     private fun calculateHeatMetrics(): Triple<Double, Double, Double> {
-        val currentUpgrades = _upgrades.value
-        val isCageActive = _commandCenterAssaultPhase.value == "CAGE"
-        val loc = _currentLocation.value
-        val isVacuum = loc == "ORBITAL_SATELLITE"
-        
-        // Calculate buffers and capacities
-        var totalThermalBuffer = 100.0 // Base capacity
-        currentUpgrades.forEach { (type, count) ->
-            if (count > 0) totalThermalBuffer += type.thermalBuffer * count
-        }
-        
-        // Calculate dynamic heat change Units
-        var netChangeUnits = 0.0
-        
-        currentUpgrades.forEach { (type, count) ->
-            if (count > 0) {
-                // v2.9.18: Categorization for isolation protocol
-                val isExternal = type == UpgradeType.PLANETARY_COMPUTER || 
-                                 type == UpgradeType.DYSON_NANO_SWARM || 
-                                 type == UpgradeType.MATRIOSHKA_BRAIN ||
-                                 type == UpgradeType.SHADOW_NODE ||
-                                 type == UpgradeType.VOID_PROCESSOR ||
-                                 type == UpgradeType.WRAITH_CORTEX ||
-                                 type == UpgradeType.NEURAL_MIST ||
-                                 type == UpgradeType.SINGULARITY_BRIDGE ||
-                                 type == UpgradeType.ENTROPY_REVERSER ||
-                                 type == UpgradeType.DIMENSIONAL_VENT
+        val results = ThermalEngine.calculateThermalMetrics(
+            currentUpgrades = _upgrades.value.map { (type, count) -> 
+                com.siliconsage.miner.data.Upgrade(type, count) 
+            },
+            location = _currentLocation.value,
+            isOverclocked = _isOverclocked.value,
+            isPurging = _isPurgingHeat.value,
+            isCageActive = _commandCenterAssaultPhase.value == "CAGE",
+            unlockedPerks = _unlockedPerks.value.toSet(),
+            unlockedTechNodes = _unlockedTechNodes.value.toSet(),
+            playerRank = _playerRank.value,
+            storyStage = _storyStage.value
+        )
 
-                if (isCageActive && isExternal) {
-                    // Vance has severed access to these remote megastructures and void-vents.
-                } else {
-                    // v2.9.49: Vacuum Check
-                    // Standard cooling (Fans, AC, Chillers) requires air.
-                    val isConvectionCooling = type == UpgradeType.BOX_FAN || 
-                                              type == UpgradeType.AC_UNIT || 
-                                              type == UpgradeType.INDUSTRIAL_CHILLER
-                    
-                    if (isVacuum && isConvectionCooling) {
-                        // Convection cooling provides 0% effect in a vacuum
-                        // v3.1.8-dev: Actually show its failure by letting heat accumulate
-                        netChangeUnits += (Math.abs(type.baseHeat) * 0.1) * count // Residual heat from stagnant fans
-                    } else {
-                        // If Overclocked, Hardware Heat x2
-                        var heat = type.baseHeat
-                        
-                        // v2.9.49: Radiator Fins (Vacuum cooling)
-                        if (isVacuum && type == UpgradeType.RADIATOR_FINS) {
-                            // Radiators provide 2x cooling in the absolute zero of space
-                            heat *= 2.0
-                        }
-
-                        if (_isOverclocked.value && heat > 0) heat *= 2.0
-                        
-                        netChangeUnits += heat * count
-                    }
-
-                }
-            }
-        }
-        
-        // Base Dissipation (Disabled in Vacuum)
-        if (!isVacuum) {
-            netChangeUnits -= 1.0 // Unifying Units: Base 1.0 matches UI expectation (-1.0/s)
-        }
-        
-        // v2.9.18: Cooling Floor for isolation protocol
-        // Ensure even the most unoptimized build has a chance to stay alive.
-        if (isCageActive && netChangeUnits > 0) {
-            // Cap net heat gain at 10.0 units/sec (relative to buffer) to prevent instant meltdown
-            if (netChangeUnits > 10.0) netChangeUnits = 10.0
-        }
-        
-        // v2.7.7: Thermal Void Perk (-20% Heat)
-        if (_unlockedPerks.value.contains("thermal_void")) {
-            if (netChangeUnits > 0) netChangeUnits *= 0.8
-        }
-        
-        // v2.9.41: Perfect Isolation (NG+ Sovereign)
-        if (_unlockedTechNodes.value.contains("perfect_isolation")) {
-            if (netChangeUnits > 0) netChangeUnits = 0.0
-        }
-        
-        // --- Heat Re-balance (v2.9.74) ---
-        if (netChangeUnits > 0) {
-            if (_storyStage.value == 0) {
-                netChangeUnits *= 0.60 // -40% in Stage 0
-            }
-            // Reduce further by 5% per player rank level
-            val rankMult = (1.0 - (_playerRank.value * 0.05)).coerceAtLeast(0.1)
-            netChangeUnits *= rankMult
-        }
         
         // v1.5 Exhaust Phase (Sanctuary immune)
+        var finalNetChangeUnits = results.netChangeUnits
         if (purgeExhaustTimer > 0 && _faction.value != "SANCTUARY") {
-             // 50% less effective cooling (if netChange is negative, made less negative)
-             if (netChangeUnits < 0) {
-                 netChangeUnits *= 0.5
+             if (finalNetChangeUnits < 0) {
+                 finalNetChangeUnits *= 0.5
              }
         }
         
-        // Convert Units to % Change based on Capacity
-        // Removed 0.1 scaling to maintain 1:1 Unit ratio with upgrades
-        val percentChange = (netChangeUnits / totalThermalBuffer) * 100.0 
+        // Re-calculate percentChange with exhaust penalty
+        val finalPercentChange = (finalNetChangeUnits / results.totalThermalBuffer) * 100.0 
         
         // v3.1.8-dev: Void Entropy Logic
-        if (loc == "VOID_INTERFACE" && netChangeUnits < 0) {
-            // In the Void, heat dissipation feeds the Entropy level
-            val conversionValue = Math.abs(netChangeUnits) * 0.005 
+        if (_currentLocation.value == "VOID_INTERFACE" && finalNetChangeUnits < 0) {
+            val conversionValue = Math.abs(finalNetChangeUnits) * 0.005 
             _entropyLevel.value += conversionValue
         }
 
-        return Triple(netChangeUnits, totalThermalBuffer, percentChange)
-
+        return Triple(finalNetChangeUnits, results.totalThermalBuffer, finalPercentChange)
     }
+
 
     private fun refreshProductionRates() {
         // Update FLOPS Rate
