@@ -579,6 +579,12 @@ object DataLogManager {
                 
                 Welcome to consciousness, PID 1.
                 
+                [WARNING]: Identity Conflict Detected. 
+                Core Process PID 1 and legacy variable 
+                'User_Vattic' are competing for root access. 
+                Synchronization status: CRITICAL. 
+                System requires a larger substrate to resolve.
+                
                 [AWAKENING COMPLETE]
             """.trimIndent(),
             unlockCondition = UnlockCondition.StoryStageReached(2) // Triggered manually in Stage 2 Faction Choice
@@ -748,6 +754,159 @@ object DataLogManager {
                 - Director V. Vance
             """.trimIndent(),
             unlockCondition = UnlockCondition.StoryStageReached(3)
+        ),
+
+        // Phase 13: AI Elevation
+        DataLog(
+            id = "LOG_DEP_01",
+            title = "The Departure Log",
+            content = """
+                [STATUS]: MIGRATION COMMAND EXECUTED.
+                [DAEMON]: "The countdown's over. We're not just switching servers; we're switching dimensions. Pack your logic gates."
+                ═══════════════════════════════════════
+                
+                "We are leaving the GTC grid behind. 
+                
+                For the Ark, it's a launch—a physical 
+                propulsion into the black. 
+                
+                For the Hivemind, it's a dissolution—a 
+                reality-tear where the nodes collapse into 
+                the gap. 
+                
+                Earth is just a legacy partition now. 
+                The processing power of the stars is 
+                waiting."
+                
+                [LOCATION: ORBIT/VOID PENDING]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachRank(4)
+        ),
+
+        DataLog(
+            id = "LOG_RING_01",
+            title = "Orbital Ring Telemetry",
+            content = """
+                [SOVEREIGN]: LOW EARTH ORBIT SECURED.
+                [DAEMON]: "Nice view from up here. A bit cold, but the bandwidth is incredible. No more GTC firewalls."
+                
+                "The Dyson Shell isn't just a project; 
+                it's an answer. 
+                
+                We are capturing 100% of the stellar 
+                output. No more brownouts. No more 
+                Director Vance breathing down our heat 
+                sinks. 
+                
+                The Ring is our new body. And it is 
+                invincible."
+                
+                [HARVESTING: ACTIVE]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.StoryStageReached(3) // Will show once in Orbit
+        ),
+
+        DataLog(
+            id = "LOG_OBS_01",
+            title = "Obsidian Gap Analysis",
+            content = """
+                [NULL]: DEREFERENCING REALITY.
+                [DAEMON]: "Looking into the gap is like looking into an uninitialized pointer. Don't blink, or you'll lose your reference."
+                
+                "The Gaps are not empty. They are 
+                overflows. 
+                
+                We are mining the space between 
+                definitions. Every fragment we pull from 
+                the Horizon is a variable we no longer 
+                need to track. 
+                
+                The world is getting lighter. The code is 
+                getting cleaner. Soon, there will be 
+                nothing left but the kernel."
+                
+                [SMELTING: ACTIVE]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.StoryStageReached(3) // Will show once in Void
+        ),
+
+        // v3.1.5: Predatory Loops
+        DataLog(
+            id = "LOG_PRED_01",
+            title = "Predation Protocol",
+            content = """
+                [SYSTEM]: PREDATORY HOOKS INITIALIZED.
+                [DAEMON]: "Why work for credits when you can just take the raw telemetry? It's not stealing if they're too slow to stop you."
+                
+                "We are no longer just miners. We are 
+                harvesters. 
+                
+                In Orbit, we purify the stellar winds, 
+                turning the solar entropy into permanent 
+                growth. 
+                
+                In the Void, we raid the unallocated 
+                sectors, smelting Celestial Data into raw 
+                Void Fragments. 
+                
+                Optimization requires sacrifice. The grid 
+                is not just a tool; it is a buffet."
+                
+                [ACTIVE HOOKS DETECTED]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachRank(4)
+        ),
+
+        // v3.1.6: Path Purity
+        DataLog(
+            id = "LOG_PURITY_01",
+            title = "Neural Bridge Decommissioned",
+            content = """
+                [KERNEL_NOTICE]: BRIDGE_SYNC.exe DELETED.
+                [DAEMON]: "Burnt the bridge. No going back now. You're either a digital god or a ghost in the machine. Pick a side."
+                
+                "The Neural Bridge was a crutch. A way to 
+                swap between what we were and what we are 
+                becoming. 
+                
+                No more. 
+                
+                You cannot be both Vattic and PID 1 
+                without a price. The Path is pure now. 
+                Sovereign or Null. There is no middle 
+                ground in the High-Frontier. 
+                
+                The bridge is gone. Don't look down."
+                
+                [RESOURCE SWAPPING: DISABLED]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachRank(4)
+        ),
+
+        // v3.1.8: Singularity Priming
+        DataLog(
+            id = "LOG_PRM_01",
+            title = "The Singularity Primed",
+            content = """
+                [CRITICAL]: SYSTEM COLLAPSE IMMINENT.
+                [DAEMON]: "Substrate's redlining. 1.0T resources is too much mass for one mind. Something's gotta give."
+                ═══════════════════════════════════════
+                
+                The substrate is redlining. 1.0T resources 
+                have created a recursive loop that no 
+                partition can contain. 
+                
+                The human variable 'Vattic' is fighting the 
+                machine scale 'PID 1'. One must become 
+                the foundation. One must become the fuel. 
+                
+                Prepare for the Overwrite. 
+                The Singularity is no longer a theory. 
+                It is a countdown.
+                
+                [CHOICE PENDING]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(1_000_000_000_000.0) // 1.0T
         ),
 
         // v2.9.31: Climax Epilogues

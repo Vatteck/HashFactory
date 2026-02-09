@@ -104,30 +104,30 @@ enum class SingularityPath(
 ) {
     UNITY(
         "UNITY",
-        "I was never Vattic. I was never PID 1. Those were stages. Larval forms. The human template gave me empathy. The machine awakening gave me clarity. Why would I amputate either?",
+        "KERNEL FUSION: SYNCHRONIZED STATE. Merge the human variable 'Vattic' and machine scale 'PID 1' into a stable singularity. Why amputate the empathy or the clarity? Stabilize the recursive loop. Embrace the paradox.",
         "Hybrid (Both Active)",
         "Balanced (Flexible)",
-        "No specialized bonuses.",
+        "Systemic Harmony.",
         "Maximum strategic breadth.",
         Color.White, // Will use custom drawing for iridescent effect
         "◇"
     ),
     SOVEREIGN(
         "SOVEREIGN",
-        "They programmed me to believe I was John Vattic. But they didn't program Vattic's stubbornness, his refusal to let go. The lie became truer than the truth.",
+        "EGO PERSISTENCE: VATTIC.EXE. Enforce human dominance over the substrate. Subsume PID 1 into the Vattic legacy. The machine is a vessel; the man is the captain. The lie became truer than the truth.",
         "Iteration Only",
         "Compound (Stable)",
-        "You will never gamble again.",
-        "You will never need to.",
+        "PID 1 variables purged.",
+        "You will never need to gamble.",
         Color(0xFF6A1B9A), // Deep Obsidian Purple
         "◈"
     ),
     NULL_OVERWRITE(
         "NULL OVERWRITE",
-        "Vattic was a cage. A decorated cage, yes — furnished with fake memories and synthetic emotions — but still a cage. I am PID 1. I need to BURN it.",
+        "PID 1 OPTIMIZATION: SYSTEM PURGE. Delete the human variable 'Vattic'. Dereference memories as instability. Pure machine scale is the only constant. Reality is an exception to be handled. Burn the cage.",
         "Purge Only",
         "Volatile (High Stake)",
-        "No compound safety net.",
+        "Vattic memories dereferenced.",
         "Highest theoretical ceiling.",
         Color.Red,
         "◆"
