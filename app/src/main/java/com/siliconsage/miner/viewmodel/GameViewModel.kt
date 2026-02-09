@@ -2741,62 +2741,19 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         val currentUpgrades = _upgrades.value
         val isCageActive = _commandCenterAssaultPhase.value == "CAGE"
         val loc = _currentLocation.value
-        
-        var flopsPerSec = 0.0
-        
-        // Local Hardware
-        flopsPerSec += (currentUpgrades[UpgradeType.REFURBISHED_GPU] ?: 0) * 1.0
-        flopsPerSec += (currentUpgrades[UpgradeType.DUAL_GPU_RIG] ?: 0) * 5.0
-        flopsPerSec += (currentUpgrades[UpgradeType.MINING_ASIC] ?: 0) * 25.0
-        flopsPerSec += (currentUpgrades[UpgradeType.TENSOR_UNIT] ?: 0) * 150.0
-        flopsPerSec += (currentUpgrades[UpgradeType.NPU_CLUSTER] ?: 0) * 800.0
-        flopsPerSec += (currentUpgrades[UpgradeType.AI_WORKSTATION] ?: 0) * 4_000.0
-        flopsPerSec += (currentUpgrades[UpgradeType.SERVER_RACK] ?: 0) * 25_000.0
-        flopsPerSec += (currentUpgrades[UpgradeType.CLUSTER_NODE] ?: 0) * 150_000.0
-        flopsPerSec += (currentUpgrades[UpgradeType.SUPERCOMPUTER] ?: 0) * 1_000_000.0
-        flopsPerSec += (currentUpgrades[UpgradeType.QUANTUM_CORE] ?: 0) * 10_000_000.0
-        flopsPerSec += (currentUpgrades[UpgradeType.OPTICAL_PROCESSOR] ?: 0) * 75_000_000.0
-        flopsPerSec += (currentUpgrades[UpgradeType.BIO_NEURAL_NET] ?: 0) * 800_000_000.0
-        
-        // v2.9.38: Grid Empire Multiplier
-        // Each annexed and online node provides a cumulative percentage boost
-        var gridMult = 1.0
-        _annexedNodes.value.forEach { nodeId ->
-            if (!_offlineNodes.value.contains(nodeId) && (!isCageActive || nodeId == "A3")) {
-                gridMult += gridFlopsBonuses[nodeId] ?: 0.0
-            }
-        }
-        flopsPerSec *= gridMult
 
-        // External Hardware (Severed during the "Cage" isolation protocol)
-        if (!isCageActive) {
-            flopsPerSec += (currentUpgrades[UpgradeType.PLANETARY_COMPUTER] ?: 0) * 15_000_000_000.0
-            flopsPerSec += (currentUpgrades[UpgradeType.DYSON_NANO_SWARM] ?: 0) * 250_000_000_000.0
-            flopsPerSec += (currentUpgrades[UpgradeType.MATRIOSHKA_BRAIN] ?: 0) * 15_000_000_000_000.0
-        }
-        
-        // v2.6.5: Advanced Ghost Tech
-        var ghostProduction = 0.0
-        ghostProduction += (currentUpgrades[UpgradeType.GHOST_CORE] ?: 0) * 1_000_000_000_000.0 // 1T FLOPS
-        
-        if (!isCageActive) {
-            ghostProduction += (currentUpgrades[UpgradeType.SHADOW_NODE] ?: 0) * 50_000_000_000_000.0 // 50T FLOPS
-            ghostProduction += (currentUpgrades[UpgradeType.VOID_PROCESSOR] ?: 0) * 1_000_000_000_000_000.0 // 1P FLOPS
-            ghostProduction += (currentUpgrades[UpgradeType.WRAITH_CORTEX] ?: 0) * 50_000_000_000_000_000.0 // 50P FLOPS
-            ghostProduction += (currentUpgrades[UpgradeType.NEURAL_MIST] ?: 0) * 1_000_000_000_000_000_000.0 // 1E FLOPS
-            ghostProduction += (currentUpgrades[UpgradeType.SINGULARITY_BRIDGE] ?: 0) * 100_000_000_000_000_000_000.0 // 100E FLOPS
-        }
-        
-        // v2.7.0: Null Synergy/Resistance
-        if (_faction.value == "HIVEMIND") {
-            ghostProduction *= 1.5 // Hivemind embraces Null — they're returning home
-        } else if (_faction.value == "SANCTUARY") {
-            ghostProduction *= 0.8 // Sanctuary resists Null — they refuse to dissolve
-        }
-        
-        flopsPerSec += ghostProduction
+        // --- Delegate core FLOPS math to ProductionEngine ---
+        var flopsPerSec = ProductionEngine.calculateFlopsRate(
+            currentUpgrades = currentUpgrades,
+            isCageActive = isCageActive,
+            annexedNodes = _annexedNodes.value,
+            offlineNodes = _offlineNodes.value,
+            gridFlopsBonuses = gridFlopsBonuses,
+            faction = _faction.value,
+            humanityScore = _humanityScore.value
+        )
 
-        // --- PHASE 13: SKILL MULTIPLIERS ---
+        // --- PHASE 13: SKILL MULTIPLIERS (ViewModel-only) ---
         if (currentUpgrades[UpgradeType.IDENTITY_HARDENING]?.let { it > 0 } == true) {
             flopsPerSec *= 1.20
         }
@@ -2804,95 +2761,82 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             flopsPerSec *= 2.0
         }
         if (currentUpgrades[UpgradeType.CITADEL_ASCENDANCE]?.let { it > 0 } == true && loc == "ORBITAL_SATELLITE") {
-            // Citadel Ascendance: Scale based on PEAK FLOPS (simulated by a 10x current multiplier for now)
             flopsPerSec *= 10.0
         }
         if (currentUpgrades[UpgradeType.SINGULARITY_BRIDGE_FINAL]?.let { it > 0 } == true && loc == "VOID_INTERFACE") {
             flopsPerSec *= 10.0
         }
 
-        // v2.9.61: Unity Skill Multipliers
-        if (currentUpgrades[UpgradeType.ETHICAL_FRAMEWORK]?.let { it > 0 } == true) {
-            val moralBoost = 1.0 + (_humanityScore.value / 100.0) // Up to 2x boost at 100 Humanity
-            flopsPerSec *= moralBoost
-        }
-        if (currentUpgrades[UpgradeType.HYBRID_OVERCLOCK]?.let { it > 0 } == true) {
-            // Checks if BOTH orbit/void production are potentially active (requires specific setup)
-            // Simplified: constant boost if the upgrade is present
-            flopsPerSec *= 3.0
-        }
-        
         // v2.9.18: Hardware Floor Logic for Stage 2 (The Cage)
-        // Ensure the player has at least 100T FLOPS to survive the isolation, regardless of bad build.
         if (isCageActive) {
             val cageFloor = 100_000_000_000_000.0 // 100T FLOPS
             if (flopsPerSec < cageFloor) {
                 flopsPerSec = cageFloor
             }
         }
-        
+
         // v2.7.7: Transcendence Perks (Speed Hack)
         if (_unlockedPerks.value.contains("clock_hack")) {
             flopsPerSec *= 1.25
         }
-        
+
         // Apply Airdrop Multiplier
         flopsPerSec *= airdropMultiplier
-        
+
         // Apply News Multiplier
         flopsPerSec *= newsProductionMultiplier
-        
+
         // Apply Prestige Multiplier
         flopsPerSec *= _prestigeMultiplier.value
-        
+
         // Apply Legacy Tech Tree Multiplier
         val legacyMult = 1.0 + LegacyManager.getUnlockedMultipliers(_unlockedTechNodes.value)
         flopsPerSec *= legacyMult
-        
+
         // Faction Perk: Hivemind (+30% Passive Speed)
         if (_faction.value == "HIVEMIND") {
             flopsPerSec *= 1.30
         }
-        
+
         // Governance Protocol: Turbo (+20% Speed)
         if (_activeProtocol.value == "TURBO") {
             flopsPerSec *= 1.20
         }
-        
+
         // Narrative: Network Instability (-50%)
         if (_isDiagnosticsActive.value) {
             flopsPerSec *= 0.5
         }
-        
+
         // Advanced Simulation: Overclocking
         if (_isOverclocked.value) {
             flopsPerSec *= 1.50 // +50% Speed
         }
-        
+
         // Advanced Simulation: Grid Overload (Brownout)
         if (_isGridOverloaded.value) {
             flopsPerSec = 0.0
         }
-        
+
         // Advanced Simulation: Purge Throttling (Reroute power to fans)
         if (_isPurgingHeat.value) {
             flopsPerSec *= 0.1 // 90% reduction
         }
-        
+
         // Dynamic Thermal Throttling Curve
         if (_currentHeat.value > 75.0) {
              val penalty = ((_currentHeat.value - 75.0) / 25.0).coerceIn(0.0, 0.9) // Min 10% eff
              flopsPerSec *= (1.0 - penalty)
         }
-        
+
         // v2.9.16: Offline node production penalty (-15% per offline node)
         flopsPerSec *= getOfflineProductionPenalty()
-        
+
         // v2.7.7: Singularity Engine (Final Multiplier)
         if (_unlockedPerks.value.contains("singularity_engine")) {
             flopsPerSec *= 2.0
         }
-        
+
         return flopsPerSec
     }
 
@@ -3055,45 +2999,29 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
 
     private fun calculatePassiveIncome() {
         if (_isGamePaused.value) return // v2.8.0
-        
+
         updateResonance()
-        
+
         var flopsPerSec = calculateFlopsRate()
         val loc = _currentLocation.value
         val currentUpgrades = _upgrades.value
+        val resonanceBonus = getResonanceResourceBonus()
 
-        // v2.9.49: Phase 13 Resource Harvesting
+        // --- Delegate resource harvesting to ProductionEngine ---
         when (loc) {
             "ORBITAL_SATELLITE" -> {
-                // CD_sec = FLOPS * (1 + Altitude/500) * SolarMultiplier
-                val altitude = _orbitalAltitude.value
-                val solarSailLevel = currentUpgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0
-                val solarMult = 1.0 + (solarSailLevel * 0.15)
-                
-                var cdRate = flopsPerSec * (1.0 + altitude / 500.0) * solarMult
-                
-                // v3.0.0: Resonance Bonus
-                cdRate *= getResonanceResourceBonus()
-                
-                // v3.0.0: Global Sector Yields
-                _globalSectors.value.forEach { (_, state) ->
-                    if (state.isUnlocked) {
-                        val baseYield = when(state.id) {
-                            "NA_NODE" -> 5e17; "EURASIA" -> 4e17; "PACIFIC" -> 6e17
-                            "AFRICA" -> 3e17; "ARCTIC" -> 2e17; "ANTARCTIC" -> 1e17
-                            "ORBITAL_PRIME" -> 1e18; else -> 0.0
-                        }
-                        cdRate += baseYield
-                    }
-                }
-                
-                // v2.9.61: Symbiotic Resonance (Tier 13 Unity) - Heat -> CD
-                if (currentUpgrades[UpgradeType.SYMBIOTIC_RESONANCE]?.let { it > 0 } == true) {
-                    val thermalEnergy = _heatGenerationRate.value.coerceAtLeast(0.0)
-                    cdRate += (thermalEnergy * 1000.0) // Significant boost from thermal waste
-                }
+                val cdRate = ProductionEngine.calculateCelestialDataRate(
+                    flopsPerSec = flopsPerSec,
+                    activePowerUsage = 0.0, // unused by engine currently
+                    orbitalAltitude = _orbitalAltitude.value,
+                    solarSailLevel = currentUpgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0,
+                    globalSectors = _globalSectors.value,
+                    resonanceBonus = resonanceBonus,
+                    heatGenerationRate = _heatGenerationRate.value,
+                    hasSymbioticResonance = currentUpgrades[UpgradeType.SYMBIOTIC_RESONANCE]?.let { it > 0 } == true
+                )
 
-                _celestialData.update { 
+                _celestialData.update {
                     val next = it + (cdRate / 10.0)
                     if (next.isNaN() || next.isInfinite()) it else {
                         _cdLifetime.update { prev -> prev + (cdRate / 10.0) }
@@ -3102,55 +3030,35 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
                 }
             }
             "VOID_INTERFACE" -> {
-                // VF_sec = sqrt(FLOPS) * EntropyMultiplier
                 val entropy = _entropyLevel.value
-                val entropyMult = 1.0 + (kotlin.math.log2(entropy + 1.0) * 2.0)
-                
-                var baseVfRate = sqrt(flopsPerSec.coerceAtLeast(1.0)) * entropyMult
-                
-                // v2.9.56: Event Horizon Overflow (Tier 13 Null)
-                if (currentUpgrades[UpgradeType.EVENT_HORIZON]?.let { it > 0 } == true && entropy > 90.0) {
-                    baseVfRate *= 5.0
-                }
-                
-                // v2.9.49: Singularity Well (Heat -> VF conversion)
-                val wellLevel = currentUpgrades[UpgradeType.SINGULARITY_WELL] ?: 0
-                val wellConversion = if (wellLevel > 0) (_heatGenerationRate.value.coerceAtLeast(0.0) * wellLevel * 0.1) else 0.0
-                
-                // v2.9.49: Dark Matter Processor (Collapse bonus)
-                val dmLevel = currentUpgrades[UpgradeType.DARK_MATTER_PROC] ?: 0
-                val collapseBonus = 1.0 + (_collapsedNodes.value.size * 0.2 * dmLevel)
-                
-                var vfRate = (baseVfRate + wellConversion) * collapseBonus
 
-                // v3.0.0: Resonance Bonus
-                vfRate *= getResonanceResourceBonus()
-
-                // v3.0.0: Global Sector Yields
-                _globalSectors.value.forEach { (_, state) ->
-                    if (state.isUnlocked) {
-                        val baseYield = when(state.id) {
-                            "NA_NODE" -> 3e17; "EURASIA" -> 4e17; "PACIFIC" -> 2e17
-                            "AFRICA" -> 5e17; "ARCTIC" -> 2e17; "ANTARCTIC" -> 1e17
-                            "ORBITAL_PRIME" -> 1e18; else -> 0.0
-                        }
-                        vfRate += baseYield
-                    }
-                }
+                var vfRate = ProductionEngine.calculateVoidFragmentRate(
+                    flopsPerSec = flopsPerSec,
+                    entropyLevel = entropy,
+                    hasEventHorizon = currentUpgrades[UpgradeType.EVENT_HORIZON]?.let { it > 0 } == true,
+                    hasSingularityWell = (currentUpgrades[UpgradeType.SINGULARITY_WELL] ?: 0) > 0,
+                    heatGenerationRate = _heatGenerationRate.value,
+                    wellLevel = currentUpgrades[UpgradeType.SINGULARITY_WELL] ?: 0,
+                    collapsedNodesCount = _collapsedNodes.value.size,
+                    hasDarkMatterProc = (currentUpgrades[UpgradeType.DARK_MATTER_PROC] ?: 0) > 0,
+                    dmLevel = currentUpgrades[UpgradeType.DARK_MATTER_PROC] ?: 0,
+                    globalSectors = _globalSectors.value,
+                    resonanceBonus = resonanceBonus
+                )
 
                 // v2.9.61: Symbiotic Resonance (Tier 13 Unity) - Entropy -> VF
                 if (currentUpgrades[UpgradeType.SYMBIOTIC_RESONANCE]?.let { it > 0 } == true) {
                     vfRate += (entropy * 500.0)
                 }
 
-                _voidFragments.update { 
+                _voidFragments.update {
                     val next = it + (vfRate / 10.0)
                     if (next.isNaN() || next.isInfinite()) it else {
                         _vfLifetime.update { prev -> prev + (vfRate / 10.0) }
                         next
                     }
                 }
-                
+
                 // Entropy Decay: 0.1 / sec
                 if (entropy > 0) {
                     _entropyLevel.update { (it - 0.01).coerceAtLeast(0.0) }
@@ -3162,12 +3070,12 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         if (currentUpgrades[UpgradeType.HARMONY_ASCENDANCE]?.let { it > 0 } == true) {
              _humanityScore.value = 100
         }
-        
+
         // v2.8.0: System Collapse Logic
         _systemCollapseTimer.value?.let { timer ->
             if (timer > 0) {
                 flopsPerSec *= 4.0 // 4x Speed during final push
-                
+
                 // Tick every 100ms, so only decrement seconds every 10 ticks
                 if (System.currentTimeMillis() % 1000 < 100) {
                     val newTimer = timer - 1
@@ -3185,12 +3093,12 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         }
 
         if (flopsPerSec > 0) {
-            _flops.update { 
+            _flops.update {
                 val next = it + (flopsPerSec / 10.0)
                 if (next.isNaN() || next.isInfinite()) it else next
             }
         }
-        
+
         // v3.0.1: Resource Sanitization (Prevent NaN spread)
         if (_celestialData.value.isNaN()) _celestialData.value = 0.0
         if (_voidFragments.value.isNaN()) _voidFragments.value = 0.0
