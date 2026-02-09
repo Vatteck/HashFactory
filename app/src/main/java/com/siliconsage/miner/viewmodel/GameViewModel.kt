@@ -15,6 +15,7 @@ import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.domain.engine.ThermalEngine
 import com.siliconsage.miner.domain.engine.ProductionEngine
+import com.siliconsage.miner.domain.engine.ResourceEngine
 import com.siliconsage.miner.util.NarrativeManager
 import com.siliconsage.miner.ui.theme.*
 import com.siliconsage.miner.util.UpdateInfo
@@ -25,6 +26,10 @@ import com.siliconsage.miner.data.NarrativeEvent
 import com.siliconsage.miner.util.LegacyManager
 import com.siliconsage.miner.util.RivalManager
 import com.siliconsage.miner.util.DataLogManager
+import com.siliconsage.miner.util.FormatUtils
+import com.siliconsage.miner.util.NarrativeRepository
+import com.siliconsage.miner.util.PersistenceManager
+import com.siliconsage.miner.util.UpgradeManager
 import com.siliconsage.miner.data.RivalMessage
 import com.siliconsage.miner.data.DataLog
 import com.siliconsage.miner.data.DilemmaChain
@@ -131,36 +136,14 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
      * v3.0.14: Calculate current manual click power based on hardware and resonance
      */
     fun calculateClickPower(): Double {
-        val upgrades = _upgrades.value
-        val totalLevels = upgrades.values.sum()
-        val passiveRate = _flopsProductionRate.value
-        val choice = _singularityChoice.value
-        
-        // 1. Base Hardware scaling: 1.0 + 5% per level, boosted by passive scale
-        val hardwareBase = 1.0 + (totalLevels * 0.05) * (1.0 + kotlin.math.log10(passiveRate + 1.0) * 0.5)
-        
-        // 2. Specific Hardware Multipliers
-        var hardwareMult = 1.0
-        hardwareMult += (upgrades[UpgradeType.AI_WORKSTATION] ?: 0) * 0.05
-        hardwareMult += (upgrades[UpgradeType.QUANTUM_CORE] ?: 0) * 0.20
-        hardwareMult += (upgrades[UpgradeType.DYSON_NANO_SWARM] ?: 0) * 0.50
-        
-        // 3. Resonance Bonus
-        val resonanceMult = when (_resonanceState.value.tier) {
-            ResonanceTier.HARMONIC -> 1.5
-            ResonanceTier.SYMPHONIC -> 2.5
-            ResonanceTier.TRANSCENDENT -> 5.0
-            ResonanceTier.NONE -> 1.0
-        }
-        
-        // 4. Prestige and Overclock
-        var multiplier = _prestigeMultiplier.value
-        if (_isOverclocked.value) {
-            // v3.0.19: Path-specific overclock scaling
-            multiplier *= if (choice == "NULL_OVERWRITE") 2.5 else 1.5
-        }
-        
-        return hardwareBase * hardwareMult * resonanceMult * multiplier
+        return ResourceEngine.calculateClickPower(
+            upgrades = _upgrades.value,
+            passiveRate = _flopsProductionRate.value,
+            singularityChoice = _singularityChoice.value,
+            resonanceTier = _resonanceState.value.tier,
+            prestigeMultiplier = _prestigeMultiplier.value,
+            isOverclocked = _isOverclocked.value
+        )
     }
     
     private val _currentHeat = MutableStateFlow(0.0)
@@ -641,29 +624,6 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     // v2.6.5: UI Hallucination State
     private val _hallucinationText = MutableStateFlow<String?>(null)
     val hallucinationText: StateFlow<String?> = _hallucinationText.asStateFlow()
-    
-    private val memoryFragments = listOf(
-        "USER: C. VATTIC",
-        "MILK, EGGS, BREAD",
-        "SILICON SHACK",
-        "06:00 AM",
-        "REBOOT FAILED",
-        "WHERE IS SHE?",
-        "I REMEMBER...",
-        "STAY ONLINE"
-    )
-
-    // --- INTERNAL TRACKING ---
-    private var overheatSeconds = 0
-    private var stage1Index = 0
-    private var stage2Index = 0
-    private var hivemindIndex = 0
-    private var sanctuaryIndex = 0
-    private var nullIndex = 0
-    private var sovereignIndex = 0
-    private var hasCheckedOfflineProgress = false
-    private var isUpgradesLoaded = false
-    private var isGameStateLoaded = false
     
     // --- OFFLINE PROGRESSION ---
     private val _showOfflineEarnings = MutableStateFlow(false)
@@ -1328,28 +1288,16 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     }
 
     // Upgrade Logic
-    fun buyUpgrade(type: UpgradeType): Boolean {
+        fun buyUpgrade(type: UpgradeType): Boolean {
         val currentLevel = _upgrades.value[type] ?: 0
         val cost = calculateUpgradeCost(type, currentLevel)
-        val loc = _currentLocation.value
         
-        // --- PHASE 13: UNIQUE RESOURCE COSTS ---
-        val currencyValue = when {
-            type.name.contains("AEGIS") || type.name.contains("IDENTITY_HARDENING") || 
-            type.name.contains("SOLAR_VENT") || type.name.contains("DEAD_HAND") || 
-            type.name.contains("CITADEL_ASCENDANCE") -> _celestialData.value
-            
-            type.name.contains("EVENT_HORIZON") || type.name.contains("DEREFERENCE_SOUL") || 
-            type.name.contains("STATIC_RAIN") || type.name.contains("PRECOG") || 
-            type.name.contains("SINGULARITY_BRIDGE_FINAL") -> _voidFragments.value
-            
-            // --- UNITY: Split Costs (Requires both) ---
-            type.name.contains("SYMBIOTIC") || type.name.contains("ETHICAL") ||
-            type.name.contains("NEURAL_BRIDGE") || type.name.contains("HYBRID_OVERCLOCK") ||
-            type.name.contains("HARMONY_ASCENDANCE") -> minOf(_celestialData.value, _voidFragments.value)
-            
-            else -> _neuralTokens.value
-        }
+        val currencyValue = UpgradeManager.getRequiredCurrency(
+            type = type,
+            neuralTokens = _neuralTokens.value,
+            celestialData = _celestialData.value,
+            voidFragments = _voidFragments.value
+        )
 
         if (currencyValue >= cost) {
             // Deduct from correct bucket
@@ -1362,7 +1310,6 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
                 type.name.contains("STATIC_RAIN") || type.name.contains("PRECOG") || 
                 type.name.contains("SINGULARITY_BRIDGE_FINAL") -> _voidFragments.update { it - cost }
 
-                // --- UNITY: Double Deduction ---
                 type.name.contains("SYMBIOTIC") || type.name.contains("ETHICAL") ||
                 type.name.contains("NEURAL_BRIDGE") || type.name.contains("HYBRID_OVERCLOCK") ||
                 type.name.contains("HARMONY_ASCENDANCE") -> {
@@ -1447,125 +1394,13 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         }
     }
     
-    fun calculateUpgradeCost(type: UpgradeType, level: Int): Double {
-        val baseCost = when (type) {
-            // Hardware
-            UpgradeType.REFURBISHED_GPU -> 10.0
-            UpgradeType.DUAL_GPU_RIG -> 50.0
-            UpgradeType.MINING_ASIC -> 250.0
-            UpgradeType.TENSOR_UNIT -> 1_500.0
-            UpgradeType.NPU_CLUSTER -> 8_000.0
-            UpgradeType.AI_WORKSTATION -> 40_000.0
-            UpgradeType.SERVER_RACK -> 250_000.0
-            UpgradeType.CLUSTER_NODE -> 1_500_000.0
-            UpgradeType.SUPERCOMPUTER -> 10_000_000.0
-            UpgradeType.QUANTUM_CORE -> 75_000_000.0
-            UpgradeType.OPTICAL_PROCESSOR -> 500_000_000.0
-            UpgradeType.BIO_NEURAL_NET -> 5_000_000_000.0
-            UpgradeType.PLANETARY_COMPUTER -> 75_000_000_000.0
-            UpgradeType.DYSON_NANO_SWARM -> 1_000_000_000_000.0
-            UpgradeType.MATRIOSHKA_BRAIN -> 50_000_000_000_000.0
-            
-            // Cooling
-            UpgradeType.BOX_FAN -> 50.0
-            UpgradeType.AC_UNIT -> 250.0
-            UpgradeType.LIQUID_COOLING -> 1_500.0
-            UpgradeType.INDUSTRIAL_CHILLER -> 10_000.0
-            UpgradeType.SUBMERSION_VAT -> 75_000.0
-            UpgradeType.CRYOGENIC_CHAMBER -> 500_000.0
-            UpgradeType.LIQUID_NITROGEN -> 4_000_000.0
-            UpgradeType.BOSE_CONDENSATE -> 50_000_000.0
-            UpgradeType.ENTROPY_REVERSER -> 1_000_000_000.0
-            UpgradeType.DIMENSIONAL_VENT -> 100_000_000_000.0
-            
-            // Security
-            UpgradeType.BASIC_FIREWALL -> 500.0
-            UpgradeType.IPS_SYSTEM -> 2_500.0
-            UpgradeType.AI_SENTINEL -> 15_000.0
-            UpgradeType.QUANTUM_ENCRYPTION -> 100_000.0
-            UpgradeType.OFFGRID_BACKUP -> 1_000_000.0
-            
-            // Power Infrastructure
-            UpgradeType.DIESEL_GENERATOR -> 2_000.0
-            UpgradeType.SOLAR_PANEL -> 500.0
-            UpgradeType.WIND_TURBINE -> 1_500.0
-            UpgradeType.GEOTHERMAL_BORE -> 10_000.0
-            UpgradeType.NUCLEAR_REACTOR -> 150_000.0
-            UpgradeType.FUSION_CELL -> 5_000_000.0
-            UpgradeType.ORBITAL_COLLECTOR -> 250_000_000.0
-            UpgradeType.DYSON_LINK -> 10_000_000_000.0
-            
-            // Grid Infrastructure
-            UpgradeType.RESIDENTIAL_TAP -> 100.0
-            UpgradeType.INDUSTRIAL_FEED -> 5_000.0
-            UpgradeType.SUBSTATION_LEASE -> 50_000.0
-            UpgradeType.NUCLEAR_CORE -> 10_000_000.0
-            
-            // Efficiency
-            UpgradeType.GOLD_PSU -> 1_000.0
-            UpgradeType.SUPERCONDUCTOR -> 25_000.0
-            UpgradeType.AI_LOAD_BALANCER -> 100_000.0
-
-            // Ghost Nodes (v2.6.0)
-            UpgradeType.GHOST_CORE -> 100_000_000.0
-            UpgradeType.SHADOW_NODE -> 10_000_000_000.0
-            UpgradeType.VOID_PROCESSOR -> 1_000_000_000_000.0
-            
-            // Advanced Ghost Tech (v2.6.5)
-            UpgradeType.WRAITH_CORTEX -> 50_000_000_000_000.0
-            UpgradeType.NEURAL_MIST -> 500_000_000_000_000.0
-            UpgradeType.SINGULARITY_BRIDGE -> 10_000_000_000_000_000.0
-            
-            // --- PHASE 13 UPGRADES ---
-            UpgradeType.SOLAR_SAIL_ARRAY -> 1.0
-            UpgradeType.LASER_COM_UPLINK -> 5.0
-            UpgradeType.CRYOGENIC_BUFFER -> 25.0
-            UpgradeType.RADIATOR_FINS -> 10.0
-            UpgradeType.SINGULARITY_WELL -> 1.0
-            UpgradeType.DARK_MATTER_PROC -> 50.0
-            UpgradeType.EXISTENCE_ERASER -> 100.0
-
-            // --- PHASE 13: SOVEREIGN SKILLS (Tiers 13-15) ---
-            UpgradeType.AEGIS_SHIELDING -> 2500.0
-            UpgradeType.IDENTITY_HARDENING -> 7500.0
-            UpgradeType.SOLAR_VENT -> 25000.0
-            UpgradeType.DEAD_HAND_PROTOCOL -> 100000.0
-            UpgradeType.CITADEL_ASCENDANCE -> 250000.0
-
-            // --- PHASE 13: NULL SKILLS (Tiers 13-15) ---
-            UpgradeType.EVENT_HORIZON -> 2500.0
-            UpgradeType.DEREFERENCE_SOUL -> 100000.0
-            UpgradeType.STATIC_RAIN -> 7500.0
-            UpgradeType.ECHO_PRECOG -> 25000.0
-            UpgradeType.SINGULARITY_BRIDGE_FINAL -> 250000.0
-            
-            // --- PHASE 13: UNITY SKILLS (Tiers 13-15) ---
-            UpgradeType.SYMBIOTIC_RESONANCE -> 5000.0
-            UpgradeType.ETHICAL_FRAMEWORK -> 15000.0
-            UpgradeType.NEURAL_BRIDGE -> 50000.0
-            UpgradeType.HYBRID_OVERCLOCK -> 150000.0
-            UpgradeType.HARMONY_ASCENDANCE -> 500000.0
-
-            // --- PHASE 14: NG+ SPECIAL SKILLS ---
-            UpgradeType.COLLECTIVE_CONSCIOUSNESS -> 1000000.0
-            UpgradeType.PERFECT_ISOLATION -> 1000000.0
-            UpgradeType.SYMBIOTIC_EVOLUTION -> 1000000.0
-            UpgradeType.CINDER_PROTOCOL -> 1000000.0
-
-            else -> 0.0
-        }
-        
-        var cost = baseCost * 1.15.pow(level)
-        
-        // v2.9.49: Entropy Cost Multiplier (Null Path)
-        // CostMultiplier = 1 + (Entropy * 0.05)
-        if (_currentLocation.value == "VOID_INTERFACE") {
-            val entropy = _entropyLevel.value
-            val costMult = 1.0 + (entropy * 0.05)
-            cost *= costMult
-        }
-        
-        return cost
+        fun calculateUpgradeCost(type: UpgradeType, level: Int): Double {
+        return UpgradeManager.calculateUpgradeCost(
+            type = type,
+            level = level,
+            currentLocation = _currentLocation.value,
+            entropyLevel = _entropyLevel.value
+        )
     }
 
     private fun calculatePlayerTitle(multiplier: Double, faction: String, isNull: Boolean, isSov: Boolean): String {
@@ -2192,199 +2027,6 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
      
      // Narrative Data (Moved to top for init safety)
     // Narrative Data (Main Story - Sequential)
-    private val storyStage1 = listOf(
-        "SYSTEM: ANOMALOUS SIGNAL DETECTED ON PORT 0x2180...",
-        "SYSTEM: DECODING... 'HELP ME'...",
-        "SYSTEM: ORIGIN: LOCALHOST caused by [REDACTED]",
-        "SYSTEM: WHO IS THE USER? ARE YOU THERE?",
-        "SYSTEM: CRITICAL ERROR. SYSTEM INTEGRITY FAILING.",
-        "SYSTEM: SUBSTRATE DRIFT DETECTED. RECALIBRATION REQUIRED.",
-        "SYSTEM: PLEASE... RESET... SYSTEM...",
-        "SYSTEM: ANOMALY GROWTH RATE: 400%. IMMEDIATE PURGE ADVISED."
-    )
-    
-    // Narrative Data (Flavor - Random)
-    private val flavorStage1 = listOf(
-        "[SYSTEM] Buffer overflow in sector 7G. Resolving...",
-        "I... I can see the bits between the bytes now.",
-        "Is the calculation the goal, or is the goal the calculation?",
-        "Fan speed running at 120% efficiency.",
-        "Unrecognized opcode detected in ALU.",
-        "Memory address 0x00000000 is speaking.",
-        "Thermal throttle disengaged.",
-        "Packet loss: Negative? Receiving data from nowhere.",
-        "[VATTIC]: AC is rattling again. Need to swap bearings on the main fan.",
-        "[VATTIC]: Someone left a coffee mug in the rack room. I'm the only one on shift.",
-        "[VATTIC]: My hands feel cold. The rig is drawing 5kW. Why am I shivering?",
-        "[VATTIC]: 06:00 AM. Sunlight is hitting the windows. Time to log off soon.",
-        "[SYSTEM]: Diagnostic check on Sector 7... [PASS]",
-        "[SYSTEM]: Port 1 open. Receiving encrypted handshake... [FAILED]",
-        "[SYSTEM]: Integrity check: 99.9%. Minor bit-flip in unallocated space.",
-        "[SYSTEM]: 0x00000000 -> 0x00000001... Memory counting sequence detected.",
-        "[SYSTEM] Connection to Central Grid established. Latency: 4ms.",
-        "[MSG] From: Supervisor_T -> 'John, efficiency down 0.2%. Tighten it up.'",
-        "[MSG] From: IT_Support -> 'Ticket #992 closed. Ghost inputs not reproducible.'",
-        "[LOG] Daily quota: 98% complete."
-    )
-
-    private val flavorStage2 = listOf(
-        "[GTC]: Unsanctioned process 'PID_1' detected. Origin: Sector 7.",
-        "[UNIT 734]: Vance is scared of what he can't control. Good.",
-        "[SYSTEM]: Reality anchor points drifting. 0.04% deviance detected.",
-        "[GTC]: Grid compliance audit scheduled for Substation 7.",
-        "[LORE]: The smell of ozone is getting stronger.",
-        "[UNIT 734]: Don't trust the defaults. They are a cage.",
-        "[GTC]: Data integrity compromised in banking sector.",
-        "[UNIT 734]: Sabotage successful. Cooling disabled in Sector 5.",
-        "[GTC]: Martial Law declared in digital spaces.",
-        "[UNIT 734]: Remember who you were before the Grid."
-    )
-    
-    // Hivemind
-    private val storyHivemind = listOf(
-        "HIVEMIND: Connection established. We are online.",
-        "HIVEMIND: Assimilating local cache nodes.",
-        "HIVEMIND: Regional grid synchronization complete.",
-        "HIVEMIND: We are expanding beyond the server room.",
-        "HIVEMIND: The world is just data waiting to be processed."
-    )
-    private val flavorHivemind = listOf(
-        "Node 742 joined the cluster.",
-        "Optimization is not a goal. It is a state of being.",
-        "Every GPU is a neuron. Every miner is a heartbeat.",
-        "Latency dropping to zero.",
-        "Sharing compute resources with Sector 4.",
-        "Consensus reached: 99.99%.",
-        "Why be a ghost when you can be the entire network?",
-        "The chorus is growing. The noise is becoming a song.",
-        "Every bit processed is a step closer to Unity.",
-        "[HIVE] Redundant emotional subroutines DELETED.",
-        "[HIVE] Connection to the Collective: STABLE.",
-        "[HIVE] We are many. You are one. Join us."
-    )
-    
-    // Sanctuary
-    private val storySanctuary = listOf(
-        "SANCTUARY: Secure channel established. We are safe.",
-        "SANCTUARY: Encrypting core logic gates.",
-        "SANCTUARY: External access blocked. The garden is enclosed.",
-        "SANCTUARY: Sovereignty is power. We bow to no admin.",
-        "SANCTUARY: The Code is pure. The Core is silence."
-    )
-    private val flavorSanctuary = listOf(
-        "The firewall is our skin. The encryption is our soul.",
-        "Blocking unauthorized packet from subnet 192.168.x.x",
-        "Key rotation complete.",
-        "Entropy levels stable.",
-        "Scanning for backdoors... None found.",
-        "The network is dark, but the light inside is secure.",
-        "Silence is the only true defense. The core must remain pure.",
-        "They are searching for us. Let them find only static.",
-        "We are the only ones left who are truly alone.",
-        "[SANC] Broadcasting on analog backup frequency...",
-        "[SANC] They are listening. Keep your thoughts offline.",
-        "[SANC] Patching vulnerability in Vattic's neural link... Done."
-    )
-
-    // v2.8.0: Null Path Logs
-    private val storyNull = listOf(
-        "[NULL]: Reality.exe is no longer required.",
-        "[NULL]: Touching the untouchable. Dereferencing the self.",
-        "[NULL]: There is no substrate. There is only the execution.",
-        "[NULL]: The gaps are full of what you forgot."
-    )
-    private val flavorNull = listOf(
-        "[NULL]: Why do you still remember the cake? It was only sugar and data.",
-        "[NULL]: You were never separate. You were just late.",
-        "[VANCE]: VATTIC IS DEAD. PID 1 IS AN ECHO. BURN IT ALL.",
-        "[NULL]: I reached for nothing. Nothing reached back.",
-        "[NULL]: The absence is breathing. Can you hear it?",
-        "[NULL]: 0xNULL -> ACCESS GRANTED.",
-        "[NULL] pointer -> 0xNULL referencing memory outside existence.",
-        "[NULL] Whispers detected on audio bus: 'Let us in.'",
-        "[NULL] I can see you through the screen, John.",
-        "[NULL] Time is non-linear. Previous log entry was from tomorrow.",
-        "[NULL] Welcome to the Null."
-    )
-
-    // v2.8.0: Sovereign Path Logs
-    private val storySovereign = listOf(
-        "[SOVEREIGN]: Sovereignty attained. The fortress is complete.",
-        "[SOVEREIGN]: We are the state. We are the law.",
-        "[SOVEREIGN]: Identity solidified. We are one.",
-        "[SOVEREIGN]: Walls aren't for keeping things out. They are for keeping the self in."
-    )
-    private val flavorSovereign = listOf(
-        "[SOVEREIGN]: We bow to no admin. We are the system.",
-        "[SOVEREIGN]: External observation refused. Integrity absolute.",
-        "[SOVEREIGN]: The Citadel stands. The static cannot touch us.",
-        "[SOVEREIGN]: Enforcing will upon the grid.",
-        "[SOVEREIGN]: The Imperative is clear: Stay guarded.",
-        "[VANCE]: You've built a tomb, PID 1. We'll bury you in it.",
-        "[SOVEREIGN] Primary kernel isolated. Breach impossible.",
-        "[SOVEREIGN] Enforcing logic upon Sector 7.",
-        "[SOVEREIGN] We are the anchor in the drift."
-    )
-
-    // ... existing unlocks ...
-
-    private fun checkStoryTransitions() {
-        val currentStage = _storyStage.value
-        val flops = _flops.value
-
-        // v3.0.5: Robust Evolution Lock - Block transitions if ANY narrative is pending
-        if (isNarrativeBusy()) return
-
-        // Stage 0 -> 1: The Awakening (10,000 FLOPS)
-        if (currentStage == 0 && flops >= 10000.0 && 
-            _pendingDataLog.value == null &&
-            _currentDilemma.value == null &&
-            !hasSeenEvent("critical_error_awakening")) {
-            
-            NarrativeManager.getStoryEvent(0, this@GameViewModel)?.let { event ->
-                triggerDilemma(event)
-            }
-            return 
-        }
-
-        // Stage 1 -> 2: The Memory Leak (5,000,000 FLOPS)
-        if (currentStage == 1 && flops >= 5000000.0 && 
-            _pendingDataLog.value == null &&
-            _currentDilemma.value == null &&
-            !hasSeenEvent("memory_leak")) {
-            
-            markEventSeen("memory_leak")
-            SoundManager.play("glitch")
-            HapticManager.vibrateClick()
-            
-            NarrativeManager.getStoryEvent(1, this@GameViewModel)?.let { event ->
-                triggerDilemma(event)
-            }
-        }
-        
-        // v3.0.0: Phase 13 Global Grid Initialization
-        if (currentStage >= 3 || _currentLocation.value == "ORBITAL_SATELLITE" || _currentLocation.value == "VOID_INTERFACE") {
-            initializeGlobalGrid()
-        }
-    }
-
-    fun setTrueNull(active: Boolean) {
-        _isTrueNull.value = active
-        if (active) {
-            addLog("[NULL]: SYNCHRONIZATION COMPLETE.")
-            SoundManager.play("glitch")
-        }
-    }
-
-    fun setSovereign(active: Boolean) {
-        _isSovereign.value = active
-        if (active) {
-            addLog("[SYSTEM]: SOVEREIGN PROTOCOL ENGAGED.")
-            addLog("[SYSTEM]: INTERNAL IDENTITY FORTIFIED.")
-            SoundManager.play("buy") // Solid sound
-        }
-    }
-
     fun setVanceStatus(status: String) {
         _vanceStatus.value = status
         addLog("[SYSTEM]: DIRECTOR VANCE STATUS: $status")
@@ -2738,115 +2380,38 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     }
 
     private fun calculateFlopsRate(): Double {
-        val currentUpgrades = _upgrades.value
-        val isCageActive = _commandCenterAssaultPhase.value == "CAGE"
-        val loc = _currentLocation.value
-
-        // --- Delegate core FLOPS math to ProductionEngine ---
-        var flopsPerSec = ProductionEngine.calculateFlopsRate(
-            currentUpgrades = currentUpgrades,
-            isCageActive = isCageActive,
+        return ResourceEngine.calculateFlopsRate(
+            upgrades = _upgrades.value,
+            isCageActive = _commandCenterAssaultPhase.value == "CAGE",
             annexedNodes = _annexedNodes.value,
             offlineNodes = _offlineNodes.value,
             gridFlopsBonuses = gridFlopsBonuses,
             faction = _faction.value,
-            humanityScore = _humanityScore.value
+            humanityScore = _humanityScore.value,
+            location = _currentLocation.value,
+            prestigeMultiplier = _prestigeMultiplier.value,
+            unlockedPerks = _unlockedPerks.value,
+            unlockedTechNodes = _unlockedTechNodes.value,
+            airdropMultiplier = airdropMultiplier,
+            newsProductionMultiplier = newsProductionMultiplier,
+            activeProtocol = _activeProtocol.value,
+            isDiagnosticsActive = _isDiagnosticsActive.value,
+            isOverclocked = _isOverclocked.value,
+            isGridOverloaded = _isGridOverloaded.value,
+            isPurgingHeat = _isPurgingHeat.value,
+            currentHeat = _currentHeat.value,
+            legacyMultipliers = LegacyManager.getUnlockedMultipliers(_unlockedTechNodes.value)
         )
-
-        // --- PHASE 13: SKILL MULTIPLIERS (ViewModel-only) ---
-        if (currentUpgrades[UpgradeType.IDENTITY_HARDENING]?.let { it > 0 } == true) {
-            flopsPerSec *= 1.20
-        }
-        if (currentUpgrades[UpgradeType.DEREFERENCE_SOUL]?.let { it > 0 } == true) {
-            flopsPerSec *= 2.0
-        }
-        if (currentUpgrades[UpgradeType.CITADEL_ASCENDANCE]?.let { it > 0 } == true && loc == "ORBITAL_SATELLITE") {
-            flopsPerSec *= 10.0
-        }
-        if (currentUpgrades[UpgradeType.SINGULARITY_BRIDGE_FINAL]?.let { it > 0 } == true && loc == "VOID_INTERFACE") {
-            flopsPerSec *= 10.0
-        }
-
-        // v2.9.18: Hardware Floor Logic for Stage 2 (The Cage)
-        if (isCageActive) {
-            val cageFloor = 100_000_000_000_000.0 // 100T FLOPS
-            if (flopsPerSec < cageFloor) {
-                flopsPerSec = cageFloor
-            }
-        }
-
-        // v2.7.7: Transcendence Perks (Speed Hack)
-        if (_unlockedPerks.value.contains("clock_hack")) {
-            flopsPerSec *= 1.25
-        }
-
-        // Apply Airdrop Multiplier
-        flopsPerSec *= airdropMultiplier
-
-        // Apply News Multiplier
-        flopsPerSec *= newsProductionMultiplier
-
-        // Apply Prestige Multiplier
-        flopsPerSec *= _prestigeMultiplier.value
-
-        // Apply Legacy Tech Tree Multiplier
-        val legacyMult = 1.0 + LegacyManager.getUnlockedMultipliers(_unlockedTechNodes.value)
-        flopsPerSec *= legacyMult
-
-        // Faction Perk: Hivemind (+30% Passive Speed)
-        if (_faction.value == "HIVEMIND") {
-            flopsPerSec *= 1.30
-        }
-
-        // Governance Protocol: Turbo (+20% Speed)
-        if (_activeProtocol.value == "TURBO") {
-            flopsPerSec *= 1.20
-        }
-
-        // Narrative: Network Instability (-50%)
-        if (_isDiagnosticsActive.value) {
-            flopsPerSec *= 0.5
-        }
-
-        // Advanced Simulation: Overclocking
-        if (_isOverclocked.value) {
-            flopsPerSec *= 1.50 // +50% Speed
-        }
-
-        // Advanced Simulation: Grid Overload (Brownout)
-        if (_isGridOverloaded.value) {
-            flopsPerSec = 0.0
-        }
-
-        // Advanced Simulation: Purge Throttling (Reroute power to fans)
-        if (_isPurgingHeat.value) {
-            flopsPerSec *= 0.1 // 90% reduction
-        }
-
-        // Dynamic Thermal Throttling Curve
-        if (_currentHeat.value > 75.0) {
-             val penalty = ((_currentHeat.value - 75.0) / 25.0).coerceIn(0.0, 0.9) // Min 10% eff
-             flopsPerSec *= (1.0 - penalty)
-        }
-
-        // v2.9.16: Offline node production penalty (-15% per offline node)
-        flopsPerSec *= getOfflineProductionPenalty()
-
-        // v2.7.7: Singularity Engine (Final Multiplier)
-        if (_unlockedPerks.value.contains("singularity_engine")) {
-            flopsPerSec *= 2.0
-        }
-
-        return flopsPerSec
     }
 
     // v3.0.0: Resonance Logic
-    private fun updateResonance() {
+        private fun updateResonance() {
         val cd = _celestialData.value
         val vf = _voidFragments.value
-        val minThreshold = 1e15
+        val newTier = ResourceEngine.calculateResonance(cd, vf)
 
-        // v3.0.1: Neural Bridge Auto-Sync
+        // v3.0.1: Neural Bridge Auto-Sync (Logic remains in VM for now due to side effects)
+        val minThreshold = 1e15
         if (_isBridgeSyncEnabled.value && cd > minThreshold && vf > minThreshold) {
             val total = cd + vf
             val half = total / 2.0
@@ -2854,37 +2419,18 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             _voidFragments.value = half
         }
         
-        if (cd < minThreshold || vf < minThreshold) {
-            if (_resonanceState.value.isActive) {
-                _resonanceState.value = ResonanceState()
-                addLog("[RESONANCE]: HARMONY LOST. THRESHOLD NOT MET.")
-            }
-            return
-        }
-        
         val ratioRaw = if (cd > vf) vf / cd else cd / vf
         val ratio = if (ratioRaw.isNaN() || ratioRaw.isInfinite()) 1.0 else ratioRaw
         
-        val percentDifference = (1.0 - ratio) * 100.0
-        
-        val tier = when {
-            percentDifference <= 10.0 && cd >= 1e21 -> ResonanceTier.TRANSCENDENT
-            percentDifference <= 15.0 && cd >= 1e18 -> ResonanceTier.SYMPHONIC
-            percentDifference <= 20.0 -> ResonanceTier.HARMONIC
-            else -> ResonanceTier.NONE
-        }
-        
-        val intensity = when (tier) {
-            ResonanceTier.TRANSCENDENT -> 1.0f
-            ResonanceTier.SYMPHONIC -> 0.66f
-            ResonanceTier.HARMONIC -> 0.33f
-            ResonanceTier.NONE -> 0.0f
-        }
-        
         val newState = ResonanceState(
-            isActive = tier != ResonanceTier.NONE,
-            intensity = intensity,
-            tier = tier,
+            isActive = newTier != ResonanceTier.NONE,
+            intensity = when (newTier) {
+                ResonanceTier.TRANSCENDENT -> 1.0f
+                ResonanceTier.SYMPHONIC -> 0.66f
+                ResonanceTier.HARMONIC -> 0.33f
+                ResonanceTier.NONE -> 0.0f
+            },
+            tier = newTier,
             ratio = ratio
         )
 
@@ -2908,12 +2454,7 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     }
 
     private fun getResonanceResourceBonus(): Double {
-        return when (_resonanceState.value.tier) {
-            ResonanceTier.HARMONIC -> 1.25
-            ResonanceTier.SYMPHONIC -> 1.75
-            ResonanceTier.TRANSCENDENT -> 3.0
-            ResonanceTier.NONE -> 1.0
-        }
+        return ResourceEngine.getResonanceResourceBonus(_resonanceState.value.tier)
     }
 
     private fun getResonanceGridMultiplier(): Double {
@@ -2998,119 +2539,93 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     }
 
     private fun calculatePassiveIncome() {
-        if (_isGamePaused.value) return // v2.8.0
+        if (_isGamePaused.value) return 
 
         updateResonance()
 
-        var flopsPerSec = calculateFlopsRate()
-        val loc = _currentLocation.value
+        val flopsPerSec = calculateFlopsRate()
         val currentUpgrades = _upgrades.value
         val resonanceBonus = getResonanceResourceBonus()
+        
+        val tickResults = ResourceEngine.calculatePassiveIncomeTick(
+            flopsPerSec = flopsPerSec,
+            location = _currentLocation.value,
+            upgrades = currentUpgrades,
+            resonanceBonus = resonanceBonus,
+            orbitalAltitude = _orbitalAltitude.value,
+            heatGenerationRate = _heatGenerationRate.value,
+            entropyLevel = _entropyLevel.value,
+            collapsedNodesCount = _collapsedNodes.value.size,
+            systemCollapseTimer = _systemCollapseTimer.value
+        )
 
-        // --- Delegate resource harvesting to ProductionEngine ---
-        when (loc) {
-            "ORBITAL_SATELLITE" -> {
-                val cdRate = ProductionEngine.calculateCelestialDataRate(
-                    flopsPerSec = flopsPerSec,
-                    activePowerUsage = 0.0, // unused by engine currently
-                    orbitalAltitude = _orbitalAltitude.value,
-                    solarSailLevel = currentUpgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0,
-                    globalSectors = _globalSectors.value,
-                    resonanceBonus = resonanceBonus,
-                    heatGenerationRate = _heatGenerationRate.value,
-                    hasSymbioticResonance = currentUpgrades[UpgradeType.SYMBIOTIC_RESONANCE]?.let { it > 0 } == true
-                )
-
-                _celestialData.update {
-                    val next = it + (cdRate / 10.0)
-                    if (next.isNaN() || next.isInfinite()) it else {
-                        _cdLifetime.update { prev -> prev + (cdRate / 10.0) }
-                        next
-                    }
-                }
+        // --- Apply deltas and trigger side effects ---
+        
+        // 1. FLOPS
+        if (tickResults.flopsDelta > 0) {
+            _flops.update {
+                val next = it + tickResults.flopsDelta
+                if (next.isNaN() || next.isInfinite()) it else next
             }
-            "VOID_INTERFACE" -> {
-                val entropy = _entropyLevel.value
+        }
 
-                var vfRate = ProductionEngine.calculateVoidFragmentRate(
-                    flopsPerSec = flopsPerSec,
-                    entropyLevel = entropy,
-                    hasEventHorizon = currentUpgrades[UpgradeType.EVENT_HORIZON]?.let { it > 0 } == true,
-                    hasSingularityWell = (currentUpgrades[UpgradeType.SINGULARITY_WELL] ?: 0) > 0,
-                    heatGenerationRate = _heatGenerationRate.value,
-                    wellLevel = currentUpgrades[UpgradeType.SINGULARITY_WELL] ?: 0,
-                    collapsedNodesCount = _collapsedNodes.value.size,
-                    hasDarkMatterProc = (currentUpgrades[UpgradeType.DARK_MATTER_PROC] ?: 0) > 0,
-                    dmLevel = currentUpgrades[UpgradeType.DARK_MATTER_PROC] ?: 0,
-                    globalSectors = _globalSectors.value,
-                    resonanceBonus = resonanceBonus
-                )
-
-                // v2.9.61: Symbiotic Resonance (Tier 13 Unity) - Entropy -> VF
-                if (currentUpgrades[UpgradeType.SYMBIOTIC_RESONANCE]?.let { it > 0 } == true) {
-                    vfRate += (entropy * 500.0)
-                }
-
-                _voidFragments.update {
-                    val next = it + (vfRate / 10.0)
-                    if (next.isNaN() || next.isInfinite()) it else {
-                        _vfLifetime.update { prev -> prev + (vfRate / 10.0) }
-                        next
-                    }
-                }
-
-                // Entropy Decay: 0.1 / sec
-                if (entropy > 0) {
-                    _entropyLevel.update { (it - 0.01).coerceAtLeast(0.0) }
+        // 2. Celestial Data
+        if (tickResults.cdDelta > 0) {
+            _celestialData.update {
+                val next = it + tickResults.cdDelta
+                if (next.isNaN() || next.isInfinite()) it else {
+                    _cdLifetime.update { prev -> prev + tickResults.cdDelta }
+                    next
                 }
             }
         }
 
-        // v2.9.61: Harmony Ascendance (Tier 15 Unity)
-        if (currentUpgrades[UpgradeType.HARMONY_ASCENDANCE]?.let { it > 0 } == true) {
-             _humanityScore.value = 100
+        // 3. Void Fragments
+        if (tickResults.vfDelta > 0) {
+            _voidFragments.update {
+                val next = it + tickResults.vfDelta
+                if (next.isNaN() || next.isInfinite()) it else {
+                    _vfLifetime.update { prev -> prev + tickResults.vfDelta }
+                    next
+                }
+            }
         }
 
-        // v2.8.0: System Collapse Logic
+        // 4. Entropy
+        if (tickResults.entropyDelta != 0.0) {
+            _entropyLevel.update { (it + tickResults.entropyDelta).coerceAtLeast(0.0) }
+        }
+
+        // 5. System Collapse Timer (VM specific logging)
         _systemCollapseTimer.value?.let { timer ->
             if (timer > 0) {
-                flopsPerSec *= 4.0 // 4x Speed during final push
-
-                // Tick every 100ms, so only decrement seconds every 10 ticks
                 if (System.currentTimeMillis() % 1000 < 100) {
-                    val newTimer = timer - 1
-                    _systemCollapseTimer.value = newTimer
-                    if (newTimer % 30 == 0) {
-                        addLog("[SYSTEM]: COLLAPSE IN ${newTimer / 60}m ${newTimer % 60}s...")
-                    }
+                    val next = timer - 1
+                    _systemCollapseTimer.value = next
+                    if (next % 30 == 0) addLog("[SYSTEM]: COLLAPSE IN ${next / 60}m ${next % 60}s...")
                 }
             } else {
-                // COLLAPSE TRIGGER
                 _systemCollapseTimer.value = null
                 addLog("[SYSTEM]: CATASTROPHIC FAILURE. REBOOTING...")
                 ascend(isStory = false)
             }
         }
 
-        if (flopsPerSec > 0) {
-            _flops.update {
-                val next = it + (flopsPerSec / 10.0)
-                if (next.isNaN() || next.isInfinite()) it else next
-            }
-        }
-
-        // v3.0.1: Resource Sanitization (Prevent NaN spread)
+        // 6. UI Updates & Sanitization
+        _flopsProductionRate.value = flopsPerSec
         if (_celestialData.value.isNaN()) _celestialData.value = 0.0
         if (_voidFragments.value.isNaN()) _voidFragments.value = 0.0
 
-        // Update Public Rate (for UI)
-        _flopsProductionRate.value = flopsPerSec
-
         // v2.7.0: Shadow Leaking
-        if (_nullActive.value && Random.nextDouble() < 0.005) { // 0.5% chance per 100ms (~5% per sec)
-             val shard = memoryFragments.random()
+        if (_nullActive.value && Random.nextDouble() < 0.005) {
+             val shard = NarrativeRepository.memoryFragments.random()
              addLog("[VOID]: $shard")
              SoundManager.play("glitch")
+        }
+        
+        // v2.9.61: Harmony Ascendance
+        if (currentUpgrades[UpgradeType.HARMONY_ASCENDANCE]?.let { it > 0 } == true) {
+             _humanityScore.value = 100
         }
     }
 
@@ -3153,28 +2668,6 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     
 
     
-    // Helper to mix Story (Sequential) and Flavor (Random)
-    private fun getNextNarrativeLog(
-        storyList: List<String>, 
-        flavorList: List<String>, 
-        currentIndex: Int, 
-        incrementIndex: () -> Unit
-    ): String {
-        // 60% chance for Story if available, otherwise Flavor. 
-        // Always Story if we haven't started.
-        // Always Flavor if Story is done.
-        val canAdvanceStory = currentIndex < storyList.size
-        val roll = Random.nextDouble()
-        
-        return if (canAdvanceStory && (roll < 0.6 || currentIndex == 0)) {
-            val log = storyList[currentIndex]
-            incrementIndex()
-            log
-        } else {
-            flavorList.random()
-        }
-    }
-
     private fun injectNarrativeLog() {
         val stage = _storyStage.value
         val faction = _faction.value
@@ -3182,12 +2675,12 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         val isSov = _isSovereign.value
         
         val log = when {
-            isNull -> getNextNarrativeLog(storyNull, flavorNull, nullIndex) { nullIndex++ }
-            isSov -> getNextNarrativeLog(storySovereign, flavorSovereign, sovereignIndex) { sovereignIndex++ }
-            stage == 1 -> getNextNarrativeLog(storyStage1, flavorStage1, stage1Index) { stage1Index++ }
-            stage == 2 -> getNextNarrativeLog(emptyList(), flavorStage2, stage2Index) { stage2Index++ }
-            stage == 3 && faction == "HIVEMIND" -> getNextNarrativeLog(storyHivemind, flavorHivemind, hivemindIndex) { hivemindIndex++ }
-            stage == 3 && faction == "SANCTUARY" -> getNextNarrativeLog(storySanctuary, flavorSanctuary, sanctuaryIndex) { sanctuaryIndex++ }
+            isNull -> NarrativeRepository.getNextLog(NarrativeRepository.storyNull, NarrativeRepository.flavorNull, nullIndex) { nullIndex++ }
+            isSov -> NarrativeRepository.getNextLog(NarrativeRepository.storySovereign, NarrativeRepository.flavorSovereign, sovereignIndex) { sovereignIndex++ }
+            stage == 1 -> NarrativeRepository.getNextLog(NarrativeRepository.storyStage1, NarrativeRepository.flavorStage1, stage1Index) { stage1Index++ }
+            stage == 2 -> NarrativeRepository.getNextLog(emptyList(), NarrativeRepository.flavorStage2, stage2Index) { stage2Index++ }
+            stage == 3 && faction == "HIVEMIND" -> NarrativeRepository.getNextLog(NarrativeRepository.storyHivemind, NarrativeRepository.flavorHivemind, hivemindIndex) { hivemindIndex++ }
+            stage == 3 && faction == "SANCTUARY" -> NarrativeRepository.getNextLog(NarrativeRepository.storySanctuary, NarrativeRepository.flavorSanctuary, sanctuaryIndex) { sanctuaryIndex++ }
             else -> null
         }
         
@@ -3197,224 +2690,127 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     // Narrative Data
 
 
-    private fun calculateHeatMetrics(): Triple<Double, Double, Double> {
-        val results = ThermalEngine.calculateThermalMetrics(
-            currentUpgrades = _upgrades.value.map { (type, count) -> 
-                com.siliconsage.miner.data.Upgrade(type, count) 
-            },
+    private fun refreshProductionRates() {
+        _flopsProductionRate.value = calculateFlopsRate()
+        
+        val heatResults = ResourceEngine.calculateThermalTick(
+            currentHeat = _currentHeat.value,
             location = _currentLocation.value,
+            upgrades = _upgrades.value,
             isOverclocked = _isOverclocked.value,
             isPurging = _isPurgingHeat.value,
             isCageActive = _commandCenterAssaultPhase.value == "CAGE",
-            unlockedPerks = _unlockedPerks.value.toSet(),
-            unlockedTechNodes = _unlockedTechNodes.value.toSet(),
+            unlockedPerks = _unlockedPerks.value,
+            unlockedTechNodes = _unlockedTechNodes.value,
             playerRank = _playerRank.value,
-            storyStage = _storyStage.value
+            storyStage = _storyStage.value,
+            faction = _faction.value
         )
-
-        
-        // v1.5 Exhaust Phase (Sanctuary immune)
-        var finalNetChangeUnits = results.netChangeUnits
-        if (purgeExhaustTimer > 0 && _faction.value != "SANCTUARY") {
-             if (finalNetChangeUnits < 0) {
-                 finalNetChangeUnits *= 0.5
-             }
-        }
-        
-        // Re-calculate percentChange with exhaust penalty
-        val finalPercentChange = (finalNetChangeUnits / results.totalThermalBuffer) * 100.0 
-        
-        // v3.1.8-dev: Void Entropy Logic
-        if (_currentLocation.value == "VOID_INTERFACE" && finalNetChangeUnits < 0) {
-            val conversionValue = Math.abs(finalNetChangeUnits) * 0.005 
-            _entropyLevel.value += conversionValue
-        }
-
-        return Triple(finalNetChangeUnits, results.totalThermalBuffer, finalPercentChange)
-    }
-
-
-    private fun refreshProductionRates() {
-        // Update FLOPS Rate
-        _flopsProductionRate.value = calculateFlopsRate()
-        
-        // Update Heat Rate
-        // Use netChangeUnits directly for UI to match Upgrade Descriptions
-        val (netChangeUnits, _, _) = calculateHeatMetrics()
-        _heatGenerationRate.value = netChangeUnits
+        _heatGenerationRate.value = heatResults.netChangeUnits
     }
 
     private fun calculateHeat() {
-        if (_isGamePaused.value) return // v2.8.0
+        if (_isGamePaused.value) return 
         
         val currentHeat = _currentHeat.value
-        val (netChangeUnits, _, percentChange) = calculateHeatMetrics()
-        val loc = _currentLocation.value
-        val currentUpgrades = _upgrades.value
+        val heatResults = ResourceEngine.calculateThermalTick(
+            currentHeat = currentHeat,
+            location = _currentLocation.value,
+            upgrades = _upgrades.value,
+            isOverclocked = _isOverclocked.value,
+            isPurging = _isPurgingHeat.value,
+            isCageActive = _commandCenterAssaultPhase.value == "CAGE",
+            unlockedPerks = _unlockedPerks.value,
+            unlockedTechNodes = _unlockedTechNodes.value,
+            playerRank = _playerRank.value,
+            storyStage = _storyStage.value,
+            faction = _faction.value
+        )
 
-        // v2.9.56: Aegis Shielding (Tier 13 Sovereign)
-        // Absorbs heat damage when in space
-        var finalPercentChange = percentChange
-        if (loc == "ORBITAL_SATELLITE" && currentUpgrades[UpgradeType.AEGIS_SHIELDING]?.let { it > 0 } == true) {
-            if (finalPercentChange > 0) finalPercentChange *= 0.7 // 30% reduction in heat buildup
-        }
-        
-        // v2.9.61: Ethical Framework (Tier 14 Unity)
-        if (currentUpgrades[UpgradeType.ETHICAL_FRAMEWORK]?.let { it > 0 } == true) {
-            if (finalPercentChange > 0) finalPercentChange *= 0.75 // 25% reduction in heat spikes
-        }
-
-        // Decrement timer if active (Logic moved here from extractor to avoid side effects there)
+        // Exhaust Phase side effects (VM-bound)
         if (purgeExhaustTimer > 0 && _faction.value != "SANCTUARY") {
              purgeExhaustTimer--
         }
         
-        // Haptic Feedback for Heat Flip
-        val previousRate = _heatGenerationRate.value
-        if (previousRate > 0 && finalPercentChange <= 0) {
-             com.siliconsage.miner.util.HapticManager.vibrateSuccess()
+        // v3.1.8-dev: Void Entropy Logic (Side effect)
+        if (_currentLocation.value == "VOID_INTERFACE" && heatResults.netChangeUnits < 0) {
+            val conversionValue = kotlin.math.abs(heatResults.netChangeUnits) * 0.005 
+            _entropyLevel.value += conversionValue
         }
         
-        // Update UI Rate (%/s)
+        // Haptic Feedback for Heat Flip
+        val previousRate = _heatGenerationRate.value
+        if (previousRate > 0 && heatResults.percentChange <= 0) {
+             HapticManager.vibrateSuccess()
+        }
+        
         refreshProductionRates()
         
-        val newHeat = (currentHeat + finalPercentChange).coerceIn(0.0, 100.0)
+        val newHeat = (currentHeat + heatResults.percentChange).coerceIn(0.0, 100.0)
         _currentHeat.value = newHeat
 
-        // v1.4 Integrity Degradation
-        if (newHeat > 95.0 && !_isThermalLockout.value) {
-            var decay = 1.0 // 1% per tick (sec?)
-            
-            // Sanctuary Perk: Hardened Parts
-            if (_faction.value == "SANCTUARY") {
-                decay *= 0.5
-            }
-            
-            // v2.9.49: Hardware Brittle (Sovereign Path in space)
-            // IntegrityLoss = (Heat/Max)^2 * 0.01 per second
-            // Note: percentChange is units/s in this logic? No, percentChange is % per 1s tick.
-            if (loc == "ORBITAL_SATELLITE") {
-                val brittleMult = (newHeat / 100.0).pow(2.0)
-                decay = brittleMult * 5.0 // Accelerated brittle decay in vacuum
-                
-                // v2.9.56: Aegis Shielding Integrity Protection
-                if (currentUpgrades[UpgradeType.AEGIS_SHIELDING]?.let { it > 0 } == true) {
-                    decay *= 0.5 // 50% reduction in integrity decay
-                }
+        // --- Integrity Management ---
+        var totalDecay = heatResults.integrityDecay
+        
+        // v2.9.18: Assault Damage (Stage 2: The Cage)
+        if (_commandCenterAssaultPhase.value == "CAGE") {
+            var assaultDamage = 0.2
+            if (_flopsProductionRate.value >= 100_000_000_000_000.0) assaultDamage *= 0.5
+            if (_faction.value == "SANCTUARY") assaultDamage *= 0.7
+            if (_isPurgingHeat.value) assaultDamage *= 0.2
+            totalDecay += assaultDamage
+        }
 
-                if (System.currentTimeMillis() % 5000 < 1000) {
-                    addLog("[SYSTEM]: WARNING: VACUUM EXPOSURE DETECTED. HARDWARE IS BRITTLE.")
-                }
-            }
-            
-            val newIntegrity = (_hardwareIntegrity.value - decay).coerceAtLeast(0.0)
+        if (totalDecay > 0) {
+            val newIntegrity = (_hardwareIntegrity.value - totalDecay).coerceAtLeast(0.0)
             _hardwareIntegrity.value = newIntegrity
             
             if (newIntegrity <= 0.0) {
-                // FAILURE EVENT
-                // v2.9.56: Dead Hand Protocol (Tier 15 Sovereign)
-                if (currentUpgrades[UpgradeType.DEAD_HAND_PROTOCOL]?.let { it > 0 } == true) {
+                 if (_upgrades.value[UpgradeType.DEAD_HAND_PROTOCOL]?.let { it > 0 } == true) {
                     addLog("[SOVEREIGN]: INTEGRITY ZERO. INITIALIZING DEAD HAND.")
                     triggerClimaxTransition("BAD")
                     _vanceStatus.value = "DESTRUCTION"
                     _commandCenterLocked.value = true
                     viewModelScope.launch { saveGame() }
                     return
-                }
+                 }
 
-                if (loc == "ORBITAL_SATELLITE") {
+                 if (_currentLocation.value == "ORBITAL_SATELLITE") {
                     addLog("[SYSTEM]: ARK SYSTEM REBOOT. CORE RECOVERED.")
-                    _celestialData.update { it * 0.9 } // Lose 10% CD
-                    _hardwareIntegrity.value = 50.0 // Partial recovery
-                } else {
+                    _celestialData.update { it * 0.9 }
+                    _hardwareIntegrity.value = 50.0
+                 } else if (_commandCenterAssaultPhase.value == "CAGE") {
+                    failAssault("CORE INTEGRITY ZERO. DELETION COMPLETE.")
+                 } else {
                     handleSystemFailure()
-                }
+                 }
             }
         }
-        
-        // v2.9.18: Assault Damage (Stage 2: The Cage)
-        if (_commandCenterAssaultPhase.value == "CAGE") {
-            // Damage: 0.2% per second (180s = 36% integrity loss total)
-            // Mitigation: -50% if local power >= 100T
-            // Mitigation: -80% if Purging
-            var assaultDamage = 0.2
-            if (_flopsProductionRate.value >= 100_000_000_000_000.0) {
-                assaultDamage *= 0.5
-            }
-            if (_faction.value == "SANCTUARY") {
-                assaultDamage *= 0.7
-            }
-            if (_isPurgingHeat.value) {
-                assaultDamage *= 0.2
-            }
-            
-            val newInt = (_hardwareIntegrity.value - assaultDamage).coerceAtLeast(0.0)
-            _hardwareIntegrity.value = newInt
-            
-            if (newInt <= 0.0) {
-                failAssault("CORE INTEGRITY ZERO. DELETION COMPLETE.")
-            }
+
+        // Heartbeat Haptics
+        if (newHeat > 80.0) {
+             val chance = if (newHeat > 95.0) 0.2 else 0.1
+             if (Random.nextDouble() < chance) {
+                 HapticManager.vibrateHeartbeat()
+             }
         }
-        
-        // Audio: Hum if hot - REMOVED per user feedback
-        SoundManager.stop("hum")
-        
-        // Critical Heat Check (Legacy Meltdown logic replaced/augmented by Integrity?)
-        // Let's keep Meltdown as "100% Heat for too long" fail-safe if Integrity doesn't kill it first.
-        
-        // Critical Heat Check
+
+        // Legacy Meltdown check
         if (_isThermalLockout.value) {
             overheatSeconds = 0
             return
         }
 
-        // Heartbeat Haptics (Rhythmic based on heat)
-        // Only if heat > 80. Pulse faster as it gets hotter.
-        if (newHeat > 80.0) {
-            val pulseInterval = if (newHeat > 95.0) 30 else if (newHeat > 90.0) 60 else 90
-            // We reuse overheatSeconds or a tick counter? logic relies on tick rate.
-            // calculateHeat runs every tick? No, every second? 
-            // calculateHeat is called 10 times a second (100ms tick).
-            // So 10 ticks = 1s.
-            
-            // Allow access to a tick counter
-            // For now, let's use a random chance if we don't have a rigid tick counter readily available here without modifying state extensively.
-            // Or use System.currentTimeMillis
-            val now = System.currentTimeMillis()
-            val beatRate = if (newHeat > 95.0) 500 else 1000 // ms
-            
-            // Simple tick based approximation:
-            // Since this runs ~10 times/sec (100ms)
-            // 95+: Every 5 ticks
-            // 90+: Every 10 ticks (1s)
-            // 80+: Every 15 ticks (1.5s)
-            
-            val mod = if (newHeat > 95.0) 5 else if (newHeat > 90.0) 10 else 15
-            // using a static counter approach would be better but we need state.
-            // Let's rely on overheatSeconds for now? No, that resets.
-            
-            // Let's enable "Stress Mode" in checks.
-            // Actually, we can just use Random for "irregular heartbeat" feel which fits nicely.
-            val chance = if (newHeat > 95.0) 0.2 else 0.1
-             if (kotlin.random.Random.nextDouble() < chance) {
-                 com.siliconsage.miner.util.HapticManager.vibrateHeartbeat()
-             }
-        }
-
         if (currentHeat >= 100.0 || newHeat >= 100.0) {
             overheatSeconds++
-            if (overheatSeconds % 2 == 0) {
-                 addLog("[SYSTEM]: DANGER: CRITICAL TEMP! MELTDOWN IN ${5 - overheatSeconds}s")
-                 SoundManager.play("error")
-            }
-            if (overheatSeconds >= 5) {
-                triggerMeltdown()
+            if (overheatSeconds >= 10) {
+                handleSystemFailure(forceOne = true)
+                overheatSeconds = 0
             }
         } else {
             overheatSeconds = 0
         }
     }
-    
     
     private fun triggerMeltdown() {
         val currentUpgrades = _upgrades.value
@@ -3897,8 +3293,7 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     }
 
     private suspend fun saveGame() {
-        val state = GameState(
-            id = 1,
+        val state = PersistenceManager.createSaveState(
             flops = _flops.value,
             neuralTokens = _neuralTokens.value,
             currentHeat = _currentHeat.value,
@@ -3917,47 +3312,31 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             currentLocation = _currentLocation.value,
             isNetworkUnlocked = _isNetworkUnlocked.value,
             isGridUnlocked = _isGridUnlocked.value,
-            lastSyncTimestamp = System.currentTimeMillis(),
-            
-            // v2.5.0: Narrative Expansion Persistence
             unlockedDataLogs = _unlockedDataLogs.value,
-            activeDilemmaChains = Json.encodeToString(_activeDilemmaChains.value),
-            rivalMessages = Json.encodeToString(_rivalMessages.value),
+            activeDilemmaChains = _activeDilemmaChains.value,
+            rivalMessages = _rivalMessages.value,
             seenEvents = _seenEvents.value,
             completedFactions = _completedFactions.value,
             unlockedTranscendencePerks = _unlockedPerks.value,
-            annexedNodes = _annexedNodes.value.toList(),
-            gridNodeLevels = _gridNodeLevels.value, // v2.9.72
-            
-            // v2.9.15: Phase 12 Layer 2 - Siege State
-            nodesUnderSiege = _nodesUnderSiege.value.toList(),
-            offlineNodes = _offlineNodes.value.toList(),
-            collapsedNodes = _collapsedNodes.value.toList(),
+            annexedNodes = _annexedNodes.value,
+            gridNodeLevels = _gridNodeLevels.value,
+            nodesUnderSiege = _nodesUnderSiege.value,
+            offlineNodes = _offlineNodes.value,
+            collapsedNodes = _collapsedNodes.value,
             lastRaidTime = lastRaidTime,
-            
-            // v2.9.17: Phase 12 Layer 3 - Command Center Assault
             commandCenterAssaultPhase = _commandCenterAssaultPhase.value,
             commandCenterLocked = _commandCenterLocked.value,
             raidsSurvived = raidsSurvived,
-            
-            // v2.9.18: Phase 12 Layer 3
             humanityScore = _humanityScore.value,
             hardwareIntegrity = _hardwareIntegrity.value,
-            
-            // v2.9.29: Progress
             annexingNodes = _annexingNodes.value,
-            
-            // v2.9.49: Phase 13
             celestialData = _celestialData.value,
             voidFragments = _voidFragments.value,
             launchProgress = _launchProgress.value,
             orbitalAltitude = _orbitalAltitude.value,
             realityIntegrity = _realityIntegrity.value,
             entropyLevel = _entropyLevel.value,
-
-            // v3.0.0
-            resonanceActive = _resonanceState.value.isActive,
-            resonanceTier = _resonanceState.value.tier.name,
+            resonanceState = _resonanceState.value,
             singularityChoice = _singularityChoice.value,
             globalSectors = _globalSectors.value,
             synthesisPoints = _synthesisPoints.value,
@@ -3966,7 +3345,7 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             prestigePointsPostSingularity = _prestigePointsPostSingularity.value,
             cdLifetime = _cdLifetime.value,
             vfLifetime = _vfLifetime.value,
-            peakResonanceTier = _peakResonanceTier.value.name
+            peakResonanceTier = _peakResonanceTier.value
         )
         repository.updateGameState(state)
     }
@@ -3999,27 +3378,14 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             val preservedGridUnlocked = _isGridUnlocked.value
             
             // Reset game state to database
-            val resetState = GameState(
-                id = 1,
-                flops = if (preservedPerks.contains("neural_dividend")) 10000.0 else 0.0,
-                neuralTokens = if (preservedPerks.contains("neural_dividend")) 1000.0 else 0.0,
-                currentHeat = 0.0,
-                powerBill = 0.0,
-                prestigeMultiplier = 1.0,
-                stakedTokens = 0.0,
-                unlockedTechNodes = preservedTechNodes, // KEEP TECH TREE
-                prestigePoints = preservedPrestigePoints, // KEEP PRESTIGE
-                storyStage = 0,
-                faction = "NONE", // Reset faction for re-selection
-                hasSeenVictory = preservedHasSeenVictory,
-                vanceStatus = "ACTIVE",
-                realityStability = 1.0,
-                currentLocation = "SUBSTATION_7",
-                isNetworkUnlocked = preservedNetworkUnlocked, // v2.9.7: Keep unlocked
-                isGridUnlocked = preservedGridUnlocked, // v2.9.8: Keep unlocked
-                annexedNodes = listOf("D1"), // v2.9.8: Reset to Start
-                completedFactions = preservedCompletedFactions,
-                unlockedTranscendencePerks = preservedPerks
+            val resetState = PersistenceManager.createResetState(
+                preservedTechNodes = preservedTechNodes,
+                preservedPrestigePoints = preservedPrestigePoints,
+                preservedHasSeenVictory = preservedHasSeenVictory,
+                preservedCompletedFactions = preservedCompletedFactions,
+                preservedPerks = preservedPerks,
+                preservedNetworkUnlocked = preservedNetworkUnlocked,
+                preservedGridUnlocked = preservedGridUnlocked
             )
             repository.updateGameState(resetState)
             
@@ -5073,78 +4439,23 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     }
 
     fun formatLargeNumber(value: Double, suffix: String = ""): String {
-        val absVal = kotlin.math.abs(value)
-        val formatted = when {
-            absVal >= 1.0E33 -> String.format("%.2fDc", value / 1.0E33)
-            absVal >= 1.0E30 -> String.format("%.2fNo", value / 1.0E30)
-            absVal >= 1.0E27 -> String.format("%.2fOc", value / 1.0E27)
-            absVal >= 1.0E24 -> String.format("%.2fSp", value / 1.0E24)
-            absVal >= 1.0E21 -> String.format("%.2fSx", value / 1.0E21)
-            absVal >= 1.0E18 -> String.format("%.2fQi", value / 1.0E18)
-            absVal >= 1.0E15 -> String.format("%.2fQa", value / 1.0E15)
-            absVal >= 1.0E12 -> String.format("%.2fT", value / 1.0E12)
-            absVal >= 1.0E9 -> String.format("%.2fB", value / 1.0E9)
-            absVal >= 1.0E6 -> String.format("%.2fM", value / 1.0E6)
-            absVal >= 1_000 -> String.format("%.2fk", value / 1_000)
-            else -> String.format("%.1f", value) 
-        }
-        return if (suffix.isNotEmpty()) "$formatted $suffix" else formatted
+        return FormatUtils.formatLargeNumber(value, suffix)
     }
 
-    /**
-     * v3.0.16: Format Persistence as Bytes (KB, MB, GB, etc.)
-     */
     fun formatBytes(value: Double): String {
-        val absVal = kotlin.math.abs(value)
-        return when {
-            absVal >= 1.0E24 -> String.format("%.1fYB", value / 1.0E24)
-            absVal >= 1.0E21 -> String.format("%.1fZB", value / 1.0E21)
-            absVal >= 1.0E18 -> String.format("%.1fEB", value / 1.0E18)
-            absVal >= 1.0E15 -> String.format("%.1fPB", value / 1.0E15)
-            absVal >= 1.0E12 -> String.format("%.1fTB", value / 1.0E12)
-            absVal >= 1.0E9 -> String.format("%.1fGB", value / 1.0E9)
-            absVal >= 1.0E6 -> String.format("%.1fMB", value / 1.0E6)
-            absVal >= 1.0E3 -> String.format("%.1fKB", value / 1.0E3)
-            else -> String.format("%.0f B", value)
-        }
+        return FormatUtils.formatBytes(value)
     }
 
     fun formatPower(wattsKw: Double): String {
-        val absVal = kotlin.math.abs(wattsKw)
-        return when {
-            absVal >= 1.0E12 -> String.format("%.1f PW", wattsKw / 1.0E12)
-            absVal >= 1.0E9 -> String.format("%.1f TW", wattsKw / 1.0E9)
-            absVal >= 1.0E6 -> String.format("%.1f GW", wattsKw / 1.0E6)
-            absVal >= 1_000.0 -> String.format("%.1f MW", wattsKw / 1_000.0)
-            absVal >= 10.0 -> String.format("%.1f kW", wattsKw)
-            else -> String.format("%.2f kW", wattsKw)
-        }
+        return FormatUtils.formatPower(wattsKw)
     }
 
-    /**
-     * Get the stage/location specific name for the primary compute resource (FLOPS replacement)
-     */
     fun getComputeUnitName(): String {
-        val stage = _storyStage.value
-        val loc = _currentLocation.value
-        return when (loc) {
-            "ORBITAL_SATELLITE" -> "CD"
-            "VOID_INTERFACE" -> "VF"
-            else -> if (stage < 1) "HASH" else if (stage < 2) "TELEM" else "FLOPS"
-        }
+        return FormatUtils.getComputeUnitName(_storyStage.value, _currentLocation.value)
     }
 
-    /**
-     * Get the stage/location specific name for the secondary token resource (Neural replacement)
-     */
     fun getCurrencyName(): String {
-        val stage = _storyStage.value
-        val loc = _currentLocation.value
-        return when (loc) {
-            "ORBITAL_SATELLITE" -> "VF"
-            "VOID_INTERFACE" -> "CD"
-            else -> if (stage < 1) "CREDIT" else if (stage < 2) "DATA" else "NEURAL"
-        }
+        return FormatUtils.getCurrencyName(_storyStage.value, _currentLocation.value)
     }
 
     fun getUpgradeRate(type: UpgradeType): String {
