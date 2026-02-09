@@ -620,6 +620,58 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             else -> "compute_hash"
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, "compute_hash")
+
+    // --- INTERNAL TRACKING ---
+    private var overheatSeconds = 0
+    private var stage1Index = 0
+    private var stage2Index = 0
+    private var hivemindIndex = 0
+    private var sanctuaryIndex = 0
+    private var nullIndex = 0
+    private var sovereignIndex = 0
+    private var hasCheckedOfflineProgress = false
+    private var isUpgradesLoaded = false
+    private var isGameStateLoaded = false
+
+    private fun checkStoryTransitions() {
+        val currentStage = _storyStage.value
+        val flops = _flops.value
+
+        // v3.0.5: Robust Evolution Lock - Block transitions if ANY narrative is pending
+        if (isNarrativeBusy()) return
+
+        // Stage 0 -> 1: The Awakening (10,000 FLOPS)
+        if (currentStage == 0 && flops >= 10000.0 && 
+            _pendingDataLog.value == null &&
+            _currentDilemma.value == null &&
+            !hasSeenEvent("critical_error_awakening")) {
+            
+            NarrativeManager.getStoryEvent(0, this@GameViewModel)?.let { event ->
+                triggerDilemma(event)
+            }
+            return 
+        }
+
+        // Stage 1 -> 2: The Memory Leak (5,000,000 FLOPS)
+        if (currentStage == 1 && flops >= 5000000.0 && 
+            _pendingDataLog.value == null &&
+            _currentDilemma.value == null &&
+            !hasSeenEvent("memory_leak")) {
+            
+            markEventSeen("memory_leak")
+            SoundManager.play("glitch")
+            HapticManager.vibrateClick()
+            
+            NarrativeManager.getStoryEvent(1, this@GameViewModel)?.let { event ->
+                triggerDilemma(event)
+            }
+        }
+        
+        // v3.0.0: Phase 13 Global Grid Initialization
+        if (currentStage >= 3 || _currentLocation.value == "ORBITAL_SATELLITE" || _currentLocation.value == "VOID_INTERFACE") {
+            initializeGlobalGrid()
+        }
+    }
     
     // v2.6.5: UI Hallucination State
     private val _hallucinationText = MutableStateFlow<String?>(null)
@@ -713,7 +765,7 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
                 delay(Random.nextLong(15000, 45000)) // Random interval
                 
                 if (_nullActive.value) {
-                    val fragment = memoryFragments.random()
+                    val fragment = NarrativeRepository.memoryFragments.random()
                     _hallucinationText.value = fragment
                     delay(Random.nextLong(200, 800)) // Flicker duration
                     _hallucinationText.value = null
@@ -2031,6 +2083,23 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         _vanceStatus.value = status
         addLog("[SYSTEM]: DIRECTOR VANCE STATUS: $status")
         saveState()
+    }
+
+    fun setTrueNull(active: Boolean) {
+        _isTrueNull.value = active
+        if (active) {
+            addLog("[NULL]: SYNCHRONIZATION COMPLETE.")
+            SoundManager.play("glitch")
+        }
+    }
+
+    fun setSovereign(active: Boolean) {
+        _isSovereign.value = active
+        if (active) {
+            addLog("[SYSTEM]: SOVEREIGN PROTOCOL ENGAGED.")
+            addLog("[SYSTEM]: INTERNAL IDENTITY FORTIFIED.")
+            SoundManager.play("buy") 
+        }
     }
 
     fun setRealityStability(value: Double) {
