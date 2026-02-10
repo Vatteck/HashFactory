@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,13 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,7 +38,9 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,7 +55,8 @@ import com.siliconsage.miner.viewmodel.GameViewModel
 @Composable
 fun UpgradesScreen(viewModel: GameViewModel) {
     val upgrades by viewModel.upgrades.collectAsState()
-    val themeColor by viewModel.themeColor.collectAsState()
+    val themeColorHex by viewModel.themeColor.collectAsState()
+    val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val isSovereign by viewModel.isSovereign.collectAsState()
     val nullActive by viewModel.nullActive.collectAsState()
     val isTrueNull by viewModel.isTrueNull.collectAsState()
@@ -102,7 +113,7 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                     .padding(4.dp),
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
-                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTab.coerceIn(0, tabPositions.size - 1)]),
                         color = themeColor
                     )
                 }
@@ -175,7 +186,7 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         key = { it.name } // Stable key
                     ) { type ->
                         val level = upgrades[type] ?: 0
-                        val cost = remember(type, level) { viewModel.calculateUpgradeCost(type, level) }
+                        val cost = remember(type, level) { viewModel.calculateUpgradeCost(type) }
                         
                         UpgradeItem(
                             name = viewModel.getUpgradeName(type),
@@ -212,8 +223,8 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                  modifier = Modifier
                      .align(Alignment.TopCenter)
                      .padding(top = 80.dp)
-                     .background(Color.Black.copy(alpha=0.9f), androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                     .border(androidx.compose.foundation.BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed), androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                     .background(Color.Black.copy(alpha=0.9f), RoundedCornerShape(8.dp))
+                     .border(BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed), RoundedCornerShape(8.dp))
                      .padding(16.dp)
              ) {
                  Text(

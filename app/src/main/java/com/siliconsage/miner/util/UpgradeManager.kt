@@ -1,5 +1,6 @@
 package com.siliconsage.miner.util
 
+import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.flow.update
@@ -174,5 +175,9 @@ object UpgradeManager {
             UpgradeType.RESIDENTIAL_TAP -> "⚡ +Max"
             else -> ""
         }
+    }
+
+    fun getUpgradeDescription(type: UpgradeType, isSovereign: Boolean): String {
+        return "Upgrade for ${type.name}"
     }
 }

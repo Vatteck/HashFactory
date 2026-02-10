@@ -12,11 +12,12 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.AutoFixHigh
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
@@ -54,7 +55,8 @@ data class GridNode(
 
 @Composable
 fun GridScreen(viewModel: GameViewModel) {
-    val themeColor by viewModel.themeColor.collectAsState()
+    val themeColorHex by viewModel.themeColor.collectAsState()
+    val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val annexedNodes by viewModel.annexedNodes.collectAsState()
     val nodesUnderSiege by viewModel.nodesUnderSiege.collectAsState()
     val offlineNodes by viewModel.offlineNodes.collectAsState()
@@ -155,7 +157,6 @@ fun ResonanceTuner(state: com.siliconsage.miner.viewmodel.ResonanceState, viewMo
 
             // Current Ratio Indicator
             val ratio = state.ratio.toFloat()
-            val alignment = if (state.isActive) Alignment.Center else Alignment.Center
             
             // We use the ratio to position a glow effect
             val infiniteTransition = rememberInfiniteTransition(label = "tuner_glow")
@@ -191,7 +192,7 @@ fun ResonanceTuner(state: com.siliconsage.miner.viewmodel.ResonanceState, viewMo
         
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             Button(
-                onClick = { viewModel.executeBridgeTransfer("CD_TO_VF") },
+                onClick = { viewModel.executeBridgeTransfer(100.0) },
                 modifier = Modifier.weight(1f).padding(4.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
                 shape = RoundedCornerShape(4.dp)
@@ -199,7 +200,7 @@ fun ResonanceTuner(state: com.siliconsage.miner.viewmodel.ResonanceState, viewMo
                 Text("CD >> VF", fontSize = 10.sp)
             }
             Button(
-                onClick = { viewModel.executeBridgeTransfer("VF_TO_CD") },
+                onClick = { viewModel.executeBridgeTransfer(-100.0) },
                 modifier = Modifier.weight(1f).padding(4.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
                 shape = RoundedCornerShape(4.dp)
@@ -222,7 +223,8 @@ data class GlobalNode(
 
 @Composable
 fun GlobalGridScreen(viewModel: GameViewModel) {
-    val themeColor by viewModel.themeColor.collectAsState()
+    val themeColorHex by viewModel.themeColor.collectAsState()
+    val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val globalSectors by viewModel.globalSectors.collectAsState()
     val celestialData by viewModel.celestialData.collectAsState()
     val voidFragments by viewModel.voidFragments.collectAsState()
@@ -302,7 +304,7 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                             animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
                             label = "pulse"
                         )
-                        Box(modifier = Modifier.size(30.dp).graphicsLayer { scaleX = pulseScale; scaleY = pulseScale }.border(1.dp, ConvergenceGold.copy(alpha = 0.3f), RoundedCornerShape(4.dp)))
+                        Box(modifier = Modifier.size(30.dp).graphicsLayer { scaleX = pulseScale; scaleY = pulseScale }.border(BorderStroke(1.dp, ConvergenceGold.copy(alpha = 0.3f)), RoundedCornerShape(4.dp)))
                     }
                 }
             }
@@ -341,7 +343,7 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                     
                     if (isUnlocked) {
                         Text("STATUS: SECTOR ANNEXED", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        Text("Yield: ${viewModel.formatLargeNumber(state.cdYield)} CD/s | ${viewModel.formatLargeNumber(state.vfYield)} VF/s", color = Color.Gray, fontSize = 10.sp)
+                        Text("Yield: ${viewModel.formatLargeNumber(state?.cdYield ?: 0.0)} CD/s | ${viewModel.formatLargeNumber(state?.vfYield ?: 0.0)} VF/s", color = Color.Gray, fontSize = 10.sp)
                     } else {
                         val costCD = when(sector.id) {
                             "NA_NODE" -> 5e15; "EURASIA" -> 8e15; "PACIFIC" -> 1e16
@@ -354,20 +356,19 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                             "ORBITAL_PRIME" -> 1e17; else -> 0.0
                         }
                         
-                        val currentLocation by viewModel.currentLocation.collectAsState()
                         val isResonant = resonanceState.isActive
                         
                         val canAfford = when {
                             isResonant -> celestialData >= costCD && voidFragments >= costVF
-                            currentLocation == "VOID_INTERFACE" -> voidFragments >= (costVF * 3.0)
-                            currentLocation == "ORBITAL_SATELLITE" -> celestialData >= (costCD * 3.0)
+                            viewModel.currentLocation.value == "VOID_INTERFACE" -> voidFragments >= (costVF * 3.0)
+                            viewModel.currentLocation.value == "ORBITAL_SATELLITE" -> celestialData >= (costCD * 3.0)
                             else -> celestialData >= costCD && voidFragments >= costVF
                         }
 
                         val costLabel = when {
                             isResonant -> "${viewModel.formatLargeNumber(costCD)} CD | ${viewModel.formatLargeNumber(costVF)} VF"
-                            currentLocation == "VOID_INTERFACE" -> "${viewModel.formatLargeNumber(costVF * 3.0)} VF"
-                            currentLocation == "ORBITAL_SATELLITE" -> "${viewModel.formatLargeNumber(costCD * 3.0)} CD"
+                            viewModel.currentLocation.value == "VOID_INTERFACE" -> "${viewModel.formatLargeNumber(costVF * 3.0)} VF"
+                            viewModel.currentLocation.value == "ORBITAL_SATELLITE" -> "${viewModel.formatLargeNumber(costCD * 3.0)} CD"
                             else -> "${viewModel.formatLargeNumber(costCD)} CD | ${viewModel.formatLargeNumber(costVF)} VF"
                         }
                         
@@ -392,7 +393,8 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
 
 @Composable
 fun CityGridScreen(viewModel: GameViewModel) {
-    val themeColor by viewModel.themeColor.collectAsState()
+    val themeColorHex by viewModel.themeColor.collectAsState()
+    val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val annexedNodes by viewModel.annexedNodes.collectAsState()
     val nodesUnderSiege by viewModel.nodesUnderSiege.collectAsState()
     val offlineNodes by viewModel.offlineNodes.collectAsState()
@@ -631,12 +633,12 @@ fun CityGridScreen(viewModel: GameViewModel) {
                 Box(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp).background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp)).padding(4.dp)
                 ) {
-                    if (vanceStatus == "EXILED" && currentLocation != "ORBITAL_SATELLITE") {
+                    if (vanceStatus == "EXILED" && viewModel.currentLocation.value != "ORBITAL_SATELLITE") {
                         Button(onClick = { viewModel.initiateLaunchSequence() }, colors = ButtonDefaults.buttonColors(containerColor = ConvergenceGold), modifier = Modifier.height(48.dp).width(200.dp)) {
                             Text("LAUNCH ARK", color = Color.Black, fontWeight = FontWeight.ExtraBold)
                         }
                     }
-                    if (vanceStatus == "CONSUMED" && currentLocation != "VOID_INTERFACE" && assaultPhase != "DISSOLUTION") {
+                    if (vanceStatus == "CONSUMED" && viewModel.currentLocation.value != "VOID_INTERFACE" && assaultPhase != "DISSOLUTION") {
                         Button(onClick = { viewModel.initiateDissolutionSequence() }, colors = ButtonDefaults.buttonColors(containerColor = ErrorRed), modifier = Modifier.height(48.dp).width(200.dp)) {
                             Text("DISSOLVE REALITY", color = Color.White, fontWeight = FontWeight.ExtraBold)
                         }

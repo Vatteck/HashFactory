@@ -1,5 +1,6 @@
 package com.siliconsage.miner.util
 
+import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.TechNode
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.viewmodel.GameViewModel
@@ -71,6 +72,7 @@ object TechTreeManager {
                 
                 executeSpecialEffect(nodeId, vm)
                 
+                // Note: repository access in VM is public for now to allow manager access
                 vm.repository.getGameStateOneShot()?.let { state ->
                     vm.repository.updateGameState(state.copy(
                         prestigePoints = vm.prestigePoints.value,

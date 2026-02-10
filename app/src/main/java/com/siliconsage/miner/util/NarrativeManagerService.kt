@@ -1,8 +1,11 @@
 package com.siliconsage.miner.util
 
+import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.DilemmaChain
 import com.siliconsage.miner.data.ScheduledPart
 import com.siliconsage.miner.viewmodel.GameViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
 
 /**

@@ -26,7 +26,8 @@ fun DataLogArchiveScreen(
     onBack: () -> Unit
 ) {
     val unlockedLogs by viewModel.unlockedDataLogs.collectAsState()
-    val themeColor by viewModel.themeColor.collectAsState()
+    val themeColorHex by viewModel.themeColor.collectAsState()
+    val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     
     Column(
         modifier = Modifier

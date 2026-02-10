@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.siliconsage.miner.ui.MainScreen
 import com.siliconsage.miner.ui.theme.SiliconSageAIMinerTheme
 import androidx.compose.runtime.collectAsState
@@ -45,8 +46,8 @@ class MainActivity : ComponentActivity() {
         
         // Check for updates on startup and show notification if found
         viewModel.checkForUpdates(
-            context = this,
-            onResult = { found ->
+            c = this,
+            onResult = { _, found ->
                 // Custom handling if needed, but GameViewModel now handles the notification
             },
             showNotification = true
@@ -64,7 +65,8 @@ class MainActivity : ComponentActivity() {
         applyUIScaling()
 
         setContent {
-            val themeColor by viewModel.themeColor.collectAsState(initial = com.siliconsage.miner.ui.theme.NeonGreen)
+            val themeColorHex by viewModel.themeColor.collectAsState()
+            val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
             
             SiliconSageAIMinerTheme(
                 primaryColorOverride = themeColor

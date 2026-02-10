@@ -61,7 +61,7 @@ object MarketManager {
             unlockedNodes = vm.unlockedTechNodes.value
         )
 
-        vm.setMarketModfiers(
+        vm.setMarketModifiers(
             marketMult = result.marketMultiplier,
             thermalMod = result.thermalRateModifier,
             energyMult = energyPrice,

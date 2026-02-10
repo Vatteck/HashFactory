@@ -1,5 +1,6 @@
 package com.siliconsage.miner.util
 
+import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.viewmodel.GameViewModel
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.domain.engine.ResourceEngine
@@ -68,7 +69,7 @@ object SimulationService {
             currentHeat = currentHeat, location = vm.currentLocation.value, upgrades = vm.upgrades.value,
             isOverclocked = vm.isOverclocked.value, isPurging = vm.isPurgingHeat.value,
             isCageActive = vm.commandCenterAssaultPhase.value == "CAGE", unlockedPerks = vm.unlockedPerks.value,
-            unlockedTechNodes = vm.unlockedTechNodes.value.toSet(), playerRank = vm.playerRank.value,
+            unlockedTechNodes = vm.unlockedTechNodes.value, playerRank = vm.playerRank.value,
             storyStage = vm.storyStage.value, faction = vm.faction.value
         )
         if (vm.purgeExhaustTimer > 0 && vm.faction.value != "SANCTUARY") vm.purgeExhaustTimer--
@@ -96,15 +97,18 @@ object SimulationService {
                  if (vm.currentLocation.value == "ORBITAL_SATELLITE") {
                     vm.celestialData.update { it * 0.9 }; vm.hardwareIntegrity.value = 50.0
                  } else if (vm.commandCenterAssaultPhase.value == "CAGE") {
-                    vm.failAssault("CORE INTEGRITY ZERO.", 0)
+                    vm.failAssault("CORE INTEGRITY ZERO.", 0L)
                  } else { vm.handleSystemFailure() }
             }
         }
-        if (newHeat > 80.0 && Random.nextDouble() < (if (newHeat > 95.0) 0.2 else 0.1)) HapticManager.vibrateHeartbeat()
+        
+        val heartbeatChance = if (newHeat > 95.0) 0.2 else 0.1
+        if (newHeat > 80.0 && kotlin.random.Random.nextDouble() < heartbeatChance) HapticManager.vibrateHeartbeat()
+        
         if (vm.isThermalLockout.value) { vm.overheatSeconds = 0; return }
         if (currentHeat >= 100.0 || newHeat >= 100.0) {
             vm.overheatSeconds++
-            if (vm.overheatSeconds >= 10) { vm.handleSystemFailure(forceOne = true); vm.overheatSeconds = 0 }
+            if (vm.overheatSeconds >= 10) { vm.handleSystemFailure(true); vm.overheatSeconds = 0 }
         } else { vm.overheatSeconds = 0 }
     }
 
@@ -123,19 +127,19 @@ object SimulationService {
                     val count = (currentUpgrades[victim] ?: 0) - 1
                     currentUpgrades[victim] = count; vm.upgrades.value = currentUpgrades
                     vm.viewModelScope.launch { vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(victim, count)) }
-                    vm.hallucinationText.value = "CRITICAL LOSS: ${victim.name}"; delay(500); vm.hallucinationText.value = null
+                    vm.hallucinationText.value = "CRITICAL LOSS: ${victim.name}"; delay(500L); vm.hallucinationText.value = null
                 } else {
                     if (!vm.isThermalLockout.value) {
                         vm.isThermalLockout.value = true; vm.overheatSeconds = 0
                         vm.viewModelScope.launch {
-                            vm.lockoutTimer.value = 15; repeat(15) { delay(1000); vm.lockoutTimer.value -= 1 }
+                            vm.lockoutTimer.value = 15; repeat(15) { delay(1000L); vm.lockoutTimer.value -= 1 }
                             vm.isThermalLockout.value = false
                         }
                     }
                     break
                 }
                 if (vm.hardwareIntegrity.value > 0.0) break
-                delay(3000)
+                delay(3000L)
             }
             if (vm.hardwareIntegrity.value <= 0.0) vm.hardwareIntegrity.value = 10.0
             vm.isDestructionLoopActive = false

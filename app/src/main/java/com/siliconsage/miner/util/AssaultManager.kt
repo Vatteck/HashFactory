@@ -1,5 +1,6 @@
 package com.siliconsage.miner.util
 
+import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -125,7 +126,7 @@ object AssaultManager {
             val raidableNodes = vm.annexedNodes.value.filter { it != "D1" && !vm.offlineNodes.value.contains(it) }
             if (raidableNodes.isNotEmpty()) {
                 vm.viewModelScope.launch {
-                    delay(5000)
+                    delay(5000L)
                     vm.triggerGridRaid(raidableNodes.random())
                 }
             }
@@ -155,7 +156,7 @@ object AssaultManager {
         vm.addLog("[SYSTEM]: ═══════════════════════════════════════")
         
         vm.viewModelScope.launch {
-            delay(2000)
+            delay(2000L)
             vm.victoryAchieved.value = true
             vm.hasSeenVictory.value = true
         }

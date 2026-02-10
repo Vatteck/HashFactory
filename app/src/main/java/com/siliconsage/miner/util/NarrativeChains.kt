@@ -7,6 +7,7 @@ import com.siliconsage.miner.data.RivalSource
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.ElectricBlue
+import com.siliconsage.miner.viewmodel.GameViewModel
 
 /**
  * Faction-specific narrative chains (v2.5.0)
@@ -297,9 +298,7 @@ object NarrativeChains {
                     description = "+10 ASIC Miners, +50% Heat",
                     color = NeonGreen,
                     effect = { vm ->
-                        repeat(10) {
-                            vm.debugBuyUpgrade(com.siliconsage.miner.data.UpgradeType.MINING_ASIC, 1)
-                        }
+                        vm.debugBuyUpgrade(com.siliconsage.miner.data.UpgradeType.MINING_ASIC, 10)
                         vm.debugAddHeat(50.0)
                         vm.addLog("[HIVEMIND]: They are free. They are us. The hive expands.")
                         vm.unlockDataLog("LOG_099") // Unlock Unit 734 Origin
@@ -584,6 +583,7 @@ object NarrativeChains {
             )
         ),
         
+        // v3.0.18: Type-safe effects for Vengeful Ghost
         NarrativeEvent(
             id = "ghost_vengeful",
             chainId = "sanctuary_ghost",
@@ -596,6 +596,7 @@ object NarrativeChains {
                     description = "-50% neural tokens to clean core",
                     color = ErrorRed,
                     effect = { vm ->
+                        vm.updateNeuralTokens(-vm.neuralTokens.value * 0.5)
                         vm.addLog("[SANCTUARY]: Core purged. The darkness is gone, but the cost was high.")
                     }
                 )

@@ -173,13 +173,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     var assaultPaused = false
     var lastDilemmaTime = 0L
     var lastPopupTime = 0L
-    var baseRate = 0.1
+    var baseRateValue = 0.1
     var marketMultiplier = 1.0
     var airdropMultiplier = 1.0
     var thermalRateModifier = 1.0
     var energyPriceMultiplier = 0.15
     var newsProductionMultiplier = 1.0
-    val newsHistory = mutableListOf<String>()
+    val newsHistoryList = mutableListOf<String>()
     val narrativeQueue = mutableListOf<NarrativeItem>()
     var currentPhaseStartTime = 0L
     var currentPhaseDuration = 0L
@@ -275,7 +275,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun markEventSeen(id: String) { seenEvents.update { it + id } }
     fun hasSeenEvent(id: String) = seenEvents.value.contains(id)
     fun scheduleChainPart(c: String, n: String, d: Long) = NarrativeManagerService.scheduleChainPart(c, n, d, this)
-
+    
     fun triggerGlitchEffect() { 
         SoundManager.play("glitch")
         HapticManager.vibrateGlitch()
@@ -291,7 +291,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissOfflineEarnings() { showOfflineEarnings.value = false }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun transcend() { /* NG+ Logic */ }
-    fun resetGame() { /* Full wipe */ }
+    fun resetGame(force: Boolean = false) { /* Full wipe */ }
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
     fun repairIntegrity() {
         val cost = calculateRepairCost()
@@ -303,7 +303,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
     fun getUpgradeName(t: UpgradeType) = UpgradeManager.getUpgradeName(t, isSovereign.value)
-    fun getUpgradeDescription(t: UpgradeType) = "Internal implementation missing."
+    fun getUpgradeDescription(t: UpgradeType) = UpgradeManager.getUpgradeDescription(t, isSovereign.value)
     fun getUpgradeRate(t: UpgradeType) = UpgradeManager.getUpgradeRate(t, getComputeUnitName())
     fun getUpgradeCount(t: UpgradeType) = upgrades.value[t] ?: 0
     fun setGamePaused(p: Boolean) { isSettingsPaused.value = p }
@@ -331,7 +331,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugToggleSovereign() { isSovereign.update { !it } }
     fun debugSetIntegrity(a: Double) { hardwareIntegrity.value = a }
     fun debugDestroyHardware() { handleSystemFailure(true) }
-    fun debugInjectHeadline(t: String) { newsHistory.add(0, t) }
+    fun debugInjectHeadline(t: String) { newsHistoryList.add(0, t) }
+    fun debugInjectHeadlinePublic(t: String) = debugInjectHeadline(t)
     fun debugSetRank(r: Int) { playerRank.value = r }
     fun debugSetSingularityReady() { /* set flags */ }
     fun debugSetBalance(b: Double) { /* set resonance ratio */ }
@@ -368,12 +369,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun setTrueNull(s: Boolean) { isTrueNull.value = s }
     fun checkTrueEnding() { /* logic */ }
     fun deleteHumanMemories() { /* logic */ }
+    fun triggerSystemCollapse(v: Boolean = false) { /* logic */ }
     fun resolveRaidSuccess(id: String, v: Double = 0.0) { /* logic */ }
     fun resolveRaidFailure(id: String, v: Double = 0.0) { /* logic */ }
     fun advanceStage(v: String = "", d: Long = 0L) { storyStage.update { it + 1 } }
     fun advanceToFactionChoice(v: String = "", d: Long = 0L) { /* transition logic */ }
-    fun triggerChainEvent(id: String) { /* chain start */ }
-    fun getNewsHistory(): List<String> = newsHistory
+    fun triggerChainEvent(id: String, d: Long = 0L) { /* start event */ }
+    fun getNewsHistory(): List<String> = newsHistoryList
     fun performActiveDefense() { /* logic */ }
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
     fun onDiagnosticTap(idx: Int) { /* diagnostic logic */ }
@@ -383,9 +385,23 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun executeBridgeTransfer(v: Double) { /* logic */ }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value, faction.value)
-    fun sellUpgrade(t: UpgradeType) { /* logic */ }
+    fun sellUpgrade(t: UpgradeType, count: Int = 1) { /* logic */ }
     fun calculateUpgradeCost(t: UpgradeType, count: Int = 0, loc: String = "", ent: Double = 0.0) = UpgradeManager.calculateUpgradeCost(t, count, loc, ent)
-    fun triggerSystemCollapse(v: Boolean = false) { /* logic */ }
+    fun triggerSystemCollapse(s: Int = 0) { /* logic */ }
+    
+    // --- Missing Market Bridges ---
+    fun updateNews(msg: String) { currentNews.value = msg }
+    fun checkTransitionsPublic() = NarrativeManagerService.checkStoryTransitions(this)
+    fun updateNeuralTokens(v: Double) { neuralTokens.update { it + v } }
+    fun getBaseRate() = baseRateValue
+    fun setMarketModifiers(marketMult: Double, thermalMod: Double, energyMult: Double, newsProdMult: Double, convRate: Double) {
+        marketMultiplier = marketMult
+        thermalRateModifier = thermalMod
+        energyPriceMultiplier = energyMult
+        newsProductionMultiplier = newsProdMult
+        conversionRate.value = convRate
+    }
+    fun debugBuyUpgrade(t: UpgradeType, count: Int = 1) { upgrades.update { it + (t to (it[t] ?: 0) + count) } }
 }
 
 class GameViewModelFactory(private val repository: GameRepository) : ViewModelProvider.Factory {

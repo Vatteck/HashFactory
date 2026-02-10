@@ -88,7 +88,7 @@ fun DigitalWashOverlay(choice: String, intensity: Float) {
         }
         
         // Heavy permanent background tint
-        drawRect(color = washColor, alpha = 0.15f + (intensity * 0.1f))
+        drawRect(color = washColor, alpha = (0.15f + (intensity * 0.1f)).coerceIn(0f, 1f))
     }
 }
 
@@ -171,7 +171,8 @@ fun MainScreen(viewModel: GameViewModel) {
     LaunchedEffect(currentScreen) { viewModel.setGamePaused(currentScreen == Screen.SETTINGS) }
 
     val storyStage by viewModel.storyStage.collectAsState()
-    val themeColor by viewModel.themeColor.collectAsState()
+    val themeColorHex by viewModel.themeColor.collectAsState()
+    val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val updateInfo by viewModel.updateInfo.collectAsState(null)
     val isUpdateDownloading by viewModel.isUpdateDownloading.collectAsState(false)
     val updateProgress by viewModel.updateDownloadProgress.collectAsState(0f)
@@ -275,7 +276,7 @@ fun MainScreen(viewModel: GameViewModel) {
                 if (isPurging) Box(modifier = Modifier.fillMaxSize().background(Brush.radialGradient(listOf(Color.Cyan.copy(alpha = 0.3f), Color.Transparent), radius = 1000f)).pointerInput(Unit) {})
                 updateInfo?.let { info ->
                     val context = androidx.compose.ui.platform.LocalContext.current
-                    UpdateOverlay(info, isUpdateDownloading, updateProgress, { viewModel.startUpdateDownload(context) }, { viewModel.dismissUpdate() })
+                    UpdateOverlay(info, isUpdateDownloading, updateProgress, { viewModel.startUpdateDownload(context, info) }, { viewModel.dismissUpdate() })
                 }
                 
                 // v3.0.1: Data Leak Animation (Background Layer)
@@ -289,12 +290,12 @@ fun MainScreen(viewModel: GameViewModel) {
                     com.siliconsage.miner.ui.components.DataLogDialog(pendingDataLog) { viewModel.dismissDataLog() }
                     val fileName = if (storyStage <= 1 && faction == "NONE") "ascnd.exe" else "lobot.exe"
                     com.siliconsage.miner.ui.components.AscensionUploadOverlay(isAscensionUploading, uploadProgress, fileName)
-                    SecurityBreachOverlay(isBreach, breachClicks) { com.siliconsage.miner.util.SecurityManager.performActiveDefense(viewModel); viewModel.onDefendBreach(); SoundManager.play("click"); HapticManager.vibrateClick() }
-                    AirdropButton(isAirdrop) { viewModel.claimAirdrop(); SoundManager.play("buy"); HapticManager.vibrateSuccess() }
+                    SecurityBreachOverlay(isBreach, breachClicks) { viewModel.onDefendBreach(); SoundManager.play("click"); HapticManager.vibrateClick() }
+                    AirdropButton(isAirdrop) { viewModel.claimAirdrop(0.0); SoundManager.play("buy"); HapticManager.vibrateSuccess() }
                     AuditChallengeOverlay(isAuditActive, auditTimer, auditTargetHeat, currentHeatForAudit, auditTargetPower, currentPowerForAudit)
                     KernelHijackOverlay(isKernelHijackActive, attackTaps) { viewModel.onDefendKernelHijack() }
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.DiagnosticsOverlay(isDiagnostics, diagnosticGrid) { viewModel.onDiagnosticTap(it) } }
-                    com.siliconsage.miner.ui.components.GovernanceForkOverlay(isGovernanceFork) { viewModel.resolveFork(it) }
+                    com.siliconsage.miner.ui.components.GovernanceForkOverlay(isGovernanceFork) { viewModel.resolveFork(0) }
                     val currentDilemma by viewModel.currentDilemma.collectAsState()
                     DilemmaOverlay(currentDilemma, viewModel) { viewModel.selectChoice(it) }
                     val pendingRivalMessage by viewModel.pendingRivalMessage.collectAsState()
@@ -303,10 +304,10 @@ fun MainScreen(viewModel: GameViewModel) {
                     val offlineStats by viewModel.offlineStats.collectAsState()
                     com.siliconsage.miner.ui.components.OfflineEarningsDialog(
                         isVisible = showOffline,
-                        timeOfflineSec = offlineStats.timeSeconds,
-                        floopsEarned = offlineStats.flopsEarned,
-                        heatCooled = offlineStats.heatCooled,
-                        insightEarned = offlineStats.insightEarned,
+                        timeOfflineSec = (offlineStats["timeSeconds"] ?: 0.0).toLong(),
+                        floopsEarned = offlineStats["flopsEarned"] ?: 0.0,
+                        heatCooled = offlineStats["heatCooled"] ?: 0.0,
+                        insightEarned = offlineStats["insightEarned"] ?: 0.0,
                         unitName = viewModel.getComputeUnitName(),
                         onDismiss = { viewModel.dismissOfflineEarnings() }
                     )
@@ -414,7 +415,7 @@ fun ResonanceDisplay(state: ResonanceState, color: Color) {
                 text = "RESONANCE: $tierLabel",
                 color = resonanceColor,
                 fontSize = 10.sp,
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
             )
             Text(
@@ -501,7 +502,6 @@ fun HeaderSection(
     val resonanceState by viewModel.resonanceState.collectAsState()
 
     val infiniteTransition = rememberInfiniteTransition(label = "kinetic_hud")
-    val waveAnimState = infiniteTransition.animateFloat(0f, (Math.PI * 2).toFloat(), infiniteRepeatable(tween(2500, easing = LinearEasing)), label = "hud_wave")
     val flickerAlphaState = infiniteTransition.animateFloat(0.7f, 1.0f, infiniteRepeatable(tween(100, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "voltage_droop")
 
     val manualClickFlow = viewModel.manualClickEvent
@@ -750,7 +750,7 @@ fun HeaderSection(
                         color = color.copy(alpha = 0.9f), 
                         style = glowStyle, 
                         fontSize = 8.sp, 
-                        fontWeight = FontWeight.ExtraBold,
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
                 }
