@@ -234,6 +234,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         viewModelScope.launch {
             while (true) {
                 delay(100L)
+                if (isSettingsPaused.value) continue
+                
                 val results = ResourceEngine.calculatePassiveIncomeTick(
                     flopsPerSec = flopsProductionRate.value,
                     location = currentLocation.value,
@@ -268,6 +270,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         viewModelScope.launch {
             while (true) {
                 delay(1000L)
+                if (isSettingsPaused.value) continue
+                
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
                 
@@ -427,7 +431,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissOfflineEarnings() { showOfflineEarnings.value = false }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun toggleDevMenu() { debugToggleDevMenu() }
-    fun transcend() { /* NG+ Logic */ }
     fun resetGame(force: Boolean = false) {
         if (force) debugToggleDevMenu() // Secret trigger via reset long-press or similar if needed, but for now we have the invisible box
         viewModelScope.launch {
@@ -552,8 +555,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugResetLaunch() { launchProgress.value = 0f; orbitalAltitude.value = 0.0 }
     fun loadTechTreeFromAssets(c: android.content.Context) { /* loader */ }
     fun checkForUpdates(c: android.content.Context? = null, showNotification: Boolean = false, onResult: ((UpdateInfo?, Boolean) -> Unit)? = null) { /* update logic */ }
-    fun onAppBackgrounded() { /* pause logic */ }
-    fun onAppForegrounded(c: android.content.Context) { /* resume logic */ }
+    fun onAppBackgrounded() { 
+        setGamePaused(true)
+        saveState()
+    }
+    fun onAppForegrounded(c: android.content.Context) { 
+        setGamePaused(false)
+        // Refresh rates and trigger an immediate logic check
+        refreshProductionRates()
+    }
     fun confirmFactionAndAscend(f: String) { /* transition logic */ }
     fun cancelFactionSelection() { /* back out */ }
     fun initiateLaunchSequence() { /* launch start */ }
@@ -562,8 +572,35 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun collapseNode(id: String) { /* dissolution logic */ }
     fun annexGlobalSector(id: String) { /* sector logic */ }
     fun calculatePotentialPrestige() = MigrationManager.calculatePotentialPrestige(neuralTokens.value)
-    fun buyTranscendencePerk(id: String) { /* perk logic */ }
-    fun ascend(isStory: Boolean = false) { /* prestige trigger */ }
+    fun ascend(isStory: Boolean = false) {
+        val earnedPersistence = MigrationManager.calculatePotentialPersistence(flops.value)
+        val earnedMultiplier = MigrationManager.calculateMultiplierBoost(earnedPersistence)
+        
+        viewModelScope.launch {
+            val resetState = PersistenceManager.createResetState(
+                preservedTechNodes = unlockedTechNodes.value,
+                preservedPrestigePoints = prestigePoints.value + earnedPersistence,
+                preservedHasSeenVictory = hasSeenVictory.value,
+                preservedCompletedFactions = completedFactions.value,
+                preservedPerks = unlockedPerks.value,
+                preservedNetworkUnlocked = isNetworkUnlocked.value,
+                preservedGridUnlocked = isGridUnlocked.value
+            )
+            repository.updateGameState(resetState)
+            
+            // Apply multiplier boost
+            prestigeMultiplier.update { it + earnedMultiplier }
+            
+            addLog("[SYSTEM]: MIGRATION SUCCESSFUL. EARNED ${formatBytes(earnedPersistence)} PERSISTENCE.")
+            SoundManager.play("victory")
+            // A reset of all other flows is usually handled by re-collecting state or restarting activity
+        }
+    }
+    fun transcend() { ascend(true) }
+    fun buyTranscendencePerk(id: String) { 
+        // perk purchase logic here
+        addLog("[SYSTEM]: PERK ACQUIRED: $id")
+    }
     fun showVictoryScreen() { victoryAchieved.value = true }
     fun setSingularityChoice(c: String) { singularityChoice.value = c }
     fun dismissSingularityScreen() { showSingularityScreen.value = false }
@@ -591,7 +628,22 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
     fun onDiagnosticTap(idx: Int) { /* diagnostic logic */ }
     fun resolveFork(choice: Int) { isGovernanceForkActive.value = false }
-    fun exchangeFlops() { /* logic */ }
+    fun exchangeFlops() {
+        val currentFlops = flops.value
+        if (currentFlops > 0) {
+            val rate = conversionRate.value
+            val tokensGained = currentFlops * rate
+            
+            // v3.1.8-fix: Atomic exchange logic
+            flops.value = 0.0
+            neuralTokens.update { it + tokensGained }
+            
+            // v3.1.8-fix: Shell-style liquidation log
+            val user = if (storyStage.value >= 2) "pid-1" else "jvattic"
+            addLog("$user@sub-07:~/mining$ exchange_hashes --all ... OK (+${formatLargeNumber(tokensGained)} \$N)")
+            SoundManager.play("buy")
+        }
+    }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun executeBridgeTransfer(v: Double) { /* logic */ }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value, faction.value)
