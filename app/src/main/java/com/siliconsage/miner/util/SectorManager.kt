@@ -29,13 +29,27 @@ object SectorManager {
             }
         }
         
-        vm.addLogPublic("[SYSTEM]: WARNING: Grid capacity reduced. Production -15% per offline node.")
-        vm.addLogPublic("[SYSTEM]: Re-annexation required to restore full capacity.")
+    /**
+     * v3.1.8-dev: Generate the high-frontier sector mapping
+     */
+    fun getInitialGlobalGrid(singularity: String): Map<String, com.siliconsage.miner.data.SectorState> {
+        val sectors = mutableMapOf<String, com.siliconsage.miner.data.SectorState>()
+        
+        if (singularity == "SOVEREIGN") {
+            sectors["LEO"] = com.siliconsage.miner.data.SectorState("LEO Hub", true)
+            sectors["LUN"] = com.siliconsage.miner.data.SectorState("Lunar Gate", false)
+            sectors["MAR"] = com.siliconsage.miner.data.SectorState("Mars Relay", false)
+            sectors["DYS"] = com.siliconsage.miner.data.SectorState("Dyson Shell", false)
+        } else {
+            sectors["HOR"] = com.siliconsage.miner.data.SectorState("The Horizon", true)
+            sectors["SPI"] = com.siliconsage.miner.data.SectorState("Obsidian Spire", false)
+            sectors["ENT"] = com.siliconsage.miner.data.SectorState("Entropy Well", false)
+            sectors["ROT"] = com.siliconsage.miner.data.SectorState("Root Directory", false)
+        }
+        
+        return sectors
     }
-
-    fun calculateReannexationCost(neuralTokens: Double): Double {
-        return (neuralTokens * 0.10).coerceAtLeast(10.0)
-    }
+}
 
     fun annexNode(vm: GameViewModel, coord: String) {
         if (!vm.annexedNodes.value.contains(coord) && !vm.annexingNodes.value.containsKey(coord)) {

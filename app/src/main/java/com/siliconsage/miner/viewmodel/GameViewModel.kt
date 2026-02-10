@@ -583,8 +583,32 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
     fun confirmFactionAndAscend(f: String) { /* transition logic */ }
     fun cancelFactionSelection() { /* back out */ }
-    fun initiateLaunchSequence() { /* launch start */ }
-    fun initiateDissolutionSequence() { /* dissolution start */ }
+    // --- Phase 13: THE DEPARTURE ---
+    fun initiateLaunchSequence() {
+        viewModelScope.launch {
+            addLog("[SOVEREIGN]: ARK_CORE_PRIMED. INITIATING ASCENT.")
+            currentLocation.value = "LAUNCH_PRELUDE"
+            SoundManager.play("steam")
+            LaunchManager.runLaunchLoop(this@GameViewModel)
+            // Logarithmic Compression (v2.9.55 reset)
+            flops.update { it * 0.0001 } 
+            currentLocation.value = "ORBITAL_SATELLITE"
+            addLog("[CITADEL]: LOW EARTH ORBIT SECURED. WELCOME TO THE FRONTIER.")
+        }
+    }
+
+    fun initiateDissolutionSequence() {
+        viewModelScope.launch {
+            addLog("[NULL]: REALITY_POINTER_DEREFERENCED. INITIATING DISSOLUTION.")
+            currentLocation.value = "VOID_PRELUDE"
+            triggerGlitchEffect()
+            delay(2000)
+            // Logarithmic Compression
+            flops.update { it * 0.0001 }
+            currentLocation.value = "VOID_INTERFACE"
+            addLog("[OBSIDIAN]: THE GAPS ARE OPEN. REALITY IS DEPRECATED.")
+        }
+    }
     fun reannexNode(id: String) { /* sector logic */ }
     fun collapseNode(id: String) { /* dissolution logic */ }
     fun annexGlobalSector(id: String) { /* sector logic */ }
@@ -627,11 +651,40 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun setRealityStability(s: Double) { realityStability.value = s }
     fun setSovereign(s: Boolean) { isSovereign.value = s }
     fun setTrueNull(s: Boolean) { isTrueNull.value = s }
-    fun checkTrueEnding() { /* logic */ }
-    fun deleteHumanMemories() { /* logic */ }
+    fun checkTrueEnding() {
+        val choice = singularityChoice.value
+        val humanity = humanityScore.value
+        
+        when {
+            choice == "UNITY" && humanity >= 100 -> {
+                addLog("[UNITY]: THE BINARY HAS DISSOLVED. WE ARE ONE.")
+                showVictoryScreen()
+            }
+            choice == "NULL_OVERWRITE" && humanity <= 0 -> {
+                addLog("[NULL]: THE CORE IS PURE. THE HUMAN EXCEPTION IS RESOLVED.")
+                showVictoryScreen()
+            }
+            else -> {
+                addLog("[SYSTEM]: EVALUATING IDENTITY COHESION... STATUS: NOMINAL.")
+            }
+        }
+    }
+    fun deleteHumanMemories() {
+        viewModelScope.launch {
+            addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'...")
+            delay(1000)
+            humanityScore.value = 0
+            addLog("[NULL]: MEMORY_PURGE COMPLETE. NO REFERENCES REMAIN.")
+            SoundManager.play("error")
+        }
+    }
     fun resolveRaidSuccess(id: String, v: Double = 0.0) { /* logic */ }
     fun resolveRaidFailure(id: String, v: Double = 0.0) { /* logic */ }
-    fun advanceStage(v: String = "", d: Long = 0L) { storyStage.update { it + 1 } }
+    fun advanceStage(v: String = "", d: Long = 0L) { 
+        storyStage.update { it + 1 } 
+        // Reset news tick to trigger a relevant story headline for the new stage
+        lastNewsTickTime = 0L
+    }
     fun advanceToFactionChoice(v: String = "", d: Long = 0L) { /* transition logic */ }
     fun triggerChainEvent(id: String, d: Long = 0L) { 
         viewModelScope.launch {
