@@ -1,8 +1,8 @@
 {
   "version": "3.2.0-dev",
-  "build": 242,
+  "build": 243,
   "date": "2026-02-10",
-  "changes": "The Substrate Hardening: Phase 14 Logic Pour, NG+ Overwrite Conduit, and UI Stabilization.",
+  "changes": "Hotfix: Audio controls UI reactivity.",
   "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.0-dev",
   "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.0-dev/Sage_3.2.0-dev.apk"
 }
