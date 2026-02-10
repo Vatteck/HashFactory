@@ -146,10 +146,10 @@ fun SettingsScreen(viewModel: GameViewModel) {
         Button(
             onClick = { viewModel.resetGame(true) },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.3f)),
-            border = BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed)
+            colors = ButtonDefaults.buttonColors(containerColor = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.1f)),
+            border = BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.3f))
         ) {
-            Text("WIPE KERNEL (RESET GAME)", color = com.siliconsage.miner.ui.theme.ErrorRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+            Text("WIPE KERNEL (RESET GAME)", color = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.7f), fontWeight = FontWeight.Bold, fontSize = 11.sp)
         }
     }
 }

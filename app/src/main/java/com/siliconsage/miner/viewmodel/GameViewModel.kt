@@ -337,8 +337,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         // v3.1.8-fix: Re-link manual heat generation (Increased to 0.5 for visibility)
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         
-        // v3.1.8-fix: Manual click logs for feedback (100% frequency for verification)
-        addLog("[SYSTEM]: MANUAL_HASH_GENERATED: +${formatLargeNumber(p)} HASH.")
+        // v3.1.8-fix: Legacy log style restored
+        addLog("> MANUAL_HASH_GENERATED: +${formatLargeNumber(p)} HASH.")
         
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }
@@ -353,7 +353,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     )
 
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
-    fun toggleOverclock() = SimulationService.toggleOverclock(this)
+    fun toggleOverclock() { 
+        SimulationService.toggleOverclock(this)
+        // v3.1.8-fix: Ensure rate recalc immediately
+        refreshProductionRates()
+    }
     fun purgeHeat() = SimulationService.purgeHeat(this)
     fun triggerDilemma(e: NarrativeEvent) { currentDilemma.value = e }
     fun selectChoice(c: NarrativeChoice) = NarrativeService.selectChoice(this, c)
