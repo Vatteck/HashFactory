@@ -584,7 +584,21 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun executeBridgeTransfer(v: Double) { /* logic */ }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value, faction.value)
-    fun sellUpgrade(t: UpgradeType, count: Int = 1) { /* logic */ }
+    fun sellUpgrade(type: UpgradeType, count: Int = 1) {
+        val currentLevel = upgrades.value[type] ?: 0
+        if (currentLevel >= count && type != UpgradeType.RESIDENTIAL_TAP) {
+            val newLevel = currentLevel - count
+            val sellPrice = UpgradeManager.calculateUpgradeCost(type, newLevel, currentLocation.value, entropyLevel.value) * 0.5
+            
+            viewModelScope.launch {
+                repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type, newLevel))
+                upgrades.update { it + (type to newLevel) }
+                neuralTokens.update { it + sellPrice }
+                addLog("[SYSTEM]: Liquidated ${type.name.replace("_", " ")} x$count. Recouped ${formatLargeNumber(sellPrice)} \$N.")
+                SoundManager.play("buy")
+            }
+        }
+    }
     fun calculateUpgradeCost(t: UpgradeType, count: Int = 0, loc: String = "", ent: Double = 0.0) = UpgradeManager.calculateUpgradeCost(t, count, loc, ent)
     
     // --- Missing Market Bridges ---
