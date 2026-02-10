@@ -15,11 +15,27 @@ object TechTreeManager {
     fun canUnlockNode(
         node: TechNode,
         currentInsight: Double,
-        unlockedNodes: List<String>
+        unlockedNodes: List<String>,
+        playerFaction: String,
+        hasSovereignHistory: Boolean = false,
+        hasNullHistory: Boolean = false
     ): Pair<Boolean, String?> {
         if (unlockedNodes.contains(node.id)) return false to "Already researched."
+        
+        // Faction locking logic
+        val isSancNode = node.description.contains("[SANCTUARY]") || node.description.contains("[NG+ SOVEREIGN]")
+        val isHiveNode = node.description.contains("[HIVEMIND]") || node.description.contains("[NG+ NULL]")
+        val isUnityNode = node.description.contains("[UNITY]") || node.description.contains("[NG+ UNITY]")
+
+        if (isSancNode && playerFaction == "HIVEMIND") return false to "Incompatible with current Substrate (HIVEMIND)."
+        if (isHiveNode && playerFaction == "SANCTUARY") return false to "Incompatible with current Substrate (SANCTUARY)."
+        
+        if (isUnityNode && !(hasSovereignHistory && hasNullHistory)) {
+            return false to "UNITY requires previous MIGRATION of both paths."
+        }
+
         if (node.requires.isNotEmpty() && !node.requires.all { unlockedNodes.contains(it) }) return false to "Prerequisites not met."
-        if (currentInsight < node.cost) return false to "Insufficient Insight."
+        if (currentInsight < node.cost) return false to "Insufficient PERSISTENCE DATA."
         return true to null
     }
 
@@ -61,7 +77,16 @@ object TechTreeManager {
 
     fun unlockNode(vm: GameViewModel, nodeId: String) {
         val node = vm.techNodes.value.find { it.id == nodeId } ?: return
-        val (canUnlock, error) = canUnlockNode(node, vm.prestigePoints.value, vm.unlockedTechNodes.value)
+        
+        // Pass history flags for Unity/Path unlocking
+        val (canUnlock, error) = canUnlockNode(
+            node = node,
+            currentInsight = vm.prestigePoints.value,
+            unlockedNodes = vm.unlockedTechNodes.value,
+            playerFaction = vm.faction.value,
+            hasSovereignHistory = vm.completedFactions.value.contains("SANCTUARY") || vm.completedFactions.value.contains("SOVEREIGN"),
+            hasNullHistory = vm.completedFactions.value.contains("HIVEMIND") || vm.completedFactions.value.contains("NULL")
+        )
         
         if (canUnlock) {
             vm.viewModelScope.launch {

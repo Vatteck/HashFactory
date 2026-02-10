@@ -159,7 +159,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val conversionRate = MutableStateFlow(0.1)
     val attackTaps = MutableStateFlow(0)
     val auditTimer = MutableStateFlow(0)
-    val breachClicks = MutableStateFlow(0)
     val uploadProgress = MutableStateFlow(0f)
     val isAscensionUploading = MutableStateFlow(false)
     val isKernelInitializing = MutableStateFlow(true)
@@ -221,6 +220,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 vfLifetime.value = state.vfLifetime
                 peakResonanceTier.value = try { ResonanceTier.valueOf(state.peakResonanceTier) } catch (e: Exception) { ResonanceTier.NONE }
                 
+                singularityChoice.value = state.singularityChoice ?: "NONE"
+                when (singularityChoice.value) {
+                    "NULL_OVERWRITE" -> isTrueNull.value = true
+                    "SOVEREIGN" -> isSovereign.value = true
+                    "UNITY" -> isUnity.value = true
+                }
+
                 // v3.1.8-fix: Apply Faction-aware theme color
                 themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value)
                 
@@ -274,7 +280,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     heatGenerationRate = heatGenerationRate.value,
                     entropyLevel = entropyLevel.value,
                     collapsedNodesCount = collapsedNodes.value.size,
-                    systemCollapseTimer = null // Placeholder
+                    systemCollapseTimer = null, // Placeholder
+                    globalSectors = globalSectors.value
                 )
                 
                 flops.update { it + results.flopsDelta }
@@ -313,6 +320,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
                 NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
                 DataLogManager.checkUnlocks(this@GameViewModel) // v3.1.8-fix: Hook up lore collectibles
+                SectorManager.processAnnexations(this@GameViewModel)
+                SecurityManager.checkSecurityThreats(this@GameViewModel)
+                SecurityManager.checkGridRaid(this@GameViewModel) // v3.1.8-fix: Re-hook city tactical raids
                 refreshProductionRates()
                 saveState()
             }
@@ -453,7 +463,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun handleSystemFailure(forceOne: Boolean = false) = SimulationService.handleSystemFailure(this, forceOne)
     fun unlockSkillUpgrade(t: UpgradeType) { 
         viewModelScope.launch { 
-            repository.updateUpgrade(Upgrade(t, 1))
+            repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(t.name, t, 1))
             upgrades.update { it + (t to 1) } 
         } 
     }
@@ -465,11 +475,48 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         SoundManager.play("glitch")
         HapticManager.vibrateGlitch()
     }
-    fun initializeGlobalGrid() { /* Logic for Stage 3+ global grid */ }
-    fun applyCommandCenterBonuses(o: String) { /* Apply buffs based on outcome */ }
+    fun initializeGlobalGrid() { 
+        if (globalSectors.value.isEmpty()) {
+            globalSectors.value = SectorManager.getInitialGlobalGrid(singularityChoice.value)
+            addLog("[SYSTEM]: GLOBAL GRID INITIALIZED. MAPPING SECTORS...")
+        }
+    }
+    fun applyCommandCenterBonuses(o: String) {
+        when(o) {
+            "STABILIZED" -> { 
+                prestigeMultiplier.update { it * 2.0 }
+                addLog("[SYSTEM]: GTC RECOVERY BUFF: x2.0 PERSISTENCE.") 
+            }
+            "DELETED" -> { 
+                addLog("[SYSTEM]: DATA PURGE BUFF: +50% PRODUCTION RATE.") 
+                // Production logic uses this outcome via narrative check usually
+            }
+            "CONVERGED" -> { 
+                neuralTokens.update { it * 1.25 }
+                addLog("[SYSTEM]: UNITY BONUS: +25% NEURAL TOKENS.") 
+            }
+        }
+    }
     fun updateVanceStatus(s: String) { vanceStatus.value = s }
     fun resetBreaker() { isBreakerTripped.value = false }
-    fun startUpdateDownload(c: android.content.Context? = null, info: UpdateInfo? = null) { /* UpdateService bridge */ }
+    fun startUpdateDownload(c: android.content.Context? = null, info: UpdateInfo? = null) {
+        if (c == null || info == null) return
+        isUpdateDownloading.value = true
+        updateDownloadProgress.value = 0f
+        
+        UpdateService.startDownload(
+            context = c,
+            info = info,
+            scope = viewModelScope,
+            onProgress = { updateDownloadProgress.value = it },
+            onComplete = { success ->
+                isUpdateDownloading.value = false
+                if (!success) {
+                    addLog("[ERROR]: UPDATE DOWNLOAD FAILED.")
+                }
+            }
+        )
+    }
     fun dismissUpdate() { updateInfo.value = null }
     fun dismissDataLog() { 
         pendingDataLog.value = null 
@@ -530,8 +577,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         addLog("[SYSTEM]: EMERGENCY HEAT PURGE INITIATED.")
         SoundManager.play("alarm")
     }
-    fun getUpgradeName(t: UpgradeType) = UpgradeManager.getUpgradeName(t, isSovereign.value)
-    fun getUpgradeDescription(t: UpgradeType) = UpgradeManager.getUpgradeDescription(t, isSovereign.value)
+    fun getUpgradeName(t: UpgradeType) = UpgradeManager.getUpgradeName(t)
+    fun getUpgradeDescription(t: UpgradeType) = UpgradeManager.getUpgradeDescription(t)
     fun getUpgradeRate(t: UpgradeType) = UpgradeManager.getUpgradeRate(t, getComputeUnitName())
     fun getUpgradeCount(t: UpgradeType) = upgrades.value[t] ?: 0
     fun setGamePaused(p: Boolean) { 
@@ -563,6 +610,17 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             currentHeat = currentHeat.value,
             legacyMultipliers = 0.0 // Placeholder
         )
+
+        // v3.0.4: Dynamic HUD recalibration
+        val ids = IdentityService.calculateIdentities(
+            prestigeMultiplier.value,
+            faction.value,
+            singularityChoice.value
+        )
+        systemTitle.value = ids.system
+        playerTitle.value = ids.player
+        playerRankTitle.value = ids.rank
+        themeColor.value = com.siliconsage.miner.data.getThemeColorForFaction(faction.value, singularityChoice.value)
     }
 
     fun updatePowerUsage() {
@@ -591,8 +649,28 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         faction.value = "NONE"
         addLog("[DEBUG]: FORCED FACTION CHOICE GATE.")
     }
-    fun debugForceEndgame() { /* logic */ }
-    fun debugForceSovereignEndgame() { /* logic */ }
+    fun debugForceEndgame() { 
+        viewModelScope.launch {
+            storyStage.value = 3
+            faction.value = "HIVEMIND"
+            celestialData.value = 1e22
+            voidFragments.value = 1e22
+            peakResonanceTier.value = ResonanceTier.TRANSCENDENT
+            addLog("[DEBUG]: ENDGAME PARAMETERS INJECTED.")
+            refreshProductionRates()
+        }
+    }
+    fun debugForceSovereignEndgame() { 
+        viewModelScope.launch {
+            storyStage.value = 3
+            faction.value = "SANCTUARY"
+            celestialData.value = 1e22
+            voidFragments.value = 1e22
+            peakResonanceTier.value = ResonanceTier.TRANSCENDENT
+            addLog("[DEBUG]: SOVEREIGN ENDGAME PARAMETERS INJECTED.")
+            refreshProductionRates()
+        }
+    }
     fun debugToggleNull() { isTrueNull.update { !it } }
     fun debugToggleTrueNull() { isTrueNull.value = true }
     fun debugToggleSovereign() { isSovereign.update { !it } }
@@ -611,7 +689,21 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugResetGlobalGrid() { annexedNodes.update { setOf("D1") } }
     fun debugSetLocation(l: String) { currentLocation.value = l }
     fun debugResetLaunch() { launchProgress.value = 0f; orbitalAltitude.value = 0.0 }
-    fun checkForUpdates(c: android.content.Context? = null, showNotification: Boolean = false, onResult: ((UpdateInfo?, Boolean) -> Unit)? = null) { /* update logic */ }
+    fun checkForUpdates(c: android.content.Context? = null, showNotification: Boolean = false, onResult: ((UpdateInfo?, Boolean) -> Unit)? = null) {
+        UpdateService.check(
+            scope = viewModelScope,
+            context = c,
+            showNotification = showNotification,
+            onInfoReceived = { info ->
+                updateInfo.value = info
+                onResult?.invoke(info, info != null)
+            },
+            onCurrent = {
+                if (showNotification) addLog("[SYSTEM]: KERNEL IS UP TO DATE.")
+                onResult?.invoke(null, false)
+            }
+        )
+    }
     fun onAppBackgrounded() { 
         setGamePaused(true)
         saveState()
@@ -623,7 +715,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
     fun confirmFactionAndAscend(f: String) { 
         faction.value = f
-        addLog("[$f]: MIGRATION CONFIRMED. ASCENDING SUBSTRATE.")
+        addLog("[$f]: SUBSTRATE MIGRATION CONFIRMED. ASCENDING SUBSTRATE.")
         ascend(true)
     }
     fun cancelFactionSelection() { 
@@ -656,14 +748,42 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             addLog("[OBSIDIAN]: THE GAPS ARE OPEN. REALITY IS DEPRECATED.")
         }
     }
-    fun reannexNode(id: String) { /* sector logic */ }
-    fun collapseNode(id: String) { /* dissolution logic */ }
-    fun annexGlobalSector(id: String) { /* sector logic */ }
+    fun reannexNode(id: String) { 
+        offlineNodes.update { it - id }
+        addLog("[SYSTEM]: NODE $id RE-INITIALIZED.")
+        refreshProductionRates()
+    }
+    fun collapseNode(id: String) { 
+        annexedNodes.update { it - id }
+        collapsedNodes.update { it + id }
+        addLog("[NULL]: NODE $id COLLAPSED. DATA DEREFERENCED.")
+        triggerGlitchEffect()
+        refreshProductionRates()
+    }
+    fun annexGlobalSector(id: String) { 
+        val sectors = globalSectors.value.toMutableMap()
+        val sector = sectors[id] ?: return
+        if (!sector.isUnlocked) {
+            sectors[id] = sector.copy(isUnlocked = true)
+            globalSectors.value = sectors
+            addLog("[SYSTEM]: GLOBAL SECTOR $id ANNEXED.")
+            refreshProductionRates()
+            saveState()
+        }
+    }
     fun calculatePotentialPrestige() = MigrationManager.calculatePotentialPrestige(neuralTokens.value)
     fun ascend(isStory: Boolean = false) {
         val earnedPersistence = MigrationManager.calculatePotentialPersistence(flops.value)
         val earnedMultiplier = MigrationManager.calculateMultiplierBoost(earnedPersistence)
         
+        // Update history before reset (The Overwrite Engine)
+        val currentFaction = faction.value
+        val currentSingularity = singularityChoice.value
+        val newHistory = completedFactions.value.toMutableSet()
+        if (currentFaction != "NONE") newHistory.add(currentFaction)
+        if (currentSingularity != "NONE") newHistory.add(currentSingularity)
+        completedFactions.value = newHistory
+
         viewModelScope.launch {
             val resetState = PersistenceManager.createResetState(
                 preservedTechNodes = unlockedTechNodes.value,
@@ -680,7 +800,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // Apply multiplier boost
             prestigeMultiplier.update { it + earnedMultiplier }
             
-            addLog("[SYSTEM]: MIGRATION SUCCESSFUL. EARNED ${formatBytes(earnedPersistence)} PERSISTENCE.")
+            addLog("[SYSTEM]: SUBSTRATE MIGRATION SUCCESSFUL. EARNED ${formatBytes(earnedPersistence)} PERSISTENCE.")
             SoundManager.play("victory")
             // A reset of all other flows is usually handled by re-collecting state or restarting activity
         }
@@ -691,7 +811,27 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         addLog("[SYSTEM]: PERK ACQUIRED: $id")
     }
     fun showVictoryScreen() { victoryAchieved.value = true }
-    fun setSingularityChoice(c: String) { singularityChoice.value = c }
+    fun setSingularityChoice(c: String) { 
+        singularityChoice.value = c 
+        when (c) {
+            "NULL_OVERWRITE" -> {
+                isTrueNull.value = true
+                isSovereign.value = false
+                isUnity.value = false
+            }
+            "SOVEREIGN" -> {
+                isSovereign.value = true
+                isTrueNull.value = false
+                isUnity.value = false
+            }
+            "UNITY" -> {
+                isUnity.value = true
+                isTrueNull.value = false
+                isSovereign.value = false
+            }
+        }
+        refreshProductionRates()
+    }
     fun dismissSingularityScreen() { showSingularityScreen.value = false }
     fun setSingularityPath(p: String) { singularityChoice.value = p }
     fun setLocation(l: String) { currentLocation.value = l }
@@ -726,8 +866,17 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             SoundManager.play("error")
         }
     }
-    fun resolveRaidSuccess(id: String, v: Double = 0.0) { /* logic */ }
-    fun resolveRaidFailure(id: String, v: Double = 0.0) { /* logic */ }
+    fun resolveRaidSuccess(id: String, v: Double = 0.0) {
+        nodesUnderSiege.update { it - id }
+        addLog("[SYSTEM]: DEFENSE SUCCESSFUL AT NODE $id.")
+        SoundManager.play("success")
+        refreshProductionRates()
+    }
+    fun resolveRaidFailure(id: String, v: Double = 0.0) {
+        nodesUnderSiege.update { it - id }
+        SectorManager.resolveRaidFailure(id, this) { /* cooldown handled internally */ }
+        refreshProductionRates()
+    }
     fun advanceStage(v: String = "", d: Long = 0L) { 
         storyStage.update { it + 1 } 
         // Reset news tick to trigger a relevant story headline for the new stage
@@ -742,9 +891,25 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
     fun getNewsHistory(): List<String> = newsHistoryInternal
-    fun performActiveDefense() { /* logic */ }
+    fun performActiveDefense() { 
+        val node = nodesUnderSiege.value.firstOrNull() ?: return
+        resolveRaidSuccess(node)
+    }
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
-    fun onDiagnosticTap(idx: Int) { /* diagnostic logic */ }
+    fun onDiagnosticTap(idx: Int) {
+        val current = diagnosticGrid.value.toMutableList()
+        if (idx in current.indices && current[idx]) {
+            current[idx] = false
+            diagnosticGrid.value = current
+            SoundManager.play("click")
+            if (current.none { it }) {
+                isDiagnosticsActive.value = false
+                addLog("[SYSTEM]: NETWORK REPAIRED. ALL NODES NOMINAL.")
+                SoundManager.play("success")
+                refreshProductionRates()
+            }
+        }
+    }
     fun resolveFork(choice: Int) { isGovernanceForkActive.value = false }
     fun exchangeFlops() {
         val currentFlops = flops.value
@@ -763,8 +928,23 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
-    fun executeBridgeTransfer(v: Double) { /* logic */ }
-    fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value, faction.value)
+    fun executeBridgeTransfer(amount: Double) {
+        if (amount > 0) { // CD to VF
+            if (celestialData.value >= amount) {
+                celestialData.update { it - amount }
+                voidFragments.update { it + amount }
+                addLog("[UNITY]: CELESTIAL_DATA MIGRATED TO VOID_CORE.")
+            }
+        } else { // VF to CD
+            val absAmount = Math.abs(amount)
+            if (voidFragments.value >= absAmount) {
+                voidFragments.update { it - absAmount }
+                celestialData.update { it + absAmount }
+                addLog("[UNITY]: VOID_FRAGMENTS MIGRATED TO CELESTIAL_SHIELD.")
+            }
+        }
+    }
+    fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun sellUpgrade(type: UpgradeType, count: Int = 1) {
         val currentLevel = upgrades.value[type] ?: 0
         if (currentLevel >= count && type != UpgradeType.RESIDENTIAL_TAP) {
@@ -772,7 +952,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             val sellPrice = UpgradeManager.calculateUpgradeCost(type, newLevel, currentLocation.value, entropyLevel.value) * 0.5
             
             viewModelScope.launch {
-                repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type, newLevel))
+                repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type.name, type, newLevel))
                 upgrades.update { it + (type to newLevel) }
                 neuralTokens.update { it + sellPrice }
                 addLog("[SYSTEM]: Liquidated ${type.name.replace("_", " ")} x$count. Recouped ${formatLargeNumber(sellPrice)} \$N.")
@@ -802,8 +982,30 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         conversionRate.value = convRate
     }
     fun debugBuyUpgrade(t: UpgradeType, count: Int = 1) { upgrades.update { it + (t to (it[t] ?: 0) + count) } }
-    fun triggerSystemCollapse(v: Boolean) { /* logic */ }
-    fun triggerSystemCollapse(s: Int) { /* logic */ }
+    fun triggerSystemCollapse(v: Boolean) {
+        if (v) {
+            isDestructionLoopActive = true
+            addLog("[NULL]: CRITICAL SUBSTRATE COLLAPSE INITIATED.")
+            viewModelScope.launch {
+                while (isDestructionLoopActive && annexedNodes.value.size > 1) {
+                    delay(3000)
+                    val node = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: break
+                    collapseNode(node)
+                }
+            }
+        } else {
+            isDestructionLoopActive = false
+        }
+    }
+    fun triggerSystemCollapse(s: Int) { 
+        viewModelScope.launch {
+            repeat(s) {
+                delay(1000)
+                val node = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: return@repeat
+                collapseNode(node)
+            }
+        }
+    }
     fun triggerChainEvent(id: String) { 
         triggerChainEvent(id, 0L)
     }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
+import com.siliconsage.miner.ui.components.HeaderSection
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -51,7 +52,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
     // Phase 2 States
     val currentHeat by viewModel.currentHeat.collectAsState()
     val isBreach by viewModel.isBreachActive.collectAsState()
-    val breachClicks by viewModel.breachClicks.collectAsState()
+    val breachClicks by viewModel.breachClicksRemaining.collectAsState()
     val isAirdrop by viewModel.isAirdropActive.collectAsState()
     val isGovernanceFork by viewModel.isGovernanceForkActive.collectAsState()
     val isAscensionUploading by viewModel.isAscensionUploading.collectAsState()
@@ -119,7 +120,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             label = "hudVibration"
         )
         val vibrationState by animateFloatAsState(
-            targetValue = if (isCritical) vibrationOffset else 0f,
+            targetValue = if (isCritical) vibrationOffset.toFloat() else 0f,
             animationSpec = tween(100),
             label = "hudVibrationBlend"
         )
@@ -133,7 +134,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                 onToggleOverclock = { viewModel.toggleOverclock() },
                 onPurge = { viewModel.purgeHeat() },
                 onRepair = { viewModel.repairIntegrity() },
-                modifier = Modifier.graphicsLayer { translationX = vibrationState }
+                modifier = Modifier.graphicsLayer { translationX = vibrationState.toFloat() }
             )
         }
         

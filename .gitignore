@@ -27,3 +27,8 @@ project_instructions.md
 task.md
 implementation_plan.md
 walkthrough.md
+
+# Extra documentation artifacts
+*.md
+!README.md
+!CHANGELOG.md

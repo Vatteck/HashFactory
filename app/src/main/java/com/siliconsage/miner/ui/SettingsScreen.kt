@@ -25,7 +25,7 @@ import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.ErrorRed
 
 @Composable
-fun SettingsScreen(viewModel: GameViewModel) {
+fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) {
     val themeColorHex by viewModel.themeColor.collectAsState()
     val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val context = LocalContext.current
@@ -37,12 +37,6 @@ fun SettingsScreen(viewModel: GameViewModel) {
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        var currentArchiveScreen by remember { mutableStateOf(false) }
-        if (currentArchiveScreen) {
-            DataLogArchiveScreen(viewModel) { currentArchiveScreen = false }
-            return@Column
-        }
-
         var configClickCount by remember { mutableIntStateOf(0) }
         Text(
             "SYSTEM CONFIGURATION",
@@ -123,7 +117,10 @@ fun SettingsScreen(viewModel: GameViewModel) {
             Button(
                 onClick = { viewModel.checkForUpdates(context, true) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray,
+                    contentColor = Color.White
+                )
             ) {
                 Text("CHECK FOR UPDATES", fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
@@ -133,7 +130,7 @@ fun SettingsScreen(viewModel: GameViewModel) {
         
         // Dangerous Actions
         Button(
-            onClick = { currentArchiveScreen = true },
+            onClick = { onNavigate(Screen.ARCHIVE) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.2f)),
             border = BorderStroke(1.dp, themeColor.copy(alpha = 0.5f))

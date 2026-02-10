@@ -36,16 +36,13 @@ object MigrationManager {
 
     /**
      * Check if the player is eligible for the Unity path
+     * Strictly NG+: Requires both Sovereign and Null completions.
      */
     fun checkUnityEligibility(
-        completedFactions: Set<String>,
-        currentFaction: String
+        completedFactions: Set<String>
     ): Boolean {
-        val hasHivemind = completedFactions.contains("HIVEMIND")
-        val hasSanctuary = completedFactions.contains("SANCTUARY")
-        
-        return (hasHivemind && currentFaction == "SANCTUARY") || 
-               (hasSanctuary && currentFaction == "HIVEMIND")
+        return completedFactions.contains("SOVEREIGN") && 
+               completedFactions.contains("NULL_OVERWRITE")
     }
 
     /**

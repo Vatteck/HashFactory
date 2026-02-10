@@ -18,7 +18,7 @@ class GameRepository(private val gameDao: GameDao) {
         val existingUpgrades = gameDao.getUpgrades().firstOrNull() ?: emptyList()
         UpgradeType.values().forEach { type ->
             if (existingUpgrades.none { it.type == type }) {
-                gameDao.insertUpgrade(Upgrade(type = type, count = 0))
+                gameDao.insertUpgrade(Upgrade(type.name, type, 0))
             }
         }
     }

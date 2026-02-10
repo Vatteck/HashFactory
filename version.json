@@ -1,8 +1,8 @@
 {
-  "version": "3.1.8-dev",
-  "build": 241,
-  "date": "2026-02-09",
-  "changes": "The Daemon Cut: Phase 14 Global Narrative Refresh, Thermal Environment Extremes, and Production Engine Refactor.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.1.8-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.1.8-dev/Sage_3.1.8-dev.apk"
+  "version": "3.2.0-dev",
+  "build": 242,
+  "date": "2026-02-10",
+  "changes": "The Substrate Hardening: Phase 14 Logic Pour, NG+ Overwrite Conduit, and UI Stabilization.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.0-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.0-dev/Sage_3.2.0-dev.apk"
 }

@@ -3,7 +3,6 @@ package com.siliconsage.miner.domain.engine
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.data.SectorState
 import com.siliconsage.miner.viewmodel.ResonanceTier
-import com.siliconsage.miner.util.LegacyManager
 import kotlin.math.pow
 import kotlin.math.abs
 import kotlin.math.log10
@@ -206,7 +205,8 @@ object ResourceEngine {
         heatGenerationRate: Double,
         entropyLevel: Double,
         collapsedNodesCount: Int,
-        systemCollapseTimer: Int?
+        systemCollapseTimer: Int?,
+        globalSectors: Map<String, SectorState> = emptyMap()
     ): TickResults {
         var flopsDelta = flopsPerSec / 10.0
         var cdDelta = 0.0
@@ -227,7 +227,7 @@ object ResourceEngine {
                     activePowerUsage = 0.0,
                     orbitalAltitude = orbitalAltitude,
                     solarSailLevel = upgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0,
-                    globalSectors = emptyMap(), 
+                    globalSectors = globalSectors, 
                     resonanceBonus = resonanceBonus,
                     heatGenerationRate = heatGenerationRate,
                     hasSymbioticResonance = (upgrades[UpgradeType.SYMBIOTIC_RESONANCE] ?: 0) > 0
@@ -244,7 +244,7 @@ object ResourceEngine {
                     collapsedNodesCount = collapsedNodesCount,
                     hasDarkMatterProc = (upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0) > 0,
                     dmLevel = upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0,
-                    globalSectors = emptyMap(), 
+                    globalSectors = globalSectors, 
                     resonanceBonus = resonanceBonus
                 ) / 10.0
 
@@ -281,7 +281,7 @@ object ResourceEngine {
         storyStage: Int,
         faction: String
     ): HeatResults {
-        val upgradeList = upgrades.map { com.siliconsage.miner.data.Upgrade(it.key, it.value) }
+        val upgradeList = upgrades.map { com.siliconsage.miner.data.Upgrade(it.key.name, it.key, it.value) }
         
         val baseResults = ThermalEngine.calculateThermalMetrics(
             currentUpgrades = upgradeList,

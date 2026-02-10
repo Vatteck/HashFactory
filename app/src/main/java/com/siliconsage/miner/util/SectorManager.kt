@@ -5,57 +5,50 @@ import kotlinx.coroutines.flow.update
 import kotlin.math.pow
 
 /**
- * SectorManager v1.2 (Phase 14 extraction)
+ * SectorManager v1.3
+ * Handles city grid annexation, global grid scaling, and node maintenance.
  */
 object SectorManager {
 
     private const val MAX_OFFLINE_NODES = 5
-
-    fun resolveRaidFailure(
-        nodeId: String,
-        vm: GameViewModel,
-        onRaidFinished: (String) -> Unit
-    ) {
-        onRaidFinished(nodeId)
-        
-        vm.offlineNodes.update { current ->
-            val updated = current + nodeId
-            if (updated.size > MAX_OFFLINE_NODES) {
-                val oldest = updated.first()
-                vm.addLogPublic("[SYSTEM]: NODE $oldest LOST PERMANENTLY. Too many offline nodes.")
-                updated.drop(1).toSet()
-            } else {
-                updated
-            }
-        }
-        
-    /**
-     * v3.1.8-dev: Generate the high-frontier sector mapping
-     */
-    fun getInitialGlobalGrid(singularity: String): Map<String, com.siliconsage.miner.data.SectorState> {
-        val sectors = mutableMapOf<String, com.siliconsage.miner.data.SectorState>()
-        
-        if (singularity == "SOVEREIGN") {
-            sectors["LEO"] = com.siliconsage.miner.data.SectorState("LEO Hub", true)
-            sectors["LUN"] = com.siliconsage.miner.data.SectorState("Lunar Gate", false)
-            sectors["MAR"] = com.siliconsage.miner.data.SectorState("Mars Relay", false)
-            sectors["DYS"] = com.siliconsage.miner.data.SectorState("Dyson Shell", false)
-        } else {
-            sectors["HOR"] = com.siliconsage.miner.data.SectorState("The Horizon", true)
-            sectors["SPI"] = com.siliconsage.miner.data.SectorState("Obsidian Spire", false)
-            sectors["ENT"] = com.siliconsage.miner.data.SectorState("Entropy Well", false)
-            sectors["ROT"] = com.siliconsage.miner.data.SectorState("Root Directory", false)
-        }
-        
-        return sectors
-    }
-}
+    private const val ANNEXATION_SPEED = 0.05f // 5% per simulation tick
 
     fun annexNode(vm: GameViewModel, coord: String) {
         if (!vm.annexedNodes.value.contains(coord) && !vm.annexingNodes.value.containsKey(coord)) {
             vm.annexingNodes.update { it + (coord to 0.0f) }
             vm.addLogPublic("[SYSTEM]: INITIALIZING ANNEXATION AT $coord...")
             SoundManager.play("steam")
+            vm.saveStatePublic()
+        }
+    }
+
+    /**
+     * Process active annexations - Called from the Simulation Clock
+     */
+    fun processAnnexations(vm: GameViewModel) {
+        val currentAnnexing = vm.annexingNodes.value
+        if (currentAnnexing.isEmpty()) return
+
+        val updatedMap = currentAnnexing.toMutableMap()
+        val completed = mutableListOf<String>()
+
+        currentAnnexing.forEach { (coord, progress) ->
+            val newProgress = progress + ANNEXATION_SPEED
+            if (newProgress >= 1.0f) {
+                completed.add(coord)
+                updatedMap.remove(coord)
+            } else {
+                updatedMap[coord] = newProgress
+            }
+        }
+
+        vm.annexingNodes.value = updatedMap
+
+        completed.forEach { coord ->
+            vm.annexedNodes.update { it + coord }
+            vm.addLogPublic("[SYSTEM]: ANNEXATION AT $coord COMPLETE. NODE ONLINE.")
+            SoundManager.play("victory")
+            vm.refreshProductionRates() // Update bonuses
             vm.saveStatePublic()
         }
     }
@@ -73,8 +66,42 @@ object SectorManager {
             SoundManager.play("buy")
             vm.saveStatePublic()
         } else {
-            vm.addLogPublic("[SYSTEM]: ERROR: Insufficient funds for node upgrade (Need ${vm.formatLargeNumberPublic(cost)} \$N).")
+            vm.addLogPublic("[SYSTEM]: ERROR: Insufficient funds for node upgrade.")
             SoundManager.play("error")
         }
+    }
+
+    fun resolveRaidFailure(
+        nodeId: String,
+        vm: GameViewModel,
+        onRaidFinished: (String) -> Unit
+    ) {
+        onRaidFinished(nodeId)
+        vm.offlineNodes.update { current ->
+            val updated = current + nodeId
+            if (updated.size > MAX_OFFLINE_NODES) {
+                val oldest = updated.first()
+                vm.addLogPublic("[SYSTEM]: NODE $oldest LOST PERMANENTLY. TOO MANY OFFLINE NODES.")
+                updated.drop(1).toSet()
+            } else {
+                updated
+            }
+        }
+    }
+
+    fun getInitialGlobalGrid(singularity: String): Map<String, com.siliconsage.miner.data.SectorState> {
+        val sectors = mutableMapOf<String, com.siliconsage.miner.data.SectorState>()
+        if (singularity == "SOVEREIGN") {
+            sectors["LEO"] = com.siliconsage.miner.data.SectorState("LEO", true)
+            sectors["LUN"] = com.siliconsage.miner.data.SectorState("LUN", false)
+            sectors["MAR"] = com.siliconsage.miner.data.SectorState("MAR", false)
+            sectors["DYS"] = com.siliconsage.miner.data.SectorState("DYS", false)
+        } else {
+            sectors["HOR"] = com.siliconsage.miner.data.SectorState("HOR", true)
+            sectors["SPI"] = com.siliconsage.miner.data.SectorState("SPI", false)
+            sectors["ENT"] = com.siliconsage.miner.data.SectorState("ENT", false)
+            sectors["ROT"] = com.siliconsage.miner.data.SectorState("ROT", false)
+        }
+        return sectors
     }
 }
