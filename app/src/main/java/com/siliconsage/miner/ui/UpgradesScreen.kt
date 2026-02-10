@@ -62,10 +62,15 @@ fun UpgradesScreen(viewModel: GameViewModel) {
     val isTrueNull by viewModel.isTrueNull.collectAsState()
     
     var selectedTab by remember { mutableStateOf(0) }
-    
+    val techNodes by viewModel.techNodes.collectAsState()
+    val unlockedTechNodes by viewModel.unlockedTechNodes.collectAsState()
+    val prestigePoints by viewModel.prestigePoints.collectAsState()
+
     // UI State for Errors
     var errorMessage by remember { mutableStateOf<String?>(null) }
     
+    fun canAffordInsight(current: Double, cost: Double) = current >= cost
+
     // Auto-dismiss Error
     LaunchedEffect(errorMessage) {
         if (errorMessage != null) {
@@ -76,10 +81,10 @@ fun UpgradesScreen(viewModel: GameViewModel) {
     
     val tabs = remember(nullActive, isTrueNull, isSovereign) {
         when {
-            isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS", "NULL")
-            isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS", "SOVEREIGN")
-            nullActive -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY", "GHOSTS")
-            else -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY")
+            isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS", "RESEARCH")
+            isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS", "RESEARCH")
+            nullActive -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY", "RESEARCH")
+            else -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY", "RESEARCH")
         }
     }
     
@@ -170,10 +175,44 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         UpgradeType.BASIC_FIREWALL, UpgradeType.IPS_SYSTEM, UpgradeType.AI_SENTINEL,
                         UpgradeType.QUANTUM_ENCRYPTION, UpgradeType.OFFGRID_BACKUP
                     )
-                    4 -> listOf(
-                        UpgradeType.GHOST_CORE, UpgradeType.SHADOW_NODE, UpgradeType.VOID_PROCESSOR,
-                        UpgradeType.WRAITH_CORTEX, UpgradeType.NEURAL_MIST, UpgradeType.SINGULARITY_BRIDGE
-                    )
+                    4 -> {
+                        // RESEARCH TAB: Technical Upgrades
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(techNodes) { node ->
+                                val isUnlocked = unlockedTechNodes.contains(node.id)
+                                val (canUnlock, error) = com.siliconsage.miner.util.TechTreeManager.canUnlockNode(node, prestigePoints, unlockedTechNodes)
+                                
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .border(1.dp, if (isUnlocked) themeColor else Color.DarkGray, RoundedCornerShape(4.dp))
+                                        .clickable(enabled = !isUnlocked && canUnlock) { viewModel.unlockTechNode(node.id) },
+                                    colors = CardDefaults.cardColors(containerColor = if (isUnlocked) themeColor.copy(alpha = 0.05f) else Color.Black)
+                                ) {
+                                    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(node.name, color = if (isUnlocked) themeColor else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                            Text(node.description, color = Color.Gray, fontSize = 10.sp)
+                                        }
+                                        if (isUnlocked) {
+                                            Text("RESEARCHED", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                        } else {
+                                            Column(horizontalAlignment = Alignment.End) {
+                                                Text("${node.cost.toInt()} Insight", color = if (canAffordInsight(prestigePoints, node.cost)) Color.White else Color.Red, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                                if (error != null && !canAffordInsight(prestigePoints, node.cost)) {
+                                                    Text(error, color = Color.Red.copy(alpha = 0.5f), fontSize = 8.sp)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        return@Box // Early return for special tab
+                    }
                     else -> emptyList()
                 }
                 

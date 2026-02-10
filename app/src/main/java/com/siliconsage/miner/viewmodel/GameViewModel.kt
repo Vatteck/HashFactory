@@ -16,9 +16,11 @@ import com.siliconsage.miner.data.DataLog
 import com.siliconsage.miner.data.DilemmaChain
 import com.siliconsage.miner.data.ScheduledPart
 import com.siliconsage.miner.data.SectorState
+import com.siliconsage.miner.data.TechTreeRoot
 import com.siliconsage.miner.data.getThemeColorForFaction
 import com.siliconsage.miner.util.*
 import com.siliconsage.miner.domain.engine.ResourceEngine
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -356,6 +358,28 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun formatPower(v: Double) = FormatUtils.formatPower(v)
     fun getComputeUnitName() = ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)
     fun getCurrencyName() = ResourceRepository.getCurrencyName(storyStage.value, currentLocation.value)
+
+    /**
+     * Load Tech Tree from assets/tech_tree.json
+     */
+    fun loadTechTreeFromAssets(context: android.content.Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val assetManager = context.assets
+                val inputStream = assetManager.open("tech_tree.json")
+                val jsonString = inputStream.bufferedReader().use { it.readText() }
+                
+                // Parse JSON using Kotlin Serialization
+                val techTreeRoot = kotlinx.serialization.json.Json.decodeFromString<TechTreeRoot>(jsonString)
+                
+                // Update state on Main thread
+                techNodes.value = techTreeRoot.tech_tree
+                addLog("[SYSTEM]: TECH TREE v3.1 SYNCHRONIZED. ${techNodes.value.size} NODES MAP.")
+            } catch (e: Exception) {
+                addLog("[ERROR]: TECH TREE SYNC FAILED: ${e.message}")
+            }
+        }
+    }
     fun getEnergyPriceMultiplierPublic() = energyPriceMultiplier
     fun addLogPublic(msg: String) = addLog(msg)
     fun saveStatePublic() = saveState()
@@ -587,7 +611,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugResetGlobalGrid() { annexedNodes.update { setOf("D1") } }
     fun debugSetLocation(l: String) { currentLocation.value = l }
     fun debugResetLaunch() { launchProgress.value = 0f; orbitalAltitude.value = 0.0 }
-    fun loadTechTreeFromAssets(c: android.content.Context) { /* loader */ }
     fun checkForUpdates(c: android.content.Context? = null, showNotification: Boolean = false, onResult: ((UpdateInfo?, Boolean) -> Unit)? = null) { /* update logic */ }
     fun onAppBackgrounded() { 
         setGamePaused(true)
