@@ -37,12 +37,22 @@ fun SettingsScreen(viewModel: GameViewModel) {
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        var configClickCount by remember { mutableIntStateOf(0) }
         Text(
             "SYSTEM CONFIGURATION",
             color = themeColor,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .clickable { 
+                    configClickCount++
+                    if (configClickCount >= 5) {
+                        viewModel.toggleDevMenu()
+                        configClickCount = 0
+                        com.siliconsage.miner.util.SoundManager.play("glitch")
+                    }
+                }
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -52,22 +62,25 @@ fun SettingsScreen(viewModel: GameViewModel) {
             SettingsToggle("SFX ENABLED", com.siliconsage.miner.util.SoundManager.isSfxEnabled) {
                 com.siliconsage.miner.util.SoundManager.isSfxEnabled = it
             }
-            SettingsToggle("HAPTICS ENABLED", com.siliconsage.miner.util.HapticManager.isHapticsEnabled) {
-                com.siliconsage.miner.util.HapticManager.isHapticsEnabled = it
+            if (com.siliconsage.miner.util.SoundManager.isSfxEnabled) {
+                Text("SFX VOLUME", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Slider(
+                    value = com.siliconsage.miner.util.SoundManager.sfxVolume,
+                    onValueChange = { com.siliconsage.miner.util.SoundManager.sfxVolume = it },
+                    colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
+                )
             }
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // Display Settings
-        val singularityChoice by viewModel.singularityChoice.collectAsState()
-        val faction by viewModel.faction.collectAsState()
-        SettingsGroup("INTERFACE") {
-            Text("THEME COLOR: CHOICE-SYNC ACTIVE", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.size(32.dp).background(themeColor, RoundedCornerShape(4.dp)).border(1.dp, Color.White, RoundedCornerShape(4.dp)))
-                Text("CURRENT: ${if (singularityChoice != "NONE") singularityChoice else faction}", color = Color.White, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterVertically))
+            SettingsToggle("BGM ENABLED", com.siliconsage.miner.util.SoundManager.isBgmEnabled) {
+                com.siliconsage.miner.util.SoundManager.isBgmEnabled = it
+            }
+            if (com.siliconsage.miner.util.SoundManager.isBgmEnabled) {
+                Text("BGM VOLUME", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Slider(
+                    value = com.siliconsage.miner.util.SoundManager.bgmVolume,
+                    onValueChange = { com.siliconsage.miner.util.SoundManager.bgmVolume = it },
+                    colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
+                )
             }
         }
         
@@ -76,11 +89,7 @@ fun SettingsScreen(viewModel: GameViewModel) {
         // Human Condition
         val humanity by viewModel.humanityScore.collectAsState()
         SettingsGroup("NEURAL SYNC") {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("HUMANITY INDEX: $humanity%", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                val isDevVisible by viewModel.isDevMenuVisible.collectAsState()
-                Box(modifier = Modifier.size(24.dp).clickable { viewModel.toggleDevMenu() }) // Invisible dev trigger
-            }
+            Text("HUMANITY INDEX: $humanity%", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             LinearProgressIndicator(
                 progress = { humanity / 100f },
                 modifier = Modifier.fillMaxWidth().height(4.dp).padding(vertical = 4.dp),
@@ -109,6 +118,30 @@ fun SettingsScreen(viewModel: GameViewModel) {
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Blue.copy(alpha = 0.5f))
                 ) {
                     Text("GRANT v13 RESOURCES", fontSize = 10.sp)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.debugAddFlops(1e15) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.5f))
+                ) {
+                    Text("INJECT 1P FLOPS", fontSize = 10.sp)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.debugAddMoney(1e12) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.5f))
+                ) {
+                    Text("INJECT 1T NEURAL TOKENS", fontSize = 10.sp)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.debugTriggerSingularity() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.5f))
+                ) {
+                    Text("FORCE SINGULARITY DILEMMA", fontSize = 10.sp)
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
