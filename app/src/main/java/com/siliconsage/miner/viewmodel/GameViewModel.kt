@@ -160,6 +160,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val breachClicks = MutableStateFlow(0)
     val uploadProgress = MutableStateFlow(0f)
     val isAscensionUploading = MutableStateFlow(false)
+    val isKernelInitializing = MutableStateFlow(true)
 
     // --- Internals ---
     val manualClickEvent = MutableSharedFlow<Unit>(replay = 0)
@@ -245,13 +246,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 addLog("[SYSTEM]: NO PREVIOUS STATE FOUND. INITIALIZING...")
                 refreshProductionRates()
             }
+            isKernelInitializing.value = false
         }
 
         // Production Loop (100ms Ticks)
         viewModelScope.launch {
             while (true) {
                 delay(100L)
-                if (isSettingsPaused.value) continue
+                if (isSettingsPaused.value || isKernelInitializing.value) continue
                 
                 val results = ResourceEngine.calculatePassiveIncomeTick(
                     flopsPerSec = flopsProductionRate.value,
@@ -287,7 +289,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         viewModelScope.launch {
             while (true) {
                 delay(1000L)
-                if (isSettingsPaused.value) continue
+                if (isSettingsPaused.value || isKernelInitializing.value) continue
                 
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)

@@ -79,6 +79,7 @@ fun NewsTicker(
                 }
                 else -> {
                     text = text.replace(Regex("\\[.*?\\]"), "").trim()
+                    color = Color.LightGray 
                 }
             }
             text to color
@@ -122,7 +123,7 @@ fun NewsTicker(
         ) {
             if (displayText.isNotEmpty()) {
                 val isGlitch = currentNewsText.contains("[GLITCH]")
-                val finalColor = if (isGlitch) Color(0xFFFFD700).copy(alpha = 0.8f) else baseColor.copy(alpha = 0.8f)
+                val finalColor = if (isGlitch) Color(0xFFFFD700).copy(alpha = 0.9f) else baseColor.copy(alpha = 0.9f)
                 
                 if (isGlitch) {
                      SystemGlitchText(
