@@ -337,8 +337,17 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         // v3.1.8-fix: Re-link manual heat generation (Increased to 0.5 for visibility)
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         
-        // v3.1.8-fix: Legacy log style restored
-        addLog("> MANUAL_HASH_GENERATED: +${formatLargeNumber(p)} HASH.")
+        // v3.1.8-dev: Shell-style click log (The "Vattic" Style)
+        val clickLog = TerminalDispatcher.getManualClickLog(
+            stage = storyStage.value,
+            location = currentLocation.value,
+            faction = faction.value,
+            singularity = singularityChoice.value,
+            amount = p,
+            unit = getComputeUnitName(),
+            formatFn = { formatLargeNumber(it) }
+        )
+        addLog(clickLog)
         
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }

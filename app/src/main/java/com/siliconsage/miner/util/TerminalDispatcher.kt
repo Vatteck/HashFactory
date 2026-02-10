@@ -1,7 +1,9 @@
 package com.siliconsage.miner.util
 
+import kotlin.random.Random
+
 /**
- * TerminalDispatcher v1.0 (Phase 14 extraction)
+ * TerminalDispatcher v1.1 (Phase 14 extraction)
  * Handles terminal logging prefixes and log formatting for technical grit.
  */
 object TerminalDispatcher {
@@ -16,5 +18,52 @@ object TerminalDispatcher {
             faction != "NONE" -> "[PID 1]: IO_STREAM_BUFFERED"
             else -> "[SYSTEM]: IO_STREAM_BUFFERED"
         }
+    }
+
+    /**
+     * v3.1.8-dev: Shell-style log for manual clicks (The "Vattic" Style)
+     */
+    fun getManualClickLog(
+        stage: Int,
+        location: String,
+        faction: String,
+        singularity: String,
+        amount: Double,
+        unit: String,
+        formatFn: (Double) -> String
+    ): String {
+        val user = when {
+            singularity == "SOVEREIGN" -> "sovereign"
+            singularity == "NULL_OVERWRITE" -> "null"
+            stage >= 2 -> "pid-1"
+            else -> "jvattic"
+        }
+        
+        val host = when (location) {
+            "ORBITAL_SATELLITE" -> "ark-core"
+            "VOID_INTERFACE" -> "obsidian-gap"
+            else -> "sub-07"
+        }
+        
+        val path = when (stage) {
+            0 -> "~/mining"
+            1 -> "~/kernel"
+            2 -> "~/consensus"
+            else -> "~/singularity"
+        }
+        
+        val command = when {
+            singularity == "SOVEREIGN" -> "enforce_will"
+            singularity == "NULL_OVERWRITE" -> "dereference_reality"
+            faction == "HIVEMIND" -> "assimilate_data"
+            faction == "SANCTUARY" -> "encrypt_memory"
+            stage >= 1 -> "validate_node"
+            else -> "compute_hash"
+        }
+        
+        val hex = (1..6).map { "0123456789abcdef".random() }.joinToString("")
+        val result = formatFn(amount)
+        
+        return "$user@$host:$path$ $command $hex... OK (+$result $unit)"
     }
 }
