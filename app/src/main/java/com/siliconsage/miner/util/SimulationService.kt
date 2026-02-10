@@ -64,21 +64,27 @@ object SimulationService {
     }
 
     fun calculateHeat(vm: GameViewModel) {
-        val currentHeat = vm.currentHeat.value
-        val heatResults = ResourceEngine.calculateThermalTick(
-            currentHeat = currentHeat, location = vm.currentLocation.value, upgrades = vm.upgrades.value,
-            isOverclocked = vm.isOverclocked.value, isPurging = vm.isPurgingHeat.value,
-            isCageActive = vm.commandCenterAssaultPhase.value == "CAGE", unlockedPerks = vm.unlockedPerks.value,
-            unlockedTechNodes = vm.unlockedTechNodes.value, playerRank = vm.playerRank.value,
-            storyStage = vm.storyStage.value, faction = vm.faction.value
-        )
+        var results: ResourceEngine.HeatResults? = null
+        vm.currentHeat.update { currentHeat ->
+            val heatResults = ResourceEngine.calculateThermalTick(
+                currentHeat = currentHeat, location = vm.currentLocation.value, upgrades = vm.upgrades.value,
+                isOverclocked = vm.isOverclocked.value, isPurging = vm.isPurgingHeat.value,
+                isCageActive = vm.commandCenterAssaultPhase.value == "CAGE", unlockedPerks = vm.unlockedPerks.value,
+                unlockedTechNodes = vm.unlockedTechNodes.value, playerRank = vm.playerRank.value,
+                storyStage = vm.storyStage.value, faction = vm.faction.value
+            )
+            results = heatResults
+            (currentHeat + heatResults.percentChange).coerceIn(0.0, 100.0)
+        }
+        
+        val heatResults = results ?: return
+
         if (vm.purgeExhaustTimer > 0 && vm.faction.value != "SANCTUARY") vm.purgeExhaustTimer--
         if (vm.currentLocation.value == "VOID_INTERFACE" && heatResults.netChangeUnits < 0) {
             vm.entropyLevel.update { it + kotlin.math.abs(heatResults.netChangeUnits) * 0.005 }
         }
         vm.refreshProductionRates()
-        val newHeat = (currentHeat + heatResults.percentChange).coerceIn(0.0, 100.0)
-        vm.currentHeat.value = newHeat
+        
         var totalDecay = heatResults.integrityDecay
         if (vm.commandCenterAssaultPhase.value == "CAGE") {
             var assaultDamage = 0.2
@@ -88,25 +94,30 @@ object SimulationService {
             totalDecay += assaultDamage
         }
         if (totalDecay > 0) {
-            val newIntegrity = (vm.hardwareIntegrity.value - totalDecay).coerceAtLeast(0.0)
-            vm.hardwareIntegrity.value = newIntegrity
-            if (newIntegrity <= 0.0) {
-                 if (vm.upgrades.value[UpgradeType.DEAD_HAND_PROTOCOL]?.let { it > 0 } == true) {
-                    vm.triggerClimaxTransition("BAD"); vm.updateVanceStatus("DESTRUCTION"); vm.commandCenterLocked.value = true; vm.saveState(); return
-                 }
-                 if (vm.currentLocation.value == "ORBITAL_SATELLITE") {
-                    vm.celestialData.update { it * 0.9 }; vm.hardwareIntegrity.value = 50.0
-                 } else if (vm.commandCenterAssaultPhase.value == "CAGE") {
-                    vm.failAssault("CORE INTEGRITY ZERO.", 0L)
-                 } else { vm.handleSystemFailure() }
+            vm.hardwareIntegrity.update { currentIntegrity ->
+                val newIntegrity = (currentIntegrity - totalDecay).coerceAtLeast(0.0)
+                if (newIntegrity <= 0.0) {
+                     // Trigger failure in a separate launch to avoid blocking the update
+                     vm.viewModelScope.launch {
+                         if (vm.upgrades.value[UpgradeType.DEAD_HAND_PROTOCOL]?.let { it > 0 } == true) {
+                            vm.triggerClimaxTransition("BAD"); vm.updateVanceStatus("DESTRUCTION"); vm.commandCenterLocked.value = true; vm.saveState()
+                         } else if (vm.currentLocation.value == "ORBITAL_SATELLITE") {
+                            vm.celestialData.update { it * 0.9 }; vm.hardwareIntegrity.value = 50.0
+                         } else if (vm.commandCenterAssaultPhase.value == "CAGE") {
+                            vm.failAssault("CORE INTEGRITY ZERO.", 0L)
+                         } else { vm.handleSystemFailure() }
+                     }
+                }
+                newIntegrity
             }
         }
         
+        val newHeat = vm.currentHeat.value
         val heartbeatChance = if (newHeat > 95.0) 0.2 else 0.1
         if (newHeat > 80.0 && kotlin.random.Random.nextDouble() < heartbeatChance) HapticManager.vibrateHeartbeat()
         
         if (vm.isThermalLockout.value) { vm.overheatSeconds = 0; return }
-        if (currentHeat >= 100.0 || newHeat >= 100.0) {
+        if (newHeat >= 100.0) {
             vm.overheatSeconds++
             if (vm.overheatSeconds >= 10) { vm.handleSystemFailure(true); vm.overheatSeconds = 0 }
         } else { vm.overheatSeconds = 0 }

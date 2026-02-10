@@ -100,53 +100,6 @@ fun SettingsScreen(viewModel: GameViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Developer Menu (Hidden)
-        val isDevMenuVisible by viewModel.isDevMenuVisible.collectAsState()
-        if (isDevMenuVisible) {
-            SettingsGroup("DEVELOPER OVERRIDE") {
-                Button(
-                    onClick = { viewModel.resetGame(true) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = ErrorRed.copy(alpha = 0.5f))
-                ) {
-                    Text("FORCED KERNEL WIPE", fontSize = 10.sp)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { viewModel.debugGrantPhase13Resources() },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue.copy(alpha = 0.5f))
-                ) {
-                    Text("GRANT v13 RESOURCES", fontSize = 10.sp)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { viewModel.debugAddFlops(1e15) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.5f))
-                ) {
-                    Text("INJECT 1P FLOPS", fontSize = 10.sp)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { viewModel.debugAddMoney(1e12) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.5f))
-                ) {
-                    Text("INJECT 1T NEURAL TOKENS", fontSize = 10.sp)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { viewModel.debugTriggerSingularity() },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.5f))
-                ) {
-                    Text("FORCE SINGULARITY DILEMMA", fontSize = 10.sp)
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
         // Operations Settings
         val isPaused by viewModel.isSettingsPaused.collectAsState()
         SettingsGroup("OPERATIONS") {
@@ -174,12 +127,12 @@ fun SettingsScreen(viewModel: GameViewModel) {
         
         // Dangerous Actions
         Button(
-            onClick = { viewModel.resetGame(true) },
+            onClick = { viewModel.toggleDevMenu() }, // Re-link to console trigger for now
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.3f)),
             border = BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed)
         ) {
-            Text("WIPE KERNEL (RESET GAME)", color = com.siliconsage.miner.ui.theme.ErrorRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+            Text("OPEN DEV CONSOLE", color = com.siliconsage.miner.ui.theme.ErrorRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
         }
     }
 }

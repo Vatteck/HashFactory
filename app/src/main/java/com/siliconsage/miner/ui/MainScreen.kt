@@ -39,6 +39,7 @@ import androidx.compose.ui.text.SpanStyle
 
 sealed class Screen(val title: String, val icon: ImageVector) {
     object TERMINAL : Screen("TERMINAL", Icons.Default.Home)
+    object ARCHIVE : Screen("ARCHIVE", Icons.Default.Folder)
     object UPGRADES : Screen("UPGRADES", Icons.AutoMirrored.Filled.List)
     object GRID : Screen("GRID", Icons.Default.Map)
     object NETWORK : Screen("NETWORK", Icons.Default.Share)
@@ -143,7 +144,7 @@ fun BottomNavBar(
     isGridUnlocked: Boolean
 ) {
     val items = remember(storyStage, isNetworkUnlocked, isGridUnlocked) {
-        val list = mutableListOf(Screen.TERMINAL, Screen.UPGRADES)
+        val list = mutableListOf(Screen.TERMINAL, Screen.ARCHIVE, Screen.UPGRADES)
         if (storyStage >= 2 || isGridUnlocked) list.add(Screen.GRID)
         if (storyStage >= 1 || isNetworkUnlocked) list.add(Screen.NETWORK)
         list.add(Screen.SETTINGS)
@@ -254,6 +255,7 @@ fun MainScreen(viewModel: GameViewModel) {
                     Box(modifier = Modifier.weight(1f)) {
                         when (currentScreen) {
                             Screen.TERMINAL -> TerminalScreen(viewModel, themeColor)
+                            Screen.ARCHIVE -> DataLogArchiveScreen(viewModel) { currentScreen = Screen.TERMINAL }
                             Screen.UPGRADES -> UpgradesScreen(viewModel)
                             Screen.GRID -> GridScreen(viewModel)
                             Screen.NETWORK -> NetworkScreen(viewModel)
@@ -331,6 +333,13 @@ fun MainScreen(viewModel: GameViewModel) {
                             "UNITY" -> com.siliconsage.miner.ui.components.PrismaticBurst { viewModel.onClimaxTransitionComplete() }
                             "BAD" -> com.siliconsage.miner.ui.components.GlitchBloom { viewModel.onClimaxTransitionComplete() } 
                         }
+                    }
+                }
+                
+                val isDevVisible by viewModel.isDevMenuVisible.collectAsState()
+                if (isDevVisible) {
+                    com.siliconsage.miner.ui.components.DevConsoleDialog(viewModel) {
+                        viewModel.debugToggleDevMenu()
                     }
                 }
             }
@@ -718,7 +727,7 @@ fun HeaderSection(
                 Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isOverclocked) ErrorRed else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed else Color.DarkGray)) { Icon(Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text("OVERCLOCK", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
                 Button(onClick = onPurge, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isPurging) ElectricBlue else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)) { Text("PURGE HEAT", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
             }
-            Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray.copy(alpha = 0.2f), RoundedCornerShape(1.dp)).clip(RoundedCornerShape(1.dp)).drawBehind {
+            Canvas(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray.copy(alpha = 0.2f), RoundedCornerShape(1.dp)).clip(RoundedCornerShape(1.dp))) {
                 val w = this.size.width; val h = this.size.height
                 val barW = w * (currentHeat / 100f).toFloat().coerceIn(0f, 1f)
                 val thermalBrush = Brush.horizontalGradient(0.0f to color.copy(alpha = 0.6f), 0.7f to color.copy(alpha = 0.6f), 0.9f to ErrorRed, 1.0f to ErrorRed, startX = 0f, endX = w)
@@ -727,7 +736,7 @@ fun HeaderSection(
                 val segmentCount = 20; val segmentSpacing = w / segmentCount
                 for (i in 1 until segmentCount) { val x = i * segmentSpacing; drawLine(Color.Black.copy(alpha = 0.4f), Offset(x, 0f), Offset(x, h), 1.dp.toPx()) }
                 val integW = w * ((100f - currentIntegrity) / 100f).toFloat().coerceIn(0f, 1f); drawRect(ErrorRed.copy(alpha = 0.4f), Offset(w - integW, 0f), Size(integW, h))
-            }) {}
+            }
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermText = buildAnnotatedString {
                     withStyle(SpanStyle(color = if (currentHeat > 90) ErrorRed else color.copy(alpha = 0.7f))) { append("THERM: ") }

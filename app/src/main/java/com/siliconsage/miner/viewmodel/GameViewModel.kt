@@ -270,6 +270,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
                 NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
+                DataLogManager.checkUnlocks(this@GameViewModel) // v3.1.8-fix: Hook up lore collectibles
                 refreshProductionRates()
                 saveState()
             }
@@ -324,8 +325,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         val p = calculateClickPower()
         flops.update { it + p }
         
-        // v3.1.8-fix: Re-link manual heat generation
-        currentHeat.update { (it + 0.1).coerceAtMost(100.0) }
+        // v3.1.8-fix: Re-link manual heat generation (Increased to 0.5 for visibility)
+        currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
+        
+        // v3.1.8-fix: Manual click logs for feedback
+        if (Random.nextFloat() < 0.1f) {
+            addLog("[SYSTEM]: MANUAL_HASH_GENERATED: +${formatLargeNumber(p)} HASH.")
+        }
         
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }
@@ -484,7 +490,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun addRivalMessage(m: RivalMessage) = NarrativeService.addRivalMessage(m, this)
     fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 15000L)
     fun debugAddIntegrity(d: Double) { hardwareIntegrity.update { (it + d).coerceIn(0.0, 100.0) } }
-    fun debugAddHeat(a: Double) { currentHeat.update { (it + a).coerceIn(0.0, 100.0) } }
+    fun debugAddHeat(a: Double) { 
+        currentHeat.update { (it + a).coerceIn(0.0, 100.0) } 
+        refreshProductionRates() // Force rate recalc
+    }
     fun debugAddFlops(a: Double) { flops.update { it + a } }
     fun debugAddMoney(a: Double) { neuralTokens.update { it + a } }
     fun debugAddInsight(a: Double) { prestigePoints.update { it + a } }
