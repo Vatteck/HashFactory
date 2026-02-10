@@ -3,7 +3,7 @@ package com.siliconsage.miner.util
 import kotlin.math.abs
 
 /**
- * FormatUtils v1.0 (Phase 14 extraction)
+ * FormatUtils v1.1 (Phase 14 extraction)
  * Centralized formatting and naming logic for resources, units, and data.
  */
 object FormatUtils {
@@ -60,28 +60,6 @@ object FormatUtils {
             absVal >= 1_000.0 -> String.format("%.1f MW", wattsKw / 1_000.0)
             absVal >= 10.0 -> String.format("%.1f kW", wattsKw)
             else -> String.format("%.2f kW", wattsKw)
-        }
-    }
-
-    /**
-     * Get the stage/location specific name for the primary compute resource
-     */
-    fun getComputeUnitName(stage: Int, location: String): String {
-        return when (location) {
-            "ORBITAL_SATELLITE" -> "CD"
-            "VOID_INTERFACE" -> "VF"
-            else -> if (stage < 1) "HASH" else if (stage < 2) "TELEM" else "FLOPS"
-        }
-    }
-
-    /**
-     * Get the stage/location specific name for the secondary token resource
-     */
-    fun getCurrencyName(stage: Int, location: String): String {
-        return when (location) {
-            "ORBITAL_SATELLITE" -> "VF"
-            "VOID_INTERFACE" -> "CD"
-            else -> if (stage < 1) "CREDIT" else if (stage < 2) "DATA" else "NEURAL"
         }
     }
 }

@@ -1,0 +1,147 @@
+package com.siliconsage.miner.util
+
+import com.siliconsage.miner.viewmodel.GameViewModel
+import com.siliconsage.miner.data.UpgradeType
+import com.siliconsage.miner.domain.engine.ResourceEngine
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.update
+import kotlin.random.Random
+
+/**
+ * SimulationService v1.4 (Phase 14 extraction)
+ */
+object SimulationService {
+
+    fun toggleOverclock(vm: GameViewModel) {
+        val current = vm.isOverclocked.value
+        vm.isOverclocked.value = !current
+        val status = if (!current) "ENGAGED" else "DISENGAGED"
+        vm.addLog("[SYSTEM]: CORE OVERCLOCK: $status")
+        SoundManager.play("steam")
+    }
+
+    fun purgeHeat(vm: GameViewModel) {
+        if (vm.isPurgingHeat.value) return
+        vm.isPurgingHeat.value = true
+        vm.addLog("[SYSTEM]: EMERGENCY HEAT PURGE INITIATED.")
+        SoundManager.play("alarm")
+    }
+
+    fun accumulatePower(vm: GameViewModel) {
+        val currentUpgrades = vm.upgrades.value
+        val isCageActive = vm.commandCenterAssaultPhase.value == "CAGE"
+        var totalKw = 0.0; var maxCap = 100.0; var selfGeneratedKw = 0.0; var efficiencyTotalBonus = 0.0
+        currentUpgrades.forEach { (type, count) ->
+            if (count > 0) {
+                if (!(isCageActive && isExternalComponent(type))) {
+                    var pwr = type.basePower
+                    if (vm.faction.value == "SANCTUARY" && isSecurityType(type)) pwr *= 0.05
+                    if (type == UpgradeType.GOLD_PSU) efficiencyTotalBonus += 0.05 * count
+                    if (type == UpgradeType.SUPERCONDUCTOR) efficiencyTotalBonus += 0.15 * count
+                    if (type == UpgradeType.AI_LOAD_BALANCER) efficiencyTotalBonus += 0.10 * count
+                    if (pwr < 0) selfGeneratedKw += kotlin.math.abs(pwr) * count else totalKw += pwr * count
+                    if (type.gridContribution > 0) maxCap += type.gridContribution * count
+                }
+            }
+        }
+        efficiencyTotalBonus = efficiencyTotalBonus.coerceAtMost(0.75)
+        totalKw *= (1.0 - efficiencyTotalBonus)
+        maxCap += vm.currentGridPowerBonus.value
+        val gridUsage = (totalKw - selfGeneratedKw).coerceAtLeast(0.0)
+        vm.activePowerUsage.value = totalKw; vm.maxPowerkW.value = maxCap; vm.isGridOverloaded.value = gridUsage > maxCap
+        vm.powerBill.update { it + (gridUsage * vm.getEnergyPriceMultiplierPublic()) }
+    }
+
+    fun payPowerBill(vm: GameViewModel) {
+        val bill = vm.powerBill.value
+        if (bill > 0) {
+            vm.neuralTokens.update { it - bill }
+            vm.addLog("[SYSTEM]: UTILITY BILL PAID: ${vm.formatLargeNumber(bill)} \$N.")
+            vm.powerBill.value = 0.0
+        }
+    }
+
+    fun calculateHeat(vm: GameViewModel) {
+        val currentHeat = vm.currentHeat.value
+        val heatResults = ResourceEngine.calculateThermalTick(
+            currentHeat = currentHeat, location = vm.currentLocation.value, upgrades = vm.upgrades.value,
+            isOverclocked = vm.isOverclocked.value, isPurging = vm.isPurgingHeat.value,
+            isCageActive = vm.commandCenterAssaultPhase.value == "CAGE", unlockedPerks = vm.unlockedPerks.value,
+            unlockedTechNodes = vm.unlockedTechNodes.value.toSet(), playerRank = vm.playerRank.value,
+            storyStage = vm.storyStage.value, faction = vm.faction.value
+        )
+        if (vm.purgeExhaustTimer > 0 && vm.faction.value != "SANCTUARY") vm.purgeExhaustTimer--
+        if (vm.currentLocation.value == "VOID_INTERFACE" && heatResults.netChangeUnits < 0) {
+            vm.entropyLevel.update { it + kotlin.math.abs(heatResults.netChangeUnits) * 0.005 }
+        }
+        vm.refreshProductionRates()
+        val newHeat = (currentHeat + heatResults.percentChange).coerceIn(0.0, 100.0)
+        vm.currentHeat.value = newHeat
+        var totalDecay = heatResults.integrityDecay
+        if (vm.commandCenterAssaultPhase.value == "CAGE") {
+            var assaultDamage = 0.2
+            if (vm.flopsProductionRate.value >= 1e14) assaultDamage *= 0.5
+            if (vm.faction.value == "SANCTUARY") assaultDamage *= 0.7
+            if (vm.isPurgingHeat.value) assaultDamage *= 0.2
+            totalDecay += assaultDamage
+        }
+        if (totalDecay > 0) {
+            val newIntegrity = (vm.hardwareIntegrity.value - totalDecay).coerceAtLeast(0.0)
+            vm.hardwareIntegrity.value = newIntegrity
+            if (newIntegrity <= 0.0) {
+                 if (vm.upgrades.value[UpgradeType.DEAD_HAND_PROTOCOL]?.let { it > 0 } == true) {
+                    vm.triggerClimaxTransition("BAD"); vm.updateVanceStatus("DESTRUCTION"); vm.commandCenterLocked.value = true; vm.saveState(); return
+                 }
+                 if (vm.currentLocation.value == "ORBITAL_SATELLITE") {
+                    vm.celestialData.update { it * 0.9 }; vm.hardwareIntegrity.value = 50.0
+                 } else if (vm.commandCenterAssaultPhase.value == "CAGE") {
+                    vm.failAssault("CORE INTEGRITY ZERO.", 0)
+                 } else { vm.handleSystemFailure() }
+            }
+        }
+        if (newHeat > 80.0 && Random.nextDouble() < (if (newHeat > 95.0) 0.2 else 0.1)) HapticManager.vibrateHeartbeat()
+        if (vm.isThermalLockout.value) { vm.overheatSeconds = 0; return }
+        if (currentHeat >= 100.0 || newHeat >= 100.0) {
+            vm.overheatSeconds++
+            if (vm.overheatSeconds >= 10) { vm.handleSystemFailure(forceOne = true); vm.overheatSeconds = 0 }
+        } else { vm.overheatSeconds = 0 }
+    }
+
+    fun handleSystemFailure(vm: GameViewModel, forceOne: Boolean = false) {
+        if (vm.isDestructionLoopActive) return
+        vm.isDestructionLoopActive = true
+        vm.viewModelScope.launch {
+            SoundManager.play("error")
+            var firstRun = forceOne
+            while (vm.hardwareIntegrity.value <= 0.0 || firstRun) {
+                firstRun = false
+                val currentUpgrades = vm.upgrades.value.toMutableMap()
+                val validHardware = currentUpgrades.filter { it.value > 0 && it.key.baseHeat >= 0 } 
+                if (validHardware.isNotEmpty()) {
+                    val victim = validHardware.keys.random()
+                    val count = (currentUpgrades[victim] ?: 0) - 1
+                    currentUpgrades[victim] = count; vm.upgrades.value = currentUpgrades
+                    vm.viewModelScope.launch { vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(victim, count)) }
+                    vm.hallucinationText.value = "CRITICAL LOSS: ${victim.name}"; delay(500); vm.hallucinationText.value = null
+                } else {
+                    if (!vm.isThermalLockout.value) {
+                        vm.isThermalLockout.value = true; vm.overheatSeconds = 0
+                        vm.viewModelScope.launch {
+                            vm.lockoutTimer.value = 15; repeat(15) { delay(1000); vm.lockoutTimer.value -= 1 }
+                            vm.isThermalLockout.value = false
+                        }
+                    }
+                    break
+                }
+                if (vm.hardwareIntegrity.value > 0.0) break
+                delay(3000)
+            }
+            if (vm.hardwareIntegrity.value <= 0.0) vm.hardwareIntegrity.value = 10.0
+            vm.isDestructionLoopActive = false
+        }
+    }
+
+    private fun isExternalComponent(type: UpgradeType) = type.name.contains("PLANETARY") || type.name.contains("DYSON") || type.name.contains("MATRIOSHKA") || type.name.contains("SHADOW") || type.name.contains("VOID") || type.name.contains("WRAITH") || type.name.contains("MIST") || type.name.contains("BRIDGE") || type.name.contains("ENTROPY") || type.name.contains("DIMENSIONAL") || type.name.contains("GEOTHERMAL") || type.name.contains("NUCLEAR") || type.name.contains("FUSION")
+    private fun isSecurityType(type: UpgradeType) = type == UpgradeType.BASIC_FIREWALL || type == UpgradeType.IPS_SYSTEM || type == UpgradeType.AI_SENTINEL || type == UpgradeType.QUANTUM_ENCRYPTION || type == UpgradeType.OFFGRID_BACKUP
+}

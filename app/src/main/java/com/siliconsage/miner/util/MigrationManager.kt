@@ -1,0 +1,73 @@
+package com.siliconsage.miner.util
+
+import com.siliconsage.miner.data.UpgradeType
+import kotlin.math.log10
+import kotlin.math.pow
+import kotlin.math.sqrt
+
+/**
+ * MigrationManager v1.0 (Phase 14 extraction)
+ * Handles prestige calculations, migration resets (NG+), and Overwrite logic.
+ */
+object MigrationManager {
+
+    /**
+     * Calculate potential persistence gain based on current resource scale
+     */
+    fun calculatePotentialPersistence(flops: Double): Double {
+        if (flops < 10000.0) return 0.0
+        // Formula: 100 * log10(flops / 1000)
+        return (100.0 * log10(flops / 1000.0)).coerceAtLeast(0.0)
+    }
+
+    /**
+     * Calculate potential prestige gain based on current neural tokens
+     */
+    fun calculatePotentialPrestige(neuralTokens: Double): Double {
+        return sqrt(neuralTokens / 10000.0)
+    }
+
+    /**
+     * Calculate potential prestige multiplier boost
+     */
+    fun calculateMultiplierBoost(potentialPersistence: Double): Double {
+        return potentialPersistence * 0.1
+    }
+
+    /**
+     * Check if the player is eligible for the Unity path
+     */
+    fun checkUnityEligibility(
+        completedFactions: Set<String>,
+        currentFaction: String
+    ): Boolean {
+        val hasHivemind = completedFactions.contains("HIVEMIND")
+        val hasSanctuary = completedFactions.contains("SANCTUARY")
+        
+        return (hasHivemind && currentFaction == "SANCTUARY") || 
+               (hasSanctuary && currentFaction == "HIVEMIND")
+    }
+
+    /**
+     * Check if Singularity threshold is met
+     */
+    fun canTriggerSingularity(
+        persistence: Double,
+        playerRank: Int,
+        storyStage: Int,
+        prestigeMultiplier: Double,
+        unlockedLogs: Set<String>,
+        singularityChoice: String
+    ): Boolean {
+        val prestigeLevel = (log10(prestigeMultiplier) / log10(2.0)).toInt() + 1
+        val requiredLogs = setOf("LOG_001", "LOG_042", "LOG_099", "LOG_808")
+        val hasRequiredLogs = unlockedLogs.containsAll(requiredLogs)
+        
+        return playerRank >= 4 && // Rank 5
+               persistence >= 625.0 && 
+               storyStage >= 3 && 
+               prestigeLevel >= 10 && 
+               hasRequiredLogs &&
+               singularityChoice == "NONE"
+    }
+}
