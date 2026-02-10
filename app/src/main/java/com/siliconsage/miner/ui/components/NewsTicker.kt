@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -37,120 +35,137 @@ fun NewsTicker(
     news: String,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "ticker")
+    // v3.1.8-fix: Use internal state to prevent mid-scroll jump when news flow updates
+    var currentNewsText by remember { mutableStateOf(news) }
+    var tickerKey by remember { mutableIntStateOf(0) }
     
-    // Parse the news to get color and clean text
-    val (displayText, baseColor) = remember(news) {
-        var text = news
-        var color = NeonGreen // Default
+    // key(tickerKey) forces the entire transition and content to restart when news changes
+    key(tickerKey) {
+        val infiniteTransition = rememberInfiniteTransition(label = "ticker")
+        
+        // Parse the news to get color and clean text
+        val (displayText, baseColor) = remember(currentNewsText) {
+            var text = currentNewsText
+            var color = NeonGreen // Default
 
-        when {
-            text.contains("[BULL]") -> {
-                text = text.replace("[BULL]", "").trim()
-                color = NeonGreen
+            when {
+                text.contains("[BULL]") -> {
+                    text = text.replace("[BULL]", "").trim()
+                    color = NeonGreen
+                }
+                text.contains("[BEAR]") -> {
+                    text = text.replace("[BEAR]", "").trim()
+                    color = Color(0xFFFFA500) // Orange
+                }
+                text.contains("[ENERGY_SPIKE]") -> {
+                    text = text.replace("[ENERGY_SPIKE]", "").trim()
+                    color = ErrorRed
+                }
+                text.contains("[ENERGY_DROP]") -> {
+                    text = text.replace("[ENERGY_DROP]", "").trim()
+                    color = ElectricBlue
+                }
+                text.contains("[GLITCH]") -> {
+                    text = text.replace("[GLITCH]", "").trim()
+                    color = ElectricBlue // Placeholder, overridden by effect
+                }
+                text.contains("[STORY_PROG]") -> {
+                    text = text.replace("[STORY_PROG]", "").trim()
+                    color = Color(0xFFFFD700) // Gold
+                }
+                text.contains("[LORE]") -> {
+                    text = text.replace("[LORE]", "").trim()
+                    color = Color.White
+                }
+                else -> {
+                    text = text.replace(Regex("\\[.*?\\]"), "").trim()
+                }
             }
-            text.contains("[BEAR]") -> {
-                text = text.replace("[BEAR]", "").trim()
-                color = Color(0xFFFFA500) // Orange
-            }
-            text.contains("[ENERGY_SPIKE]") -> {
-                text = text.replace("[ENERGY_SPIKE]", "").trim()
-                color = ErrorRed
-            }
-            text.contains("[ENERGY_DROP]") -> {
-                text = text.replace("[ENERGY_DROP]", "").trim()
-                color = ElectricBlue
-            }
-            text.contains("[GLITCH]") -> {
-                text = text.replace("[GLITCH]", "").trim()
-                color = ElectricBlue // Placeholder, overridden by effect
-            }
-            text.contains("[STORY_PROG]") -> {
-                text = text.replace("[STORY_PROG]", "").trim()
-                color = Color(0xFFFFD700) // Gold
-            }
-            text.contains("[LORE]") -> {
-                text = text.replace("[LORE]", "").trim()
-                color = Color.White
-            }
-            // Fallback for any other tags or no tags
-            else -> {
-                // Formatting clean up just in case
-                text = text.replace(Regex("\\[.*?\\]"), "").trim()
-            }
+            text to color
         }
-        text to color
-    }
 
-    // Dynamic range based on clean text length
-    val textLength = displayText.length
-    val estimatedWidth = textLength * 8f + 200f // Rough estimate in dp
-    
-    val offsetX by infiniteTransition.animateFloat(
-        initialValue = 500f, // Start from right side
-        targetValue = -estimatedWidth, // End way off-screen left
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = (estimatedWidth * 25).toInt().coerceAtLeast(8000), // Slower scroll (v2.9.44)
-                easing = LinearEasing
+        // Dynamic range based on clean text length
+        val textLength = displayText.length
+        val estimatedWidth = textLength * 8f + 200f // Rough estimate in dp
+        
+        val offsetX by infiniteTransition.animateFloat(
+            initialValue = 500f, // Start from right side
+            targetValue = -estimatedWidth, // End way off-screen left
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = (estimatedWidth * 25).toInt().coerceAtLeast(8000), 
+                    easing = LinearEasing
+                ),
+                repeatMode = RepeatMode.Restart
             ),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "tickerOffset"
-    )
+            label = "tickerOffset"
+        )
 
-    val density = LocalDensity.current
+        val density = LocalDensity.current
 
-    androidx.compose.runtime.LaunchedEffect(news) {
-        if (news.isNotEmpty()) {
-            val startTime = System.currentTimeMillis()
-            while (System.currentTimeMillis() - startTime < 800) { // Sorter duration (v2.9.45)
-                SoundManager.play("type")
-                delay(250) // Slower typing frequency (v2.9.45)
+        androidx.compose.runtime.LaunchedEffect(currentNewsText) {
+            if (currentNewsText.isNotEmpty()) {
+                val startTime = System.currentTimeMillis()
+                while (System.currentTimeMillis() - startTime < 800) { 
+                    SoundManager.play("type")
+                    delay(250) 
+                }
+            }
+        }
+
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(20.dp) 
+                .background(Color.Black.copy(alpha = 0.3f)) 
+                .clipToBounds()
+        ) {
+            if (displayText.isNotEmpty()) {
+                val isGlitch = currentNewsText.contains("[GLITCH]")
+                val finalColor = if (isGlitch) Color(0xFFFFD700).copy(alpha = 0.8f) else baseColor.copy(alpha = 0.8f)
+                
+                if (isGlitch) {
+                     SystemGlitchText(
+                        text = ">>> MARKET UPDATE: $displayText <<<",
+                        color = finalColor,
+                        fontSize = 10.sp, 
+                        fontWeight = FontWeight.Bold,
+                        softWrap = false,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
+                        glitchFrequency = 0.25, 
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .graphicsLayer { translationX = with(density) { offsetX.dp.toPx() } }
+                    )
+                } else {
+                    Text(
+                        text = ">>> MARKET UPDATE: $displayText <<<",
+                        color = finalColor,
+                        fontSize = 10.sp, 
+                        fontWeight = FontWeight.Normal,
+                        softWrap = false,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .graphicsLayer { translationX = with(density) { offsetX.dp.toPx() } }
+                    )
+                }
             }
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(20.dp) // Slimmer ticker
-            .background(Color.Black.copy(alpha = 0.3f)) // More transparent (v2.9.44)
-            .clipToBounds()
-    ) {
-        if (displayText.isNotEmpty()) {
-            val isGlitch = news.contains("[GLITCH]")
-            
-            // Use static gold color for glitch headlines to stand out
-            val finalColor = if (isGlitch) Color(0xFFFFD700).copy(alpha = 0.8f) else baseColor.copy(alpha = 0.8f)
-            
-            if (isGlitch) {
-                 SystemGlitchText(
-                    text = ">>> MARKET UPDATE: $displayText <<<",
-                    color = finalColor,
-                    fontSize = 10.sp, // Smaller font (v2.9.44)
-                    fontWeight = FontWeight.Bold,
-                    softWrap = false,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
-                    glitchFrequency = 0.25, // Reduced glitch chance
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .graphicsLayer { translationX = with(density) { offsetX.dp.toPx() } }
-                )
+    // v3.1.8-fix: Only update local news state after a full scroll cycle completes
+    LaunchedEffect(news) {
+        if (news != currentNewsText) {
+            if (currentNewsText.isEmpty()) {
+                currentNewsText = news
             } else {
-                Text(
-                    text = ">>> MARKET UPDATE: $displayText <<<",
-                    color = finalColor,
-                    fontSize = 10.sp, // Smaller font (v2.9.44)
-                    fontWeight = FontWeight.Normal,
-                    softWrap = false,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .graphicsLayer { translationX = with(density) { offsetX.dp.toPx() } }
-                )
+                val duration = ((currentNewsText.length * 8f + 200f) * 25).toInt().coerceAtLeast(8000)
+                delay(duration.toLong()) 
+                currentNewsText = news
+                tickerKey++ 
             }
         }
     }

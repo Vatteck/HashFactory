@@ -28,7 +28,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun SingularityScreen(viewModel: GameViewModel) {
-    var step by remember { mutableStateOf(1) } // 1: Triptych, 2: Confirmation, 3: Ritual
+    var step by remember { mutableStateOf(1) } // 1: Triptych, 2: Confirmation
     var selectedPath by remember { mutableStateOf<SingularityPath?>(null) }
     var expandedPath by remember { mutableStateOf<SingularityPath?>(null) }
 
@@ -56,13 +56,6 @@ fun SingularityScreen(viewModel: GameViewModel) {
                 path = selectedPath!!,
                 onBack = { step = 1 },
                 onConfirm = { 
-                    step = 3 
-                    SoundManager.play("glitch")
-                }
-            )
-            3 -> IdentityRitual(
-                path = selectedPath!!,
-                onComplete = {
                     viewModel.setSingularityChoice(selectedPath!!.name)
                     SoundManager.play("victory")
                 }
