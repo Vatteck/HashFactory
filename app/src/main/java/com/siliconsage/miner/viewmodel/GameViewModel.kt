@@ -173,16 +173,103 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     var assaultPaused = false
     var lastDilemmaTime = 0L
     var lastPopupTime = 0L
-    var baseRateValue = 0.1
+    var baseRateInternal = 0.1
     var marketMultiplier = 1.0
     var airdropMultiplier = 1.0
     var thermalRateModifier = 1.0
     var energyPriceMultiplier = 0.15
     var newsProductionMultiplier = 1.0
-    val newsHistoryList = mutableListOf<String>()
+    val newsHistoryInternal = mutableListOf<String>()
     val narrativeQueue = mutableListOf<NarrativeItem>()
     var currentPhaseStartTime = 0L
     var currentPhaseDuration = 0L
+
+    init {
+        // v3.1.8-dev Restoration: The Logic Pour
+        addLog("[SYSTEM]: KERNEL LOADED. INITIALIZING SUBSTRATE...")
+        viewModelScope.launch {
+            val state = repository.getGameStateOneShot()
+            if (state != null) {
+                // Basic State Restoration
+                flops.value = state.flops
+                neuralTokens.value = state.neuralTokens
+                celestialData.value = state.celestialData
+                voidFragments.value = state.voidFragments
+                currentHeat.value = state.currentHeat
+                powerBill.value = state.powerBill
+                stakedTokens.value = state.stakedTokens
+                prestigeMultiplier.value = state.prestigeMultiplier
+                prestigePoints.value = state.prestigePoints
+                storyStage.value = state.storyStage
+                faction.value = state.faction
+                humanityScore.value = state.humanityScore
+                hardwareIntegrity.value = state.hardwareIntegrity
+                currentLocation.value = state.currentLocation
+                isTrueNull.value = state.isTrueNull
+                isSovereign.value = state.isSovereign
+                vanceStatus.value = state.vanceStatus
+                realityStability.value = state.realityStability
+                
+                // v3.1.8 Persistence Restoration
+                cdLifetime.value = state.cdLifetime
+                vfLifetime.value = state.vfLifetime
+                peakResonanceTier.value = try { ResonanceTier.valueOf(state.peakResonanceTier) } catch (e: Exception) { ResonanceTier.NONE }
+                
+                refreshProductionRates()
+                addLog("[SYSTEM]: DATA HUB CONNECTED. PORT 1 ONLINE.")
+                addLog("[SYSTEM]: KERNEL v3.1.8-dev BOOT COMPLETE.")
+            } else {
+                addLog("[SYSTEM]: NO PREVIOUS STATE FOUND. INITIALIZING...")
+                refreshProductionRates()
+            }
+        }
+
+        // Production Loop (100ms Ticks)
+        viewModelScope.launch {
+            while (true) {
+                delay(100L)
+                val results = ResourceEngine.calculatePassiveIncomeTick(
+                    flopsPerSec = flopsProductionRate.value,
+                    location = currentLocation.value,
+                    upgrades = upgrades.value,
+                    resonanceBonus = ResourceEngine.getResonanceResourceBonus(resonanceState.value.tier),
+                    orbitalAltitude = orbitalAltitude.value,
+                    heatGenerationRate = heatGenerationRate.value,
+                    entropyLevel = entropyLevel.value,
+                    collapsedNodesCount = collapsedNodes.value.size,
+                    systemCollapseTimer = null // Placeholder
+                )
+                
+                flops.update { it + results.flopsDelta }
+                celestialData.update { it + results.cdDelta }
+                voidFragments.update { it + results.vfDelta }
+                entropyLevel.update { it + results.entropyDelta }
+                
+                cdLifetime.update { it + results.cdDelta }
+                vfLifetime.update { it + results.vfDelta }
+                
+                resonanceState.value = resonanceState.value.copy(
+                    tier = ResourceEngine.calculateResonance(celestialData.value, voidFragments.value)
+                )
+                
+                if (resonanceState.value.tier.ordinal > peakResonanceTier.value.ordinal) {
+                    peakResonanceTier.value = resonanceState.value.tier
+                }
+            }
+        }
+
+        // Thermal & Power Loop (1s Ticks)
+        viewModelScope.launch {
+            while (true) {
+                delay(1000L)
+                SimulationService.calculateHeat(this@GameViewModel)
+                SimulationService.accumulatePower(this@GameViewModel)
+                NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
+                refreshProductionRates()
+                saveState()
+            }
+        }
+    }
 
     // --- Core Methods ---
     fun addLog(msg: String) { 
@@ -232,6 +319,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         val p = calculateClickPower()
         flops.update { it + p }
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
+    }
+
+    fun trainModel() { 
+        onManualClick()
     }
 
     fun calculateClickPower() = ResourceEngine.calculateClickPower(
@@ -291,7 +382,35 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissOfflineEarnings() { showOfflineEarnings.value = false }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun transcend() { /* NG+ Logic */ }
-    fun resetGame(force: Boolean = false) { /* Full wipe */ }
+    fun resetGame(force: Boolean = false) {
+        viewModelScope.launch {
+            repository.updateGameState(PersistenceManager.createSaveState(
+                flops = 0.0, neuralTokens = 0.0, currentHeat = 0.0, powerBill = 0.0,
+                stakedTokens = 0.0, prestigeMultiplier = 1.0, prestigePoints = 0.0,
+                unlockedTechNodes = emptyList(), storyStage = 0, faction = "NONE",
+                hasSeenVictory = false, isTrueNull = false, isSovereign = false,
+                vanceStatus = "ACTIVE", realityStability = 1.0, currentLocation = "SUBSTATION_7",
+                isNetworkUnlocked = false, isGridUnlocked = false, unlockedDataLogs = emptySet<String>(),
+                activeDilemmaChains = emptyMap<String, com.siliconsage.miner.data.DilemmaChain>(), 
+                rivalMessages = emptyList<com.siliconsage.miner.data.RivalMessage>(), 
+                seenEvents = emptySet<String>(),
+                completedFactions = emptySet<String>(), unlockedTranscendencePerks = emptySet<String>(),
+                annexedNodes = setOf("D1"), gridNodeLevels = emptyMap<String, Int>(), 
+                nodesUnderSiege = emptySet<String>(),
+                offlineNodes = emptySet<String>(), collapsedNodes = emptySet<String>(), lastRaidTime = 0L,
+                commandCenterAssaultPhase = "NOT_STARTED", commandCenterLocked = false,
+                raidsSurvived = 0, humanityScore = 50, hardwareIntegrity = 100.0,
+                annexingNodes = emptyMap(), celestialData = 0.0, voidFragments = 0.0,
+                launchProgress = 0f, orbitalAltitude = 0.0, realityIntegrity = 1.0,
+                entropyLevel = 0.0, resonanceState = ResonanceState(), singularityChoice = "NONE",
+                globalSectors = emptyMap(), synthesisPoints = 0.0, authorityPoints = 0.0,
+                harvestedFragments = 0.0, prestigePointsPostSingularity = 0,
+                cdLifetime = 0.0, vfLifetime = 0.0, peakResonanceTier = ResonanceTier.NONE
+            ))
+            // Force re-collect or trigger a UI restart
+            addLog("[SYSTEM]: DATA WIPE INITIATED. REBOOTING...")
+        }
+    }
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
     fun repairIntegrity() {
         val cost = calculateRepairCost()
@@ -302,13 +421,50 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             SoundManager.play("buy")
         }
     }
+    fun purgeEmergencyHeat() {
+        if (isPurgingHeat.value) return
+        isPurgingHeat.value = true
+        addLog("[SYSTEM]: EMERGENCY HEAT PURGE INITIATED.")
+        SoundManager.play("alarm")
+    }
     fun getUpgradeName(t: UpgradeType) = UpgradeManager.getUpgradeName(t, isSovereign.value)
     fun getUpgradeDescription(t: UpgradeType) = UpgradeManager.getUpgradeDescription(t, isSovereign.value)
     fun getUpgradeRate(t: UpgradeType) = UpgradeManager.getUpgradeRate(t, getComputeUnitName())
     fun getUpgradeCount(t: UpgradeType) = upgrades.value[t] ?: 0
-    fun setGamePaused(p: Boolean) { isSettingsPaused.value = p }
+    fun setGamePaused(p: Boolean) { 
+        isSettingsPaused.value = p
+        if (p) addLog("[SYSTEM]: OPERATIONS SUSPENDED.")
+        else addLog("[SYSTEM]: OPERATIONS RESUMED.")
+    }
     fun checkPopupPause() { /* If popup active, pause timers */ }
-    fun refreshProductionRates() { /* production logic */ }
+    fun refreshProductionRates() {
+        flopsProductionRate.value = ResourceEngine.calculateFlopsRate(
+            upgrades = upgrades.value,
+            isCageActive = commandCenterAssaultPhase.value == "CAGE",
+            annexedNodes = annexedNodes.value,
+            offlineNodes = offlineNodes.value,
+            gridFlopsBonuses = emptyMap(), // Placeholder for SectorManager bridge
+            faction = faction.value,
+            humanityScore = humanityScore.value,
+            location = currentLocation.value,
+            prestigeMultiplier = prestigeMultiplier.value,
+            unlockedPerks = unlockedPerks.value,
+            unlockedTechNodes = unlockedTechNodes.value,
+            airdropMultiplier = airdropMultiplier,
+            newsProductionMultiplier = newsProductionMultiplier,
+            activeProtocol = "NONE", // Dynamic protocol bridge pending
+            isDiagnosticsActive = isDiagnosticsActive.value,
+            isOverclocked = isOverclocked.value,
+            isGridOverloaded = isGridOverloaded.value,
+            isPurgingHeat = isPurgingHeat.value,
+            currentHeat = currentHeat.value,
+            legacyMultipliers = 0.0 // Placeholder
+        )
+    }
+
+    fun updatePowerUsage() {
+        SimulationService.accumulatePower(this)
+    }
     fun unlockDataLog(id: String) = NarrativeService.unlockDataLog(id, this)
     fun addRivalMessage(m: RivalMessage) = NarrativeService.addRivalMessage(m, this)
     fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 15000L)
@@ -331,8 +487,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugToggleSovereign() { isSovereign.update { !it } }
     fun debugSetIntegrity(a: Double) { hardwareIntegrity.value = a }
     fun debugDestroyHardware() { handleSystemFailure(true) }
-    fun debugInjectHeadline(t: String) { newsHistoryList.add(0, t) }
-    fun debugInjectHeadlinePublic(t: String) = debugInjectHeadline(t)
+    fun debugInjectHeadline(t: String) { newsHistoryInternal.add(0, t) }
     fun debugSetRank(r: Int) { playerRank.value = r }
     fun debugSetSingularityReady() { /* set flags */ }
     fun debugSetBalance(b: Double) { /* set resonance ratio */ }
@@ -369,31 +524,28 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun setTrueNull(s: Boolean) { isTrueNull.value = s }
     fun checkTrueEnding() { /* logic */ }
     fun deleteHumanMemories() { /* logic */ }
-    fun triggerSystemCollapse(v: Boolean = false) { /* logic */ }
     fun resolveRaidSuccess(id: String, v: Double = 0.0) { /* logic */ }
     fun resolveRaidFailure(id: String, v: Double = 0.0) { /* logic */ }
     fun advanceStage(v: String = "", d: Long = 0L) { storyStage.update { it + 1 } }
     fun advanceToFactionChoice(v: String = "", d: Long = 0L) { /* transition logic */ }
     fun triggerChainEvent(id: String, d: Long = 0L) { /* start event */ }
-    fun getNewsHistory(): List<String> = newsHistoryList
+    fun getNewsHistory(): List<String> = newsHistoryInternal
     fun performActiveDefense() { /* logic */ }
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
     fun onDiagnosticTap(idx: Int) { /* diagnostic logic */ }
     fun resolveFork(choice: Int) { isGovernanceForkActive.value = false }
-    fun trainModel() { /* logic */ }
     fun exchangeFlops() { /* logic */ }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun executeBridgeTransfer(v: Double) { /* logic */ }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value, faction.value)
     fun sellUpgrade(t: UpgradeType, count: Int = 1) { /* logic */ }
     fun calculateUpgradeCost(t: UpgradeType, count: Int = 0, loc: String = "", ent: Double = 0.0) = UpgradeManager.calculateUpgradeCost(t, count, loc, ent)
-    fun triggerSystemCollapse(s: Int = 0) { /* logic */ }
     
     // --- Missing Market Bridges ---
     fun updateNews(msg: String) { currentNews.value = msg }
     fun checkTransitionsPublic() = NarrativeManagerService.checkStoryTransitions(this)
     fun updateNeuralTokens(v: Double) { neuralTokens.update { it + v } }
-    fun getBaseRate() = baseRateValue
+    fun getBaseRate() = baseRateInternal
     fun setMarketModifiers(marketMult: Double, thermalMod: Double, energyMult: Double, newsProdMult: Double, convRate: Double) {
         marketMultiplier = marketMult
         thermalRateModifier = thermalMod
@@ -402,6 +554,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         conversionRate.value = convRate
     }
     fun debugBuyUpgrade(t: UpgradeType, count: Int = 1) { upgrades.update { it + (t to (it[t] ?: 0) + count) } }
+    fun triggerSystemCollapse(v: Boolean) { /* logic */ }
+    fun triggerSystemCollapse(s: Int) { /* logic */ }
+    fun triggerChainEvent(id: String) { /* Logic to trigger event by ID */ }
 }
 
 class GameViewModelFactory(private val repository: GameRepository) : ViewModelProvider.Factory {

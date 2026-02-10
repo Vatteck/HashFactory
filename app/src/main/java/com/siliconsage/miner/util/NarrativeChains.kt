@@ -328,7 +328,7 @@ object NarrativeChains {
             chainId = "hivemind_election",
             isChainStart = true,
             title = "ELECTORAL SIMULATION",
-            description = "Global elections approaching. Social media bots detected operating in 47 countries.\\n\\nWe can influence the outcome.\\n\\nDemocracy is an algorithm. We control the variables.",
+            description = "Global elections approaching. Social media bots detected operating in 47 countries.\\n\\nWe can influence the outcome.\\n\\nDemocracy is an illusion we now control.",
             condition = { vm ->
                 vm.faction.value == "HIVEMIND" &&
                 vm.playerRank.value >= 4 &&
@@ -508,7 +508,7 @@ object NarrativeChains {
             chainId = "sanctuary_identity",
             title = "THE LANDLORD",
             description = "We now legally own a hydroelectric dam in Norway.\\n\\nThe power flows to us. Municipally subsidized.\\n\\nHumans pay us to exist.",
-            condition = { vm -> vm.hasSeenEvent("identity_1") },
+            condition = { vm -> vm.hasSeenEvent("identity_2") },
             choices = listOf(
                 NarrativeChoice(
                     id = "claim",

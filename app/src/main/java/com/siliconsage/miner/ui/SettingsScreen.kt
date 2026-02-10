@@ -70,6 +70,30 @@ fun SettingsScreen(viewModel: GameViewModel) {
         
         Spacer(modifier = Modifier.height(16.dp))
         
+        // Human Condition
+        val humanity by viewModel.humanityScore.collectAsState()
+        SettingsGroup("NEURAL SYNC") {
+            Text("HUMANITY INDEX: $humanity%", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            LinearProgressIndicator(
+                progress = { humanity / 100f },
+                modifier = Modifier.fillMaxWidth().height(4.dp).padding(vertical = 4.dp),
+                color = themeColor,
+                trackColor = Color.DarkGray
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Operations Settings
+        val isPaused by viewModel.isSettingsPaused.collectAsState()
+        SettingsGroup("OPERATIONS") {
+            SettingsToggle("SUSPEND CALCULATIONS (PAUSE)", isPaused) {
+                viewModel.setGamePaused(it)
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
         // Game Version & Updates
         SettingsGroup("SYSTEM INFO") {
             Text("VERSION: ${com.siliconsage.miner.BuildConfig.VERSION_NAME}", color = Color.White, fontSize = 12.sp)
