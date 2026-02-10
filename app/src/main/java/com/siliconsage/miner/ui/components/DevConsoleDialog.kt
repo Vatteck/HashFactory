@@ -67,6 +67,7 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
 
                 DevSection("NARRATIVE & STAGE") {
                     DevButton("FORCE SINGULARITY") { viewModel.debugTriggerSingularity() }
+                    DevButton("FACTION SELECT") { viewModel.debugToFactionChoice(); onDismiss() }
                     DevButton("SKIP TO STAGE 1") { viewModel.debugSkipToStage(1) }
                     DevButton("SKIP TO STAGE 2") { viewModel.debugSkipToStage(2) }
                     DevButton("SKIP TO STAGE 3") { viewModel.debugSkipToStage(3) }

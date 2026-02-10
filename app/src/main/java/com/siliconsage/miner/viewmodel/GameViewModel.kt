@@ -550,6 +550,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugTriggerDilemma() { /* manual trigger logic */ }
     fun debugResetAscension() { /* reset prestige logic */ }
     fun debugSkipToStage(s: Int) { storyStage.value = s }
+    fun debugToFactionChoice() { 
+        storyStage.value = 2
+        faction.value = "NONE"
+        addLog("[DEBUG]: FORCED FACTION CHOICE GATE.")
+    }
     fun debugForceEndgame() { /* logic */ }
     fun debugForceSovereignEndgame() { /* logic */ }
     fun debugToggleNull() { isTrueNull.update { !it } }
@@ -581,8 +586,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         // Refresh rates and trigger an immediate logic check
         refreshProductionRates()
     }
-    fun confirmFactionAndAscend(f: String) { /* transition logic */ }
-    fun cancelFactionSelection() { /* back out */ }
+    fun confirmFactionAndAscend(f: String) { 
+        faction.value = f
+        addLog("[$f]: MIGRATION CONFIRMED. ASCENDING SUBSTRATE.")
+        ascend(true)
+    }
+    fun cancelFactionSelection() { 
+        // back out or reset stage if needed
+        storyStage.update { (it - 1).coerceAtLeast(0) }
+    }
     // --- Phase 13: THE DEPARTURE ---
     fun initiateLaunchSequence() {
         viewModelScope.launch {
