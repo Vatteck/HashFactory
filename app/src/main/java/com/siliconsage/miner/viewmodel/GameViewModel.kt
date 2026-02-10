@@ -16,6 +16,7 @@ import com.siliconsage.miner.data.DataLog
 import com.siliconsage.miner.data.DilemmaChain
 import com.siliconsage.miner.data.ScheduledPart
 import com.siliconsage.miner.data.SectorState
+import com.siliconsage.miner.data.getThemeColorForFaction
 import com.siliconsage.miner.util.*
 import com.siliconsage.miner.domain.engine.ResourceEngine
 import kotlinx.coroutines.delay
@@ -71,6 +72,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val securityLevel = MutableStateFlow(0)
     val prestigePointsPostSingularity = MutableStateFlow(0)
     val storyStage = MutableStateFlow(0)
+    val isDevMenuVisible = MutableStateFlow(false)
     val faction = MutableStateFlow("NONE")
     val playerRank = MutableStateFlow(0)
     val playerRankTitle = MutableStateFlow("MINER")
@@ -215,6 +217,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 vfLifetime.value = state.vfLifetime
                 peakResonanceTier.value = try { ResonanceTier.valueOf(state.peakResonanceTier) } catch (e: Exception) { ResonanceTier.NONE }
                 
+                // v3.1.8-fix: Apply Faction-aware theme color
+                themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value)
+                
                 refreshProductionRates()
                 addLog("[SYSTEM]: DATA HUB CONNECTED. PORT 1 ONLINE.")
                 addLog("[SYSTEM]: KERNEL v3.1.8-dev BOOT COMPLETE.")
@@ -318,6 +323,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun onManualClick() { 
         val p = calculateClickPower()
         flops.update { it + p }
+        
+        // v3.1.8-fix: Re-link manual heat generation
+        currentHeat.update { (it + 0.1).coerceAtMost(100.0) }
+        
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }
 
@@ -347,7 +356,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun annexNode(c: String) = SectorManager.annexNode(this, c)
     fun upgradeGridNode(i: String) = SectorManager.upgradeGridNode(this, i)
     fun unlockTechNode(i: String) = TechTreeManager.unlockNode(this, i)
-    fun modifyHumanity(d: Int) { humanityScore.update { (it + d).coerceIn(0, 100) } }
+    fun modifyHumanity(d: Int) { 
+        humanityScore.update { (it + d).coerceIn(0, 100) } 
+        // Update theme color if faction/choice might have changed
+        themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value)
+    }
     fun triggerClimaxTransition(t: String) { activeClimaxTransition.value = t }
     fun onClimaxTransitionComplete() { activeClimaxTransition.value = null }
     fun triggerGridRaid(id: String) = SecurityManager.triggerGridKillerBreach(this)
@@ -381,8 +394,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissRivalMessage(id: String) { rivalMessages.update { current -> current.map { if (it.id == id) it.copy(isDismissed = true) else it } } }
     fun dismissOfflineEarnings() { showOfflineEarnings.value = false }
     fun acknowledgeVictory() { victoryAchieved.value = false }
+    fun toggleDevMenu() { debugToggleDevMenu() }
     fun transcend() { /* NG+ Logic */ }
     fun resetGame(force: Boolean = false) {
+        if (force) debugToggleDevMenu() // Secret trigger via reset long-press or similar if needed, but for now we have the invisible box
         viewModelScope.launch {
             repository.updateGameState(PersistenceManager.createSaveState(
                 flops = 0.0, neuralTokens = 0.0, currentHeat = 0.0, powerBill = 0.0,
@@ -493,6 +508,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugSetBalance(b: Double) { /* set resonance ratio */ }
     fun debugGrantPhase13Resources() { celestialData.value = 1e9; voidFragments.value = 1e9 }
     fun debugTriggerSingularity() { showSingularityScreen.value = true }
+    fun debugToggleDevMenu() { isDevMenuVisible.update { !it } }
     fun debugUnlockUnity() { isUnity.value = true }
     fun debugForceResonance(t: String) { /* resonance state logic */ }
     fun debugUnlockAllSectors() { /* sector mapping */ }

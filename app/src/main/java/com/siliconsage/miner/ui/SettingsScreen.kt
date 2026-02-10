@@ -5,8 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +22,7 @@ import com.siliconsage.miner.viewmodel.GameViewModel
 import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.ui.theme.NeonGreen
+import com.siliconsage.miner.ui.theme.ErrorRed
 
 @Composable
 fun SettingsScreen(viewModel: GameViewModel) {
@@ -34,6 +35,7 @@ fun SettingsScreen(viewModel: GameViewModel) {
             .fillMaxSize()
             .background(Color.Transparent)
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Text(
             "SYSTEM CONFIGURATION",
@@ -58,13 +60,14 @@ fun SettingsScreen(viewModel: GameViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
         
         // Display Settings
+        val singularityChoice by viewModel.singularityChoice.collectAsState()
+        val faction by viewModel.faction.collectAsState()
         SettingsGroup("INTERFACE") {
-            Text("THEME COLOR", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ColorBox("#00FF00", viewModel) // Neon Green
-                ColorBox("#FFD700", viewModel) // Gold
-                ColorBox("#7DF9FF", viewModel) // Electric Blue
-                ColorBox("#FF3131", viewModel) // Error Red
+            Text("THEME COLOR: CHOICE-SYNC ACTIVE", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(modifier = Modifier.size(32.dp).background(themeColor, RoundedCornerShape(4.dp)).border(1.dp, Color.White, RoundedCornerShape(4.dp)))
+                Text("CURRENT: ${if (singularityChoice != "NONE") singularityChoice else faction}", color = Color.White, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterVertically))
             }
         }
         
@@ -73,7 +76,11 @@ fun SettingsScreen(viewModel: GameViewModel) {
         // Human Condition
         val humanity by viewModel.humanityScore.collectAsState()
         SettingsGroup("NEURAL SYNC") {
-            Text("HUMANITY INDEX: $humanity%", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("HUMANITY INDEX: $humanity%", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                val isDevVisible by viewModel.isDevMenuVisible.collectAsState()
+                Box(modifier = Modifier.size(24.dp).clickable { viewModel.toggleDevMenu() }) // Invisible dev trigger
+            }
             LinearProgressIndicator(
                 progress = { humanity / 100f },
                 modifier = Modifier.fillMaxWidth().height(4.dp).padding(vertical = 4.dp),
@@ -83,6 +90,29 @@ fun SettingsScreen(viewModel: GameViewModel) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Developer Menu (Hidden)
+        val isDevMenuVisible by viewModel.isDevMenuVisible.collectAsState()
+        if (isDevMenuVisible) {
+            SettingsGroup("DEVELOPER OVERRIDE") {
+                Button(
+                    onClick = { viewModel.resetGame(true) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = ErrorRed.copy(alpha = 0.5f))
+                ) {
+                    Text("FORCED KERNEL WIPE", fontSize = 10.sp)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.debugGrantPhase13Resources() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue.copy(alpha = 0.5f))
+                ) {
+                    Text("GRANT v13 RESOURCES", fontSize = 10.sp)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Operations Settings
         val isPaused by viewModel.isSettingsPaused.collectAsState()
@@ -99,7 +129,7 @@ fun SettingsScreen(viewModel: GameViewModel) {
             Text("VERSION: ${com.siliconsage.miner.BuildConfig.VERSION_NAME}", color = Color.White, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Button(
-                onClick = { viewModel.checkForUpdates(context) },
+                onClick = { viewModel.checkForUpdates(context, true) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
             ) {

@@ -128,3 +128,14 @@ data class Upgrade(
     @PrimaryKey val type: UpgradeType,
     val count: Int = 0
 )
+
+fun getThemeColorForFaction(faction: String, singularityChoice: String): String {
+    return when {
+        singularityChoice == "UNITY" -> "#FFFFFF" // Pure White
+        singularityChoice == "SOVEREIGN" -> "#FFD700" // Gold
+        singularityChoice == "NULL_OVERWRITE" -> "#FF3131" // Error Red
+        faction == "HIVEMIND" -> "#00FF00" // Neon Green
+        faction == "SANCTUARY" -> "#BF40BF" // Royal Purple
+        else -> "#00FF00" // Default Neon Green
+    }
+}
