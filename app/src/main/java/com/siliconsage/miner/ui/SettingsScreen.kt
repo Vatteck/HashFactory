@@ -37,6 +37,12 @@ fun SettingsScreen(viewModel: GameViewModel) {
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        var currentArchiveScreen by remember { mutableStateOf(false) }
+        if (currentArchiveScreen) {
+            DataLogArchiveScreen(viewModel) { currentArchiveScreen = false }
+            return@Column
+        }
+
         var configClickCount by remember { mutableIntStateOf(0) }
         Text(
             "SYSTEM CONFIGURATION",
@@ -127,12 +133,23 @@ fun SettingsScreen(viewModel: GameViewModel) {
         
         // Dangerous Actions
         Button(
-            onClick = { viewModel.toggleDevMenu() }, // Re-link to console trigger for now
+            onClick = { currentArchiveScreen = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.2f)),
+            border = BorderStroke(1.dp, themeColor.copy(alpha = 0.5f))
+        ) {
+            Text("DATA LOG ARCHIVE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = { viewModel.resetGame(true) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.3f)),
             border = BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed)
         ) {
-            Text("OPEN DEV CONSOLE", color = com.siliconsage.miner.ui.theme.ErrorRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+            Text("WIPE KERNEL (RESET GAME)", color = com.siliconsage.miner.ui.theme.ErrorRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
         }
     }
 }

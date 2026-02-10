@@ -269,6 +269,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 delay(1000L)
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
+                MarketManager.updateMarket(this@GameViewModel) // v3.1.8-fix: Hook up the news ticker
                 NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
                 DataLogManager.checkUnlocks(this@GameViewModel) // v3.1.8-fix: Hook up lore collectibles
                 refreshProductionRates()

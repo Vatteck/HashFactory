@@ -144,7 +144,7 @@ fun BottomNavBar(
     isGridUnlocked: Boolean
 ) {
     val items = remember(storyStage, isNetworkUnlocked, isGridUnlocked) {
-        val list = mutableListOf(Screen.TERMINAL, Screen.ARCHIVE, Screen.UPGRADES)
+        val list = mutableListOf(Screen.TERMINAL, Screen.UPGRADES)
         if (storyStage >= 2 || isGridUnlocked) list.add(Screen.GRID)
         if (storyStage >= 1 || isNetworkUnlocked) list.add(Screen.NETWORK)
         list.add(Screen.SETTINGS)

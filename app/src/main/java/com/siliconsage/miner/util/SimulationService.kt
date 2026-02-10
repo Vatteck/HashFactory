@@ -78,6 +78,9 @@ object SimulationService {
         }
         
         val heatResults = results ?: return
+        
+        // v3.1.8-fix: Update the HUD thermal rate display
+        vm.heatGenerationRate.value = heatResults.percentChange
 
         if (vm.purgeExhaustTimer > 0 && vm.faction.value != "SANCTUARY") vm.purgeExhaustTimer--
         if (vm.currentLocation.value == "VOID_INTERFACE" && heatResults.netChangeUnits < 0) {
