@@ -546,7 +546,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
     fun unlockDataLog(id: String) = NarrativeService.unlockDataLog(id, this)
     fun addRivalMessage(m: RivalMessage) = NarrativeService.addRivalMessage(m, this)
-    fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 15000L)
+    fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 30000L) // v3.1.8-fix: 30s cooldown
     fun debugAddIntegrity(d: Double) { hardwareIntegrity.update { (it + d).coerceIn(0.0, 100.0) } }
     fun debugAddHeat(a: Double) { 
         currentHeat.update { (it + a).coerceIn(0.0, 100.0) } 

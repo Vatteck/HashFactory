@@ -988,6 +988,8 @@ object DataLogManager {
      * Check if any data logs should be unlocked based on current game state
      */
     fun checkUnlocks(vm: GameViewModel) {
+        if (!vm.canShowPopup()) return // Respect queue cooldown
+
         // Cleanup cache every 5 seconds
         val now = System.currentTimeMillis()
         if (now - lastCleanupTime > 5000) {

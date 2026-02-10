@@ -50,7 +50,7 @@ object NarrativeManagerService {
         val currentStage = vm.storyStage.value
         val flops = vm.flops.value
 
-        if (vm.isNarrativeBusy()) return
+        if (vm.isNarrativeBusy() || !vm.canShowPopup()) return // Respect queue cooldown
 
         // Stage 0 -> 1: The Awakening (10,000 FLOPS)
         if (currentStage == 0 && flops >= 10000.0 && !vm.hasSeenEvent("critical_error_awakening")) {
