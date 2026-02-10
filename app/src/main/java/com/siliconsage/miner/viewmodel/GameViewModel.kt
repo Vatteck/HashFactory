@@ -607,10 +607,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 neuralTokens.update { it + sellPrice }
                 addLog("[SYSTEM]: Liquidated ${type.name.replace("_", " ")} x$count. Recouped ${formatLargeNumber(sellPrice)} \$N.")
                 SoundManager.play("buy")
+                refreshProductionRates()
+                updatePowerUsage()
             }
         }
     }
-    fun calculateUpgradeCost(t: UpgradeType, count: Int = 0, loc: String = "", ent: Double = 0.0) = UpgradeManager.calculateUpgradeCost(t, count, loc, ent)
+    fun calculateUpgradeCost(t: UpgradeType) = UpgradeManager.calculateUpgradeCost(t, upgrades.value[t] ?: 0, currentLocation.value, entropyLevel.value)
+    fun calculateUpgradeCost(t: UpgradeType, level: Int, loc: String = "", ent: Double = 0.0) = UpgradeManager.calculateUpgradeCost(t, level, if(loc.isEmpty()) currentLocation.value else loc, if(ent == 0.0) entropyLevel.value else ent)
     
     // --- Missing Market Bridges ---
     fun updateNews(msg: String) { 
