@@ -146,7 +146,8 @@ object PersistenceManager {
         preservedCompletedFactions: Set<String>,
         preservedPerks: Set<String>,
         preservedNetworkUnlocked: Boolean,
-        preservedGridUnlocked: Boolean
+        preservedGridUnlocked: Boolean,
+        preservedUnlockedLogs: Set<String> // v3.1.8-fix: Persist lore through migration
     ): GameState {
         return GameState(
             id = 1,
@@ -166,6 +167,7 @@ object PersistenceManager {
             currentLocation = "SUBSTATION_7",
             isNetworkUnlocked = preservedNetworkUnlocked,
             isGridUnlocked = preservedGridUnlocked,
+            unlockedDataLogs = preservedUnlockedLogs,
             annexedNodes = listOf("D1"),
             completedFactions = preservedCompletedFactions,
             unlockedTranscendencePerks = preservedPerks

@@ -245,6 +245,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             } else {
                 addLog("[SYSTEM]: NO PREVIOUS STATE FOUND. INITIALIZING...")
                 refreshProductionRates()
+                
+                // v3.1.8-fix: Ensure first-time login log is delivered if no state exists
+                viewModelScope.launch {
+                    delay(1000)
+                    DataLogManager.getLog("LOG_000")?.let { log ->
+                        NarrativeService.deliverItem(this@GameViewModel, NarrativeItem.Log(log))
+                    }
+                }
             }
             isKernelInitializing.value = false
         }
@@ -451,7 +459,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun toggleDevMenu() { debugToggleDevMenu() }
     fun resetGame(force: Boolean = false) {
-        if (force) debugToggleDevMenu() // Secret trigger via reset long-press or similar if needed, but for now we have the invisible box
         viewModelScope.launch {
             repository.updateGameState(PersistenceManager.createSaveState(
                 flops = 0.0, neuralTokens = 0.0, currentHeat = 0.0, powerBill = 0.0,
@@ -459,10 +466,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 unlockedTechNodes = emptyList(), storyStage = 0, faction = "NONE",
                 hasSeenVictory = false, isTrueNull = false, isSovereign = false,
                 vanceStatus = "ACTIVE", realityStability = 1.0, currentLocation = "SUBSTATION_7",
-                isNetworkUnlocked = false, isGridUnlocked = false, unlockedDataLogs = emptySet<String>(),
-                activeDilemmaChains = emptyMap<String, com.siliconsage.miner.data.DilemmaChain>(), 
-                rivalMessages = emptyList<com.siliconsage.miner.data.RivalMessage>(), 
-                seenEvents = emptySet<String>(),
+                isNetworkUnlocked = false, isGridUnlocked = false, unlockedDataLogs = setOf("LOG_000"), // Reset but keep install log
+                activeDilemmaChains = emptyMap(), rivalMessages = emptyList(), seenEvents = emptySet<String>(),
                 completedFactions = emptySet<String>(), unlockedTranscendencePerks = emptySet<String>(),
                 annexedNodes = setOf("D1"), gridNodeLevels = emptyMap<String, Int>(), 
                 nodesUnderSiege = emptySet<String>(),
@@ -476,8 +481,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 harvestedFragments = 0.0, prestigePointsPostSingularity = 0,
                 cdLifetime = 0.0, vfLifetime = 0.0, peakResonanceTier = ResonanceTier.NONE
             ))
-            // Force re-collect or trigger a UI restart
             addLog("[SYSTEM]: DATA WIPE INITIATED. REBOOTING...")
+            
+            // v3.1.8-fix: Trigger LOG_000 immediately after reset
+            delay(1000)
+            DataLogManager.getLog("LOG_000")?.let { log ->
+                NarrativeService.deliverItem(this@GameViewModel, NarrativeItem.Log(log))
+            }
         }
     }
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
@@ -639,7 +649,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 preservedCompletedFactions = completedFactions.value,
                 preservedPerks = unlockedPerks.value,
                 preservedNetworkUnlocked = isNetworkUnlocked.value,
-                preservedGridUnlocked = isGridUnlocked.value
+                preservedGridUnlocked = isGridUnlocked.value,
+                preservedUnlockedLogs = unlockedDataLogs.value // v3.1.8-fix: Lore persistence
             )
             repository.updateGameState(resetState)
             
