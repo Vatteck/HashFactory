@@ -97,5 +97,6 @@ object NarrativeService {
         vm.checkPopupPause()
         vm.addLogPublic("[DECISION]: Selected protocol: ${choice.text}")
         SoundManager.play("click")
+        deliverNextNarrativeItem(vm)
     }
 }

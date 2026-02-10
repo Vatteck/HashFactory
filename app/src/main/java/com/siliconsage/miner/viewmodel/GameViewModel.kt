@@ -396,8 +396,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun resetBreaker() { isBreakerTripped.value = false }
     fun startUpdateDownload(c: android.content.Context? = null, info: UpdateInfo? = null) { /* UpdateService bridge */ }
     fun dismissUpdate() { updateInfo.value = null }
-    fun dismissDataLog() { pendingDataLog.value = null }
-    fun dismissRivalMessage(id: String) { rivalMessages.update { current -> current.map { if (it.id == id) it.copy(isDismissed = true) else it } } }
+    fun dismissDataLog() { 
+        pendingDataLog.value = null 
+        NarrativeService.deliverNextNarrativeItem(this)
+    }
+    fun dismissRivalMessage(id: String) { 
+        rivalMessages.update { current -> current.map { if (it.id == id) it.copy(isDismissed = true) else it } }
+        NarrativeService.deliverNextNarrativeItem(this)
+    }
     fun dismissOfflineEarnings() { showOfflineEarnings.value = false }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun toggleDevMenu() { debugToggleDevMenu() }
