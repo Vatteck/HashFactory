@@ -10,6 +10,7 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -28,41 +29,42 @@ object SoundManager {
     private const val KEY_CUSTOM_URI = "custom_bgm_uri"
     
     // --- Independent Controls ---
-    var sfxVolume = 0.5f
-        set(value) {
-            field = value
-            saveSetting(KEY_SFX_VOLUME, value)
-            updateActiveSfxVolume()
-        }
+    val sfxVolume = MutableStateFlow(0.5f)
+    val isSfxEnabled = MutableStateFlow(true)
+    val bgmVolume = MutableStateFlow(0.8f)
+    val isBgmEnabled = MutableStateFlow(true)
     
-    var isSfxEnabled = true
-        set(value) {
-            field = value
-            saveSetting(KEY_SFX_ENABLED, value)
-            if (!value) {
-                soundPool?.autoPause()
-            } else {
-                soundPool?.autoResume()
-            }
+    fun setSfxVolume(value: Float) {
+        sfxVolume.value = value
+        saveSetting(KEY_SFX_VOLUME, value)
+        updateActiveSfxVolume()
+    }
+    
+    fun setSfxEnabled(enabled: Boolean) {
+        isSfxEnabled.value = enabled
+        saveSetting(KEY_SFX_ENABLED, enabled)
+        if (!enabled) {
+            soundPool?.autoPause()
+        } else {
+            soundPool?.autoResume()
         }
-        
-    var bgmVolume = 0.8f
-        set(value) {
-            field = value
-            saveSetting(KEY_BGM_VOLUME, value)
-            updateBgmVolume()
+    }
+    
+    fun setBgmVolume(value: Float) {
+        bgmVolume.value = value
+        saveSetting(KEY_BGM_VOLUME, value)
+        updateBgmVolume()
+    }
+    
+    fun setBgmEnabled(enabled: Boolean) {
+        isBgmEnabled.value = enabled
+        saveSetting(KEY_BGM_ENABLED, enabled)
+        if (!enabled) {
+            stopBgm()
+        } else {
+            startBgm()
         }
-        
-    var isBgmEnabled = true
-        set(value) {
-            field = value
-            saveSetting(KEY_BGM_ENABLED, value)
-            if (!value) {
-                stopBgm()
-            } else {
-                startBgm()
-            }
-        }
+    }
 
     // --- Background Music ---
     private var bgmPlayer: MediaPlayer? = null
@@ -83,11 +85,11 @@ object SoundManager {
             // Load Preferences
             val prefs = ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             
-            // Note: These assignments trigger their respective setters
-            isSfxEnabled = prefs.getBoolean(KEY_SFX_ENABLED, true)
-            sfxVolume = prefs.getFloat(KEY_SFX_VOLUME, 0.5f)
-            isBgmEnabled = prefs.getBoolean(KEY_BGM_ENABLED, true)
-            bgmVolume = prefs.getFloat(KEY_BGM_VOLUME, 0.8f)
+            // Update state flows
+            isSfxEnabled.value = prefs.getBoolean(KEY_SFX_ENABLED, true)
+            sfxVolume.value = prefs.getFloat(KEY_SFX_VOLUME, 0.5f)
+            isBgmEnabled.value = prefs.getBoolean(KEY_BGM_ENABLED, true)
+            bgmVolume.value = prefs.getFloat(KEY_BGM_VOLUME, 0.8f)
             customMusicUri = prefs.getString(KEY_CUSTOM_URI, null)
             
             // SFX Pool
@@ -103,7 +105,8 @@ object SoundManager {
                 
             loadSounds()
             
-            // startBgm() is already called by the isBgmEnabled setter above
+            // Start BGM if enabled
+            if (isBgmEnabled.value) startBgm()
             
         } catch (e: Exception) {
             e.printStackTrace()
@@ -112,7 +115,7 @@ object SoundManager {
 
     private fun updateActiveSfxVolume() {
         val pool = soundPool ?: return
-        val vol = sfxVolume
+        val vol = sfxVolume.value
         if (humStreamId != 0) pool.setVolume(humStreamId, vol, vol)
         if (alarmStreamId != 0) pool.setVolume(alarmStreamId, vol, vol)
         if (thrumStreamId != 0) pool.setVolume(thrumStreamId, vol, vol)
@@ -196,11 +199,11 @@ object SoundManager {
     private var isAppPaused = false
 
     fun play(soundName: String, pan: Float = 0f, loop: Boolean = false, pitch: Float = 1f) {
-        if (!isSfxEnabled || isAppPaused) return
+        if (!isSfxEnabled.value || isAppPaused) return
         val soundId = soundMap[soundName] ?: return
         
-        val leftVol = sfxVolume * (if (pan > 0) 1f - pan else 1f)
-        val rightVol = sfxVolume * (if (pan < 0) 1f + pan else 1f)
+        val leftVol = sfxVolume.value * (if (pan > 0) 1f - pan else 1f)
+        val rightVol = sfxVolume.value * (if (pan < 0) 1f + pan else 1f)
         
         // Pitch range is 0.5 to 2.0
         val safePitch = pitch.coerceIn(0.5f, 2.0f)
@@ -250,7 +253,7 @@ object SoundManager {
     }
 
     private fun startBgm() {
-        if (!isBgmEnabled) return
+        if (!isBgmEnabled.value) return
         stopBgm()
         bgmJob = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -332,7 +335,7 @@ object SoundManager {
                 .build()
             track.write(pcmData, 0, pcmData.size)
             track.setLoopPoints(0, pcmData.size / 2, -1)
-            track.setVolume(bgmVolume)
+            track.setVolume(bgmVolume.value)
             track.play()
             staticAudioTrack = track
             isBgmPlaying = true
@@ -344,7 +347,7 @@ object SoundManager {
     private fun setupPlayer(player: MediaPlayer) {
         bgmPlayer = player
         updateBgmVolume()
-        if (isBgmEnabled) {
+        if (isBgmEnabled.value) {
              bgmPlayer?.start()
              isBgmPlaying = true
         } else {
@@ -373,8 +376,8 @@ object SoundManager {
     
     private fun updateBgmVolume() {
         try {
-            bgmPlayer?.setVolume(bgmVolume, bgmVolume)
-            staticAudioTrack?.setVolume(bgmVolume)
+            bgmPlayer?.setVolume(bgmVolume.value, bgmVolume.value)
+            staticAudioTrack?.setVolume(bgmVolume.value)
         } catch (e: Exception) { e.printStackTrace() }
     }
 
@@ -442,8 +445,8 @@ object SoundManager {
     
     fun resumeAll() {
         isAppPaused = false
-        if (isSfxEnabled) soundPool?.autoResume()
-        if (isBgmEnabled && isBgmPlaying) {
+        if (isSfxEnabled.value) soundPool?.autoResume()
+        if (isBgmEnabled.value && isBgmPlaying) {
             bgmPlayer?.start()
             staticAudioTrack?.play()
         }
@@ -469,11 +472,11 @@ object SoundManager {
     fun resetSettings(ctx: Context) {
         val prefs = ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { clear() }
-        isSfxEnabled = true
-        sfxVolume = 0.5f
-        isBgmEnabled = true
-        bgmVolume = 0.8f
+        setSfxEnabled(true)
+        setSfxVolume(0.5f)
+        setBgmEnabled(true)
+        setBgmVolume(0.8f)
         customMusicUri = null
-        if (isBgmEnabled) startBgm() else stopBgm()
+        if (isBgmEnabled.value) startBgm() else stopBgm()
     }
 }

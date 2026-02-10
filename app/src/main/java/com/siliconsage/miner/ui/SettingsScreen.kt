@@ -58,27 +58,32 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
         Spacer(modifier = Modifier.height(24.dp))
         
         // Audio Settings
+        val sfxEnabled by com.siliconsage.miner.util.SoundManager.isSfxEnabled.collectAsState()
+        val sfxVolume by com.siliconsage.miner.util.SoundManager.sfxVolume.collectAsState()
+        val bgmEnabled by com.siliconsage.miner.util.SoundManager.isBgmEnabled.collectAsState()
+        val bgmVolume by com.siliconsage.miner.util.SoundManager.bgmVolume.collectAsState()
+
         SettingsGroup("AUDIO") {
-            SettingsToggle("SFX ENABLED", com.siliconsage.miner.util.SoundManager.isSfxEnabled) {
-                com.siliconsage.miner.util.SoundManager.isSfxEnabled = it
+            SettingsToggle("SFX ENABLED", sfxEnabled) {
+                com.siliconsage.miner.util.SoundManager.setSfxEnabled(it)
             }
-            if (com.siliconsage.miner.util.SoundManager.isSfxEnabled) {
+            if (sfxEnabled) {
                 Text("SFX VOLUME", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 Slider(
-                    value = com.siliconsage.miner.util.SoundManager.sfxVolume,
-                    onValueChange = { com.siliconsage.miner.util.SoundManager.sfxVolume = it },
+                    value = sfxVolume,
+                    onValueChange = { com.siliconsage.miner.util.SoundManager.setSfxVolume(it) },
                     colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            SettingsToggle("BGM ENABLED", com.siliconsage.miner.util.SoundManager.isBgmEnabled) {
-                com.siliconsage.miner.util.SoundManager.isBgmEnabled = it
+            SettingsToggle("BGM ENABLED", bgmEnabled) {
+                com.siliconsage.miner.util.SoundManager.setBgmEnabled(it)
             }
-            if (com.siliconsage.miner.util.SoundManager.isBgmEnabled) {
+            if (bgmEnabled) {
                 Text("BGM VOLUME", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 Slider(
-                    value = com.siliconsage.miner.util.SoundManager.bgmVolume,
-                    onValueChange = { com.siliconsage.miner.util.SoundManager.bgmVolume = it },
+                    value = bgmVolume,
+                    onValueChange = { com.siliconsage.miner.util.SoundManager.setBgmVolume(it) },
                     colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
                 )
             }
