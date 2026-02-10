@@ -181,6 +181,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     var thermalRateModifier = 1.0
     var energyPriceMultiplier = 0.15
     var newsProductionMultiplier = 1.0
+    var lastNewsTickTime = 0L
     val newsHistoryInternal = mutableListOf<String>()
     val narrativeQueue = mutableListOf<NarrativeItem>()
     var currentPhaseStartTime = 0L
@@ -269,7 +270,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 delay(1000L)
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
-                MarketManager.updateMarket(this@GameViewModel) // v3.1.8-fix: Hook up the news ticker
+                
+                // v3.1.8-fix: Throttled news ticker (every 15s)
+                val now = System.currentTimeMillis()
+                if (now - lastNewsTickTime > 15000L) {
+                    MarketManager.updateMarket(this@GameViewModel)
+                    lastNewsTickTime = now
+                }
+
                 NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
                 DataLogManager.checkUnlocks(this@GameViewModel) // v3.1.8-fix: Hook up lore collectibles
                 refreshProductionRates()
@@ -560,7 +568,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun resolveRaidFailure(id: String, v: Double = 0.0) { /* logic */ }
     fun advanceStage(v: String = "", d: Long = 0L) { storyStage.update { it + 1 } }
     fun advanceToFactionChoice(v: String = "", d: Long = 0L) { /* transition logic */ }
-    fun triggerChainEvent(id: String, d: Long = 0L) { /* start event */ }
+    fun triggerChainEvent(id: String, d: Long = 0L) { 
+        viewModelScope.launch {
+            if (d > 0) delay(d)
+            val event = NarrativeManager.getEventById(id) ?: return@launch
+            NarrativeService.queueNarrativeItem(this@GameViewModel, NarrativeItem.Event(event))
+        }
+    }
     fun getNewsHistory(): List<String> = newsHistoryInternal
     fun performActiveDefense() { /* logic */ }
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
@@ -574,7 +588,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun calculateUpgradeCost(t: UpgradeType, count: Int = 0, loc: String = "", ent: Double = 0.0) = UpgradeManager.calculateUpgradeCost(t, count, loc, ent)
     
     // --- Missing Market Bridges ---
-    fun updateNews(msg: String) { currentNews.value = msg }
+    fun updateNews(msg: String) { 
+        currentNews.value = msg 
+        newsHistoryInternal.add(0, msg)
+        if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50)
+    }
     fun checkTransitionsPublic() = NarrativeManagerService.checkStoryTransitions(this)
     fun updateNeuralTokens(v: Double) { neuralTokens.update { it + v } }
     fun getBaseRate() = baseRateInternal
@@ -588,7 +606,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugBuyUpgrade(t: UpgradeType, count: Int = 1) { upgrades.update { it + (t to (it[t] ?: 0) + count) } }
     fun triggerSystemCollapse(v: Boolean) { /* logic */ }
     fun triggerSystemCollapse(s: Int) { /* logic */ }
-    fun triggerChainEvent(id: String) { /* Logic to trigger event by ID */ }
+    fun triggerChainEvent(id: String) { 
+        triggerChainEvent(id, 0L)
+    }
 }
 
 class GameViewModelFactory(private val repository: GameRepository) : ViewModelProvider.Factory {
