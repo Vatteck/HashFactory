@@ -70,4 +70,29 @@ object MigrationManager {
                hasRequiredLogs &&
                singularityChoice == "NONE"
     }
+
+    /**
+     * v3.1.8-dev: Calculate earnings gathered during app backgrounding or closure
+     */
+    fun calculateOfflineEarnings(
+        lastSync: Long,
+        baseRate: Double,
+        isOverclocked: Boolean
+    ): Map<String, Double> {
+        val now = System.currentTimeMillis()
+        val offlineSeconds = ((now - lastSync) / 1000.0).coerceAtLeast(0.0)
+        if (offlineSeconds < 10.0) return emptyMap() // 10s minimum for calculation
+        
+        // 50% efficiency for offline mining (v2.8.5)
+        var rate = baseRate * 0.5
+        if (isOverclocked) rate *= 1.5
+        
+        val earned = rate * offlineSeconds
+        
+        return mapOf(
+            "timeSeconds" to offlineSeconds,
+            "flopsEarned" to earned,
+            "heatCooled" to offlineSeconds * 1.0 // Degrees cooled
+        )
+    }
 }

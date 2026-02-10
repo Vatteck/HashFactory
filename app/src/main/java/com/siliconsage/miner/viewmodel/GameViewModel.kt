@@ -222,6 +222,23 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value)
                 
                 refreshProductionRates()
+                
+                // v3.1.8-dev: Offline Progression Logic (Migration Port)
+                val offline = MigrationManager.calculateOfflineEarnings(
+                    lastSync = state.lastSyncTimestamp,
+                    baseRate = flopsProductionRate.value,
+                    isOverclocked = isOverclocked.value
+                )
+                if (offline.isNotEmpty()) {
+                    val earned = offline["flopsEarned"] ?: 0.0
+                    val cooled = offline["heatCooled"] ?: 0.0
+                    flops.update { it + earned }
+                    currentHeat.update { (it - cooled).coerceAtLeast(0.0) }
+                    offlineStats.value = offline
+                    showOfflineEarnings.value = true
+                    addLog("[SYSTEM]: OFF-GRID DATA CONSOLIDATED. +${formatLargeNumber(earned)} HASH.")
+                }
+                
                 addLog("[SYSTEM]: DATA HUB CONNECTED. PORT 1 ONLINE.")
                 addLog("[SYSTEM]: KERNEL v3.1.8-dev BOOT COMPLETE.")
             } else {
