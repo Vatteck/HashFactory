@@ -2,6 +2,7 @@ package com.siliconsage.miner.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -92,11 +93,11 @@ private fun DataLogCard(
                 width = 1.dp,
                 color = if (isUnlocked) themeColor else Color.DarkGray,
                 shape = RoundedCornerShape(8.dp)
-            ),
+            )
+            .clickable(enabled = isUnlocked) { isExpanded = !isExpanded },
         colors = CardDefaults.cardColors(
             containerColor = Color.Black.copy(alpha = 0.75f)
-        ),
-        onClick = if (isUnlocked) { { isExpanded = !isExpanded } } else { {} }
+        )
     ) {
         Column(
             modifier = Modifier.padding(12.dp)

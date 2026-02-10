@@ -337,10 +337,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         // v3.1.8-fix: Re-link manual heat generation (Increased to 0.5 for visibility)
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         
-        // v3.1.8-fix: Manual click logs for feedback
-        if (Random.nextFloat() < 0.1f) {
-            addLog("[SYSTEM]: MANUAL_HASH_GENERATED: +${formatLargeNumber(p)} HASH.")
-        }
+        // v3.1.8-fix: Manual click logs for feedback (100% frequency for verification)
+        addLog("[SYSTEM]: MANUAL_HASH_GENERATED: +${formatLargeNumber(p)} HASH.")
         
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }
