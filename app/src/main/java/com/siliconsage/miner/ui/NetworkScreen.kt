@@ -226,11 +226,11 @@ fun calculateNodePositions(nodes: List<TechNode>, faction: String): Map<String, 
                 isRootTier || node.id == "sentience_core" -> 0.5f // Root and Sentience Core are ALWAYS centered
                 hiveNodes.contains(node) -> {
                     val idx = hiveNodes.indexOf(node)
-                    0.15f + (idx * 0.08f) // Pull in from edge
+                    0.05f + (idx * 0.12f) // Pull further left
                 }
                 sancNodes.contains(node) -> {
                     val idx = sancNodes.indexOf(node)
-                    0.85f - (idx * 0.08f) // Pull in from edge
+                    0.95f - (idx * 0.12f) // Pull further right
                 }
                 unityNodes.contains(node) -> {
                     if (unityNodes.size == 1) 0.5f 

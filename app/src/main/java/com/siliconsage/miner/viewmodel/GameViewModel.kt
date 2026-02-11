@@ -164,6 +164,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isKernelInitializing = MutableStateFlow(true)
 
     // --- Internals ---
+    private val logBuffer = mutableListOf<LogEntry>()
     val manualClickEvent = MutableSharedFlow<Unit>(replay = 0)
     var logCounter = 0L
     var purgePowerSpikeTimer = 0
@@ -339,6 +340,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 if (resonanceState.value.tier.ordinal > peakResonanceTier.value.ordinal) {
                     peakResonanceTier.value = resonanceState.value.tier
                 }
+                
+                // v3.2.8: Throttled log flushing for performance
+                flushLogs()
             }
         }
 
@@ -349,6 +353,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 if (isKernelInitializing.value) continue
                 
                 // --- Housekeeping (Always runs) ---
+                flushLogs()
                 checkUnlocksPublic()
                 saveState()
 
@@ -377,7 +382,21 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     // --- Core Methods ---
     fun addLog(msg: String) { 
         logCounter++
-        logs.update { (it + LogEntry(logCounter, msg)).takeLast(100) } 
+        val entry = LogEntry(logCounter, msg)
+        synchronized(logBuffer) {
+            logBuffer.add(entry)
+            if (logBuffer.size > 20) flushLogs()
+        }
+    }
+
+    private fun flushLogs() {
+        val toAdd = synchronized(logBuffer) {
+            if (logBuffer.isEmpty()) return
+            val copy = logBuffer.toList()
+            logBuffer.clear()
+            copy
+        }
+        logs.update { (it + toAdd).takeLast(100) }
     }
 
     fun saveState() { 

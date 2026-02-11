@@ -110,8 +110,10 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     val currentHeat by viewModel.currentHeat.collectAsState()
     val listState = rememberLazyListState()
 
+    // v2.9.78: Fix scroll lock when log is full
     LaunchedEffect(logs.size) {
         if (logs.isNotEmpty()) {
+            delay(10) // Small yield for measure pass
             listState.scrollToItem(logs.size - 1)
         }
     }

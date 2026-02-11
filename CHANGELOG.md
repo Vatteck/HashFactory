@@ -1,13 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.2.8-dev] - 2026-02-10
+
+### Added
+- **Log Buffering Architecture**: Implemented a 100ms log flush cycle to prevent UI lag during rapid `trainModel` clicking. Terminal logs are now batched, reducing recomposition overhead while maintaining the full IO stream.
+
+### Changed
+- **Heat Purge Overhaul**: The purge mechanic now immediately sacrifices ALL current FLOPS to generate a massive, one-time thermal reduction. The heat loss scales logarithmically with the amount of data sacrificed (Min 5%, Max 95%).
+- **Terminal Auto-Scroll Stability**: Fine-tuned the auto-scroll logic in the `TerminalScreen` to ensure the list correctly follows the bottom even during high-frequency input.
+- **Tech Tree Centering**: Force-anchored the **Sentience Core** and Tier 0 root to a hard center (`0.5f`) and widened the horizontal footprint for faction nodes to eliminate overlap on high-DPI targets.
+
 ## [3.2.7-dev] - 2026-02-10
-
-### Fixed
-- **Purge Sacrifice Restoration**: Increased the FLOPS penalty during heat purging from 90% to 99% reduction to ensure a tangible production sacrifice. Injected immediate rate recalculation upon triggering the purge.
-- **Tech Tree Boundary Hardening**: Pulled the node margins even further into the safe zone (`0.15/0.85`) to fix border-bleeding and overlapping issues on high-DPI displays.
-
-## [3.2.6-dev] - 2026-02-10
 
 ## [3.2.5-dev] - 2026-02-10
 

@@ -1,8 +1,8 @@
 {
-  "version": "3.2.6-dev",
-  "build": 252,
+  "version": "3.2.8-dev",
+  "build": 253,
   "date": "2026-02-10",
-  "changes": "Hotfix: Emergency Heat Purge logic and Tech Tree centering.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.6-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.6-dev/Sage_3.2.6-dev.apk"
+  "changes": "Hotfix: Log buffering and Heat Purge FLOPS sacrifice logic.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.8-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.8-dev/Sage_3.2.8-dev.apk"
 }
