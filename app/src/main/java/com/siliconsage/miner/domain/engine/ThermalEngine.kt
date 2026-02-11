@@ -68,7 +68,13 @@ object ThermalEngine {
             netChangeUnits -= 1.0
         }
 
-        // 4. Protection & Caps
+        // 4. Emergency Heat Purge (v3.2.6: Restore functionality)
+        if (isPurging) {
+            // Drop heat by 5% of total buffer per second, regardless of generation
+            netChangeUnits -= (totalThermalBuffer * 0.05)
+        }
+
+        // 5. Protection & Caps
         if (isCageActive && netChangeUnits > 10.0) netChangeUnits = 10.0
         if (unlockedPerks.contains("thermal_void") && netChangeUnits > 0) netChangeUnits *= 0.8
         if (unlockedTechNodes.contains("perfect_isolation") && netChangeUnits > 0) netChangeUnits = 0.0

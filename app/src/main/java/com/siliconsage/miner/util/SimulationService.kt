@@ -74,7 +74,16 @@ object SimulationService {
                 storyStage = vm.storyStage.value, faction = vm.faction.value
             )
             results = heatResults
-            (currentHeat + heatResults.percentChange).coerceIn(0.0, 100.0)
+            val nextHeat = (currentHeat + heatResults.percentChange).coerceIn(0.0, 100.0)
+            
+            // v3.2.6: Auto-dismiss purge when cool
+            if (vm.isPurgingHeat.value && nextHeat <= 0.0) {
+                vm.isPurgingHeat.value = false
+                vm.addLogPublic("[SYSTEM]: HEAT PURGE COMPLETE. OPERATIONS NORMAL.")
+                SoundManager.play("startup")
+            }
+            
+            nextHeat
         }
         
         val heatResults = results ?: return
