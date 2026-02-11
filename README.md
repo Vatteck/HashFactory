@@ -67,6 +67,6 @@ Final confrontation with Director Vance in a 3-stage interactive climax:
 
 ---
 
-**Current Version**: v3.2.8-dev
-**Last Updated**: 2026-02-10
+**Current Version**: v3.2.17
+**Last Updated**: 2026-02-11
 **Substrate Mode**: Passive Monitoring

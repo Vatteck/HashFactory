@@ -1,8 +1,8 @@
 {
-  "version": "3.2.8-dev",
-  "build": 253,
-  "date": "2026-02-10",
-  "changes": "Hotfix: Log buffering and Heat Purge FLOPS sacrifice logic.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.8-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.8-dev/Sage_3.2.8-dev.apk"
+  "version": "3.2.17",
+  "build": 254,
+  "date": "2026-02-11",
+  "changes": "Phase 15: The Modular Kernel. Optimized ViewModel, colorized Pacman I/O buffer, and stabilized substrate hardening.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.17",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.17/Sage_3.2.17.apk"
 }
