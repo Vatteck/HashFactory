@@ -175,50 +175,66 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "$user@$host:~$",
-            color = color.copy(alpha = 0.7f),
+            text = androidx.compose.ui.text.buildAnnotatedString {
+                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.9f), fontWeight = FontWeight.Bold)) {
+                    append(user)
+                }
+                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.5f))) {
+                    append("@")
+                }
+                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.7f))) {
+                    append(host)
+                }
+                withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White)) {
+                    append(":~$")
+                }
+            },
             fontSize = 11.sp,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold
+            fontFamily = FontFamily.Monospace
         )
         
-        Spacer(modifier = Modifier.width(8.dp))
-        
-        // v3.2.15: Dynamic Randomized "ILoveCandy" CLI Progress Bar
+        // v3.2.17: Colorized "ILoveCandy" CLI Progress Bar
         val barLength = 40
         val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
         
-        val barText = buildString {
-            append("[")
+        val annotatedBar = androidx.compose.ui.text.buildAnnotatedString {
+            withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.4f))) { append("[") }
             for (i in 0 until barLength) {
                 when {
-                    i < filledCount -> append("-")
+                    i < filledCount -> {
+                        withStyle(androidx.compose.ui.text.SpanStyle(color = color)) { append("-") }
+                    }
                     i == filledCount -> {
-                        // Mouth closes only when on a pellet
                         val isOnPellet = pellets.contains(i)
-                        append(if (isOnPellet) "c" else "C")
+                        withStyle(androidx.compose.ui.text.SpanStyle(color = Color.Yellow, fontWeight = FontWeight.ExtraBold)) {
+                            append(if (isOnPellet) "c" else "C")
+                        }
                     }
                     else -> {
-                        // Dynamic pellets from StateFlow
-                        if (pellets.contains(i)) append("o") else append("·")
+                        if (pellets.contains(i)) {
+                            withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) {
+                                append("o")
+                            }
+                        } else {
+                            withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.2f))) {
+                                append("·")
+                            }
+                        }
                     }
                 }
             }
-            append("]")
+            withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.4f))) { append("]") }
         }
 
         Text(
-            text = barText,
-            color = color,
+            text = annotatedBar,
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
             maxLines = 1,
             overflow = TextOverflow.Clip
         )
-        
-        Spacer(modifier = Modifier.width(8.dp))
         
         Text(
             text = hex,
