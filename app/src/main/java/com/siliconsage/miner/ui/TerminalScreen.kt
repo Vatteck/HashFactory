@@ -3,6 +3,9 @@ package com.siliconsage.miner.ui
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import com.siliconsage.miner.ui.components.HeaderSection
@@ -166,6 +169,13 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         else -> "sub-07"
     }
 
+    val infiniteTransition = rememberInfiniteTransition(label = "pacman")
+    val mouthOpen by infiniteTransition.animateFloat(
+        initialValue = 0f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(200), RepeatMode.Reverse),
+        label = "chomper"
+    )
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -180,20 +190,58 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         
         Spacer(modifier = Modifier.width(8.dp))
         
-        // The Progress Bar
+        // v3.2.10: "ILoveCandy" Pacman CLI Progress Bar
         Box(
-            modifier = Modifier.weight(1f).height(10.dp).border(0.5.dp, color.copy(alpha = 0.3f))
+            modifier = Modifier.weight(1f).height(16.dp).border(0.5.dp, color.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.CenterStart
         ) {
-            Box(
-                modifier = Modifier.fillMaxHeight().fillMaxWidth(progress).background(color.copy(alpha = 0.4f))
-            )
+            Canvas(modifier = Modifier.fillMaxSize().padding(horizontal = 2.dp)) {
+                val w = size.width
+                val h = size.height
+                val dotGap = 12.dp.toPx()
+                val dotRadius = 1.dp.toPx()
+                val pacSize = 10.dp.toPx()
+                
+                // 1. Draw the track (dots)
+                val dotCount = (w / dotGap).toInt()
+                for (i in 0 until dotCount) {
+                    val dx = i * dotGap + (dotGap / 2)
+                    drawCircle(color = color.copy(alpha = 0.2f), radius = dotRadius, center = Offset(dx, h / 2))
+                }
+                
+                // 2. Draw the fill (Pacman trail)
+                val fillW = w * progress
+                if (fillW > 0) {
+                    drawLine(
+                        color = color.copy(alpha = 0.5f),
+                        start = Offset(0f, h / 2),
+                        end = Offset(fillW, h / 2),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                    
+                    // 3. Draw Pacman at the tip
+                    val px = fillW.coerceAtMost(w - pacSize)
+                    val mouthAngle = if (mouthOpen > 0.5f) 40f else 5f
+                    
+                    drawArc(
+                        color = color,
+                        startAngle = mouthAngle,
+                        sweepAngle = 360f - (mouthAngle * 2f),
+                        useCenter = true,
+                        topLeft = Offset(px - (pacSize / 2), (h - pacSize) / 2),
+                        size = Size(pacSize, pacSize)
+                    )
+                }
+            }
             
-            if (progress > 0) {
+            // Percentage Label (Shifted slightly right to not be eaten)
+            if (progress > 0.2f) {
                 Text(
                     text = "${(progress * 100).toInt()}%",
-                    modifier = Modifier.align(Alignment.Center),
-                    fontSize = 8.sp,
-                    color = Color.White,
+                    modifier = Modifier.padding(start = 4.dp),
+                    fontSize = 9.sp,
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.ExtraBold
                 )
             }
