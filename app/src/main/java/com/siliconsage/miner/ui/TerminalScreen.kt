@@ -183,7 +183,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         
         Spacer(modifier = Modifier.width(8.dp))
         
-        // v3.2.13: Spaced "ILoveCandy" CLI Progress Bar
+        // v3.2.14: Rail-tracked "ILoveCandy" CLI Progress Bar
         val barLength = 40
         val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
         
@@ -198,8 +198,8 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                         append(if (isOnPellet) "c" else "C")
                     }
                     else -> {
-                        // Pellets every 4th character
-                        if ((i + 1) % 4 == 0) append("o") else append(" ")
+                        // Pellets every 4th character, middle-dots for the rail
+                        if ((i + 1) % 4 == 0) append("o") else append("·")
                     }
                 }
             }
