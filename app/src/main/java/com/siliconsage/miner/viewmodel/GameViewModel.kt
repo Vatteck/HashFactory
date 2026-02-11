@@ -211,15 +211,55 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 humanityScore.value = state.humanityScore
                 hardwareIntegrity.value = state.hardwareIntegrity
                 currentLocation.value = state.currentLocation
+                isNetworkUnlocked.value = state.isNetworkUnlocked
+                isGridUnlocked.value = state.isGridUnlocked
                 isTrueNull.value = state.isTrueNull
                 isSovereign.value = state.isSovereign
                 vanceStatus.value = state.vanceStatus
                 realityStability.value = state.realityStability
                 
-                // v3.1.8 Persistence Restoration
+                // v3.1.8 Persistence Restoration (Collections)
+                unlockedDataLogs.value = state.unlockedDataLogs
+                seenEvents.value = state.seenEvents
+                completedFactions.value = state.completedFactions
+                unlockedPerks.value = state.unlockedTranscendencePerks
+                annexedNodes.value = state.annexedNodes.toSet()
+                offlineNodes.value = state.offlineNodes.toSet()
+                nodesUnderSiege.value = state.nodesUnderSiege.toSet()
+                collapsedNodes.value = state.collapsedNodes.toSet()
+                gridNodeLevels.value = state.gridNodeLevels
+                globalSectors.value = state.globalSectors
+                
+                // JSON deserialization
+                try {
+                    rivalMessages.value = Json.decodeFromString<List<RivalMessage>>(state.rivalMessages)
+                    activeDilemmaChains.value = Json.decodeFromString<Map<String, DilemmaChain>>(state.activeDilemmaChains)
+                } catch (e: Exception) {
+                    addLog("[ERROR]: NARRATIVE DATA CORRUPTION DETECTED. RECOVERING...")
+                }
+
+                // Era-specific resources
+                synthesisPoints.value = state.synthesisPoints
+                authorityPoints.value = state.authorityPoints
+                harvestedFragments.value = state.harvestedFragments
+
+                // v3.1.8 Persistence Restoration (Metrics)
                 cdLifetime.value = state.cdLifetime
                 vfLifetime.value = state.vfLifetime
+                val resTier = try { ResonanceTier.valueOf(state.resonanceTier) } catch (e: Exception) { ResonanceTier.NONE }
+                resonanceState.value = ResonanceState(
+                    isActive = state.resonanceActive,
+                    tier = resTier
+                )
                 peakResonanceTier.value = try { ResonanceTier.valueOf(state.peakResonanceTier) } catch (e: Exception) { ResonanceTier.NONE }
+                
+                // Phase 13/14 Scaling
+                launchProgress.value = state.launchProgress
+                orbitalAltitude.value = state.orbitalAltitude
+                realityIntegrity.value = state.realityIntegrity
+                entropyLevel.value = state.entropyLevel
+                raidsSurvived = state.raidsSurvived
+                annexingNodes.value = state.annexingNodes
                 
                 singularityChoice.value = state.singularityChoice ?: "NONE"
                 when (singularityChoice.value) {
@@ -310,7 +350,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 if (isKernelInitializing.value) continue
                 
                 // --- Housekeeping (Always runs) ---
-                DataLogManager.checkUnlocks(this@GameViewModel)
+                checkUnlocksPublic()
                 checkForUpdates(null, false)
                 saveState()
 
@@ -634,14 +674,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         SimulationService.accumulatePower(this)
     }
     fun unlockDataLog(id: String) = NarrativeService.unlockDataLog(id, this)
-    fun addRivalMessage(m: RivalMessage) = NarrativeService.addRivalMessage(m, this)
-    fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 30000L) // v3.1.8-fix: 30s cooldown
+    fun addRivalMessage(m: com.siliconsage.miner.data.RivalMessage) = NarrativeService.addRivalMessage(m, this)
+    fun checkUnlocksPublic(force: Boolean = false) = DataLogManager.checkUnlocks(this, force)
+    fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 3000L) // v3.2.1-fix: Reduced to 3s for snappy playtesting
     fun debugAddIntegrity(d: Double) { hardwareIntegrity.update { (it + d).coerceIn(0.0, 100.0) } }
     fun debugAddHeat(a: Double) { 
         currentHeat.update { (it + a).coerceIn(0.0, 100.0) } 
         refreshProductionRates() // Force rate recalc
     }
-    fun debugAddFlops(a: Double) { flops.update { it + a } }
+    fun debugAddFlops(a: Double) { 
+        flops.update { it + a } 
+        // Force immediate check
+        checkTransitionsPublic(true)
+        checkUnlocksPublic(true)
+    }
     fun debugAddMoney(a: Double) { neuralTokens.update { it + a } }
     fun debugAddInsight(a: Double) { prestigePoints.update { it + a } }
     fun debugTriggerKernelHijack() = SecurityManager.triggerKernelHijack(this)
@@ -650,7 +696,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugTriggerDiagnostics() = SecurityManager.triggerDiagnostics(this)
     fun debugTriggerDilemma() { /* manual trigger logic */ }
     fun debugResetAscension() { /* reset prestige logic */ }
-    fun debugSkipToStage(s: Int) { storyStage.value = s }
+    fun debugSkipToStage(s: Int) { 
+        storyStage.value = s 
+        checkTransitionsPublic(true)
+    }
     fun debugToFactionChoice() { 
         storyStage.value = 2
         faction.value = "NONE"
@@ -687,7 +736,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugSetRank(r: Int) { playerRank.value = r }
     fun debugSetSingularityReady() { /* set flags */ }
     fun debugSetBalance(b: Double) { /* set resonance ratio */ }
-    fun debugGrantPhase13Resources() { celestialData.value = 1e9; voidFragments.value = 1e9 }
+    fun debugGrantPhase13Resources() { 
+        celestialData.value = 1e12
+        voidFragments.value = 1e12
+        checkTransitionsPublic(true)
+    }
     fun debugTriggerSingularity() { showSingularityScreen.value = true }
     fun debugToggleDevMenu() { isDevMenuVisible.update { !it } }
     fun debugUnlockUnity() { isUnity.value = true }
@@ -978,7 +1031,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         newsHistoryInternal.add(0, msg)
         if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50)
     }
-    fun checkTransitionsPublic() = NarrativeManagerService.checkStoryTransitions(this)
+    fun checkTransitionsPublic(force: Boolean = false) = NarrativeManagerService.checkStoryTransitions(this, force)
     fun updateNeuralTokens(v: Double) { neuralTokens.update { it + v } }
     fun getBaseRate() = baseRateInternal
     fun setMarketModifiers(marketMult: Double, thermalMod: Double, energyMult: Double, newsProdMult: Double, convRate: Double) {

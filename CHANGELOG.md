@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.2.2-dev] - 2026-02-10
+
+### Fixed
+- **Persistence Restoration Leak**: Resolved a major bug where collections (unlocked logs, seen events, annexed nodes) were not being restored upon kernel initialization. This was causing previously seen logs to re-trigger on every app restart.
+- **State Flow Completeness**: Ensured all 50+ bridge properties, including launch progress, altitude, and global sectors, are correctly mapped from disk to the active simulation.
+
 ## [3.2.1-dev] - 2026-02-10
 
 ### Added

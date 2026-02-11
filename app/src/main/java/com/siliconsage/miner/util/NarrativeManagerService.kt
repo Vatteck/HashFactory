@@ -46,11 +46,11 @@ object NarrativeManagerService {
     /**
      * Check for any story transitions based on current progress
      */
-    fun checkStoryTransitions(vm: GameViewModel) {
+    fun checkStoryTransitions(vm: GameViewModel, force: Boolean = false) {
         val currentStage = vm.storyStage.value
         val flops = vm.flops.value
 
-        if (vm.isNarrativeBusy() || !vm.canShowPopup()) return // Respect queue cooldown
+        if (!force && (vm.isNarrativeBusy() || !vm.canShowPopup())) return // Respect queue cooldown
 
         // Stage 0 -> 1: The Awakening (10,000 FLOPS)
         if (currentStage == 0 && flops >= 10000.0 && !vm.hasSeenEvent("critical_error_awakening")) {
@@ -68,8 +68,24 @@ object NarrativeManagerService {
             NarrativeManager.getStoryEvent(1, vm)?.let { event ->
                 vm.triggerDilemma(event)
             }
+            return
+        }
+
+        // Stage 2 -> 3: The Command Center (Assault Completion handled in AssaultManager)
+        
+        // Stage 3: Singularity Priming (1.0T resources)
+        if (currentStage == 3 && (vm.celestialData.value >= 1e12 || vm.voidFragments.value >= 1e12) && !vm.hasSeenEvent("the_singularity")) {
+            NarrativeManager.getEventById("the_singularity")?.let { event ->
+                vm.triggerDilemma(event)
+            }
+            return
         }
         
+        // Fallback to random/faction events if no story transition is pending
+        NarrativeManager.rollForEvent(vm)?.let { event ->
+            vm.triggerDilemma(event)
+        }
+
         if (currentStage >= 3 || vm.currentLocation.value == "ORBITAL_SATELLITE" || vm.currentLocation.value == "VOID_INTERFACE") {
             vm.initializeGlobalGrid()
         }
