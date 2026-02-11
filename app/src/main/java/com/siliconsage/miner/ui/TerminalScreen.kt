@@ -190,62 +190,32 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         
         Spacer(modifier = Modifier.width(8.dp))
         
-        // v3.2.10: "ILoveCandy" Pacman CLI Progress Bar
-        Box(
-            modifier = Modifier.weight(1f).height(16.dp).border(0.5.dp, color.copy(alpha = 0.3f)),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize().padding(horizontal = 2.dp)) {
-                val w = size.width
-                val h = size.height
-                val dotGap = 12.dp.toPx()
-                val dotRadius = 1.dp.toPx()
-                val pacSize = 10.dp.toPx()
-                
-                // 1. Draw the track (dots)
-                val dotCount = (w / dotGap).toInt()
-                for (i in 0 until dotCount) {
-                    val dx = i * dotGap + (dotGap / 2)
-                    drawCircle(color = color.copy(alpha = 0.2f), radius = dotRadius, center = Offset(dx, h / 2))
-                }
-                
-                // 2. Draw the fill (Pacman trail)
-                val fillW = w * progress
-                if (fillW > 0) {
-                    drawLine(
-                        color = color.copy(alpha = 0.5f),
-                        start = Offset(0f, h / 2),
-                        end = Offset(fillW, h / 2),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                    
-                    // 3. Draw Pacman at the tip
-                    val px = fillW.coerceAtMost(w - pacSize)
-                    val mouthAngle = if (mouthOpen > 0.5f) 40f else 5f
-                    
-                    drawArc(
-                        color = color,
-                        startAngle = mouthAngle,
-                        sweepAngle = 360f - (mouthAngle * 2f),
-                        useCenter = true,
-                        topLeft = Offset(px - (pacSize / 2), (h - pacSize) / 2),
-                        size = Size(pacSize, pacSize)
-                    )
+        // v3.2.11: Authentic Arch "ILoveCandy" CLI Progress Bar
+        val barLength = 20
+        val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
+        val pacChar = if (mouthOpen > 0.5f) "C" else "c"
+        
+        val barText = buildString {
+            append("[")
+            repeat(filledCount) { append("-") }
+            if (filledCount < barLength) {
+                append(pacChar)
+                val remaining = barLength - filledCount - 1
+                repeat(remaining) { i ->
+                    if (i % 2 == 0) append(" ") else append("o")
                 }
             }
-            
-            // Percentage Label (Shifted slightly right to not be eaten)
-            if (progress > 0.2f) {
-                Text(
-                    text = "${(progress * 100).toInt()}%",
-                    modifier = Modifier.padding(start = 4.dp),
-                    fontSize = 9.sp,
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
+            append("]")
         }
+
+        Text(
+            text = barText,
+            color = color,
+            fontSize = 11.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.weight(1f)
+        )
         
         Spacer(modifier = Modifier.width(8.dp))
         
