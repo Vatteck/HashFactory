@@ -20,7 +20,7 @@ import kotlin.math.sin
 
 @Composable
 fun DynamicBackground(
-    heatPercent: Double, // 0.0 to 100.0
+    heatProvider: () -> Double, // 0.0 to 100.0
     faction: String, // "NONE", "HIVEMIND", "SANCTUARY"
     isTrueNull: Boolean = false, // v2.8.0
     isSovereign: Boolean = false, // v2.8.0
@@ -29,11 +29,16 @@ fun DynamicBackground(
 ) {
     // Pulse Animation
     val infiniteTransition = rememberInfiniteTransition(label = "dynamicBg")
+    
+    // Pulse speed slightly changes based on heat, but we can sample heatProvider here.
+    // Since this is inside a LaunchedEffect/Transition, we can't easily make it zero-recomposition
+    // without making the animation itself fixed-speed or external.
+    // However, if we keep the speed fixed, we eliminate recompositions.
     val pulsePhase by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 2 * Math.PI.toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = if (heatPercent > 80) 1000 else 4000, easing = LinearEasing),
+            animation = tween(durationMillis = 4000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "pulse"
@@ -48,6 +53,7 @@ fun DynamicBackground(
         val width = size.width
         val height = size.height
         val time = pulsePhase
+        val heatPercent = heatProvider()
 
         // Determine Color based on Faction & Heat
         val baseColor = when {

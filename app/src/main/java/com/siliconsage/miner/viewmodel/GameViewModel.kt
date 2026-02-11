@@ -350,7 +350,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 
                 // --- Housekeeping (Always runs) ---
                 checkUnlocksPublic()
-                checkForUpdates(null, false)
                 saveState()
 
                 if (isSettingsPaused.value) continue
@@ -598,6 +597,17 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 harvestedFragments = 0.0, prestigePointsPostSingularity = 0,
                 cdLifetime = 0.0, vfLifetime = 0.0, peakResonanceTier = ResonanceTier.NONE
             ))
+            // Apply immediately to state
+            flops.value = 0.0
+            neuralTokens.value = 0.0
+            celestialData.value = 0.0
+            voidFragments.value = 0.0
+            currentHeat.value = 0.0
+            storyStage.value = 0
+            faction.value = "NONE"
+            annexedNodes.value = setOf("D1")
+            refreshProductionRates()
+            
             addLog("[SYSTEM]: DATA WIPE INITIATED. REBOOTING...")
             
             // v3.1.8-fix: Trigger LOG_000 immediately after reset

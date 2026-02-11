@@ -1,8 +1,8 @@
 {
-  "version": "3.2.4-dev",
-  "build": 250,
+  "version": "3.2.5-dev",
+  "build": 251,
   "date": "2026-02-10",
-  "changes": "Hotfix: Fix Research tab filtering and tech tree margins.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.4-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.4-dev/Sage_3.2.4-dev.apk"
+  "changes": "Hotfix: Zero-recomposition HUD and terminal performance optimization.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.5-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.5-dev/Sage_3.2.5-dev.apk"
 }

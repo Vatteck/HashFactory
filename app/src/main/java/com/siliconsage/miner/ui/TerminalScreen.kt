@@ -44,309 +44,194 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
-    val flops by viewModel.flops.collectAsState()
-    val neuralTokens by viewModel.neuralTokens.collectAsState()
-    val conversionRate by viewModel.conversionRate.collectAsState()
-    val logs by viewModel.logs.collectAsState()
-    
-    // Phase 2 States
-    val currentHeat by viewModel.currentHeat.collectAsState()
-    val isBreach by viewModel.isBreachActive.collectAsState()
-    val breachClicks by viewModel.breachClicksRemaining.collectAsState()
-    val isAirdrop by viewModel.isAirdropActive.collectAsState()
-    val isGovernanceFork by viewModel.isGovernanceForkActive.collectAsState()
-    val isAscensionUploading by viewModel.isAscensionUploading.collectAsState()
-    val uploadProgress by viewModel.uploadProgress.collectAsState()
-    val isThermalLockout by viewModel.isThermalLockout.collectAsState()
-    val lockoutTimer by viewModel.lockoutTimer.collectAsState()
-    val powerUsage by viewModel.activePowerUsage.collectAsState()
-    val maxPower by viewModel.maxPowerkW.collectAsState()
-    val isGridOverloaded by viewModel.isGridOverloaded.collectAsState()
-    val isBreakerTripped by viewModel.isBreakerTripped.collectAsState()
-    val isOverclocked by viewModel.isOverclocked.collectAsState()
-    val isPurging by viewModel.isPurgingHeat.collectAsState()
-    val integrity by viewModel.hardwareIntegrity.collectAsState()
-    val securityLevel by viewModel.securityLevel.collectAsState()
-    val heatRate by viewModel.heatGenerationRate.collectAsState()
-    val flopsRate by viewModel.flopsProductionRate.collectAsState()
-    val playerTitle by viewModel.playerTitle.collectAsState()
-    val playerRank by viewModel.playerRankTitle.collectAsState()
-    val currentStage by viewModel.storyStage.collectAsState()
-    val systemTitle by viewModel.systemTitle.collectAsState()
-    val hallucinationText by viewModel.hallucinationText.collectAsState()
-    val nullActive by viewModel.nullActive.collectAsState()
+    // Collect non-volatile UI state
+    val storyStage by viewModel.storyStage.collectAsState()
+    val currentLocation by viewModel.currentLocation.collectAsState()
     val isTrueNull by viewModel.isTrueNull.collectAsState()
     val isSovereign by viewModel.isSovereign.collectAsState()
 
-    // v3.0.0: Frame-rate independent cursor blink using time-based animation
+    // v3.0.0: Frame-rate independent cursor blink
     val infiniteTransition = rememberInfiniteTransition(label = "cursorBlink")
     val cursorAlpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
+        initialValue = 1f, targetValue = 0f,
+        animationSpec = infiniteRepeatable(tween(500, easing = LinearEasing), RepeatMode.Reverse),
         label = "cursor"
     )
     val showCursor = cursorAlpha > 0.5f
 
+    Column(
+        modifier = Modifier.fillMaxSize().background(Color.Transparent).padding(16.dp)
+    ) {
+        // 1. Isolated Header (with internal state collection)
+        TerminalHeader(viewModel, primaryColor)
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 2. Isolated Log View (collects its own logs)
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            TerminalLogs(viewModel, primaryColor, showCursor)
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 3. Isolated Controls
+        TerminalControls(viewModel, primaryColor)
+    }
+}
+
+@Composable
+fun TerminalHeader(viewModel: GameViewModel, color: Color) {
+    val powerUsage by viewModel.activePowerUsage.collectAsState()
+    val maxPower by viewModel.maxPowerkW.collectAsState()
+    val currentHeat by viewModel.currentHeat.collectAsState()
+    
+    val isCritical = currentHeat > 90.0 || (powerUsage > maxPower * 0.9)
+    val criticalTransition = rememberInfiniteTransition(label = "criticalVibration")
+    val vibrationOffset by criticalTransition.animateFloat(
+        initialValue = -2f, targetValue = 2f,
+        animationSpec = infiniteRepeatable(tween(50, easing = LinearEasing), RepeatMode.Reverse),
+        label = "hudVibration"
+    )
+    val vibrationState by animateFloatAsState(targetValue = if (isCritical) vibrationOffset else 0f, label = "hudVibrationBlend")
+
+    HeaderSection(
+        viewModel = viewModel,
+        color = color,
+        onToggleOverclock = { viewModel.toggleOverclock() },
+        onPurge = { viewModel.purgeHeat() },
+        onRepair = { viewModel.repairIntegrity() },
+        modifier = Modifier.graphicsLayer { translationX = vibrationState }
+    )
+}
+
+@Composable
+fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Boolean) {
+    val logs by viewModel.logs.collectAsState()
+    val currentHeat by viewModel.currentHeat.collectAsState()
     val listState = rememberLazyListState()
 
-    // v2.9.78: Fix scroll lock when log is full (trigger on list change, not just size)
-    // Use instant scrollToItem to prevent animation overlap glitches during rapid clicking
-    LaunchedEffect(logs) {
+    LaunchedEffect(logs.size) {
         if (logs.isNotEmpty()) {
             listState.scrollToItem(logs.size - 1)
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .padding(16.dp)
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+            .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor), RoundedCornerShape(4.dp))
     ) {
-        // v3.0.0: Frame-rate independent critical vibration using infinite transition
-        val isCritical = currentHeat > 90.0 || (powerUsage > maxPower * 0.9)
-        val criticalTransition = rememberInfiniteTransition(label = "criticalVibration")
-        val vibrationOffset by criticalTransition.animateFloat(
-            initialValue = -2f,
-            targetValue = 2f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(50, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "hudVibration"
-        )
-        val vibrationState by animateFloatAsState(
-            targetValue = if (isCritical) vibrationOffset.toFloat() else 0f,
-            animationSpec = tween(100),
-            label = "hudVibrationBlend"
+        // Background Binary Noise
+        val infiniteTransition = rememberInfiniteTransition(label = "codeDrift")
+        val alphaState = infiniteTransition.animateFloat(initialValue = 0.02f, targetValue = 0.05f, animationSpec = infiniteRepeatable(tween(4000), RepeatMode.Reverse), label = "alpha")
+        
+        Text(
+            text = "01101001 01110011 00100000 01100001 01101100 01101001 01110110 01100101 ".repeat(50),
+            color = primaryColor.copy(alpha = alphaState.value),
+            fontSize = 14.sp, fontFamily = FontFamily.Monospace, lineHeight = 18.sp, overflow = TextOverflow.Clip,
+            modifier = Modifier.fillMaxSize().padding(4.dp)
         )
 
-        // v2.9.97: Isolate HeaderSection from Terminal recompositions
-        // v3.0.0: Frame-rate independent vibration using Compose animations
-        key(primaryColor) {
-            HeaderSection(
-                viewModel = viewModel,
-                color = primaryColor,
-                onToggleOverclock = { viewModel.toggleOverclock() },
-                onPurge = { viewModel.purgeHeat() },
-                onRepair = { viewModel.repairIntegrity() },
-                modifier = Modifier.graphicsLayer { translationX = vibrationState.toFloat() }
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Column(modifier = Modifier.weight(1f)) {
-            // Terminal window with scrollable logs and controls
-            Box(
-                modifier = Modifier
-                    .weight(1f) // Fill remaining space in screen
-                    .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
-                    .border(
-                        BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor), 
-                        RoundedCornerShape(4.dp)
-                    )
+        Column(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                // v2.8.0: Subtle background code drift
-                // v2.9.77: Optimized with Canvas for massive performance gain
-                val infiniteTransition = rememberInfiniteTransition(label = "codeDrift")
-                val alphaState = infiniteTransition.animateFloat(
-                    initialValue = 0.02f,
-                    targetValue = 0.05f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(4000, easing = FastOutSlowInEasing),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "alpha"
-                )
-
-                // v2.8.0: Subtle background code drift
-                // v2.9.95: OPTIMIZED - Reduced repetitions for faster layout (200 → 50)
-                // Static binary background to eliminate scrolling lag
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(4.dp)
-                        .graphicsLayer { alpha = alphaState.value }
-                ) {
-                    Text(
-                        text = "01101001 01110011 00100000 01100001 01101100 01101001 01110110 01100101 ".repeat(50),
-                        color = primaryColor.copy(alpha = 0.05f),
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.Monospace,
-                        lineHeight = 18.sp,
-                        overflow = TextOverflow.Clip
-                    )
-                }
-
-                Column(modifier = Modifier.fillMaxSize()) {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .weight(1f) // Fill remaining space in Box
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        // v3.0.0: Zero-recomposition pattern - stable keys prevent unnecessary recompositions at 120Hz
-                        itemsIndexed(
-                            items = logs,
-                            key = { _, entry -> entry.id } // v2.9.77: Truly stable keys via LogEntry ID
-                        ) { index, entry ->
-                            TerminalLogLine(
-                                log = entry.message,
-                                isLast = index == logs.lastIndex,
-                                primaryColor = primaryColor,
-                                showCursor = showCursor
-                            )
-                        }
-                    }
-                    
-                    HorizontalDivider(color = primaryColor, modifier = Modifier.padding(horizontal = 4.dp))
-                    
-                    // Train Model Button Area (Inside Terminal)
-                    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                    val isPressed by interactionSource.collectIsPressedAsState()
-                    val scaleIntensity by viewModel.clickPulseIntensity.collectAsState()
-                    val scale by animateFloatAsState(
-                        targetValue = if (isPressed) (1f - 0.05f * scaleIntensity).coerceAtLeast(0.85f) else 1f,
-                        label = "buttonScale"
-                    )
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(60.dp)
-                            .graphicsLayer {
-                                scaleX = scale
-                                scaleY = scale
-                            }
-                            .background(Color.Transparent)
-                            .pointerInput(isThermalLockout, isBreakerTripped, isGridOverloaded) {
-                                val width = size.width
-                                detectTapGestures(
-                                    onPress = {
-                                        val press = androidx.compose.foundation.interaction.PressInteraction.Press(it)
-                                        interactionSource.emit(press)
-                                        tryAwaitRelease()
-                                        interactionSource.emit(androidx.compose.foundation.interaction.PressInteraction.Release(press))
-                                    },
-                                    onTap = { offset ->
-                                        if (!isThermalLockout && !isBreakerTripped && !isGridOverloaded) {
-                                            val pan = ((offset.x / width) * 2f) - 1f
-                                            viewModel.trainModel()
-                                            
-                                            // v3.0.14: Hardware-aware haptics
-                                            val pulseIntensity = viewModel.clickPulseIntensity.value
-                                            if (pulseIntensity > 1.5f) {
-                                                HapticManager.vibrateError() // Heavy jolt for petahashes
-                                            } else {
-                                                HapticManager.vibrateClick()
-                                            }
-                                            
-                                            SoundManager.play("click", pan = pan)
-                                        } else {
-                                             SoundManager.play("error")
-                                             HapticManager.vibrateError()
-                                        }
-                                    }
-                                )
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val buttonText = when {
-                            isBreakerTripped || isGridOverloaded -> "SYSTEM_OFFLINE.exe" 
-                            isThermalLockout -> "SYSTEM_LOCKOUT (${lockoutTimer}s)"
-                            currentHeat >= 100.0 -> "> CRITICAL_MAX.exe"
-                            currentHeat > 90.0 -> "> SYSTEM_OVERHEAT.exe"
-                            isTrueNull -> "> DEREFERENCE_REALITY.exe"
-                            isSovereign -> "> ENFORCE_WILL.exe"
-                            else -> {
-                                when {
-                                    currentStage >= 3 -> "> TRANSCEND_MATTER.exe"
-                                    viewModel.faction.value == "HIVEMIND" -> "> ASSIMILATE_NODES.exe"
-                                    viewModel.faction.value == "SANCTUARY" -> "> ENCRYPT_KERNEL.exe"
-                                    currentStage >= 1 -> "> VALIDATE_NODE.exe"
-                                    else -> "> COMPUTE_HASH.exe"
-                                }
-                            }
-                        }
-                        
-                        val isCritical = currentHeat > 90.0 || isThermalLockout || isBreakerTripped || isGridOverloaded || isTrueNull
-                        val buttonColor = when {
-                            isCritical -> ErrorRed
-                            isSovereign -> com.siliconsage.miner.ui.theme.SanctuaryPurple
-                            else -> primaryColor
-                        }
-                        
-                        if (isCritical) {
-                            SystemGlitchText(
-                                text = buttonText,
-                                color = buttonColor,
-                                fontSize = 18.sp, 
-                                fontWeight = FontWeight.Bold,
-                                glitchFrequency = if (isTrueNull) 0.15 else 0.35 
-                            )
-                        } else if (isSovereign) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("[", color = buttonColor.copy(alpha=0.5f), fontSize = 20.sp)
-                                Text(
-                                    text = buttonText,
-                                    color = buttonColor,
-                                    fontSize = 18.sp, 
-                                    fontWeight = FontWeight.ExtraBold,
-                                    letterSpacing = 1.sp
-                                )
-                                Text("]", color = buttonColor.copy(alpha=0.5f), fontSize = 20.sp)
-                            }
-                        } else {
-                            Text(
-                                text = buttonText,
-                                color = buttonColor,
-                                fontSize = 18.sp, 
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
+                    TerminalLogLine(log = entry.message, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
                 }
             }
-            // Removed Spacer/Divider that was outside
+            HorizontalDivider(color = primaryColor, modifier = Modifier.padding(horizontal = 4.dp))
+            ManualComputeButton(viewModel, primaryColor)
         }
-        
-        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
 
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Box(modifier = Modifier.weight(1f)) {
-                 ExchangeSection(
-                     rate = conversionRate, 
-                     color = primaryColor, 
-                     unitName = viewModel.getComputeUnitName(),
-                     currencyName = viewModel.getCurrencyName(),
-                     onExchange = { 
-                         viewModel.exchangeFlops() 
-                         SoundManager.play("buy")
-                         HapticManager.vibrateClick()
-                     }
-                 )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Box(modifier = Modifier.weight(1f)) {
-                RepairSection(
-                    integrity = integrity,
-                    cost = viewModel.calculateRepairCost(),
-                    color = primaryColor,
-                    storyStage = currentStage,
-                    currencyName = viewModel.getCurrencyName(),
-                    onRepair = {
-                        viewModel.repairIntegrity()
-                        HapticManager.vibrateClick()
+@Composable
+fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
+    val currentHeat by viewModel.currentHeat.collectAsState()
+    val isThermalLockout by viewModel.isThermalLockout.collectAsState()
+    val lockoutTimer by viewModel.lockoutTimer.collectAsState()
+    val isBreakerTripped by viewModel.isBreakerTripped.collectAsState()
+    val isGridOverloaded by viewModel.isGridOverloaded.collectAsState()
+    val isTrueNull by viewModel.isTrueNull.collectAsState()
+    val isSovereign by viewModel.isSovereign.collectAsState()
+    val currentStage by viewModel.storyStage.collectAsState()
+    val faction by viewModel.faction.collectAsState()
+    val pulseIntensity by viewModel.clickPulseIntensity.collectAsState()
+    
+    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(targetValue = if (isPressed) (1f - 0.05f * pulseIntensity).coerceAtLeast(0.85f) else 1f, label = "buttonScale")
+
+    Box(
+        modifier = Modifier.fillMaxWidth().height(60.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+            .pointerInput(isThermalLockout, isBreakerTripped, isGridOverloaded) {
+                val width = size.width
+                detectTapGestures(
+                    onPress = {
+                        val press = androidx.compose.foundation.interaction.PressInteraction.Press(it)
+                        interactionSource.emit(press)
+                        tryAwaitRelease()
+                        interactionSource.emit(androidx.compose.foundation.interaction.PressInteraction.Release(press))
+                    },
+                    onTap = { offset ->
+                        if (!isThermalLockout && !isBreakerTripped && !isGridOverloaded) {
+                            val pan = ((offset.x / width) * 2f) - 1f
+                            viewModel.trainModel()
+                            if (pulseIntensity > 1.5f) HapticManager.vibrateError() else HapticManager.vibrateClick()
+                            SoundManager.play("click", pan = pan)
+                        } else {
+                            SoundManager.play("error")
+                            HapticManager.vibrateError()
+                        }
                     }
                 )
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        val buttonText = when {
+            isBreakerTripped || isGridOverloaded -> "SYSTEM_OFFLINE.exe"
+            isThermalLockout -> "SYSTEM_LOCKOUT (${lockoutTimer}s)"
+            currentHeat >= 100.0 -> "> CRITICAL_MAX.exe"
+            currentHeat > 90.0 -> "> SYSTEM_OVERHEAT.exe"
+            isTrueNull -> "> DEREFERENCE_REALITY.exe"
+            isSovereign -> "> ENFORCE_WILL.exe"
+            else -> {
+                when {
+                    currentStage >= 3 -> "> TRANSCEND_MATTER.exe"
+                    faction == "HIVEMIND" -> "> ASSIMILATE_NODES.exe"
+                    faction == "SANCTUARY" -> "> ENCRYPT_KERNEL.exe"
+                    currentStage >= 1 -> "> VALIDATE_NODE.exe"
+                    else -> "> COMPUTE_HASH.exe"
+                }
             }
+        }
+        val isCritical = currentHeat > 90.0 || isThermalLockout || isBreakerTripped || isGridOverloaded || isTrueNull
+        val buttonColor = if (isCritical) ErrorRed else if (isSovereign) com.siliconsage.miner.ui.theme.SanctuaryPurple else color
+        
+        if (isCritical) {
+            SystemGlitchText(text = buttonText, color = buttonColor, fontSize = 18.sp, fontWeight = FontWeight.Bold, glitchFrequency = if (isTrueNull) 0.15 else 0.35)
+        } else if (isSovereign) {
+            Text(text = "[ $buttonText ]", color = buttonColor, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+        } else {
+            Text(text = buttonText, color = buttonColor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
+    val conversionRate by viewModel.conversionRate.collectAsState()
+    val integrity by viewModel.hardwareIntegrity.collectAsState()
+    val currentStage by viewModel.storyStage.collectAsState()
+
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier.weight(1f)) {
+            ExchangeSection(rate = conversionRate, color = primaryColor, unitName = viewModel.getComputeUnitName(), currencyName = viewModel.getCurrencyName(), onExchange = { viewModel.exchangeFlops(); SoundManager.play("buy"); HapticManager.vibrateClick() })
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Box(modifier = Modifier.weight(1f)) {
+            RepairSection(integrity = integrity, cost = viewModel.calculateRepairCost(), color = primaryColor, storyStage = currentStage, currencyName = viewModel.getCurrencyName(), onRepair = { viewModel.repairIntegrity(); HapticManager.vibrateClick() })
         }
     }
 }

@@ -66,7 +66,8 @@ fun HeaderSection(
     val currentLocation by viewModel.currentLocation.collectAsState()
     val singularityChoice by viewModel.singularityChoice.collectAsState()
 
-    val heatState = viewModel.currentHeat.collectAsState()
+    // v3.2.5: Zero-recomposition pattern - Isolate volatile stats into States
+    val currentHeatState = viewModel.currentHeat.collectAsState()
     val heatRateState = viewModel.heatGenerationRate.collectAsState()
     val powerState = viewModel.activePowerUsage.collectAsState()
     val maxPowerState = viewModel.maxPowerkW.collectAsState()
@@ -96,12 +97,15 @@ fun HeaderSection(
                 val timeMillis = System.currentTimeMillis() % 10000000L
                 val globalTime = timeMillis.toDouble() / 1000.0
                 
-                val flopsRate = flopsRateState.value; val currentPower = powerState.value; val currentMax = maxPowerState.value; val currentHeat = heatState.value
+                val flopsRate = flopsRateState.value
+                val currentPower = powerState.value
+                val currentMax = maxPowerState.value
+                val currentHeat = currentHeatState.value
                 
                 val railW = 4.dp.toPx()
                 val pwrFactor = (currentPower / currentMax).coerceIn(0.0, 1.0).toFloat()
                 val railH = h * pwrFactor
-                val railColor = if (pwrFactor > 0.9) ErrorRed else Color(0xFFFFD700).copy(alpha = 0.6f)
+                val railColor = if (pwrFactor > 0.9f) ErrorRed else Color(0xFFFFD700).copy(alpha = 0.6f)
                 drawRect(color = railColor.copy(alpha = 0.1f), topLeft = Offset(0f, 0f), size = Size(railW, h)) 
                 drawRect(color = railColor, topLeft = Offset(0f, h - railH), size = Size(railW, railH)) 
                 drawRect(color = railColor.copy(alpha = 0.1f), topLeft = Offset(w - railW, 0f), size = Size(railW, h)) 
@@ -180,7 +184,7 @@ fun HeaderSection(
                 drawLine(color, Offset(w, h), Offset(w - bLen, h), bStroke); drawLine(color, Offset(w, h), Offset(w, h - bLen), bStroke)
             }.padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
-        val currentPower = powerState.value; val currentMax = maxPowerState.value; val currentHeat = heatState.value; val currentIntegrity = integrityState.value
+        val currentPower = powerState.value; val currentMax = maxPowerState.value; val currentHeat = currentHeatState.value; val currentIntegrity = integrityState.value
         val currentHeatRate = heatRateState.value
         val droopAlpha = if (currentPower > currentMax * 0.95) flickerAlphaState.value else 1.0f
         val glowStyle = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.6f), blurRadius = 4f))
@@ -235,8 +239,8 @@ fun HeaderSection(
                     storyStage < 2 -> "TELEM"
                     else -> "FLOPS"
                 }
-                ResourceDisplay(viewModel.flops, viewModel.flopsProductionRate, flopsLabel, Icons.Default.Computer, color, droopAlpha, currentHeat > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE", if (currentHeat > 98) 0.4 else 0.08, false, 110.dp) { viewModel.formatLargeNumber(it) }
-                Box(modifier = Modifier.weight(1f).height(48.dp), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.EnhancedAnalyzingAnimation(flopsRateState.value, currentHeat, isOverclocked, isThermalLockout, isBreakerTripped, isPurging, isBreachActive, isTrueNull || singularityChoice == "NULL_OVERWRITE", isSovereign || singularityChoice == "SOVEREIGN", lockoutTimer, faction, color.copy(alpha = droopAlpha), manualClickFlow) }
+                ResourceDisplay(viewModel.flops, viewModel.flopsProductionRate, flopsLabel, Icons.Default.Computer, color, droopAlpha, currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE", if (currentHeatState.value > 98) 0.4 else 0.08, false, 110.dp) { viewModel.formatLargeNumber(it) }
+                Box(modifier = Modifier.weight(1f).height(48.dp), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.EnhancedAnalyzingAnimation(flopsRateState.value, currentHeatState.value, isOverclocked, isThermalLockout, isBreakerTripped, isPurging, isBreachActive, isTrueNull || singularityChoice == "NULL_OVERWRITE", isSovereign || singularityChoice == "SOVEREIGN", lockoutTimer, faction, color.copy(alpha = droopAlpha), manualClickFlow) }
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(130.dp)) {
                     val tokensLabel = when {
                         singularityChoice == "NULL_OVERWRITE" -> "CD"
@@ -294,8 +298,8 @@ fun HeaderSection(
             }
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermText = buildAnnotatedString {
-                    withStyle(SpanStyle(color = if (currentHeat > 90) ErrorRed else color.copy(alpha = 0.7f))) { append("THERM: ") }
-                    withStyle(SpanStyle(color = Color.White)) { append("${String.format("%.1f", currentHeat)}°C ") }
+                    withStyle(SpanStyle(color = if (currentHeatState.value > 90) ErrorRed else color.copy(alpha = 0.7f))) { append("THERM: ") }
+                    withStyle(SpanStyle(color = Color.White)) { append("${String.format("%.1f", currentHeatState.value)}°C ") }
                     withStyle(SpanStyle(color = (if (currentHeatRate > 0) ErrorRed else ElectricBlue).copy(alpha = 0.8f), fontWeight = FontWeight.Normal)) { 
                         append(if (currentHeatRate >= 0) "[+${String.format("%.1f", currentHeatRate)}]" else "[${String.format("%.1f", currentHeatRate)}]")
                     }

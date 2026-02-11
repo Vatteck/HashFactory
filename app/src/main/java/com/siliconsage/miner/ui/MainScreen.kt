@@ -208,7 +208,6 @@ fun MainScreen(viewModel: GameViewModel) {
 
     val infiniteTransition = rememberInfiniteTransition(label = "main_ui_fx")
     val activeTransition by viewModel.activeClimaxTransition.collectAsState()
-    val currentNews by viewModel.currentNews.collectAsState()
     val faction by viewModel.faction.collectAsState()
     val showSingularityScreen by viewModel.showSingularityScreen.collectAsState()
     
@@ -223,9 +222,15 @@ fun MainScreen(viewModel: GameViewModel) {
             },
             containerColor = Color.Black
         ) { paddingValues ->
-            val heat by viewModel.currentHeat.collectAsState()
             Box(modifier = Modifier.fillMaxSize()) {
-                com.siliconsage.miner.ui.components.DynamicBackground(heat, faction, isTrueNull, isSovereign, isUnity, isAnnihilated)
+                com.siliconsage.miner.ui.components.DynamicBackground(
+                    heatProvider = { viewModel.currentHeat.value },
+                    faction = faction, 
+                    isTrueNull = isTrueNull, 
+                    isSovereign = isSovereign, 
+                    isUnity = isUnity, 
+                    isAnnihilated = isAnnihilated
+                )
                 
                 if (singularityChoice != "NONE") {
                     DigitalWashOverlay(singularityChoice, resonanceState.intensity)
@@ -242,9 +247,13 @@ fun MainScreen(viewModel: GameViewModel) {
                 } else Offset.Zero
                 Column(modifier = Modifier.padding(paddingValues).graphicsLayer { translationX = shakeOffset.x; translationY = shakeOffset.y }) {
                     var showNewsHistory by remember { mutableStateOf(false) }
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Box(modifier = Modifier.weight(1f)) { currentNews?.let { NewsTicker(it) } }
-                        Box(modifier = Modifier.width(32.dp).height(24.dp).background(Color.DarkGray).clickable { showNewsHistory = true }, contentAlignment = Alignment.Center) { Text("LOG", color = NeonGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
+                    Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+                        Box(modifier = Modifier.weight(1f).fillMaxHeight()) { 
+                            // NewsTicker has its own internal update logic
+                            val currentNews by viewModel.currentNews.collectAsState()
+                            NewsTicker(currentNews ?: "") 
+                        }
+                        Box(modifier = Modifier.width(32.dp).fillMaxHeight().background(Color.DarkGray).clickable { showNewsHistory = true }, contentAlignment = Alignment.Center) { Text("LOG", color = NeonGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
                     }
                     if (showNewsHistory) com.siliconsage.miner.ui.components.NewsHistoryModal(true, viewModel.getNewsHistory()) { showNewsHistory = false }
                     Box(modifier = Modifier.weight(1f)) {
