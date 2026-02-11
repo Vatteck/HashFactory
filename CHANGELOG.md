@@ -1,13 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.2.3-dev] - 2026-02-10
+
+### Added
+- **RESEARCH Upgrade Tab**: Restored the specialized upgrade tab for Null/Sovereign specific items. This tab dynamically unlocks when the player reaches Stage 3 and filters content based on current path purity (Void vs. Orbit).
+
+### Changed
+- **Tech Tree Alignment**: Force-centered the **Sentience Core** (Root Node) in the tech tree to fix off-center rendering on high-DPI displays.
+- **HUD Identity Restoration**: Re-branded the starting header title to "Terminal OS 1.0" for better early-game immersion.
+- **Updater UI Refactor**: Clicking "CHECK FOR UPDATES" in Settings now triggers an on-screen **Snackbar** instead of a terminal log.
+- **Log Hygiene**: Removed the redundant "Kernel Boot Complete" terminal log.
+- **Settings Clarity**: Restored the dynamic app version number to the footer of the Settings screen, pulling directly from the build manifest.
+
 ## [3.2.2-dev] - 2026-02-10
-
-### Fixed
-- **Persistence Restoration Leak**: Resolved a major bug where collections (unlocked logs, seen events, annexed nodes) were not being restored upon kernel initialization. This was causing previously seen logs to re-trigger on every app restart.
-- **State Flow Completeness**: Ensured all 50+ bridge properties, including launch progress, altitude, and global sectors, are correctly mapped from disk to the active simulation.
-
-## [3.2.1-dev] - 2026-02-10
 
 ### Added
 - **Persistence Hardening**: Decoupled housekeeping (saves, updates, lore checks) from the simulation pause. The 1s save loop now persists even when the game is "paused" in menus.

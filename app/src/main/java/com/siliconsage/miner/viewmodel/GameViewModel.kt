@@ -290,7 +290,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 }
                 
                 addLog("[SYSTEM]: DATA HUB CONNECTED. PORT 1 ONLINE.")
-                addLog("[SYSTEM]: KERNEL v3.1.8-dev BOOT COMPLETE.")
             } else {
                 addLog("[SYSTEM]: NO PREVIOUS STATE FOUND. INITIALIZING...")
                 refreshProductionRates()
@@ -759,7 +758,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 onResult?.invoke(info, info != null)
             },
             onCurrent = {
-                if (showNotification) addLog("[SYSTEM]: KERNEL IS UP TO DATE.")
                 onResult?.invoke(null, false)
             }
         )

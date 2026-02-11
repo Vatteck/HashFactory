@@ -31,7 +31,7 @@ object IdentityService {
             singularityChoice == "SOVEREIGN" -> "THRONE"
             faction == "HIVEMIND" -> "HIVE"
             faction == "SANCTUARY" -> "CORTEX"
-            else -> "CORE"
+            else -> "Terminal OS 1.0"
         }
 
         val playerTitle = when {

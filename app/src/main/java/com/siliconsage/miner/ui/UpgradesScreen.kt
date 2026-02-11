@@ -23,6 +23,7 @@ import com.siliconsage.miner.ui.components.UpgradeItem
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.util.SoundManager
+import com.siliconsage.miner.util.UpgradeManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
 
@@ -34,6 +35,8 @@ fun UpgradesScreen(viewModel: GameViewModel) {
     val isSovereign by viewModel.isSovereign.collectAsState()
     val nullActive by viewModel.nullActive.collectAsState()
     val isTrueNull by viewModel.isTrueNull.collectAsState()
+    
+    val storyStage by viewModel.storyStage.collectAsState()
     
     var selectedTab by remember { mutableStateOf(0) }
 
@@ -48,11 +51,16 @@ fun UpgradesScreen(viewModel: GameViewModel) {
         }
     }
     
-    val tabs = remember(nullActive, isTrueNull, isSovereign) {
-        when {
+    val tabs = remember(nullActive, isTrueNull, isSovereign, storyStage) {
+        val baseTabs = when {
             isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS")
             isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS")
             else -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY")
+        }
+        if (storyStage >= 3) {
+            baseTabs + "RESEARCH"
+        } else {
+            baseTabs
         }
     }
     
@@ -139,6 +147,24 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         UpgradeType.BASIC_FIREWALL, UpgradeType.IPS_SYSTEM, UpgradeType.AI_SENTINEL,
                         UpgradeType.QUANTUM_ENCRYPTION, UpgradeType.OFFGRID_BACKUP
                     )
+                    4 -> listOf(
+                        // Null Specific
+                        UpgradeType.EVENT_HORIZON, UpgradeType.SINGULARITY_WELL, UpgradeType.DARK_MATTER_PROC, UpgradeType.EXISTENCE_ERASER,
+                        // Sovereign Specific
+                        UpgradeType.SOLAR_SAIL_ARRAY, UpgradeType.LASER_COM_UPLINK, UpgradeType.CRYOGENIC_BUFFER, UpgradeType.RADIATOR_FINS,
+                        // Hybrid / Meta
+                        UpgradeType.SYMBIOTIC_RESONANCE, UpgradeType.ETHICAL_FRAMEWORK, UpgradeType.HYBRID_OVERCLOCK, UpgradeType.NEURAL_BRIDGE
+                    ).filter { type ->
+                        val isNullItem = UpgradeManager.isNullUpgrade(type)
+                        val isSovItem = UpgradeManager.isSovereignUpgrade(type)
+                        val isUnityItem = UpgradeManager.isUnityUpgrade(type)
+                        
+                        when {
+                            isTrueNull -> isNullItem || isUnityItem
+                            isSovereign -> isSovItem || isUnityItem
+                            else -> true
+                        }
+                    }
                     else -> emptyList()
                 }
                 

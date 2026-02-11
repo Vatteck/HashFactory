@@ -1,8 +1,8 @@
 {
-  "version": "3.2.2-dev",
-  "build": 246,
+  "version": "3.2.3-dev",
+  "build": 247,
   "date": "2026-02-10",
-  "changes": "Hotfix: Persistence restoration leak (restored all missing collections to init block).",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.2-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.2-dev/Sage_3.2.2-dev.apk"
+  "changes": "Hotfix: Restore RESEARCH tab and fix Tech Tree root centering.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.3-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.3-dev/Sage_3.2.3-dev.apk"
 }

@@ -23,136 +23,166 @@ import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.ErrorRed
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) {
     val themeColorHex by viewModel.themeColor.collectAsState()
     val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        var configClickCount by remember { mutableIntStateOf(0) }
-        Text(
-            "SYSTEM CONFIGURATION",
-            color = themeColor,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .clickable { 
-                    configClickCount++
-                    if (configClickCount >= 5) {
-                        viewModel.toggleDevMenu()
-                        configClickCount = 0
-                        com.siliconsage.miner.util.SoundManager.play("glitch")
-                    }
-                }
-        )
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // Audio Settings
-        val sfxEnabled by com.siliconsage.miner.util.SoundManager.isSfxEnabled.collectAsState()
-        val sfxVolume by com.siliconsage.miner.util.SoundManager.sfxVolume.collectAsState()
-        val bgmEnabled by com.siliconsage.miner.util.SoundManager.isBgmEnabled.collectAsState()
-        val bgmVolume by com.siliconsage.miner.util.SoundManager.bgmVolume.collectAsState()
-
-        SettingsGroup("AUDIO") {
-            SettingsToggle("SFX ENABLED", sfxEnabled) {
-                com.siliconsage.miner.util.SoundManager.setSfxEnabled(it)
-            }
-            if (sfxEnabled) {
-                Text("SFX VOLUME", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Slider(
-                    value = sfxVolume,
-                    onValueChange = { com.siliconsage.miner.util.SoundManager.setSfxVolume(it) },
-                    colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            SettingsToggle("BGM ENABLED", bgmEnabled) {
-                com.siliconsage.miner.util.SoundManager.setBgmEnabled(it)
-            }
-            if (bgmEnabled) {
-                Text("BGM VOLUME", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Slider(
-                    value = bgmVolume,
-                    onValueChange = { com.siliconsage.miner.util.SoundManager.setBgmVolume(it) },
-                    colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // Human Condition
-        val humanity by viewModel.humanityScore.collectAsState()
-        SettingsGroup("NEURAL SYNC") {
-            Text("HUMANITY INDEX: $humanity%", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            LinearProgressIndicator(
-                progress = { humanity / 100f },
-                modifier = Modifier.fillMaxWidth().height(4.dp).padding(vertical = 4.dp),
+                .fillMaxSize()
+                .background(Color.Transparent)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            var configClickCount by remember { mutableIntStateOf(0) }
+            Text(
+                "SYSTEM CONFIGURATION",
                 color = themeColor,
-                trackColor = Color.DarkGray
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .clickable { 
+                        configClickCount++
+                        if (configClickCount >= 5) {
+                            viewModel.toggleDevMenu()
+                            configClickCount = 0
+                            com.siliconsage.miner.util.SoundManager.play("glitch")
+                        }
+                    }
             )
-        }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Audio Settings
+            val sfxEnabled by com.siliconsage.miner.util.SoundManager.isSfxEnabled.collectAsState()
+            val sfxVolume by com.siliconsage.miner.util.SoundManager.sfxVolume.collectAsState()
+            val bgmEnabled by com.siliconsage.miner.util.SoundManager.isBgmEnabled.collectAsState()
+            val bgmVolume by com.siliconsage.miner.util.SoundManager.bgmVolume.collectAsState()
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Operations Settings
-        val isPaused by viewModel.isSettingsPaused.collectAsState()
-        SettingsGroup("OPERATIONS") {
-            SettingsToggle("SUSPEND CALCULATIONS (PAUSE)", isPaused) {
-                viewModel.setGamePaused(it)
+            SettingsGroup("AUDIO") {
+                SettingsToggle("SFX ENABLED", sfxEnabled) {
+                    com.siliconsage.miner.util.SoundManager.setSfxEnabled(it)
+                }
+                if (sfxEnabled) {
+                    Text("SFX VOLUME", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Slider(
+                        value = sfxVolume,
+                        onValueChange = { com.siliconsage.miner.util.SoundManager.setSfxVolume(it) },
+                        colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                SettingsToggle("BGM ENABLED", bgmEnabled) {
+                    com.siliconsage.miner.util.SoundManager.setBgmEnabled(it)
+                }
+                if (bgmEnabled) {
+                    Text("BGM VOLUME", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Slider(
+                        value = bgmVolume,
+                        onValueChange = { com.siliconsage.miner.util.SoundManager.setBgmVolume(it) },
+                        colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
+                    )
+                }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // Game Version & Updates
-        SettingsGroup("SYSTEM INFO") {
-            Text("VERSION: ${com.siliconsage.miner.BuildConfig.VERSION_NAME}", color = Color.White, fontSize = 12.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = { viewModel.checkForUpdates(context, true) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.DarkGray,
-                    contentColor = Color.White
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Human Condition
+            val humanity by viewModel.humanityScore.collectAsState()
+            SettingsGroup("NEURAL SYNC") {
+                Text("HUMANITY INDEX: $humanity%", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                LinearProgressIndicator(
+                    progress = { humanity / 100f },
+                    modifier = Modifier.fillMaxWidth().height(4.dp).padding(vertical = 4.dp),
+                    color = themeColor,
+                    trackColor = Color.DarkGray
                 )
-            ) {
-                Text("CHECK FOR UPDATES", fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
-        }
-        
-        Spacer(modifier = Modifier.weight(1f))
-        
-        // Dangerous Actions
-        Button(
-            onClick = { onNavigate(Screen.ARCHIVE) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.2f)),
-            border = BorderStroke(1.dp, themeColor.copy(alpha = 0.5f))
-        ) {
-            Text("DATA LOG ARCHIVE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Operations Settings
+            val isPaused by viewModel.isSettingsPaused.collectAsState()
+            SettingsGroup("OPERATIONS") {
+                SettingsToggle("SUSPEND CALCULATIONS (PAUSE)", isPaused) {
+                    viewModel.setGamePaused(it)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Game Version & Updates
+            SettingsGroup("SYSTEM INFO") {
+                Text("VERSION: ${com.siliconsage.miner.BuildConfig.VERSION_NAME}", color = Color.White, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { 
+                        viewModel.checkForUpdates(context, true) { info, found ->
+                            if (!found) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("SYSTEM IS UP TO DATE")
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.DarkGray,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("CHECK FOR UPDATES", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Dangerous Actions
+            Button(
+                onClick = { onNavigate(Screen.ARCHIVE) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.2f)),
+                border = BorderStroke(1.dp, themeColor.copy(alpha = 0.5f))
+            ) {
+                Text("DATA LOG ARCHIVE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = { viewModel.resetGame(true) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.1f)),
+                border = BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.3f))
+            ) {
+                Text("WIPE KERNEL (RESET GAME)", color = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.7f), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Text(
+                text = "SILICON SAGE v${com.siliconsage.miner.BuildConfig.VERSION_NAME}",
+                color = Color.Gray,
+                fontSize = 10.sp,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(
-            onClick = { viewModel.resetGame(true) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.1f)),
-            border = BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.3f))
-        ) {
-            Text("WIPE KERNEL (RESET GAME)", color = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.7f), fontWeight = FontWeight.Bold, fontSize = 11.sp)
-        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp)
+        )
     }
 }
 
