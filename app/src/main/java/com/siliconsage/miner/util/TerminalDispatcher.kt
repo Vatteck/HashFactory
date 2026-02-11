@@ -66,4 +66,22 @@ object TerminalDispatcher {
         
         return "$user@$host:$path$ $command $hex... OK (+$result $unit)"
     }
+
+    /**
+     * v3.2.17: Generate randomized pellet indices for the I/O buffer
+     */
+    fun generatePellets(countRange: IntRange = 3..10, trackWidth: Int = 40): List<Int> {
+        val pellets = mutableListOf<Int>()
+        val count = countRange.random()
+        var attempts = 0
+        while (pellets.size < count && attempts < 100) {
+            val pos = (2 until trackWidth - 1).random()
+            val tooClose = pellets.any { Math.abs(pos - it) < 2 }
+            if (!tooClose) {
+                pellets.add(pos)
+            }
+            attempts++
+        }
+        return pellets.sorted()
+    }
 }

@@ -20,35 +20,34 @@ object NarrativeService {
         vm.unlockedDataLogs.update { it + logId }
         
         DataLogManager.getLog(logId)?.let { log ->
-            queueNarrativeItem(vm, NarrativeItem.Log(log))
+            queueNarrativeItem(vm, NarrativeItem.LogItem(log))
         }
     }
 
     fun addRivalMessage(message: com.siliconsage.miner.data.RivalMessage, vm: GameViewModel) {
         vm.rivalMessages.update { it + message }
-        queueNarrativeItem(vm, NarrativeItem.Message(message))
+        queueNarrativeItem(vm, NarrativeItem.MessageItem(message))
     }
 
     fun deliverItem(vm: GameViewModel, item: NarrativeItem) {
         when (item) {
-            is NarrativeItem.Log -> {
+            is NarrativeItem.LogItem -> {
                 vm.pendingDataLog.value = item.dataLog
                 vm.addLogPublic("[DATA]: Recovering fragment: ${item.dataLog.title}")
                 SoundManager.play("data_recovered")
             }
-            is NarrativeItem.Message -> {
+            is NarrativeItem.MessageItem -> {
                 vm.pendingRivalMessage.value = item.rivalMessage
                 vm.addLogPublic("[INCOMING MESSAGE FROM: ${item.rivalMessage.source.name}]")
                 SoundManager.play("message_received")
             }
-            is NarrativeItem.Event -> {
+            is NarrativeItem.EventItem -> {
                 vm.currentDilemma.value = item.narrativeEvent
                 SoundManager.play("alert")
                 HapticManager.vibrateClick()
             }
         }
         vm.markPopupShown()
-        vm.checkPopupPause()
     }
 
     fun deliverNextNarrativeItem(vm: GameViewModel) {
