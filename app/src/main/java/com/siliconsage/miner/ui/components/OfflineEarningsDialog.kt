@@ -74,7 +74,7 @@ fun OfflineEarningsDialog(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "SYSTEM RESUMED",
+                text = "DATA CONSOLIDATED",
                 color = NeonGreen,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold

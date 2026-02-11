@@ -632,12 +632,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
     fun checkPopupPause() { /* If popup active, pause timers */ }
     fun refreshProductionRates() {
+        val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 } // 10% bonus per level
+        
         flopsProductionRate.value = ResourceEngine.calculateFlopsRate(
             upgrades = upgrades.value,
             isCageActive = commandCenterAssaultPhase.value == "CAGE",
             annexedNodes = annexedNodes.value,
             offlineNodes = offlineNodes.value,
-            gridFlopsBonuses = emptyMap(), // Placeholder for SectorManager bridge
+            gridFlopsBonuses = cityBonuses,
             faction = faction.value,
             humanityScore = humanityScore.value,
             location = currentLocation.value,
@@ -652,7 +654,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             isGridOverloaded = isGridOverloaded.value,
             isPurgingHeat = isPurgingHeat.value,
             currentHeat = currentHeat.value,
-            legacyMultipliers = 0.0 // Placeholder
+            legacyMultipliers = 0.0 // Reserved for future use
         )
 
         // v3.0.4: Dynamic HUD recalibration

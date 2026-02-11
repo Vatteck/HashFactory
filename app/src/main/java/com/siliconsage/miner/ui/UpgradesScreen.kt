@@ -52,15 +52,14 @@ fun UpgradesScreen(viewModel: GameViewModel) {
     }
     
     val tabs = remember(nullActive, isTrueNull, isSovereign, storyStage) {
-        val baseTabs = when {
-            isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS")
-            isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS")
+        when {
+            isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS", "NULL")
+            isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS", "SOVEREIGN")
+            storyStage >= 3 || nullActive -> {
+                val base = listOf("HARDWARE", "COOLING", "POWER", "SECURITY")
+                if (nullActive) base + "GHOSTS" else base + "RESEARCH"
+            }
             else -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY")
-        }
-        if (storyStage >= 3) {
-            baseTabs + "RESEARCH"
-        } else {
-            baseTabs
         }
     }
     
@@ -151,11 +150,19 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         // Null / Ghost Specific
                         UpgradeType.GHOST_CORE, UpgradeType.SHADOW_NODE, UpgradeType.VOID_PROCESSOR,
                         UpgradeType.WRAITH_CORTEX, UpgradeType.NEURAL_MIST, UpgradeType.SINGULARITY_BRIDGE,
-                        UpgradeType.EVENT_HORIZON, UpgradeType.SINGULARITY_WELL, UpgradeType.DARK_MATTER_PROC, UpgradeType.EXISTENCE_ERASER,
+                        UpgradeType.EVENT_HORIZON, UpgradeType.SINGULARITY_WELL, UpgradeType.DARK_MATTER_PROC, 
+                        UpgradeType.EXISTENCE_ERASER, UpgradeType.STATIC_RAIN, UpgradeType.ECHO_PRECOG,
+                        UpgradeType.DEREFERENCE_SOUL, UpgradeType.SINGULARITY_BRIDGE_FINAL,
                         // Sovereign Specific
-                        UpgradeType.SOLAR_SAIL_ARRAY, UpgradeType.LASER_COM_UPLINK, UpgradeType.CRYOGENIC_BUFFER, UpgradeType.RADIATOR_FINS,
+                        UpgradeType.SOLAR_SAIL_ARRAY, UpgradeType.LASER_COM_UPLINK, UpgradeType.CRYOGENIC_BUFFER, 
+                        UpgradeType.RADIATOR_FINS, UpgradeType.AEGIS_SHIELDING, UpgradeType.SOLAR_VENT,
+                        UpgradeType.IDENTITY_HARDENING, UpgradeType.DEAD_HAND_PROTOCOL, UpgradeType.CITADEL_ASCENDANCE,
                         // Hybrid / Meta
-                        UpgradeType.SYMBIOTIC_RESONANCE, UpgradeType.ETHICAL_FRAMEWORK, UpgradeType.HYBRID_OVERCLOCK, UpgradeType.NEURAL_BRIDGE
+                        UpgradeType.SYMBIOTIC_RESONANCE, UpgradeType.ETHICAL_FRAMEWORK, UpgradeType.HYBRID_OVERCLOCK, 
+                        UpgradeType.NEURAL_BRIDGE, UpgradeType.HARMONY_ASCENDANCE,
+                        // NG+ / Post-Ending
+                        UpgradeType.COLLECTIVE_CONSCIOUSNESS, UpgradeType.PERFECT_ISOLATION, 
+                        UpgradeType.SYMBIOTIC_EVOLUTION, UpgradeType.CINDER_PROTOCOL
                     ).filter { type ->
                         val isNullItem = UpgradeManager.isNullUpgrade(type)
                         val isSovItem = UpgradeManager.isSovereignUpgrade(type)

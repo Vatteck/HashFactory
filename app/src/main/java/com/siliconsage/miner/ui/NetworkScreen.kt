@@ -221,19 +221,26 @@ fun calculateNodePositions(nodes: List<TechNode>, faction: String): Map<String, 
             val count = nodesInTier.size.coerceAtLeast(1)
             val index = nodesInTier.indexOf(node)
             
-            // v3.1.9: Balanced centering for high-DPI outer screens
+            // v3.2.4: Balanced centering for high-DPI outer screens
             val xPos = when {
                 isRootTier || node.id == "sentience_core" -> 0.5f // Root and Sentience Core are ALWAYS centered
-                hiveNodes.contains(node) -> 0.15f + (hiveNodes.indexOf(node) * 0.15f)
-                sancNodes.contains(node) -> 0.85f - (sancNodes.indexOf(node) * 0.15f)
+                hiveNodes.contains(node) -> {
+                    val idx = hiveNodes.indexOf(node)
+                    0.05f + (idx * 0.12f)
+                }
+                sancNodes.contains(node) -> {
+                    val idx = sancNodes.indexOf(node)
+                    0.95f - (idx * 0.12f)
+                }
                 unityNodes.contains(node) -> {
                     if (unityNodes.size == 1) 0.5f 
                     else 0.35f + (unityNodes.indexOf(node) * (0.3f / (unityNodes.size - 1).coerceAtLeast(1)))
                 }
                 else -> {
-                    // Start from center for single nodes, spread evenly for groups
-                    if (count == 1) 0.5f
-                    else 0.25f + (index * (0.5f / (count - 1).coerceAtLeast(1)))
+                    // General nodes (non-faction, non-root)
+                    val generalIdx = generalNodes.indexOf(node)
+                    if (generalNodes.size == 1) 0.5f
+                    else 0.30f + (generalIdx * (0.4f / (generalNodes.size - 1).coerceAtLeast(1)))
                 }
             }
             positions[node.id] = Offset(xPos, yPos)
