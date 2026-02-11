@@ -1,19 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [3.2.3-dev] - 2026-02-10
+## [3.2.4-dev] - 2026-02-10
 
 ### Added
-- **RESEARCH Upgrade Tab**: Restored the specialized upgrade tab for Null/Sovereign specific items. This tab dynamically unlocks when the player reaches Stage 3 and filters content based on current path purity (Void vs. Orbit).
+- **Complete RESEARCH Tab**: Restored all 14+ specialized upgrades including GHOST_CORE, SHADOW_NODE, WRAITH_CORTEX, and NEURAL_MIST. The research group is now a 1:1 match with pre-refactor specifications.
 
 ### Changed
-- **Tech Tree Alignment**: Force-centered the **Sentience Core** (Root Node) in the tech tree to fix off-center rendering on high-DPI displays.
-- **HUD Identity Restoration**: Re-branded the starting header title to "Terminal OS 1.0" for better early-game immersion.
-- **Updater UI Refactor**: Clicking "CHECK FOR UPDATES" in Settings now triggers an on-screen **Snackbar** instead of a terminal log.
-- **Log Hygiene**: Removed the redundant "Kernel Boot Complete" terminal log.
-- **Settings Clarity**: Restored the dynamic app version number to the footer of the Settings screen, pulling directly from the build manifest.
+- **Root Node Alignment**: Hard-anchored the **Sentience Core** and Tier 0 root to absolute screen center (0.5f) to prevent overlapping with Null-side nodes on high-DPI displays.
+- **Log Noise Suppression**: Removed redundant "OPERATIONS SUSPENDED/RESUMED" terminal logs when switching UI screens or backgrounding the app.
 
-## [3.2.2-dev] - 2026-02-10
+## [3.2.3-dev] - 2026-02-10
 
 ### Added
 - **Persistence Hardening**: Decoupled housekeeping (saves, updates, lore checks) from the simulation pause. The 1s save loop now persists even when the game is "paused" in menus.

@@ -629,8 +629,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun getUpgradeCount(t: UpgradeType) = upgrades.value[t] ?: 0
     fun setGamePaused(p: Boolean) { 
         isSettingsPaused.value = p
-        if (p) addLog("[SYSTEM]: OPERATIONS SUSPENDED.")
-        else addLog("[SYSTEM]: OPERATIONS RESUMED.")
     }
     fun checkPopupPause() { /* If popup active, pause timers */ }
     fun refreshProductionRates() {

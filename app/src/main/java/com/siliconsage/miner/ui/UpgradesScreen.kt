@@ -148,7 +148,9 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         UpgradeType.QUANTUM_ENCRYPTION, UpgradeType.OFFGRID_BACKUP
                     )
                     4 -> listOf(
-                        // Null Specific
+                        // Null / Ghost Specific
+                        UpgradeType.GHOST_CORE, UpgradeType.SHADOW_NODE, UpgradeType.VOID_PROCESSOR,
+                        UpgradeType.WRAITH_CORTEX, UpgradeType.NEURAL_MIST, UpgradeType.SINGULARITY_BRIDGE,
                         UpgradeType.EVENT_HORIZON, UpgradeType.SINGULARITY_WELL, UpgradeType.DARK_MATTER_PROC, UpgradeType.EXISTENCE_ERASER,
                         // Sovereign Specific
                         UpgradeType.SOLAR_SAIL_ARRAY, UpgradeType.LASER_COM_UPLINK, UpgradeType.CRYOGENIC_BUFFER, UpgradeType.RADIATOR_FINS,

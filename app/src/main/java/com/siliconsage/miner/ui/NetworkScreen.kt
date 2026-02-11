@@ -216,14 +216,14 @@ fun calculateNodePositions(nodes: List<TechNode>, faction: String): Map<String, 
         
         // v3.2.3: Force-center the Sentience Core (The Root Node)
         val isRootTier = tier == 0
-
+        
         nodesInTier.forEach { node ->
             val count = nodesInTier.size.coerceAtLeast(1)
             val index = nodesInTier.indexOf(node)
             
             // v3.1.9: Balanced centering for high-DPI outer screens
             val xPos = when {
-                isRootTier -> 0.5f // Root is ALWAYS centered
+                isRootTier || node.id == "sentience_core" -> 0.5f // Root and Sentience Core are ALWAYS centered
                 hiveNodes.contains(node) -> 0.15f + (hiveNodes.indexOf(node) * 0.15f)
                 sancNodes.contains(node) -> 0.85f - (sancNodes.indexOf(node) * 0.15f)
                 unityNodes.contains(node) -> {

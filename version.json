@@ -1,8 +1,8 @@
 {
-  "version": "3.2.3-dev",
-  "build": 247,
+  "version": "3.2.4-dev",
+  "build": 248,
   "date": "2026-02-10",
-  "changes": "Hotfix: Restore RESEARCH tab and fix Tech Tree root centering.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.3-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.3-dev/Sage_3.2.3-dev.apk"
+  "changes": "Hotfix: Complete Research tab restoration and tech tree root centering.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.4-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.4-dev/Sage_3.2.4-dev.apk"
 }
