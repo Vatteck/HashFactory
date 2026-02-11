@@ -385,7 +385,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         val entry = LogEntry(logCounter, msg)
         synchronized(logBuffer) {
             logBuffer.add(entry)
-            if (logBuffer.size > 20) flushLogs()
         }
     }
 
@@ -595,13 +594,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun toggleDevMenu() { debugToggleDevMenu() }
     fun resetGame(force: Boolean = false) {
         viewModelScope.launch {
+            // 1. Reset Database
             repository.updateGameState(PersistenceManager.createSaveState(
                 flops = 0.0, neuralTokens = 0.0, currentHeat = 0.0, powerBill = 0.0,
                 stakedTokens = 0.0, prestigeMultiplier = 1.0, prestigePoints = 0.0,
                 unlockedTechNodes = emptyList(), storyStage = 0, faction = "NONE",
                 hasSeenVictory = false, isTrueNull = false, isSovereign = false,
                 vanceStatus = "ACTIVE", realityStability = 1.0, currentLocation = "SUBSTATION_7",
-                isNetworkUnlocked = false, isGridUnlocked = false, unlockedDataLogs = setOf("LOG_000"), // Reset but keep install log
+                isNetworkUnlocked = false, isGridUnlocked = false, unlockedDataLogs = setOf("LOG_000"),
                 activeDilemmaChains = emptyMap(), rivalMessages = emptyList(), seenEvents = emptySet<String>(),
                 completedFactions = emptySet<String>(), unlockedTranscendencePerks = emptySet<String>(),
                 annexedNodes = setOf("D1"), gridNodeLevels = emptyMap<String, Int>(), 
@@ -616,20 +616,42 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 harvestedFragments = 0.0, prestigePointsPostSingularity = 0,
                 cdLifetime = 0.0, vfLifetime = 0.0, peakResonanceTier = ResonanceTier.NONE
             ))
-            // Apply immediately to state
+            
+            // 2. Reset ALL ViewModel State Flows immediately
             flops.value = 0.0
             neuralTokens.value = 0.0
             celestialData.value = 0.0
             voidFragments.value = 0.0
+            synthesisPoints.value = 0.0
+            authorityPoints.value = 0.0
+            harvestedFragments.value = 0.0
             currentHeat.value = 0.0
             storyStage.value = 0
             faction.value = "NONE"
+            singularityChoice.value = "NONE"
+            isTrueNull.value = false
+            isSovereign.value = false
+            isUnity.value = false
             annexedNodes.value = setOf("D1")
+            offlineNodes.value = emptySet()
+            nodesUnderSiege.value = emptySet()
+            collapsedNodes.value = emptySet()
+            upgrades.value = emptyMap()
+            unlockedTechNodes.value = emptyList()
+            unlockedPerks.value = emptySet()
+            completedFactions.value = emptySet()
+            seenEvents.value = emptySet()
+            unlockedDataLogs.value = setOf("LOG_000")
+            
+            synchronized(logBuffer) {
+                logBuffer.clear()
+            }
+            logs.value = emptyList()
+            
             refreshProductionRates()
             
-            addLog("[SYSTEM]: DATA WIPE INITIATED. REBOOTING...")
+            addLog("[SYSTEM]: DATA WIPE COMPLETE. KERNEL REBOOTED.")
             
-            // v3.1.8-fix: Trigger LOG_000 immediately after reset
             delay(1000)
             DataLogManager.getLog("LOG_000")?.let { log ->
                 NarrativeService.deliverItem(this@GameViewModel, NarrativeItem.Log(log))
