@@ -1,11 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [3.2.6-dev] - 2026-02-10
+## [3.2.7-dev] - 2026-02-10
 
 ### Fixed
-- **Emergency Heat Purge**: Restored the missing thermal dissipation logic. Purging now correctly drops heat by 5%/s and automatically disengages when the substrate reaches 0°C.
-- **Tech Tree Centering**: Force-anchored the **Sentience Core** and Tier 0 root to a hard absolute center (`0.5f`). Shrunk the horizontal footprint of faction nodes to maximize the buffer zone.
+- **Purge Sacrifice Restoration**: Increased the FLOPS penalty during heat purging from 90% to 99% reduction to ensure a tangible production sacrifice. Injected immediate rate recalculation upon triggering the purge.
+- **Tech Tree Boundary Hardening**: Pulled the node margins even further into the safe zone (`0.15/0.85`) to fix border-bleeding and overlapping issues on high-DPI displays.
+
+## [3.2.6-dev] - 2026-02-10
 
 ## [3.2.5-dev] - 2026-02-10
 

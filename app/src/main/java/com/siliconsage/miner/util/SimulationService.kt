@@ -27,6 +27,7 @@ object SimulationService {
         vm.isPurgingHeat.value = true
         vm.addLog("[SYSTEM]: EMERGENCY HEAT PURGE INITIATED.")
         SoundManager.play("alarm")
+        vm.refreshProductionRates() // v3.2.7: Force immediate production sacrifice
     }
 
     fun accumulatePower(vm: GameViewModel) {

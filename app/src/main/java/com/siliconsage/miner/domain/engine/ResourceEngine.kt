@@ -179,7 +179,7 @@ object ResourceEngine {
         if (activeProtocol == "TURBO") flopsPerSec *= 1.20
         if (isDiagnosticsActive) flopsPerSec *= 0.5
         if (isOverclocked) flopsPerSec *= 1.50
-        if (isPurgingHeat) flopsPerSec *= 0.1
+        if (isPurgingHeat) flopsPerSec *= 0.01 // v3.2.7: Increased sacrifice to 99% reduction
 
         // 5. Thermal Throttling
         if (currentHeat > 75.0) {
