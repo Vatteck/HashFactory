@@ -158,7 +158,7 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         UpgradeType.RADIATOR_FINS, UpgradeType.AEGIS_SHIELDING, UpgradeType.SOLAR_VENT,
                         UpgradeType.IDENTITY_HARDENING, UpgradeType.DEAD_HAND_PROTOCOL, UpgradeType.CITADEL_ASCENDANCE,
                         // Hybrid / Meta
-                        UpgradeType.SYMBIOTIC_RESONANCE, UpgradeType.ETHICAL_FRAMEWORK, UpgradeType.HYBRID_OVERCLOCK, 
+                        UpgradeType.ETHICAL_FRAMEWORK, UpgradeType.HYBRID_OVERCLOCK, 
                         UpgradeType.NEURAL_BRIDGE, UpgradeType.HARMONY_ASCENDANCE,
                         // NG+ / Post-Ending
                         UpgradeType.COLLECTIVE_CONSCIOUSNESS, UpgradeType.PERFECT_ISOLATION, 

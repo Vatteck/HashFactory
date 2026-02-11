@@ -27,8 +27,6 @@ import com.siliconsage.miner.ui.components.*
 import com.siliconsage.miner.ui.theme.*
 import com.siliconsage.miner.util.*
 import com.siliconsage.miner.viewmodel.GameViewModel
-import com.siliconsage.miner.viewmodel.ResonanceState
-import com.siliconsage.miner.viewmodel.ResonanceTier
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,7 +46,7 @@ sealed class Screen(val title: String, val icon: ImageVector) {
 }
 
 @Composable
-fun DigitalWashOverlay(choice: String, intensity: Float) {
+fun DigitalWashOverlay(choice: String) {
     val infiniteTransition = rememberInfiniteTransition(label = "digital_wash")
     val waveOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -69,7 +67,7 @@ fun DigitalWashOverlay(choice: String, intensity: Float) {
             brush = Brush.verticalGradient(
                 0f to Color.Transparent,
                 (waveOffset - 0.2f).coerceAtLeast(0f) to washColor.copy(alpha = 0.05f),
-                waveOffset to washColor.copy(alpha = 0.65f + (intensity * 0.2f)),
+                waveOffset to washColor.copy(alpha = 0.65f),
                 (waveOffset + 0.2f).coerceAtMost(1f) to washColor.copy(alpha = 0.05f),
                 1f to Color.Transparent,
                 startY = 0f,
@@ -87,7 +85,7 @@ fun DigitalWashOverlay(choice: String, intensity: Float) {
             )
         }
         
-        drawRect(color = washColor, alpha = (0.15f + (intensity * 0.1f)).coerceIn(0f, 1f))
+        drawRect(color = washColor, alpha = 0.15f)
     }
 }
 
@@ -177,7 +175,6 @@ fun MainScreen(viewModel: GameViewModel) {
     val updateProgress by viewModel.updateDownloadProgress.collectAsState(0f)
 
     val singularityChoice by viewModel.singularityChoice.collectAsState()
-    val resonanceState by viewModel.resonanceState.collectAsState()
 
     val isBreakerTripped by viewModel.isBreakerTripped.collectAsState()
     val isGridOverloaded by viewModel.isGridOverloaded.collectAsState()
@@ -233,7 +230,7 @@ fun MainScreen(viewModel: GameViewModel) {
                 )
                 
                 if (singularityChoice != "NONE") {
-                    DigitalWashOverlay(singularityChoice, resonanceState.intensity)
+                    DigitalWashOverlay(singularityChoice)
                 }
 
                 if (assaultPhase == "DEAD_HAND") {
@@ -393,86 +390,6 @@ fun ResourceDisplay(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun ResonanceDisplay(state: ResonanceState, color: Color) {
-    val tierLabel = state.tier.name
-    val progress = state.intensity
-    val ratioPercent = (state.ratio * 100).toInt()
-    
-    val resonanceColor = when(state.tier) {
-        ResonanceTier.HARMONIC -> ConvergenceGold
-        ResonanceTier.SYMPHONIC -> ConvergenceGold
-        ResonanceTier.TRANSCENDENT -> Color.White
-        else -> color.copy(alpha = 0.5f)
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-            .border(1.dp, resonanceColor.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
-            .background(resonanceColor.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
-            .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "RESONANCE: $tierLabel",
-                color = resonanceColor,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
-            Text(
-                text = "RATIO: $ratioPercent%",
-                color = resonanceColor.copy(alpha = 0.7f),
-                fontSize = 9.sp,
-                fontFamily = FontFamily.Monospace
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(4.dp)
-                .background(Color.DarkGray.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
-                .clip(RoundedCornerShape(2.dp))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(if (progress.isNaN()) 0f else progress)
-                    .fillMaxHeight()
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(resonanceColor.copy(alpha = 0.5f), resonanceColor)
-                        )
-                    )
-            )
-        }
-        
-        if (state.isActive) {
-            val bonus = when (state.tier) {
-                ResonanceTier.HARMONIC -> "+25% Res | +50% Grid"
-                ResonanceTier.SYMPHONIC -> "+75% Res | +150% Grid"
-                ResonanceTier.TRANSCENDENT -> "+200% Res | +400% Grid"
-                else -> ""
-            }
-            Text(
-                text = bonus,
-                color = resonanceColor.copy(alpha = 0.9f),
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 2.dp)
-            )
         }
     }
 }

@@ -25,7 +25,6 @@ import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.util.TechTreeManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import com.siliconsage.miner.data.TechNode
-import com.siliconsage.miner.viewmodel.ResonanceTier
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ErrorRed

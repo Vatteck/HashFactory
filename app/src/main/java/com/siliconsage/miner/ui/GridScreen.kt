@@ -38,7 +38,6 @@ import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ConvergenceGold
 import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
-import com.siliconsage.miner.viewmodel.ResonanceTier
 import kotlin.math.pow
 
 // Re-defining internal data class for the file
@@ -90,127 +89,6 @@ fun GridScreen(viewModel: GameViewModel) {
     }
 }
 
-@Composable
-fun ResonanceTuner(state: com.siliconsage.miner.viewmodel.ResonanceState, viewModel: GameViewModel) {
-    val isBridgeSyncEnabled by viewModel.isBridgeSyncEnabled.collectAsState()
-    
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp)
-            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-            .border(1.dp, Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-            .padding(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "RESONANCE TUNER v3.0",
-                color = if (state.isActive) ConvergenceGold else Color.Gray,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace
-            )
-            
-            // Sync Toggle
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    if (isBridgeSyncEnabled) "SYNC: ACTIVE" else "SYNC: OFF",
-                    color = if (isBridgeSyncEnabled) NeonGreen else Color.Gray,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Switch(
-                    checked = isBridgeSyncEnabled,
-                    onCheckedChange = { viewModel.toggleBridgeSync() },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = NeonGreen,
-                        checkedTrackColor = NeonGreen.copy(alpha = 0.3f)
-                    ),
-                    modifier = Modifier.scale(0.7f)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Harmonic Spectrum (Visual Slider Representation)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .background(Color.DarkGray.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
-                .clip(RoundedCornerShape(4.dp))
-        ) {
-            // Neutral Center Zone
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(4.dp)
-                    .align(Alignment.Center)
-                    .background(Color.White.copy(alpha = 0.2f))
-            )
-
-            // Current Ratio Indicator
-            val ratio = state.ratio.toFloat()
-            
-            // We use the ratio to position a glow effect
-            val infiniteTransition = rememberInfiniteTransition(label = "tuner_glow")
-            val glowAlpha by infiniteTransition.animateFloat(
-                initialValue = 0.3f,
-                targetValue = 0.8f,
-                animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
-                label = "glow"
-            )
-
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val center = size.width / 2
-                val indicatorX = center + ((ratio - 1.0f) * center) // Basic mapping
-                
-                if (state.isActive) {
-                    drawCircle(
-                        color = ConvergenceGold,
-                        radius = 8.dp.toPx(),
-                        center = Offset(indicatorX.coerceIn(0f, size.width), size.height / 2),
-                        alpha = glowAlpha
-                    )
-                }
-            }
-        }
-        
-        Text(
-            "TUNE: Adjust BRIDGE_TRANSFER to align Celestial/Void frequencies.",
-            color = Color.Gray,
-            fontSize = 9.sp,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-        
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            Button(
-                onClick = { viewModel.executeBridgeTransfer(100.0) },
-                modifier = Modifier.weight(1f).padding(4.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                Text("CD >> VF", fontSize = 10.sp)
-            }
-            Button(
-                onClick = { viewModel.executeBridgeTransfer(-100.0) },
-                modifier = Modifier.weight(1f).padding(4.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                Text("VF >> CD", fontSize = 10.sp)
-            }
-        }
-    }
-}
-
 // v3.0.0: Global Grid Sector Definition
 data class GlobalNode(
     val id: String,
@@ -228,13 +106,12 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
     val globalSectors by viewModel.globalSectors.collectAsState()
     val celestialData by viewModel.celestialData.collectAsState()
     val voidFragments by viewModel.voidFragments.collectAsState()
-    val resonanceState by viewModel.resonanceState.collectAsState()
     
     val sectors = remember {
         listOf(
             GlobalNode("METRO", "Metropolitan Core", 0.50f, 0.70f, "Where it all began. The foundation of your ascension.", "◇"),
             GlobalNode("NA_NODE", "North American Node", 0.20f, 0.40f, "Data Lake Protocol: +15% CD generation globally.", "◆"),
-            GlobalNode("EURASIA", "Eurasian Hive", 0.75f, 0.35f, "Hive Synchronization: Reduced Resonance tolerance requirements.", "▲"),
+            GlobalNode("EURASIA", "Eurasian Hive", 0.75f, 0.35f, "Collective Processing: +15% VF generation globally.", "▲"),
             GlobalNode("PACIFIC", "Pacific Nexus", 0.85f, 0.65f, "Undersea Network: Global latency reduction.", "●"),
             GlobalNode("AFRICA", "African Array", 0.55f, 0.55f, "Emerging Markets: Production increases over time.", "■"),
             GlobalNode("ARCTIC", "Arctic Archive", 0.45f, 0.15f, "Permafrost Storage: Overflow resource reservoir.", "★"),
@@ -295,25 +172,9 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(sector.symbol, color = nodeColor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    if (isUnlocked && resonanceState.isActive) {
-                        // Pulse effect during resonance
-                        val infiniteTransition = rememberInfiniteTransition(label = "res_pulse")
-                        val pulseScale by infiniteTransition.animateFloat(
-                            initialValue = 1f,
-                            targetValue = 1.4f,
-                            animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
-                            label = "pulse"
-                        )
-                        Box(modifier = Modifier.size(30.dp).graphicsLayer { scaleX = pulseScale; scaleY = pulseScale }.border(BorderStroke(1.dp, ConvergenceGold.copy(alpha = 0.3f)), RoundedCornerShape(4.dp)))
-                    }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // v3.0.1: Resonance Tuner Slider
-        ResonanceTuner(resonanceState, viewModel)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -356,17 +217,13 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                             "ORBITAL_PRIME" -> 1e17; else -> 0.0
                         }
                         
-                        val isResonant = resonanceState.isActive
-                        
                         val canAfford = when {
-                            isResonant -> celestialData >= costCD && voidFragments >= costVF
                             viewModel.currentLocation.value == "VOID_INTERFACE" -> voidFragments >= (costVF * 3.0)
                             viewModel.currentLocation.value == "ORBITAL_SATELLITE" -> celestialData >= (costCD * 3.0)
                             else -> celestialData >= costCD && voidFragments >= costVF
                         }
 
                         val costLabel = when {
-                            isResonant -> "${viewModel.formatLargeNumber(costCD)} CD | ${viewModel.formatLargeNumber(costVF)} VF"
                             viewModel.currentLocation.value == "VOID_INTERFACE" -> "${viewModel.formatLargeNumber(costVF * 3.0)} VF"
                             viewModel.currentLocation.value == "ORBITAL_SATELLITE" -> "${viewModel.formatLargeNumber(costCD * 3.0)} CD"
                             else -> "${viewModel.formatLargeNumber(costCD)} CD | ${viewModel.formatLargeNumber(costVF)} VF"

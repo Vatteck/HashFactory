@@ -2,13 +2,11 @@ package com.siliconsage.miner.domain.engine
 
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.data.SectorState
-import com.siliconsage.miner.viewmodel.ResonanceTier
 import kotlin.math.pow
 import kotlin.math.abs
 import kotlin.math.log10
 import kotlin.math.log2
 import kotlin.math.sqrt
-import kotlin.math.pow
 
 /**
  * ResourceEngine v1.0 (Phase 14 extraction)
@@ -40,13 +38,12 @@ object ResourceEngine {
     )
 
     /**
-     * v3.0.14: Calculate current manual click power based on hardware and resonance
+     * v3.0.14: Calculate current manual click power based on hardware
      */
     fun calculateClickPower(
         upgrades: Map<UpgradeType, Int>,
         passiveRate: Double,
         singularityChoice: String,
-        resonanceTier: ResonanceTier,
         prestigeMultiplier: Double,
         isOverclocked: Boolean
     ): Double {
@@ -61,52 +58,14 @@ object ResourceEngine {
         hardwareMult += (upgrades[UpgradeType.QUANTUM_CORE] ?: 0) * 0.20
         hardwareMult += (upgrades[UpgradeType.DYSON_NANO_SWARM] ?: 0) * 0.50
         
-        // 3. Resonance Bonus
-        val resonanceMult = when (resonanceTier) {
-            ResonanceTier.HARMONIC -> 1.5
-            ResonanceTier.SYMPHONIC -> 2.5
-            ResonanceTier.TRANSCENDENT -> 5.0
-            ResonanceTier.NONE -> 1.0
-        }
-        
-        // 4. Prestige and Overclock
+        // 3. Prestige and Overclock
         var multiplier = prestigeMultiplier
         if (isOverclocked) {
             // v3.0.19: Path-specific overclock scaling
             multiplier *= if (singularityChoice == "NULL_OVERWRITE") 2.5 else 1.5
         }
         
-        return hardwareBase * hardwareMult * resonanceMult * multiplier
-    }
-
-    /**
-     * v3.0.0: Calculate Resonance State based on resource ratio
-     */
-    fun calculateResonance(cd: Double, vf: Double): ResonanceTier {
-        val minThreshold = 1e15
-        if (cd < minThreshold || vf < minThreshold) return ResonanceTier.NONE
-        
-        val ratio = if (cd > vf) vf / cd else cd / vf
-        val diff = (1.0 - ratio) * 100.0
-        
-        return when {
-            diff <= 10.0 && cd >= 1e21 -> ResonanceTier.TRANSCENDENT
-            diff <= 15.0 && cd >= 1e18 -> ResonanceTier.SYMPHONIC
-            diff <= 20.0 -> ResonanceTier.HARMONIC
-            else -> ResonanceTier.NONE
-        }
-    }
-
-    /**
-     * Get resource generation bonus based on resonance tier
-     */
-    fun getResonanceResourceBonus(tier: ResonanceTier): Double {
-        return when (tier) {
-            ResonanceTier.HARMONIC -> 1.25      // +25%
-            ResonanceTier.SYMPHONIC -> 1.75     // +75%
-            ResonanceTier.TRANSCENDENT -> 3.0   // +200%
-            ResonanceTier.NONE -> 1.0
-        }
+        return hardwareBase * hardwareMult * multiplier
     }
 
     /**
@@ -209,7 +168,6 @@ object ResourceEngine {
         flopsPerSec: Double,
         location: String,
         upgrades: Map<UpgradeType, Int>,
-        resonanceBonus: Double,
         orbitalAltitude: Double,
         heatGenerationRate: Double,
         entropyLevel: Double,
@@ -237,9 +195,7 @@ object ResourceEngine {
                     orbitalAltitude = orbitalAltitude,
                     solarSailLevel = upgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0,
                     globalSectors = globalSectors, 
-                    resonanceBonus = resonanceBonus,
-                    heatGenerationRate = heatGenerationRate,
-                    hasSymbioticResonance = (upgrades[UpgradeType.SYMBIOTIC_RESONANCE] ?: 0) > 0
+                    heatGenerationRate = heatGenerationRate
                 ) / 10.0
             }
             "VOID_INTERFACE" -> {
@@ -253,13 +209,8 @@ object ResourceEngine {
                     collapsedNodesCount = collapsedNodesCount,
                     hasDarkMatterProc = (upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0) > 0,
                     dmLevel = upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0,
-                    globalSectors = globalSectors, 
-                    resonanceBonus = resonanceBonus
+                    globalSectors = globalSectors
                 ) / 10.0
-
-                if ((upgrades[UpgradeType.SYMBIOTIC_RESONANCE] ?: 0) > 0) {
-                    vfDelta += (entropyLevel * 500.0) / 10.0
-                }
 
                 entropyDelta = -0.01 
             }

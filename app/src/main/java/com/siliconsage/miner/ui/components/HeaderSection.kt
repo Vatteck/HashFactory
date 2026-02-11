@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.DeviceThermostat
 import com.siliconsage.miner.ui.ResourceDisplay
-import com.siliconsage.miner.ui.ResonanceDisplay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +37,6 @@ import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ConvergenceGold
 import com.siliconsage.miner.viewmodel.GameViewModel
-import com.siliconsage.miner.viewmodel.ResonanceTier
 
 @Composable
 fun HeaderSection(
@@ -74,8 +72,6 @@ fun HeaderSection(
     val flopsRateState = viewModel.flopsProductionRate.collectAsState()
     val integrityState = viewModel.hardwareIntegrity.collectAsState()
     
-    val resonanceState by viewModel.resonanceState.collectAsState()
-
     val infiniteTransition = rememberInfiniteTransition(label = "kinetic_hud")
     val flickerAlphaState = infiniteTransition.animateFloat(0.7f, 1.0f, infiniteRepeatable(tween(100, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "voltage_droop")
 
@@ -121,14 +117,7 @@ fun HeaderSection(
                     val x = i * ledStep + (ledGap / 2f); val posFactor = i.toFloat() / ledCount
                     var ledBaseCol = color
                     
-                    if (resonanceState.isActive && !isBreachActive) {
-                        ledBaseCol = when (resonanceState.tier) {
-                            ResonanceTier.HARMONIC -> ConvergenceGold
-                            ResonanceTier.SYMPHONIC -> ConvergenceGold
-                            ResonanceTier.TRANSCENDENT -> Color.White
-                            else -> color
-                        }
-                    } else if (!isBreachActive) {
+                    if (!isBreachActive) {
                         if (currentHeat > 90.0) ledBaseCol = ErrorRed
                         else if (currentHeat > 60.0) {
                             val dist = Math.abs(posFactor - 0.5) * 2.0
@@ -278,10 +267,6 @@ fun HeaderSection(
                 }
             }
             
-            if (currentLocation == "ORBITAL_SATELLITE" || currentLocation == "VOID_INTERFACE") {
-                ResonanceDisplay(resonanceState, color)
-            }
-
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isOverclocked) ErrorRed else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed else Color.DarkGray)) { Icon(Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text("OVERCLOCK", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
                 Button(onClick = onPurge, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isPurging) ElectricBlue else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)) { Text("PURGE HEAT", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }

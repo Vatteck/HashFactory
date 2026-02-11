@@ -72,7 +72,6 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
                     DevButton("SKIP TO STAGE 2") { viewModel.debugSkipToStage(2) }
                     DevButton("SKIP TO STAGE 3") { viewModel.debugSkipToStage(3) }
                     DevButton("UNLOCK UNITY") { viewModel.debugUnlockUnity() }
-                    DevButton("FORCE RESONANCE") { viewModel.debugForceResonance("TRANSCENDENT") }
                 }
 
                 DevSection("SYSTEM & SECURITY") {

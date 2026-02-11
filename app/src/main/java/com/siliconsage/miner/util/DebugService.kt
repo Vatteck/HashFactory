@@ -1,7 +1,6 @@
 package com.siliconsage.miner.util
 
 import com.siliconsage.miner.viewmodel.GameViewModel
-import com.siliconsage.miner.viewmodel.ResonanceTier
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -26,7 +25,6 @@ object DebugService {
             vm.faction.value = "HIVEMIND"
             vm.celestialData.value = 1e22
             vm.voidFragments.value = 1e22
-            vm.peakResonanceTier.value = ResonanceTier.TRANSCENDENT
             vm.addLog("[DEBUG]: ENDGAME PARAMETERS INJECTED.")
             vm.refreshProductionRates()
         }
@@ -38,7 +36,6 @@ object DebugService {
             vm.faction.value = "SANCTUARY"
             vm.celestialData.value = 1e22
             vm.voidFragments.value = 1e22
-            vm.peakResonanceTier.value = ResonanceTier.TRANSCENDENT
             vm.addLog("[DEBUG]: SOVEREIGN ENDGAME PARAMETERS INJECTED.")
             vm.refreshProductionRates()
         }

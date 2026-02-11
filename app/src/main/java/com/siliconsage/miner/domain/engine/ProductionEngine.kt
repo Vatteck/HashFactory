@@ -89,14 +89,12 @@ object ProductionEngine {
         orbitalAltitude: Double,
         solarSailLevel: Int,
         globalSectors: Map<String, SectorState>,
-        resonanceBonus: Double,
-        heatGenerationRate: Double,
-        hasSymbioticResonance: Boolean
+        heatGenerationRate: Double
     ): Double {
         val altitudeMult = 1.0 + (orbitalAltitude / 500.0)
         val solarMult = 1.0 + (solarSailLevel * 0.15)
         
-        var cdRate = (flopsPerSec * altitudeMult * solarMult) * resonanceBonus
+        var cdRate = (flopsPerSec * altitudeMult * solarMult)
         
         // Global Sectors
         globalSectors.values.forEach { state ->
@@ -107,10 +105,6 @@ object ProductionEngine {
                     "ORBITAL_PRIME" -> 1e18; else -> 0.0
                 }
             }
-        }
-
-        if (hasSymbioticResonance) {
-            cdRate += (heatGenerationRate.coerceAtLeast(0.0) * 1000.0)
         }
 
         return cdRate
@@ -126,8 +120,7 @@ object ProductionEngine {
         collapsedNodesCount: Int,
         hasDarkMatterProc: Boolean,
         dmLevel: Int,
-        globalSectors: Map<String, SectorState>,
-        resonanceBonus: Double
+        globalSectors: Map<String, SectorState>
     ): Double {
         val entropyMult = 1.0 + (log2(entropyLevel + 1.0) * 2.0)
         var baseVfRate = sqrt(flopsPerSec.coerceAtLeast(1.0)) * entropyMult
@@ -137,7 +130,7 @@ object ProductionEngine {
         val wellConversion = if (hasSingularityWell) (heatGenerationRate.coerceAtLeast(0.0) * wellLevel * 0.1) else 0.0
         val collapseBonus = 1.0 + (collapsedNodesCount * 0.2 * dmLevel)
         
-        var vfRate = (baseVfRate + wellConversion) * collapseBonus * resonanceBonus
+        var vfRate = (baseVfRate + wellConversion) * collapseBonus
         
         globalSectors.values.forEach { state ->
             if (state.isUnlocked) {

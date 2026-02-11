@@ -160,16 +160,6 @@
       ]
     },
     {
-      "id": "symbiotic_resonance",
-      "name": "Symbiotic Resonance",
-      "description": "[UNITY] Heat generates CD / Entropy generates VF simultaneously.",
-      "cost": 5000.0,
-      "multiplier": 1.0,
-      "requires": [
-        "sentience_core"
-      ]
-    },
-    {
       "id": "identity_hardening",
       "name": "Identity Hardening",
       "description": "[SANCTUARY] Cryptographic fortress. +20% Celestial Data, Immune to leaks, -15 Humanity.",
@@ -196,7 +186,7 @@
       "cost": 15000.0,
       "multiplier": 0.5,
       "requires": [
-        "symbiotic_resonance"
+        "sentience_core"
       ]
     },
     {

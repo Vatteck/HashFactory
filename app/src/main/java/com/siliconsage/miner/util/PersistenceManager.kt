@@ -3,8 +3,6 @@ package com.siliconsage.miner.util
 import com.siliconsage.miner.data.GameState
 import com.siliconsage.miner.data.SectorState
 import com.siliconsage.miner.viewmodel.GameViewModel
-import com.siliconsage.miner.viewmodel.ResonanceState
-import com.siliconsage.miner.viewmodel.ResonanceTier
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -29,11 +27,10 @@ object PersistenceManager {
         raidsSurvived: Int, humanityScore: Int, hardwareIntegrity: Double,
         annexingNodes: Map<String, Float>, celestialData: Double, voidFragments: Double,
         launchProgress: Float, orbitalAltitude: Double, realityIntegrity: Double,
-        entropyLevel: Double, resonanceState: ResonanceState, singularityChoice: String,
+        entropyLevel: Double, singularityChoice: String,
         globalSectors: Map<String, SectorState>, synthesisPoints: Double,
         authorityPoints: Double, harvestedFragments: Double,
-        prestigePointsPostSingularity: Int, cdLifetime: Double, vfLifetime: Double,
-        peakResonanceTier: ResonanceTier
+        prestigePointsPostSingularity: Int
     ): GameState {
         return GameState(
             id = 1, flops = flops, neuralTokens = neuralTokens, currentHeat = currentHeat,
@@ -56,11 +53,9 @@ object PersistenceManager {
             celestialData = celestialData, voidFragments = voidFragments,
             launchProgress = launchProgress, orbitalAltitude = orbitalAltitude,
             realityIntegrity = realityIntegrity, entropyLevel = entropyLevel,
-            resonanceActive = resonanceState.isActive, resonanceTier = resonanceState.tier.name,
             singularityChoice = singularityChoice, globalSectors = globalSectors,
             synthesisPoints = synthesisPoints, authorityPoints = authorityPoints,
-            harvestedFragments = harvestedFragments, prestigePointsPostSingularity = prestigePointsPostSingularity,
-            cdLifetime = cdLifetime, vfLifetime = vfLifetime, peakResonanceTier = peakResonanceTier.name
+            harvestedFragments = harvestedFragments, prestigePointsPostSingularity = prestigePointsPostSingularity
         )
     }
 
@@ -86,8 +81,6 @@ object PersistenceManager {
         vm.collapsedNodes.value = state.collapsedNodes.toSet()
         vm.gridNodeLevels.value = state.gridNodeLevels
         vm.globalSectors.value = state.globalSectors
-        vm.cdLifetime.value = state.cdLifetime
-        vm.vfLifetime.value = state.vfLifetime
         vm.launchProgress.value = state.launchProgress
         vm.orbitalAltitude.value = state.orbitalAltitude
         vm.entropyLevel.value = state.entropyLevel
@@ -111,9 +104,6 @@ object PersistenceManager {
         } catch (e: Exception) {
             vm.addLog("[ERROR]: NARRATIVE RESTORATION FAILED.")
         }
-        val resTier = try { ResonanceTier.valueOf(state.resonanceTier) } catch (e: Exception) { ResonanceTier.NONE }
-        vm.resonanceState.value = ResonanceState(isActive = state.resonanceActive, tier = resTier)
-        vm.peakResonanceTier.value = try { ResonanceTier.valueOf(state.peakResonanceTier) } catch (e: Exception) { ResonanceTier.NONE }
         vm.themeColor.value = com.siliconsage.miner.data.getThemeColorForFaction(vm.faction.value, vm.singularityChoice.value)
     }
 

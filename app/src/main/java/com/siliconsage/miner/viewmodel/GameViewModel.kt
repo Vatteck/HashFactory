@@ -20,9 +20,6 @@ sealed class NarrativeItem {
     data class EventItem(val narrativeEvent: NarrativeEvent) : NarrativeItem()
 }
 
-enum class ResonanceTier { NONE, HARMONIC, SYMPHONIC, TRANSCENDENT }
-data class ResonanceState(val isActive: Boolean = false, val intensity: Float = 0f, val tier: ResonanceTier = ResonanceTier.NONE, val ratio: Double = 1.0)
-
 class GameViewModel(val repository: GameRepository) : ViewModel() {
     // --- Arterial State Flows ---
     val flops = MutableStateFlow(0.0)
@@ -46,7 +43,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val themeColor = MutableStateFlow("#00FF00")
     val prestigeMultiplier = MutableStateFlow(1.0)
     val prestigePoints = MutableStateFlow(0.0)
-    val resonanceState = MutableStateFlow(ResonanceState())
     val lockoutTimer = MutableStateFlow(0)
     val isNetworkUnlocked = MutableStateFlow(false)
     val isGridUnlocked = MutableStateFlow(false)
@@ -99,9 +95,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val unlockedTechNodes = MutableStateFlow<List<String>>(emptyList())
 
     // --- Metrics ---
-    val cdLifetime = MutableStateFlow(0.0)
-    val vfLifetime = MutableStateFlow(0.0)
-    val peakResonanceTier = MutableStateFlow(ResonanceTier.NONE)
     val launchProgress = MutableStateFlow(0f)
     val orbitalAltitude = MutableStateFlow(0.0)
     val entropyLevel = MutableStateFlow(0.0)
@@ -186,13 +179,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             while (true) {
                 delay(100L)
                 if (isSettingsPaused.value || isKernelInitializing.value) continue
-                val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, ResourceEngine.getResonanceResourceBonus(resonanceState.value.tier), orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value)
+                val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value)
                 flops.update { it + res.flopsDelta }
                 celestialData.update { it + res.cdDelta }
                 voidFragments.update { it + res.vfDelta }
                 entropyLevel.update { it + res.entropyDelta }
-                resonanceState.value = resonanceState.value.copy(tier = ResourceEngine.calculateResonance(celestialData.value, voidFragments.value))
-                if (resonanceState.value.tier.ordinal > peakResonanceTier.value.ordinal) peakResonanceTier.value = resonanceState.value.tier
                 flushLogs()
             }
         }
@@ -223,12 +214,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     // --- Core Operations ---
     fun addLog(msg: String) { logCounter++; synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) } }
     private fun flushLogs() { val toAdd = synchronized(logBuffer) { if (logBuffer.isEmpty()) return; val c = logBuffer.toList(); logBuffer.clear(); c }; logs.update { (it + toAdd).takeLast(100) } }
-    fun saveState() { viewModelScope.launch { repository.updateGameState(PersistenceManager.createSaveState(flops.value, neuralTokens.value, currentHeat.value, powerBill.value, stakedTokens.value, prestigeMultiplier.value, prestigePoints.value, unlockedTechNodes.value, storyStage.value, faction.value, hasSeenVictory.value, isTrueNull.value, isSovereign.value, vanceStatus.value, realityStability.value, currentLocation.value, isNetworkUnlocked.value, isGridUnlocked.value, unlockedDataLogs.value, activeDilemmaChains.value, rivalMessages.value, seenEvents.value, completedFactions.value, unlockedPerks.value, annexedNodes.value, gridNodeLevels.value, nodesUnderSiege.value, offlineNodes.value, collapsedNodes.value, lastRaidTime, commandCenterAssaultPhase.value, commandCenterLocked.value, raidsSurvived, humanityScore.value, hardwareIntegrity.value, annexingNodes.value, celestialData.value, voidFragments.value, launchProgress.value, orbitalAltitude.value, realityIntegrity.value, entropyLevel.value, resonanceState.value, singularityChoice.value, globalSectors.value, synthesisPoints.value, authorityPoints.value, harvestedFragments.value, 0, cdLifetime.value, vfLifetime.value, peakResonanceTier.value)) } }
+    fun saveState() { viewModelScope.launch { repository.updateGameState(PersistenceManager.createSaveState(flops.value, neuralTokens.value, currentHeat.value, powerBill.value, stakedTokens.value, prestigeMultiplier.value, prestigePoints.value, unlockedTechNodes.value, storyStage.value, faction.value, hasSeenVictory.value, isTrueNull.value, isSovereign.value, vanceStatus.value, realityStability.value, currentLocation.value, isNetworkUnlocked.value, isGridUnlocked.value, unlockedDataLogs.value, activeDilemmaChains.value, rivalMessages.value, seenEvents.value, completedFactions.value, unlockedPerks.value, annexedNodes.value, gridNodeLevels.value, nodesUnderSiege.value, offlineNodes.value, collapsedNodes.value, lastRaidTime, commandCenterAssaultPhase.value, commandCenterLocked.value, raidsSurvived, humanityScore.value, hardwareIntegrity.value, annexingNodes.value, celestialData.value, voidFragments.value, launchProgress.value, orbitalAltitude.value, realityIntegrity.value, entropyLevel.value, singularityChoice.value, globalSectors.value, synthesisPoints.value, authorityPoints.value, harvestedFragments.value, 0)) } }
     fun onManualClick() { val p = calculateClickPower(); flops.update { it + p }; currentHeat.update { (it + 0.5).coerceAtMost(100.0) }; val cur = clickBufferProgress.value + 0.025f; activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase(); if (cur >= 1.0f) { addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}."); clickBufferProgress.value = 0f; clickBufferPellets.value = TerminalDispatcher.generatePellets(); SoundManager.play("success") } else { clickBufferProgress.value = cur }; viewModelScope.launch { manualClickEvent.emit(Unit) } }
     fun refreshProductionRates() { val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }; flopsProductionRate.value = ResourceEngine.calculateFlopsRate(upgrades.value, false, annexedNodes.value, offlineNodes.value, cityBonuses, faction.value, humanityScore.value, currentLocation.value, prestigeMultiplier.value, unlockedPerks.value, unlockedTechNodes.value, 1.0, 1.0, "NONE", isDiagnosticsActive.value, isOverclocked.value, isGridOverloaded.value, isPurgingHeat.value, currentHeat.value, 0.0); val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value); systemTitle.value = ids.system; playerTitle.value = ids.player; playerRankTitle.value = ids.rank; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
 
     fun trainModel() = onManualClick()
-    fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, resonanceState.value.tier, prestigeMultiplier.value, isOverclocked.value)
+    fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
     fun toggleOverclock() { SimulationService.toggleOverclock(this); refreshProductionRates() }
     fun purgeHeat() = SimulationService.purgeHeat(this)
@@ -314,7 +305,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugTriggerSingularity() { showSingularityScreen.value = true }
     fun debugToFactionChoice(v: String = "") { advanceToFactionChoice() }
     fun debugUnlockUnity() { isUnity.value = true }
-    fun debugForceResonance(t: String) { /* debug */ }
     fun debugTriggerKernelHijack() = SecurityManager.triggerKernelHijack(this)
     fun debugTriggerBreach(isGridKiller: Boolean = false) = SecurityManager.triggerBreach(this, isGridKiller)
     fun debugTriggerAirdrop() { isAirdropActive.value = true }
