@@ -88,7 +88,8 @@ object SimulationService {
                 isOverclocked = vm.isOverclocked.value, isPurging = vm.isPurgingHeat.value,
                 isCageActive = vm.commandCenterAssaultPhase.value == "CAGE", unlockedPerks = vm.unlockedPerks.value,
                 unlockedTechNodes = vm.unlockedTechNodes.value, playerRank = vm.playerRank.value,
-                storyStage = vm.storyStage.value, faction = vm.faction.value
+                storyStage = vm.storyStage.value, faction = vm.faction.value,
+                thermalRateModifier = vm.thermalRateModifier.value
             )
             results = heatResults
             val nextHeat = (currentHeat + heatResults.percentChange).coerceIn(0.0, 100.0)

@@ -239,7 +239,8 @@ object ResourceEngine {
         unlockedTechNodes: List<String>,
         playerRank: Int,
         storyStage: Int,
-        faction: String
+        faction: String,
+        thermalRateModifier: Double
     ): HeatResults {
         val upgradeList = upgrades.map { com.siliconsage.miner.data.Upgrade(it.key.name, it.key, it.value) }
         
@@ -255,7 +256,7 @@ object ResourceEngine {
             storyStage = storyStage
         )
 
-        var finalPercentChange = baseResults.percentChange
+        var finalPercentChange = baseResults.percentChange * thermalRateModifier
         
         if (location == "ORBITAL_SATELLITE" && (upgrades[UpgradeType.AEGIS_SHIELDING] ?: 0) > 0) {
             if (finalPercentChange > 0) finalPercentChange *= 0.7 

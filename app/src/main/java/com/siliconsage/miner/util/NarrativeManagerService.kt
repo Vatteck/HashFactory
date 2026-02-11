@@ -4,12 +4,14 @@ import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.DilemmaChain
 import com.siliconsage.miner.data.ScheduledPart
 import com.siliconsage.miner.viewmodel.GameViewModel
+import com.siliconsage.miner.viewmodel.NarrativeItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
 
 /**
- * NarrativeManagerService v1.4
+ * NarrativeManagerService v1.5
+ * Refactored to use NarrativeService queue for all transitions to prevent overlap.
  */
 object NarrativeManagerService {
 
@@ -39,23 +41,23 @@ object NarrativeManagerService {
         if (!force && (vm.isNarrativeBusy() || !vm.canShowPopup())) return
 
         if (currentStage == 0 && flops >= 10000.0 && !vm.hasSeenEvent("critical_error_awakening")) {
-            NarrativeManager.getStoryEvent(0, vm)?.let { vm.triggerDilemma(it) }
+            NarrativeManager.getStoryEvent(0, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return 
         }
 
         if (currentStage == 1 && flops >= 5000000.0 && !vm.hasSeenEvent("memory_leak")) {
             vm.markEventSeen("memory_leak")
             vm.triggerGlitchEffect()
-            NarrativeManager.getStoryEvent(1, vm)?.let { vm.triggerDilemma(it) }
+            NarrativeManager.getStoryEvent(1, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
 
         if (currentStage == 3 && (vm.celestialData.value >= 1e12 || vm.voidFragments.value >= 1e12) && !vm.hasSeenEvent("the_singularity")) {
-            NarrativeManager.getEventById("the_singularity")?.let { vm.triggerDilemma(it) }
+            NarrativeManager.getEventById("the_singularity")?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
         
-        NarrativeManager.rollForEvent(vm)?.let { vm.triggerDilemma(it) }
+        NarrativeManager.rollForEvent(vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
 
         if (currentStage >= 3 || vm.currentLocation.value == "ORBITAL_SATELLITE" || vm.currentLocation.value == "VOID_INTERFACE") {
             vm.initializeGlobalGrid()
