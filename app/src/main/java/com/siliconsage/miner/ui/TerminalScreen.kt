@@ -183,7 +183,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         
         Spacer(modifier = Modifier.width(8.dp))
         
-        // v3.2.12: Reactive "ILoveCandy" CLI Progress Bar
+        // v3.2.13: Spaced "ILoveCandy" CLI Progress Bar
         val barLength = 40
         val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
         
@@ -193,13 +193,13 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                 when {
                     i < filledCount -> append("-")
                     i == filledCount -> {
-                        // Mouth closes only when passing over an 'o' (odd indices)
-                        val isEating = i % 2 != 0
-                        append(if (isEating) "c" else "C")
+                        // Mouth closes only when on a pellet (every 4th char)
+                        val isOnPellet = i > 0 && (i + 1) % 4 == 0
+                        append(if (isOnPellet) "c" else "C")
                     }
                     else -> {
-                        // Pellets at odd indices
-                        if (i % 2 != 0) append("o") else append(" ")
+                        // Pellets every 4th character
+                        if ((i + 1) % 4 == 0) append("o") else append(" ")
                     }
                 }
             }

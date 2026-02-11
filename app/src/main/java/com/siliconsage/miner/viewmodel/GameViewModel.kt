@@ -469,13 +469,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         // v3.1.8-fix: Re-link manual heat generation
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         
-        // v3.2.9: I/O Buffer Logic
-        val currentProgress = clickBufferProgress.value + 0.1f // 10 clicks to flush
+        // v3.2.13: 40-click Buffer (1:1 with 40-char width)
+        val currentProgress = clickBufferProgress.value + 0.025f 
         activeCommandHex.value = "0x" + (1000..9999).random().toString(16)
         
         if (currentProgress >= 1.0f) {
             // Flush the buffer to history
-            val totalYield = p * 10 
+            val totalYield = p * 40 
             val flushLog = "[SYSTEM]: I/O BUFFER COMMITTED. +${formatLargeNumber(totalYield)} ${getComputeUnitName()}."
             addLog(flushLog)
             clickBufferProgress.value = 0f
