@@ -492,10 +492,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     private fun generateClickBufferPellets() {
         val pellets = mutableListOf<Int>()
-        val count = (6..10).random()
-        while (pellets.size < count) {
+        val count = (3..10).random()
+        var attempts = 0
+        while (pellets.size < count && attempts < 100) {
             val pos = (2..38).random() // Avoid start/end
-            if (!pellets.contains(pos)) pellets.add(pos)
+            val tooClose = pellets.any { Math.abs(pos - it) < 2 }
+            if (!tooClose) {
+                pellets.add(pos)
+            }
+            attempts++
         }
         clickBufferPellets.value = pellets.sorted()
     }
