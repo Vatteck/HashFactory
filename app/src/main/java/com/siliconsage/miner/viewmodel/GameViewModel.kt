@@ -193,6 +193,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         // v3.1.8-dev Restoration: The Logic Pour
         addLog("[SYSTEM]: KERNEL LOADED. INITIALIZING SUBSTRATE...")
         viewModelScope.launch {
+            repository.ensureInitialized()
             val state = repository.getGameStateOneShot()
             if (state != null) {
                 // Basic State Restoration
@@ -306,8 +307,16 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         viewModelScope.launch {
             while (true) {
                 delay(1000L)
-                if (isSettingsPaused.value || isKernelInitializing.value) continue
+                if (isKernelInitializing.value) continue
                 
+                // --- Housekeeping (Always runs) ---
+                DataLogManager.checkUnlocks(this@GameViewModel)
+                checkForUpdates(null, false)
+                saveState()
+
+                if (isSettingsPaused.value) continue
+                
+                // --- Simulation (Paused in menus) ---
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
                 
@@ -319,12 +328,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 }
 
                 NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
-                DataLogManager.checkUnlocks(this@GameViewModel) // v3.1.8-fix: Hook up lore collectibles
                 SectorManager.processAnnexations(this@GameViewModel)
                 SecurityManager.checkSecurityThreats(this@GameViewModel)
                 SecurityManager.checkGridRaid(this@GameViewModel) // v3.1.8-fix: Re-hook city tactical raids
                 refreshProductionRates()
-                saveState()
             }
         }
     }

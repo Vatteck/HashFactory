@@ -1,8 +1,8 @@
 {
-  "version": "3.2.0-dev",
-  "build": 243,
+  "version": "3.2.1-dev",
+  "build": 244,
   "date": "2026-02-10",
-  "changes": "Hotfix: Audio controls UI reactivity.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.0-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.0-dev/Sage_3.2.0-dev.apk"
+  "changes": "Hotfix: Save system stability and persistence hardening.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.1-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.1-dev/Sage_3.2.1-dev.apk"
 }

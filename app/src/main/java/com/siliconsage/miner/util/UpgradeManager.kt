@@ -114,6 +114,7 @@ object UpgradeManager {
                 vm.addLog("[SYSTEM]: PURCHASE COMPLETE: ${type.name.replace("_", " ")}")
                 vm.refreshProductionRates()
                 vm.updatePowerUsage()
+                vm.saveState() // v3.2.1: Force save on purchase
             }
             return true
         }
