@@ -169,13 +169,6 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         else -> "sub-07"
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "pacman")
-    val mouthOpen by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(200), RepeatMode.Reverse),
-        label = "chomper"
-    )
-
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -190,19 +183,24 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         
         Spacer(modifier = Modifier.width(8.dp))
         
-        // v3.2.11: Authentic Arch "ILoveCandy" CLI Progress Bar
-        val barLength = 20
+        // v3.2.12: Reactive "ILoveCandy" CLI Progress Bar
+        val barLength = 40
         val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
-        val pacChar = if (mouthOpen > 0.5f) "C" else "c"
         
         val barText = buildString {
             append("[")
-            repeat(filledCount) { append("-") }
-            if (filledCount < barLength) {
-                append(pacChar)
-                val remaining = barLength - filledCount - 1
-                repeat(remaining) { i ->
-                    if (i % 2 == 0) append(" ") else append("o")
+            for (i in 0 until barLength) {
+                when {
+                    i < filledCount -> append("-")
+                    i == filledCount -> {
+                        // Mouth closes only when passing over an 'o' (odd indices)
+                        val isEating = i % 2 != 0
+                        append(if (isEating) "c" else "C")
+                    }
+                    else -> {
+                        // Pellets at odd indices
+                        if (i % 2 != 0) append("o") else append(" ")
+                    }
                 }
             }
             append("]")
@@ -214,7 +212,9 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Clip
         )
         
         Spacer(modifier = Modifier.width(8.dp))
