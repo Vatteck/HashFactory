@@ -158,6 +158,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
 @Composable
 fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val progress by viewModel.clickBufferProgress.collectAsState()
+    val pellets by viewModel.clickBufferPellets.collectAsState()
     val hex by viewModel.activeCommandHex.collectAsState()
     val stage by viewModel.storyStage.collectAsState()
     val location by viewModel.currentLocation.collectAsState()
@@ -183,7 +184,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         
         Spacer(modifier = Modifier.width(8.dp))
         
-        // v3.2.14: Rail-tracked "ILoveCandy" CLI Progress Bar
+        // v3.2.15: Dynamic Randomized "ILoveCandy" CLI Progress Bar
         val barLength = 40
         val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
         
@@ -193,13 +194,13 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                 when {
                     i < filledCount -> append("-")
                     i == filledCount -> {
-                        // Mouth closes only when on a pellet (every 4th char)
-                        val isOnPellet = i > 0 && (i + 1) % 4 == 0
+                        // Mouth closes only when on a pellet
+                        val isOnPellet = pellets.contains(i)
                         append(if (isOnPellet) "c" else "C")
                     }
                     else -> {
-                        // Pellets every 4th character, middle-dots for the rail
-                        if ((i + 1) % 4 == 0) append("o") else append("·")
+                        // Dynamic pellets from StateFlow
+                        if (pellets.contains(i)) append("o") else append("·")
                     }
                 }
             }

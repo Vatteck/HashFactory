@@ -166,6 +166,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     // v3.2.9: I/O Buffering Logic
     val clickBufferProgress = MutableStateFlow(0f)
     val activeCommandHex = MutableStateFlow("0x0000")
+    val clickBufferPellets = MutableStateFlow<List<Int>>(emptyList())
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
@@ -295,6 +296,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 }
                 
                 addLog("[SYSTEM]: DATA HUB CONNECTED. PORT 1 ONLINE.")
+                generateClickBufferPellets()
             } else {
                 addLog("[SYSTEM]: NO PREVIOUS STATE FOUND. INITIALIZING...")
                 refreshProductionRates()
@@ -479,12 +481,23 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             val flushLog = "[SYSTEM]: I/O BUFFER COMMITTED. +${formatLargeNumber(totalYield)} ${getComputeUnitName()}."
             addLog(flushLog)
             clickBufferProgress.value = 0f
+            generateClickBufferPellets() // v3.2.15: Regenerate pellets on reset
             SoundManager.play("success")
         } else {
             clickBufferProgress.value = currentProgress
         }
         
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
+    }
+
+    private fun generateClickBufferPellets() {
+        val pellets = mutableListOf<Int>()
+        val count = (6..10).random()
+        while (pellets.size < count) {
+            val pos = (2..38).random() // Avoid start/end
+            if (!pellets.contains(pos)) pellets.add(pos)
+        }
+        clickBufferPellets.value = pellets.sorted()
     }
 
     fun trainModel() { 
