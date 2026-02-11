@@ -143,19 +143,19 @@ fun UpgradeItem(
                     StatPill(text = rateText, icon = Icons.Default.Computer, color = NeonGreen)
                 }
                 if (type.isCooling) {
-                    StatPill(text = "${type.baseHeat.toInt()}/S", icon = Icons.Default.AcUnit, color = ElectricBlue)
+                    StatPill(text = "${String.format("%.1f", type.baseHeat)}/S", icon = Icons.Default.AcUnit, color = ElectricBlue)
                 }
                 if (type.isPowerRelated && type.gridContribution > 0) {
-                    StatPill(text = "+${type.gridContribution.toInt()}KW", icon = Icons.Default.Bolt, color = Color(0xFFFFD700))
+                    StatPill(text = "+${FormatUtils.formatLargeNumber(type.gridContribution)}KW", icon = Icons.Default.Bolt, color = Color(0xFFFFD700))
                 }
                 if (type.basePower > 0 && !type.isGenerator) {
-                    StatPill(text = "-${type.basePower.toInt()}W", icon = Icons.Default.Power, color = Color(0xFFFFD700))
+                    StatPill(text = "-${FormatUtils.formatLargeNumber(type.basePower)}W", icon = Icons.Default.Power, color = Color(0xFFFFD700))
                 }
                 if (type.isSecurity && type.gridContribution > 0) {
-                    StatPill(text = "+${type.gridContribution.toInt()} SEC", icon = Icons.Default.Lock, color = ElectricBlue)
+                    StatPill(text = "+${FormatUtils.formatLargeNumber(type.gridContribution)} SEC", icon = Icons.Default.Lock, color = ElectricBlue)
                 }
                 if (type.isHardware && type.baseHeat > 0) {
-                    StatPill(text = "+${type.baseHeat.toInt()}/S", icon = Icons.Default.DeviceThermostat, color = ErrorRed)
+                    StatPill(text = "+${String.format("%.1f", type.baseHeat)}/S", icon = Icons.Default.DeviceThermostat, color = ErrorRed)
                 }
                 if (type.efficiencyBonus > 0) {
                     StatPill(text = "+${(type.efficiencyBonus * 100).toInt()}% EFF", icon = Icons.Default.Settings, color = NeonGreen)

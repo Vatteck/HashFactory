@@ -295,7 +295,7 @@ fun HeaderSection(
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermText = buildAnnotatedString {
                     withStyle(SpanStyle(color = if (currentHeat > 90) ErrorRed else color.copy(alpha = 0.7f))) { append("THERM: ") }
-                    withStyle(SpanStyle(color = Color.White)) { append("${currentHeat.toInt()}°C ") }
+                    withStyle(SpanStyle(color = Color.White)) { append("${String.format("%.1f", currentHeat)}°C ") }
                     withStyle(SpanStyle(color = (if (currentHeatRate > 0) ErrorRed else ElectricBlue).copy(alpha = 0.8f), fontWeight = FontWeight.Normal)) { 
                         append(if (currentHeatRate >= 0) "[+${String.format("%.1f", currentHeatRate)}]" else "[${String.format("%.1f", currentHeatRate)}]")
                     }
