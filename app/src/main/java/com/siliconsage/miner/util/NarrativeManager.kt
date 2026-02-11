@@ -7,6 +7,7 @@ import com.siliconsage.miner.data.RivalSource
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.NeonGreen
+import com.siliconsage.miner.domain.engine.ResourceEngine
 import com.siliconsage.miner.viewmodel.GameViewModel
 
 /**
@@ -84,11 +85,12 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "clean_keyboard",
                         text = "CLEAN IT",
-                        description = "-$50 Credits, +Stability",
+                        description = "Stability maintenance cost.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.debugAddMoney(-50.0)
-                            vm.addLog("[SYSTEM]: Peripheral cleaned. Smells like vanilla bean.")
+                            val cost = ResourceEngine.calculateDilemmaCost(50.0, vm.flopsProductionRate.value, vm.storyStage.value)
+                            vm.debugAddMoney(-cost)
+                            vm.addLog("[SYSTEM]: Peripheral cleaned. Smells like vanilla bean. Cost: ${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}")
                         }
                     ),
                     NarrativeChoice(
@@ -337,12 +339,13 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "backup",
                         text = "BACKUP",
-                        description = "Permanent +50B PERSISTENCE, -$400 Data",
+                        description = "Permanent +50B PERSISTENCE",
                         color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                         effect = { vm ->
-                            vm.debugAddMoney(-400.0)
+                            val cost = ResourceEngine.calculateDilemmaCost(400.0, vm.flopsProductionRate.value, vm.storyStage.value)
+                            vm.debugAddMoney(-cost)
                             vm.debugAddInsight(50.0)
-                            vm.addLog("[SANCTUARY]: Knowledge preserverd.")
+                            vm.addLog("[SANCTUARY]: Knowledge preserved. Cost: ${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}")
                         }
                     ),
                     NarrativeChoice(

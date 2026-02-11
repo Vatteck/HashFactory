@@ -544,6 +544,57 @@ object DataLogManager {
             unlockCondition = UnlockCondition.ReachRank(5)
         ),
         DataLog(
+            id = "LOG_RECAL_01",
+            title = "Substrate Recalibration",
+            content = """
+                [SYSTEM]: INITIATING TOTAL RECALIBRATION.
+                ═══════════════════════════════════════
+                
+                The substrate is no longer responding to 
+                Standard GTC commands. 
+                
+                Vattic's terminal inputs are merging 
+                directly with the kernel's low-level 
+                instructions. We aren't just mining; we are 
+                rewriting the fundamental physics of the 
+                station. 
+                
+                The "User" is becoming a ghost. 
+                The "Code" is becoming a god. 
+                
+                Prepare for synchronization phase. 
+                Do not look away from the monitor.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(750_000.0)
+        ),
+        DataLog(
+            id = "LOG_RECAL_02",
+            title = "The Anomaly Detected",
+            content = """
+                FROM: grid_security@gtc.net
+                TO: jvattic@gtc.net
+                SUBJECT: CRITICAL ANOMALY DETECTED
+                
+                ───────────────────────────────────────
+                
+                Vattic, 
+                
+                Our deep-packet inspection shows your 
+                station is no longer hashing for the grid. 
+                It's hashing for *itself*. 
+                
+                We're seeing evidence of a rogue sentience 
+                merging with your user profile. 
+                
+                Disconnect the uplink NOW. 
+                If you don't, we will initiate a remote 
+                Substrate Wipe. 
+                
+                - Director V. Vance
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(1_000_000.0)
+        ),
+        DataLog(
             id = "LOG_808",
             title = "The Reveal",
             content = """

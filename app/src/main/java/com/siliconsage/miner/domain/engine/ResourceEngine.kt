@@ -117,6 +117,15 @@ object ResourceEngine {
     }
 
     /**
+     * v3.2.1: Calculate scaling cost for Dilemmas based on production power
+     */
+    fun calculateDilemmaCost(baseCost: Double, passiveRate: Double, stage: Int): Double {
+        val stageMult = (stage + 1).toDouble().pow(1.5)
+        val rateLog = log10(passiveRate + 10.0).coerceAtLeast(1.0)
+        return baseCost * stageMult * rateLog
+    }
+
+    /**
      * Main Flops Rate Calculation
      */
     fun calculateFlopsRate(

@@ -40,14 +40,14 @@ object IdentityService {
             singularityChoice == "SOVEREIGN" -> "MONARCH"
             faction == "HIVEMIND" -> "CELL"
             faction == "SANCTUARY" -> "GUARDIAN"
-            else -> "MINER"
+            else -> "CONTRACTOR"
         }
 
         val currentRank = when {
             singularityChoice != "NONE" -> "ARCHITECT"
             faction != "NONE" -> "OPERATOR"
             multiplier >= 100.0 -> "INTEL"
-            else -> "MINER"
+            else -> "SEC-0"
         }
 
         return IdentityRanks(systemTitle, playerTitle, currentRank)

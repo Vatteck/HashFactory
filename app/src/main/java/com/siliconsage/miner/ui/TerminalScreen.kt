@@ -111,10 +111,10 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     val listState = rememberLazyListState()
 
     // v2.9.78: Fix scroll lock when log is full
-    LaunchedEffect(logs.size) {
+    LaunchedEffect(logs.lastOrNull()?.id) {
         if (logs.isNotEmpty()) {
             delay(10) // Small yield for measure pass
-            listState.scrollToItem(logs.size - 1)
+            listState.animateScrollToItem(logs.size - 1)
         }
     }
 
@@ -142,9 +142,71 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                     TerminalLogLine(log = entry.message, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
                 }
             }
+            
+            // v3.2.9: Persistent Active Command / I/O Buffer
+            ActiveCommandBuffer(viewModel, primaryColor)
+            
             HorizontalDivider(color = primaryColor, modifier = Modifier.padding(horizontal = 4.dp))
             ManualComputeButton(viewModel, primaryColor)
         }
+    }
+}
+
+@Composable
+fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
+    val progress by viewModel.clickBufferProgress.collectAsState()
+    val hex by viewModel.activeCommandHex.collectAsState()
+    val stage by viewModel.storyStage.collectAsState()
+    val location by viewModel.currentLocation.collectAsState()
+    
+    val user = if (stage >= 2) "pid-1" else "jvattic"
+    val host = when (location) {
+        "ORBITAL_SATELLITE" -> "ark"
+        "VOID_INTERFACE" -> "void"
+        else -> "sub-07"
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$user@$host:~$",
+            color = color.copy(alpha = 0.7f),
+            fontSize = 11.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold
+        )
+        
+        Spacer(modifier = Modifier.width(8.dp))
+        
+        // The Progress Bar
+        Box(
+            modifier = Modifier.weight(1f).height(10.dp).border(0.5.dp, color.copy(alpha = 0.3f))
+        ) {
+            Box(
+                modifier = Modifier.fillMaxHeight().fillMaxWidth(progress).background(color.copy(alpha = 0.4f))
+            )
+            
+            if (progress > 0) {
+                Text(
+                    text = "${(progress * 100).toInt()}%",
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 8.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.width(8.dp))
+        
+        Text(
+            text = hex,
+            color = Color.White.copy(alpha = 0.5f),
+            fontSize = 10.sp,
+            fontFamily = FontFamily.Monospace
+        )
     }
 }
 

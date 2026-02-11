@@ -77,7 +77,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isDevMenuVisible = MutableStateFlow(false)
     val faction = MutableStateFlow("NONE")
     val playerRank = MutableStateFlow(0)
-    val playerRankTitle = MutableStateFlow("MINER")
+    val playerRankTitle = MutableStateFlow("SEC-0")
     val victoryAchieved = MutableStateFlow(false)
     val hasSeenVictory = MutableStateFlow(false)
     val unlockedDataLogs = MutableStateFlow<Set<String>>(emptySet())
@@ -153,8 +153,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val assaultProgress = MutableStateFlow(0f)
     val isBridgeSyncEnabled = MutableStateFlow(false)
     val offlineStats = MutableStateFlow<Map<String, Double>>(emptyMap())
-    val systemTitle = MutableStateFlow("CORE")
-    val playerTitle = MutableStateFlow("MINER")
+    val systemTitle = MutableStateFlow("Terminal OS 1.0")
+    val playerTitle = MutableStateFlow("CONTRACTOR")
     val clickPulseIntensity = MutableStateFlow(1.0f)
     val conversionRate = MutableStateFlow(0.1)
     val attackTaps = MutableStateFlow(0)
@@ -162,6 +162,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val uploadProgress = MutableStateFlow(0f)
     val isAscensionUploading = MutableStateFlow(false)
     val isKernelInitializing = MutableStateFlow(true)
+    
+    // v3.2.9: I/O Buffering Logic
+    val clickBufferProgress = MutableStateFlow(0f)
+    val activeCommandHex = MutableStateFlow("0x0000")
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
@@ -462,20 +466,23 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         val p = calculateClickPower()
         flops.update { it + p }
         
-        // v3.1.8-fix: Re-link manual heat generation (Increased to 0.5 for visibility)
+        // v3.1.8-fix: Re-link manual heat generation
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         
-        // v3.1.8-dev: Shell-style click log (The "Vattic" Style)
-        val clickLog = TerminalDispatcher.getManualClickLog(
-            stage = storyStage.value,
-            location = currentLocation.value,
-            faction = faction.value,
-            singularity = singularityChoice.value,
-            amount = p,
-            unit = getComputeUnitName(),
-            formatFn = { formatLargeNumber(it) }
-        )
-        addLog(clickLog)
+        // v3.2.9: I/O Buffer Logic
+        val currentProgress = clickBufferProgress.value + 0.1f // 10 clicks to flush
+        activeCommandHex.value = "0x" + (1000..9999).random().toString(16)
+        
+        if (currentProgress >= 1.0f) {
+            // Flush the buffer to history
+            val totalYield = p * 10 
+            val flushLog = "[SYSTEM]: I/O BUFFER COMMITTED. +${formatLargeNumber(totalYield)} ${getComputeUnitName()}."
+            addLog(flushLog)
+            clickBufferProgress.value = 0f
+            SoundManager.play("success")
+        } else {
+            clickBufferProgress.value = currentProgress
+        }
         
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }
