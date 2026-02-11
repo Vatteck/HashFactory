@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 ## [3.2.4-dev] - 2026-02-10
 
 ### Added
-- **Complete RESEARCH Tab**: Restored all 14+ specialized upgrades including GHOST_CORE, SHADOW_NODE, WRAITH_CORTEX, and NEURAL_MIST. The research group is now a 1:1 match with pre-refactor specifications.
+- **RESEARCH Tab Finalization**: Expanded keyword detection in `UpgradeManager` to ensure all 14+ specialized items (Ghost, Wraith, Citadel, etc.) correctly appear in the path-filtered Research tab.
+- **Tech Tree Margins**: Pulled the node boundaries in from `0.05/0.95` to `0.12/0.88` to prevent clipping and border-bleeding on high-DPI targets.
 
 ### Changed
 - **Root Node Alignment**: Hard-anchored the **Sentience Core** and Tier 0 root to absolute screen center (0.5f) to prevent overlapping with Null-side nodes on high-DPI displays.

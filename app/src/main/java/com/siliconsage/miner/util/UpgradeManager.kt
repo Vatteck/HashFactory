@@ -98,8 +98,19 @@ object UpgradeManager {
         else "❄ +Cooling"
     }
 
-    fun isNullUpgrade(t: UpgradeType) = t.name.contains("VOID") || t.name.contains("ENTROPY")
-    fun isSovereignUpgrade(t: UpgradeType) = t.name.contains("CELESTIAL") || t.name.contains("ORBITAL")
+    fun isNullUpgrade(t: UpgradeType) = t.name.contains("VOID") || t.name.contains("ENTROPY") || 
+                                       t.name.contains("GHOST") || t.name.contains("SHADOW") || 
+                                       t.name.contains("WRAITH") || t.name.contains("MIST") || 
+                                       t.name.contains("DARK_MATTER") || t.name.contains("EXISTENCE") || 
+                                       t.name.contains("SINGULARITY") || t.name.contains("ECHO") || 
+                                       t.name.contains("SOUL") || t.name.contains("STATIC")
+
+    fun isSovereignUpgrade(t: UpgradeType) = t.name.contains("CELESTIAL") || t.name.contains("ORBITAL") || 
+                                            t.name.contains("SAIL") || t.name.contains("LASER") || 
+                                            t.name.contains("CRYOGENIC") || t.name.contains("RADIATOR") || 
+                                            t.name.contains("AEGIS") || t.name.contains("VENT") || 
+                                            t.name.contains("IDENTITY") || t.name.contains("CITADEL") || 
+                                            t.name.contains("DEAD_HAND")
     fun isUnityUpgrade(t: UpgradeType) = t.name.contains("HYBRID") || t.name.contains("HARMONY")
 
     fun processPurchase(vm: GameViewModel, type: UpgradeType): Boolean {

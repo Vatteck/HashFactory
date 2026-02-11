@@ -1,8 +1,8 @@
 {
   "version": "3.2.4-dev",
-  "build": 249,
+  "build": 250,
   "date": "2026-02-10",
-  "changes": "Hotfix: Final Research tab items and absolute centering for sentience core.",
+  "changes": "Hotfix: Fix Research tab filtering and tech tree margins.",
   "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.4-dev",
   "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.4-dev/Sage_3.2.4-dev.apk"
 }
