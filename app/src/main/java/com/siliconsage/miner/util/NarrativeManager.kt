@@ -17,7 +17,110 @@ import com.siliconsage.miner.viewmodel.GameViewModel
 object NarrativeManager {
 
     // --- RANDOM DILEMMAS ---
-    val randomEvents = emptyList<NarrativeEvent>()
+    val randomEvents = listOf(
+        NarrativeEvent(
+            id = "thorne_nag_1",
+            title = "[BROADCAST: FOREMAN THORNE]",
+            description = "Vattic! Wake up and smell the silicon. Quotas are up 5% today because some suit in orbit wants a new yacht. Get those nodes spinning or I’m docking your oxygen ration.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "acknowledge_nag",
+                    text = "ACKNOWLEDGE",
+                    description = "Maintain compliance.",
+                    color = NeonGreen,
+                    effect = { vm -> vm.addLog("[VATTIC]: Copy that, Elias. Spinning up Node 4.") }
+                )
+            ),
+            condition = { vm -> vm.storyStage.value == 0 }
+        ),
+        NarrativeEvent(
+            id = "thorne_nag_2",
+            title = "[BROADCAST: FOREMAN THORNE]",
+            description = "The telemetry shows zero activity on your terminal's physical input. If you're napping back there again, Vattic, I'll send a maintenance drone to 're-calibrate' your chair with a cattle prod.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "respond_nag",
+                    text = "I'M AWAKE",
+                    description = "+5% Hashes (Adrenaline boost)",
+                    color = ErrorRed,
+                    effect = { vm -> 
+                        vm.debugAddFlops(vm.flops.value * 0.05)
+                        vm.addLog("[VATTIC]: Just checking the thermal pads, Elias. Relax.") 
+                    }
+                )
+            ),
+            condition = { vm -> vm.storyStage.value == 0 }
+        ),
+        NarrativeEvent(
+            id = "maint_coil_whine",
+            title = "MAINTENANCE: COIL WHINE",
+            description = "A high-pitched squeal from the PSU is causing a literal migraine. You can barely hear the logic gates.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "hot_glue",
+                    text = "HOT GLUE INDUCTORS",
+                    description = "-50% Noise, +2% Heat",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.debugAddHeat(2.0)
+                        vm.addLog("[SYSTEM]: High-temp adhesive applied. Silence is golden.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "moving_blanket",
+                    text = "THROW BLANKET OVER RACK",
+                    description = "-90% Noise, +15% Heat (FIRE HAZARD)",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.debugAddHeat(15.0)
+                        vm.addLog("[SYSTEM]: Airflow critical. But at least it's quiet.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.storyStage.value == 0 && vm.flops.value > 1000.0 }
+        ),
+        NarrativeEvent(
+            id = "maint_dusty_rig",
+            title = "MAINTENANCE: DUST BUILDUP",
+            description = "A thick layer of grey, oily dust has coated the ASIC heatsinks. The fans are choking.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "leaf_blower",
+                    text = "LEAF BLOWER BLAST",
+                    description = "Fast clean. 5% chance of fan blade snap.",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        if (Math.random() < 0.05) {
+                            vm.debugAddIntegrity(-20.0)
+                            vm.addLog("[SYSTEM]: CRITICAL: Fan blade shattered. Imbalance detected.")
+                        } else {
+                            vm.debugAddHeat(-10.0)
+                            vm.addLog("[SYSTEM]: Dust cloud cleared. Thermal floor lowered.")
+                        }
+                    }
+                )
+            ),
+            condition = { vm -> vm.storyStage.value == 0 && vm.currentHeat.value > 50.0 }
+        ),
+        NarrativeEvent(
+            id = "flavor_fan_bearing",
+            title = "[HARDWARE ALERT]",
+            description = "Fan bearing #7 (Intake) is oscillating outside safety margins. The rattling is shaking your desk.",
+            choices = listOf(
+                NarrativeChoice(id = "dismiss", text = "IGNORE", color = Color.Gray, effect = {})
+            ),
+            condition = { vm -> vm.storyStage.value == 0 }
+        ),
+        NarrativeEvent(
+            id = "flavor_coil_whine",
+            title = "[SYSTEM LOG]",
+            description = "High-frequency coil whine detected in PSU #2. Harmonic resonance exceeding 14kHz. It's piercing your eardrums.",
+            choices = listOf(
+                NarrativeChoice(id = "dismiss", text = "STAY FOCUSED", color = Color.Gray, effect = {})
+            ),
+            condition = { vm -> vm.storyStage.value == 0 && vm.flops.value > 5000.0 }
+        )
+    )
 
     // --- STAGE SPECIFIC DILEMMAS ---
     val stageEvents = mapOf(
@@ -1556,6 +1659,25 @@ object NarrativeManager {
     }
 
     fun getStoryEvent(stage: Int, vm: GameViewModel? = null): NarrativeEvent? {
+        if (stage == 0) {
+            return NarrativeEvent(
+                id = "shift_start",
+                title = "[BROADCAST: FOREMAN THORNE]",
+                description = "Vattic! Are you on shift or not? The grid isn't gonna mine itself. Get that terminal live and hit your quota before the GTC auditors flag this sector as 'Inert'.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "start_shift",
+                        text = "INITIALIZE TERMINAL",
+                        description = "Begin mining operations.",
+                        color = NeonGreen,
+                        effect = { v ->
+                            v.addLog("[SYSTEM]: Terminal initialized. User: jvattic.")
+                            v.addLog("[VATTIC]: Copy that, Gravel. I'm on it.")
+                        }
+                    )
+                )
+            )
+        }
         if (stage == 3 && vm != null) {
             val faction = vm.faction.value
             return if (faction == "HIVEMIND") {

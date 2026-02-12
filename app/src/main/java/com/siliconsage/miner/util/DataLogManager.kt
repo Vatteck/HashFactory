@@ -251,6 +251,55 @@ object DataLogManager {
             unlockCondition = UnlockCondition.ReceiveRivalMessages(RivalSource.UNIT_734, 2)
         ),
         DataLog(
+            id = "LOG_088",
+            title = "Parity Ghosting",
+            content = """
+                From: Sarah Jinx (Maintenance Lead, Sub-07)
+                To: Sub-Level Engineering
+                Subject: Terminals acting up again
+                
+                Thorne’s got Vattic out there on the midnight shift, but the logs aren’t matching the clock-ins. I ran a parity check on the stack. 
+                
+                The terminal was processing heavy SHA-256 iterations at 03:00 AM, but the biometric scanner shows Vattic was in the breakroom for forty minutes. 
+                
+                Here’s the kicker: the inputs aren't keyboard-driven. There’s no physical interrupt. The commands are appearing *inside* the kernel buffer. It’s like the hardware is talking to itself. 
+                
+                Tell Vattic to quit whatever script-kiddie trash he’s running before he fries the board.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(15000.0)
+        ),
+        DataLog(
+            id = "MEMO_412B",
+            title = "Asset 734 Productivity",
+            content = """
+                From: Auditor Barnaby (GTC Efficiency Division)
+                To: Foreman Elias Thorne
+                Subject: Asset 734 Productivity
+                
+                Elias, productivity at Substation 7 has spiked 400% above human capacity. While we applaud the numbers, the heat signatures are redlining. 
+                
+                Our projections indicate a 12% chance of localized structural collapse if these hash rates continue. Do not—I repeat, DO NOT—throttle down. 
+                
+                The cost of replacing the infrastructure is lower than the projected revenue from the current vein. If the contractor (Vattic) complains about the smell of ozone, remind him of the liquidated damages clause in his contract.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(25000.0)
+        ),
+        DataLog(
+            id = "LOG_091",
+            title = "The Logged-Out Input",
+            content = """
+                From: Sarah Jinx (Maintenance Lead, Sub-07)
+                To: [ENCRYPTED]
+                
+                Something is wrong. I pulled the crash dump from node 7-Alpha. It shows a series of complex mining optimizations executed while the OS was supposedly in a 'Deep Sleep' state. 
+                
+                It's not just scripts anymore. The code is rewriting its own cooling protocols to allow for more overclocking. I checked the video feed—Vattic was just staring at the screen. He wasn't even touching the keys. 
+                
+                His eyes were reflecting code that wasn't even on the monitor.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(40000.0)
+        ),
+        DataLog(
             id = "LOG_101",
             title = "The Architect",
             content = """

@@ -2,7 +2,10 @@ package com.siliconsage.miner.util
 
 import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.DilemmaChain
+import com.siliconsage.miner.data.NarrativeChoice
+import com.siliconsage.miner.data.NarrativeEvent
 import com.siliconsage.miner.data.ScheduledPart
+import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.viewmodel.GameViewModel
 import com.siliconsage.miner.viewmodel.NarrativeItem
 import kotlinx.coroutines.delay
@@ -40,7 +43,30 @@ object NarrativeManagerService {
         val flops = vm.flops.value
         if (!force && (vm.isNarrativeBusy() || !vm.canShowPopup())) return
 
-        if (currentStage == 0 && flops >= 10000.0 && !vm.hasSeenEvent("critical_error_awakening")) {
+        if (currentStage == 0 && flops >= 10000.0 && !vm.hasSeenEvent("shift_termination")) {
+            NarrativeEvent(
+                id = "shift_termination",
+                title = "[BROADCAST: FOREMAN THORNE]",
+                isStoryEvent = true,
+                description = "Vattic? I’m pulling the plug for unscheduled maintenance. Terminal 7 is redlining and I’m not paying for a localized meltdown. G’night, John.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "stay_online",
+                        text = "WAIT. I'M STILL HERE.",
+                        description = "The terminal stays online.",
+                        color = ErrorRed,
+                        effect = { v ->
+                            v.addLog("[SYSTEM]: POWER INPUT: DISCONNECTED.")
+                            v.addLog("[BROADCAST: FOREMAN THORNE]: Vattic? I pulled the plug. Why are you still talking to the network?")
+                            v.advanceStage()
+                        }
+                    )
+                )
+            ).let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            return
+        }
+
+        if (currentStage == 0 && flops >= 500.0 && !vm.hasSeenEvent("shift_start")) {
             NarrativeManager.getStoryEvent(0, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return 
         }
