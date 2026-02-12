@@ -115,5 +115,3 @@ object LaunchManager {
         }
     }
 }
-
-}

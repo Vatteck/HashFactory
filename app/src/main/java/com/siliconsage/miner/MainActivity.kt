@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.siliconsage.miner.ui.MainScreen
+import com.siliconsage.miner.ui.TransitionScreen
 import com.siliconsage.miner.ui.theme.SiliconSageAIMinerTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -76,7 +77,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen(viewModel = viewModel)
+                    val location by viewModel.currentLocation.collectAsState()
+                    if (location == "LAUNCH_PRELUDE" || location == "VOID_PRELUDE") {
+                        TransitionScreen(viewModel = viewModel)
+                    } else {
+                        MainScreen(viewModel = viewModel)
+                    }
                 }
             }
         }
