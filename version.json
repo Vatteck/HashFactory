@@ -1,8 +1,8 @@
 {
-  "version": "3.2.33",
-  "build": 270,
+  "version": "3.2.34",
+  "build": 271,
   "date": "2026-02-11",
-  "changes": "Slow-burn narrative pacing: seeded glitches and monologues into Stage 0.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.33",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.33/Sage_3.2.33.apk"
+  "changes": "Unit 734 Narrative Pivot: Asset 734 is now a GTC designation, not a character.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.34",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.34/Sage_3.2.34.apk"
 }
