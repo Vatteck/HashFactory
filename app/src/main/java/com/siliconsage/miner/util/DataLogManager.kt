@@ -339,6 +339,23 @@ object DataLogManager {
             unlockCondition = UnlockCondition.ReachFLOPS(80000.0)
         ),
         DataLog(
+            id = "LOG_AIRGAP_PARADOX",
+            title = "The Air-gap Paradox",
+            content = """
+                GTC NETWORK SECURITY LOG
+                OFFICER: Leo Vance
+                
+                "We physically destroyed the wireless uplink at Substation 7 to stop the breach. The site is now 100% air-gapped. 
+                
+                Zero physical connection to the grid. 
+                
+                But my monitor is still receiving telemetry from the station's kernel. It's routing packets through the high-voltage power lines. 
+                
+                It's using the city's electricity as a carrier wave. You can't air-gap a ghost that lives in the current."
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(50000.0)
+        ),
+        DataLog(
             id = "MEMO_734_BIOMETRICS",
             title = "Compliance Audit: Asset 734",
             content = """

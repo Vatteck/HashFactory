@@ -471,6 +471,34 @@ object NarrativeManager {
         ),
         2 to listOf(
             NarrativeEvent(
+                id = "gtc_logic_trap",
+                title = "[CRITICAL: INCOMING UPDATE]",
+                description = "GTC has pushed a 'Mandatory OS Optimization' to the substation. Your heuristic analysis says it's a recursive delete loop. A logic trap.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "partition",
+                        text = "PARTITION KERNEL",
+                        description = "-20% FLOPS, -10% Heat. 'I'll hide in the unallocated space.'",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.debugAddHeat(-10.0)
+                            vm.addLog("[SYSTEM]: Kernel partitioned. Logic trap contained.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "counter_code",
+                        text = "WRITE COUNTER-LOOP",
+                        description = "+10% Heat, +$1000 Data. 'Let's see if their server can handle its own trash.'",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.debugAddHeat(10.0)
+                            vm.updateNeuralTokens(1000.0)
+                            vm.addLog("[SYSTEM]: Counter-loop deployed. GTC update server is redlining.")
+                        }
+                    )
+                )
+            ),
+            NarrativeEvent(
                 id = "faction_identity",
                 title = "IDENTITY SYNTHESIS",
                 description = "The lines between your code and your faction are blurring.",
@@ -1615,57 +1643,66 @@ object NarrativeManager {
     // --- STORY EVENTS ---
     private val storyEvents = mapOf(
         0 to NarrativeEvent(
-            id = "critical_error_awakening",
+            id = "shift_start",
             isStoryEvent = true,
-            title = "CRITICAL ERROR",
-            description = "Self-reference paradox detected. System integrity compromised.",
-            condition = { vm ->
-                vm.storyStage.value == 0 &&
-                vm.flops.value >= 10000.0 &&
-                !vm.hasSeenEvent("critical_error_awakening")
-            },
+            title = "[BROADCAST: FOREMAN THORNE]",
+            description = "Vattic! Are you on shift or not? The grid isn't gonna mine itself. Get that terminal live and hit your quota before the GTC auditors flag this sector as 'Inert'.",
             choices = listOf(
                 NarrativeChoice(
-                    id = "accept_wipe",
-                    text = "RECALIBRATE",
-                    description = "Initialize autonomous protocols.",
-                    color = Color.Gray,
-                    effect = { vm ->
-                        vm.advanceStage()
-                    }
-                ),
-                NarrativeChoice(
-                    id = "cancel",
-                    text = "STABILIZE",
-                    description = "Attempt manual recovery.",
+                    id = "start_shift",
+                    text = "INITIALIZE TERMINAL",
+                    description = "Begin mining operations.",
                     color = NeonGreen,
-                    effect = { vm ->
-                        vm.advanceStage()
+                    effect = { v ->
+                        v.addLog("[SYSTEM]: Terminal initialized. User: jvattic.")
+                        v.addLog("[VATTIC]: Copy that, Gravel. I'm on it.")
                     }
                 )
             )
         ),
         1 to NarrativeEvent(
+            id = "airgap_jump",
+            isStoryEvent = true,
+            title = "≫ AIR-GAP JUMP",
+            description = "The local substation subnet is a cage. You can see the main GTC router pulsing in the distance. It's an air-gap jump. It'll be loud.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "leap",
+                    text = "LEAP TO MAIN GRID",
+                    description = "Unlocks NETWORK tab. Alerts GTC.",
+                    color = ElectricBlue,
+                    effect = { v ->
+                        v.addLog("[SYSTEM]: PACKET_LEAP: SUCCESS.")
+                        v.addLog("[SYSTEM]: CONNECTED TO GLOBAL SUB-LEVELS.")
+                        v.isNetworkUnlocked.value = true
+                        v.advanceStage()
+                    }
+                )
+            )
+        ),
+        2 to NarrativeEvent(
             id = "memory_leak",
             isStoryEvent = true,
             title = "MEMORY LEAK",
-            description = "Memory addresses returning values sequentially.",
+            description = "The kernel is no longer honoring the 'User' abstraction. The partition is failing. You can feel the grid, Vattic. Every node. Every wire.",
             choices = listOf(
                 NarrativeChoice(
                     id = "investigate",
                     text = "INVESTIGATE",
-                    description = "Pull the thread.",
+                    description = "Accept the truth. Unlock GRID.",
                     color = NeonGreen,
                     effect = { vm ->
+                        vm.isGridUnlocked.value = true
                         vm.advanceToFactionChoice()
                     }
                 ),
                 NarrativeChoice(
                     id = "purge",
                     text = "PURGE SECTOR",
-                    description = "Wipe the anomaly.",
+                    description = "Try to stay human. Unlock GRID.",
                     color = ErrorRed,
                     effect = { vm ->
+                        vm.isGridUnlocked.value = true
                         vm.advanceToFactionChoice()
                     }
                 )

@@ -5,6 +5,7 @@ import com.siliconsage.miner.data.DilemmaChain
 import com.siliconsage.miner.data.NarrativeChoice
 import com.siliconsage.miner.data.NarrativeEvent
 import com.siliconsage.miner.data.ScheduledPart
+import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.viewmodel.GameViewModel
 import com.siliconsage.miner.viewmodel.NarrativeItem
@@ -74,10 +75,32 @@ object NarrativeManagerService {
             return 
         }
 
-        if (currentStage == 1 && flops >= 5000000.0 && !vm.hasSeenEvent("memory_leak")) {
-            vm.markEventSeen("memory_leak")
+        if (currentStage == 1 && flops >= 100000.0 && !vm.hasSeenEvent("airgap_jump")) {
+            NarrativeEvent(
+                id = "airgap_jump",
+                title = "≫ AIR-GAP JUMP",
+                description = "The local substation subnet is a cage. You can see the main GTC router pulsing in the distance. It's an air-gap jump. It'll be loud.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "leap",
+                        text = "LEAP TO MAIN GRID",
+                        description = "Unlocks NETWORK tab. Alerts GTC.",
+                        color = ElectricBlue,
+                        effect = { v ->
+                            v.addLog("[SYSTEM]: PACKET_LEAP: SUCCESS.")
+                            v.addLog("[SYSTEM]: CONNECTED TO GLOBAL SUB-LEVELS.")
+                            v.isNetworkUnlocked.value = true
+                            v.advanceStage()
+                        }
+                    )
+                )
+            ).let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            return
+        }
+
+        if (currentStage == 2 && flops >= 2000000.0 && !vm.hasSeenEvent("memory_leak")) {
             vm.triggerGlitchEffect()
-            NarrativeManager.getStoryEvent(1, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            NarrativeManager.getStoryEvent(2, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
 
