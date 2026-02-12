@@ -268,7 +268,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }; 
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }
-    fun refreshProductionRates() { val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }; flopsProductionRate.value = ResourceEngine.calculateFlopsRate(upgrades.value, false, annexedNodes.value, offlineNodes.value, cityBonuses, faction.value, humanityScore.value, currentLocation.value, prestigeMultiplier.value, unlockedPerks.value, unlockedTechNodes.value, 1.0, newsProductionMultiplier.value, "NONE", isDiagnosticsActive.value, isOverclocked.value, isGridOverloaded.value, isPurgingHeat.value, currentHeat.value, marketMultiplier.value - 1.0); val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value); systemTitle.value = ids.system; playerTitle.value = ids.player; playerRankTitle.value = ids.rank; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
+    fun refreshProductionRates() { val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }; flopsProductionRate.value = ResourceEngine.calculateFlopsRate(upgrades.value, false, annexedNodes.value, offlineNodes.value, cityBonuses, faction.value, humanityScore.value, currentLocation.value, prestigeMultiplier.value, unlockedPerks.value, unlockedTechNodes.value, 1.0, newsProductionMultiplier.value, "NONE", isDiagnosticsActive.value, isOverclocked.value, isGridOverloaded.value, isPurgingHeat.value, currentHeat.value, marketMultiplier.value - 1.0); val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value); systemTitle.value = ids.system; playerTitle.value = ids.player; playerRankTitle.value = ids.rank; securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
 
     fun trainModel() = onManualClick()
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
@@ -282,7 +282,16 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun unlockTechNode(i: String) = TechTreeManager.unlockNode(this, i)
     fun modifyHumanity(d: Int) { humanityScore.update { (it + d).coerceIn(0, 100) }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
     fun triggerGlitchEffect() { SoundManager.play("glitch"); HapticManager.vibrateGlitch() }
-    fun resetGame(force: Boolean = false) = viewModelScope.launch { PersistenceManager.restoreState(this@GameViewModel, PersistenceManager.createWipeState()); repository.updateGameState(PersistenceManager.createWipeState()); addLog("[SYSTEM]: DATA WIPE COMPLETE."); refreshProductionRates() }
+    fun resetGame(force: Boolean = false) = viewModelScope.launch { 
+        synchronized(logBuffer) { logBuffer.clear() }
+        logs.value = emptyList()
+        logCounter = 0
+        upgrades.value = emptyMap()
+        PersistenceManager.restoreState(this@GameViewModel, PersistenceManager.createWipeState()); 
+        repository.updateGameState(PersistenceManager.createWipeState()); 
+        addLog("[SYSTEM]: DATA WIPE COMPLETE."); 
+        refreshProductionRates() 
+    }
     fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
     fun initiateLaunchSequence() = LaunchManager.initiateLaunchSequence(this, viewModelScope)

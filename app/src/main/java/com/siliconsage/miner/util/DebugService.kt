@@ -16,7 +16,7 @@ object DebugService {
     }
 
     fun injectMoney(vm: GameViewModel, amount: Double) {
-        vm.neuralTokens.update { it + amount }
+        vm.neuralTokens.update { (it + amount).coerceAtLeast(0.0) }
     }
 
     fun forceEndgame(vm: GameViewModel, scope: kotlinx.coroutines.CoroutineScope) {

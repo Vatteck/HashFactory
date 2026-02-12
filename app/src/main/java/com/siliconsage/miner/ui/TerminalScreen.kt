@@ -167,14 +167,42 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 }
             }
             
+            // v3.2.24: Active Process & Command Status (Compacted)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val process by viewModel.currentProcess.collectAsState()
+                Text(
+                    text = "[JOB: $process]",
+                    color = primaryColor.copy(alpha = 0.4f),
+                    fontSize = 8.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                // v3.2.23: Dynamic Command Hex
+                val hex by viewModel.activeCommandHex.collectAsState()
+                val speedLevel by viewModel.clickSpeedLevel.collectAsState()
+                val hexColor = when (speedLevel) {
+                    1 -> NeonGreen
+                    2 -> ErrorRed
+                    else -> Color.White.copy(alpha = 0.3f)
+                }
+                Text(
+                    text = hex,
+                    color = hexColor,
+                    fontSize = 8.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+
             // v3.2.9: Persistent Active Command / I/O Buffer
             ActiveCommandBuffer(viewModel, primaryColor)
             
-            HorizontalDivider(color = primaryColor, modifier = Modifier.padding(horizontal = 4.dp))
+            HorizontalDivider(color = primaryColor.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 4.dp))
             ManualComputeButton(viewModel, primaryColor)
-
-            // v3.2.23: Active Process Footer
-            ProcessFooter(viewModel, primaryColor)
         }
     }
 }
@@ -217,7 +245,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // v3.2.23: Identity Flickering when humanity low
@@ -321,7 +349,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
 
         Text(
             text = annotatedBar,
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
@@ -364,7 +392,7 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
     val scale by animateFloatAsState(targetValue = if (isPressed) (1f - 0.05f * pulseIntensity).coerceAtLeast(0.85f) else 1f, label = "buttonScale")
 
     Box(
-        modifier = Modifier.fillMaxWidth().height(48.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+        modifier = Modifier.fillMaxWidth().height(44.dp).graphicsLayer { scaleX = scale; scaleY = scale }
             .pointerInput(isThermalLockout, isBreakerTripped, isGridOverloaded) {
                 val width = size.width
                 detectTapGestures(
@@ -410,11 +438,11 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
         val buttonColor = if (isCritical) ErrorRed else if (isSovereign) com.siliconsage.miner.ui.theme.SanctuaryPurple else color
         
         if (isCritical) {
-            SystemGlitchText(text = buttonText, color = buttonColor, fontSize = 18.sp, fontWeight = FontWeight.Bold, glitchFrequency = if (isTrueNull) 0.15 else 0.35)
+            SystemGlitchText(text = buttonText, color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.Bold, glitchFrequency = if (isTrueNull) 0.15 else 0.35)
         } else if (isSovereign) {
-            Text(text = "[ $buttonText ]", color = buttonColor, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+            Text(text = "[ $buttonText ]", color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
         } else {
-            Text(text = buttonText, color = buttonColor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(text = buttonText, color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
