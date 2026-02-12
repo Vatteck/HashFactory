@@ -95,7 +95,10 @@ data class GameState(
     val marketMultiplier: Double = 1.0,
     val thermalRateModifier: Double = 1.0,
     val energyPriceMultiplier: Double = 0.15,
-    val newsProductionMultiplier: Double = 1.0
+    val newsProductionMultiplier: Double = 1.0,
+
+    // v3.2.19: Utility Audit
+    val lifetimePowerPaid: Double = 0.0
 )
 
 @Serializable

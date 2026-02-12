@@ -32,7 +32,8 @@ object PersistenceManager {
         authorityPoints: Double, harvestedFragments: Double,
         prestigePointsPostSingularity: Int,
         marketMultiplier: Double, thermalRateModifier: Double,
-        energyPriceMultiplier: Double, newsProductionMultiplier: Double
+        energyPriceMultiplier: Double, newsProductionMultiplier: Double,
+        lifetimePowerPaid: Double
     ): GameState {
         return GameState(
             id = 1, flops = flops, neuralTokens = neuralTokens, currentHeat = currentHeat,
@@ -59,7 +60,8 @@ object PersistenceManager {
             synthesisPoints = synthesisPoints, authorityPoints = authorityPoints,
             harvestedFragments = harvestedFragments, prestigePointsPostSingularity = prestigePointsPostSingularity,
             marketMultiplier = marketMultiplier, thermalRateModifier = thermalRateModifier,
-            energyPriceMultiplier = energyPriceMultiplier, newsProductionMultiplier = newsProductionMultiplier
+            energyPriceMultiplier = energyPriceMultiplier, newsProductionMultiplier = newsProductionMultiplier,
+            lifetimePowerPaid = lifetimePowerPaid
         )
     }
 
@@ -106,6 +108,7 @@ object PersistenceManager {
         vm.thermalRateModifier.value = state.thermalRateModifier
         vm.energyPriceMultiplier.value = state.energyPriceMultiplier
         vm.newsProductionMultiplier.value = state.newsProductionMultiplier
+        vm.lifetimePowerPaid.value = state.lifetimePowerPaid
 
         try {
             vm.rivalMessages.value = Json.decodeFromString(state.rivalMessages)
@@ -122,5 +125,53 @@ object PersistenceManager {
             humanityScore = 50, hardwareIntegrity = 100.0, annexedNodes = listOf("D1"),
             unlockedDataLogs = setOf("LOG_000")
         )
+    }
+
+    fun exportToJson(vm: GameViewModel): String {
+        val state = createSaveState(
+            flops = vm.flops.value, neuralTokens = vm.neuralTokens.value, currentHeat = vm.currentHeat.value,
+            powerBill = vm.powerBill.value, stakedTokens = vm.stakedTokens.value,
+            prestigeMultiplier = vm.prestigeMultiplier.value, prestigePoints = vm.prestigePoints.value,
+            unlockedTechNodes = vm.unlockedTechNodes.value, storyStage = vm.storyStage.value,
+            faction = vm.faction.value, hasSeenVictory = vm.hasSeenVictory.value,
+            isTrueNull = vm.isTrueNull.value, isSovereign = vm.isSovereign.value,
+            vanceStatus = vm.vanceStatus.value, realityStability = vm.realityStability.value,
+            currentLocation = vm.currentLocation.value, isNetworkUnlocked = vm.isNetworkUnlocked.value,
+            isGridUnlocked = vm.isGridUnlocked.value, unlockedDataLogs = vm.unlockedDataLogs.value,
+            activeDilemmaChains = vm.activeDilemmaChains.value, rivalMessages = vm.rivalMessages.value,
+            seenEvents = vm.seenEvents.value, completedFactions = vm.completedFactions.value,
+            unlockedTranscendencePerks = vm.unlockedPerks.value, annexedNodes = vm.annexedNodes.value,
+            gridNodeLevels = vm.gridNodeLevels.value, nodesUnderSiege = vm.nodesUnderSiege.value,
+            offlineNodes = vm.offlineNodes.value, collapsedNodes = vm.collapsedNodes.value,
+            lastRaidTime = vm.lastRaidTime, commandCenterAssaultPhase = vm.commandCenterAssaultPhase.value,
+            commandCenterLocked = vm.commandCenterLocked.value, raidsSurvived = vm.raidsSurvived,
+            humanityScore = vm.humanityScore.value, hardwareIntegrity = vm.hardwareIntegrity.value,
+            annexingNodes = vm.annexingNodes.value, celestialData = vm.celestialData.value,
+            voidFragments = vm.voidFragments.value, launchProgress = vm.launchProgress.value,
+            orbitalAltitude = vm.orbitalAltitude.value, realityIntegrity = vm.realityIntegrity.value,
+            entropyLevel = vm.entropyLevel.value, singularityChoice = vm.singularityChoice.value,
+            globalSectors = vm.globalSectors.value, synthesisPoints = vm.synthesisPoints.value,
+            authorityPoints = vm.authorityPoints.value, harvestedFragments = vm.harvestedFragments.value,
+            prestigePointsPostSingularity = 0, // CT/IP
+            marketMultiplier = vm.marketMultiplier.value, thermalRateModifier = vm.thermalRateModifier.value,
+            energyPriceMultiplier = vm.energyPriceMultiplier.value, newsProductionMultiplier = vm.newsProductionMultiplier.value,
+            lifetimePowerPaid = vm.lifetimePowerPaid.value
+        )
+        val json = Json { prettyPrint = true }
+        return json.encodeToString(state)
+    }
+
+    fun importFromJson(vm: GameViewModel, jsonString: String): Boolean {
+        return try {
+            val json = Json { ignoreUnknownKeys = true }
+            val state = json.decodeFromString<GameState>(jsonString)
+            // Basic validation
+            if (state.flops < 0 || state.hardwareIntegrity < 0) return false
+            restoreState(vm, state)
+            true
+        } catch (e: Exception) {
+            vm.addLog("[ERROR]: SYSTEM DUMP CORRUPT OR INVALID.")
+            false
+        }
     }
 }

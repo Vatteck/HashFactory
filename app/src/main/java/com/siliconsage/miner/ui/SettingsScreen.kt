@@ -108,7 +108,100 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            
+            // v3.2.19: Utility Audit
+            val lifetimePower by viewModel.lifetimePowerPaid.collectAsState()
+            val energyPrice by viewModel.energyPriceMultiplier.collectAsState()
+            SettingsGroup("UTILITY AUDIT") {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("LIFETIME POWER COST:", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text("${viewModel.formatLargeNumber(lifetimePower)} \$N", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("CURRENT TARIFF:", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text("${String.format("%.2f", energyPrice)} \$N/kW", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                }
+            }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // v3.2.19: Data Sovereignty
+            SettingsGroup("DATA MANAGEMENT") {
+                Button(
+                    onClick = { 
+                        val json = viewModel.exportSystemDump()
+                        val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        val clip = android.content.ClipData.newPlainText("silicon_sage_dump", json)
+                        clipboard.setPrimaryClip(clip)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("SYSTEM DUMP COPIED TO CLIPBOARD")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                ) {
+                    Text("EXPORT SYSTEM DUMP (JSON)", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                var showImportDialog by remember { mutableStateOf(false) }
+                var importText by remember { mutableStateOf("") }
+                
+                if (showImportDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showImportDialog = false },
+                        title = { Text("LOAD SYSTEM DUMP", color = themeColor, fontWeight = FontWeight.Bold) },
+                        text = {
+                            Column {
+                                Text("PASTE JSON KERNEL DUMP BELOW:", color = Color.White, fontSize = 10.sp, modifier = Modifier.padding(bottom = 8.dp))
+                                OutlinedTextField(
+                                    value = importText,
+                                    onValueChange = { importText = it },
+                                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                                    textStyle = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace, fontSize = 10.sp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = Color.White,
+                                        unfocusedTextColor = Color.LightGray,
+                                        focusedBorderColor = themeColor,
+                                        unfocusedBorderColor = Color.Gray
+                                    )
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                if (viewModel.importSystemDump(importText)) {
+                                    showImportDialog = false
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("KERNEL RELOAD SUCCESSFUL")
+                                    }
+                                }
+                            }) {
+                                Text("INITIALIZE RELOAD", color = themeColor, fontWeight = FontWeight.Bold)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showImportDialog = false }) {
+                                Text("CANCEL", color = Color.Gray)
+                            }
+                        },
+                        containerColor = Color.Black,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                }
+                
+                Button(
+                    onClick = { showImportDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                ) {
+                    Text("IMPORT SYSTEM DUMP", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
             // Operations Settings
             val isPaused by viewModel.isSettingsPaused.collectAsState()
             SettingsGroup("OPERATIONS") {

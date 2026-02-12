@@ -73,10 +73,12 @@ object SimulationService {
 
     fun payPowerBill(vm: GameViewModel) {
         val bill = vm.powerBill.value
-        if (bill > 0) {
+        if (bill > 0 && vm.neuralTokens.value >= bill) {
             vm.neuralTokens.update { it - bill }
-            vm.addLog("[SYSTEM]: UTILITY BILL PAID: ${vm.formatLargeNumber(bill)} \$N.")
+            vm.lifetimePowerPaid.update { it + bill }
+            vm.addLog("[UTILITY]: BILL PROCESSED. COST: ${vm.formatLargeNumber(bill)} \$N. LIFETIME: ${vm.formatLargeNumber(vm.lifetimePowerPaid.value)} \$N.")
             vm.powerBill.value = 0.0
+            SoundManager.play("buy")
         }
     }
 
