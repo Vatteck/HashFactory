@@ -30,7 +30,9 @@ object PersistenceManager {
         entropyLevel: Double, singularityChoice: String,
         globalSectors: Map<String, SectorState>, synthesisPoints: Double,
         authorityPoints: Double, harvestedFragments: Double,
-        prestigePointsPostSingularity: Int
+        prestigePointsPostSingularity: Int,
+        marketMultiplier: Double, thermalRateModifier: Double,
+        energyPriceMultiplier: Double, newsProductionMultiplier: Double
     ): GameState {
         return GameState(
             id = 1, flops = flops, neuralTokens = neuralTokens, currentHeat = currentHeat,
@@ -55,7 +57,9 @@ object PersistenceManager {
             realityIntegrity = realityIntegrity, entropyLevel = entropyLevel,
             singularityChoice = singularityChoice, globalSectors = globalSectors,
             synthesisPoints = synthesisPoints, authorityPoints = authorityPoints,
-            harvestedFragments = harvestedFragments, prestigePointsPostSingularity = prestigePointsPostSingularity
+            harvestedFragments = harvestedFragments, prestigePointsPostSingularity = prestigePointsPostSingularity,
+            marketMultiplier = marketMultiplier, thermalRateModifier = thermalRateModifier,
+            energyPriceMultiplier = energyPriceMultiplier, newsProductionMultiplier = newsProductionMultiplier
         )
     }
 
@@ -97,6 +101,11 @@ object PersistenceManager {
         vm.isGridUnlocked.value = state.isGridUnlocked
         vm.powerBill.value = state.powerBill
         vm.stakedTokens.value = state.stakedTokens
+        
+        vm.marketMultiplier.value = state.marketMultiplier
+        vm.thermalRateModifier.value = state.thermalRateModifier
+        vm.energyPriceMultiplier.value = state.energyPriceMultiplier
+        vm.newsProductionMultiplier.value = state.newsProductionMultiplier
 
         try {
             vm.rivalMessages.value = Json.decodeFromString(state.rivalMessages)

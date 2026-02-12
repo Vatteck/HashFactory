@@ -89,7 +89,13 @@ data class GameState(
     val authorityPoints: Double = 0.0, // Sovereign Primary Resource
     val harvestedFragments: Double = 0.0, // Sovereign Secondary Resource
     val prestigePointsPostSingularity: Int = 0, // IP or CT
-    val prestigeCountPostSingularity: Int = 0
+    val prestigeCountPostSingularity: Int = 0,
+    
+    // v3.2.17: Market Modifiers
+    val marketMultiplier: Double = 1.0,
+    val thermalRateModifier: Double = 1.0,
+    val energyPriceMultiplier: Double = 0.15,
+    val newsProductionMultiplier: Double = 1.0
 )
 
 @Serializable
