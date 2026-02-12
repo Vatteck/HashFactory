@@ -1,8 +1,8 @@
 {
-  "version": "3.2.44-dev",
-  "build": 284,
+  "version": "3.2.47-dev",
+  "build": 288,
   "date": "2026-02-12",
-  "changes": "The Departure: Refactored Vance climax to trigger Phase 13 decision.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.44-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.44-dev/Sage_3.2.44-dev.apk"
+  "changes": "Substrate Mechanics: Vacuum Physics, Entropy Engine, and interactive Transition UI.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.47-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.47-dev/Sage_3.2.47-dev.apk"
 }
