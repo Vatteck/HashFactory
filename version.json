@@ -1,8 +1,8 @@
 {
-  "version": "3.2.32",
-  "build": 269,
+  "version": "3.2.33",
+  "build": 270,
   "date": "2026-02-11",
-  "changes": "Removed minimum floor for heat purging; scaling is now fully dynamic.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.32",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.32/Sage_3.2.32.apk"
+  "changes": "Slow-burn narrative pacing: seeded glitches and monologues into Stage 0.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.33",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.33/Sage_3.2.33.apk"
 }
