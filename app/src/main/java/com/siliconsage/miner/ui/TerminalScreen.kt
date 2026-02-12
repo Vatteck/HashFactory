@@ -208,6 +208,8 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             isBursting = true
             delay(500)
             isBursting = false
+        } else {
+            isBursting = false
         }
     }
 
