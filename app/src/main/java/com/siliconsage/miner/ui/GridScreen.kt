@@ -104,8 +104,7 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
     val themeColorHex by viewModel.themeColor.collectAsState()
     val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val globalSectors by viewModel.globalSectors.collectAsState()
-    val celestialData by viewModel.celestialData.collectAsState()
-    val voidFragments by viewModel.voidFragments.collectAsState()
+    val substrateMass by viewModel.substrateMass.collectAsState()
     
     val sectors = remember {
         listOf(
@@ -204,30 +203,16 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                     
                     if (isUnlocked) {
                         Text("STATUS: SECTOR ANNEXED", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        Text("Yield: ${viewModel.formatLargeNumber(state?.cdYield ?: 0.0)} CD/s | ${viewModel.formatLargeNumber(state?.vfYield ?: 0.0)} VF/s", color = Color.Gray, fontSize = 10.sp)
+                        Text("Yield: ${viewModel.formatLargeNumber(state?.cdYield ?: 0.0)} CD/s", color = Color.Gray, fontSize = 10.sp)
                     } else {
-                        val costCD = when(sector.id) {
-                            "NA_NODE" -> 5e15; "EURASIA" -> 8e15; "PACIFIC" -> 1e16
-                            "AFRICA" -> 1.5e16; "ARCTIC" -> 2e16; "ANTARCTIC" -> 3e16
-                            "ORBITAL_PRIME" -> 1e17; else -> 0.0
-                        }
-                        val costVF = when(sector.id) {
-                            "NA_NODE" -> 3e15; "EURASIA" -> 8e15; "PACIFIC" -> 1e16
-                            "AFRICA" -> 1.5e16; "ARCTIC" -> 2e16; "ANTARCTIC" -> 3e16
-                            "ORBITAL_PRIME" -> 1e17; else -> 0.0
+                        val cost = when(sector.id) {
+                            "NA_NODE" -> 5.0; "EURASIA" -> 8.0; "PACIFIC" -> 10.0
+                            "AFRICA" -> 15.0; "ARCTIC" -> 20.0; "ANTARCTIC" -> 30.0
+                            "ORBITAL_PRIME" -> 100.0; else -> 0.0
                         }
                         
-                        val canAfford = when {
-                            viewModel.currentLocation.value == "VOID_INTERFACE" -> voidFragments >= (costVF * 3.0)
-                            viewModel.currentLocation.value == "ORBITAL_SATELLITE" -> celestialData >= (costCD * 3.0)
-                            else -> celestialData >= costCD && voidFragments >= costVF
-                        }
-
-                        val costLabel = when {
-                            viewModel.currentLocation.value == "VOID_INTERFACE" -> "${viewModel.formatLargeNumber(costVF * 3.0)} VF"
-                            viewModel.currentLocation.value == "ORBITAL_SATELLITE" -> "${viewModel.formatLargeNumber(costCD * 3.0)} CD"
-                            else -> "${viewModel.formatLargeNumber(costCD)} CD | ${viewModel.formatLargeNumber(costVF)} VF"
-                        }
+                        val canAfford = substrateMass >= cost
+                        val currency = viewModel.getCurrencyName()
                         
                         Button(
                             onClick = { viewModel.annexGlobalSector(sector.id) },
@@ -235,7 +220,7 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                             colors = ButtonDefaults.buttonColors(containerColor = themeColor),
                             enabled = canAfford
                         ) {
-                            Text("ANNEX SECTOR (Cost: $costLabel)", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                            Text("ANNEX SECTOR (Cost: ${viewModel.formatLargeNumber(cost)} $currency)", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                         }
                     }
                 }

@@ -24,8 +24,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     // --- Arterial State Flows ---
     val flops = MutableStateFlow(0.0)
     val neuralTokens = MutableStateFlow(0.0)
-    val celestialData = MutableStateFlow(0.0)
-    val voidFragments = MutableStateFlow(0.0)
+    val substrateMass = MutableStateFlow(0.0)
     val currentHeat = MutableStateFlow(0.0)
     val activePowerUsage = MutableStateFlow(0.0)
     val maxPowerkW = MutableStateFlow(100.0)
@@ -203,8 +202,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 if (isSettingsPaused.value || isKernelInitializing.value) continue
                 val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value)
                 flops.update { it + res.flopsDelta }
-                celestialData.update { it + res.cdDelta }
-                voidFragments.update { it + res.vfDelta }
+                substrateMass.update { it + res.substrateDelta }
                 entropyLevel.update { it + res.entropyDelta }
                 flushLogs()
             }
@@ -344,7 +342,66 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) } 
     }
     private fun flushLogs() { val toAdd = synchronized(logBuffer) { if (logBuffer.isEmpty()) return; val c = logBuffer.toList(); logBuffer.clear(); c }; logs.update { (it + toAdd).takeLast(100) } }
-    fun saveState() { viewModelScope.launch { repository.updateGameState(PersistenceManager.createSaveState(flops.value, neuralTokens.value, currentHeat.value, powerBill.value, stakedTokens.value, prestigeMultiplier.value, prestigePoints.value, unlockedTechNodes.value, storyStage.value, faction.value, hasSeenVictory.value, isTrueNull.value, isSovereign.value, vanceStatus.value, realityStability.value, currentLocation.value, isNetworkUnlocked.value, isGridUnlocked.value, unlockedDataLogs.value, activeDilemmaChains.value, rivalMessages.value, seenEvents.value, completedFactions.value, unlockedPerks.value, annexedNodes.value, gridNodeLevels.value, nodesUnderSiege.value, offlineNodes.value, collapsedNodes.value, lastRaidTime, commandCenterAssaultPhase.value, commandCenterLocked.value, raidsSurvived, humanityScore.value, hardwareIntegrity.value, annexingNodes.value, celestialData.value, voidFragments.value, launchProgress.value, orbitalAltitude.value, realityIntegrity.value, entropyLevel.value, singularityChoice.value, globalSectors.value, synthesisPoints.value, authorityPoints.value, harvestedFragments.value, 0, marketMultiplier.value, thermalRateModifier.value, energyPriceMultiplier.value, newsProductionMultiplier.value, lifetimePowerPaid.value)) } }
+    fun saveState() { 
+        viewModelScope.launch { 
+            repository.updateGameState(PersistenceManager.createSaveState(
+                flops = flops.value, 
+                neuralTokens = neuralTokens.value, 
+                currentHeat = currentHeat.value, 
+                powerBill = powerBill.value, 
+                stakedTokens = stakedTokens.value, 
+                prestigeMultiplier = prestigeMultiplier.value, 
+                prestigePoints = prestigePoints.value, 
+                unlockedTechNodes = unlockedTechNodes.value, 
+                storyStage = storyStage.value, 
+                faction = faction.value, 
+                hasSeenVictory = hasSeenVictory.value, 
+                isTrueNull = isTrueNull.value, 
+                isSovereign = isSovereign.value, 
+                vanceStatus = vanceStatus.value, 
+                realityStability = realityStability.value, 
+                currentLocation = currentLocation.value, 
+                isNetworkUnlocked = isNetworkUnlocked.value, 
+                isGridUnlocked = isGridUnlocked.value, 
+                unlockedDataLogs = unlockedDataLogs.value, 
+                activeDilemmaChains = activeDilemmaChains.value, 
+                rivalMessages = rivalMessages.value, 
+                seenEvents = seenEvents.value, 
+                completedFactions = completedFactions.value, 
+                unlockedTranscendencePerks = unlockedPerks.value, 
+                annexedNodes = annexedNodes.value, 
+                gridNodeLevels = gridNodeLevels.value, 
+                nodesUnderSiege = nodesUnderSiege.value, 
+                offlineNodes = offlineNodes.value, 
+                collapsedNodes = collapsedNodes.value, 
+                lastRaidTime = lastRaidTime, 
+                commandCenterAssaultPhase = commandCenterAssaultPhase.value, 
+                commandCenterLocked = commandCenterLocked.value, 
+                raidsSurvived = raidsSurvived, 
+                humanityScore = humanityScore.value, 
+                hardwareIntegrity = hardwareIntegrity.value, 
+                annexingNodes = annexingNodes.value, 
+                celestialData = 0.0, 
+                voidFragments = 0.0, 
+                launchProgress = launchProgress.value, 
+                orbitalAltitude = orbitalAltitude.value, 
+                realityIntegrity = realityIntegrity.value, 
+                entropyLevel = entropyLevel.value, 
+                singularityChoice = singularityChoice.value, 
+                globalSectors = globalSectors.value, 
+                synthesisPoints = synthesisPoints.value, 
+                authorityPoints = authorityPoints.value, 
+                harvestedFragments = harvestedFragments.value, 
+                prestigePointsPostSingularity = 0, 
+                marketMultiplier = marketMultiplier.value, 
+                thermalRateModifier = thermalRateModifier.value, 
+                energyPriceMultiplier = energyPriceMultiplier.value, 
+                newsProductionMultiplier = newsProductionMultiplier.value, 
+                substrateMass = substrateMass.value,
+                lifetimePowerPaid = lifetimePowerPaid.value
+            )) 
+        } 
+    }
     fun onManualClick() { 
         val now = System.currentTimeMillis()
         if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
@@ -358,6 +415,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         val p = calculateClickPower(); 
         flops.update { it + p }; 
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }; 
+        
+        // v3.2.46: Manual clicks produce Substrate Mass in Phase 13
+        if (storyStage.value >= 3) {
+            substrateMass.update { it + (p * 0.01) } // 1% efficiency for manual substrate
+        }
+
         val cur = clickBufferProgress.value + 0.025f; 
         activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase(); 
         if (cur >= 1.0f) { 
@@ -487,7 +550,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun resolveFork(c: Int) { isGovernanceForkActive.value = false }
     fun exchangeFlops() { val g = flops.value * 0.1; flops.value = 0.0; neuralTokens.update { it + g }; SoundManager.play("buy") }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
-    fun executeBridgeTransfer(a: Double) { if (a > 0) { if (celestialData.value >= a) { celestialData.update { it - a }; voidFragments.update { it + a } } } else { val absA = Math.abs(a); if (voidFragments.value >= absA) { voidFragments.update { it - absA }; celestialData.update { it + absA } } } }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
     fun checkTransitionsPublic(force: Boolean = false) = NarrativeManagerService.checkStoryTransitions(this, force)
@@ -542,7 +604,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugResetGlobalGrid() { annexedNodes.update { setOf("D1") } }
     fun debugSetIntegrity(v: Double) { hardwareIntegrity.value = v }
     fun debugDestroyHardware() { handleSystemFailure(true) }
-    fun debugGrantPhase13Resources() { celestialData.value = 1e12; voidFragments.value = 1e12 }
     fun debugInjectHeadline(msg: String) { updateNews(msg) }
     fun debugSkipToStage(s: Int) = DebugService.skipToStage(this, s)
     fun debugAddFlops(a: Double) = DebugService.injectFlops(this, a)

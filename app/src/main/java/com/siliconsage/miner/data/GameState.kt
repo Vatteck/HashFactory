@@ -97,6 +97,9 @@ data class GameState(
     val energyPriceMultiplier: Double = 0.02,
     val newsProductionMultiplier: Double = 1.0,
 
+    // v3.2.46: Resource Consolidation
+    val substrateMass: Double = 0.0,
+
     // v3.2.19: Utility Audit
     val lifetimePowerPaid: Double = 0.0
 )

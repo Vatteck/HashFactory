@@ -116,20 +116,34 @@ object UpgradeManager {
     fun processPurchase(vm: GameViewModel, type: UpgradeType): Boolean {
         val currentLevel = vm.upgrades.value[type] ?: 0
         val cost = vm.calculateUpgradeCost(type)
+        val stage = vm.storyStage.value
         
-        if (vm.neuralTokens.value >= cost) {
-            vm.neuralTokens.update { it - cost }
-            vm.viewModelScope.launch {
-                vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type.name, type, currentLevel + 1))
-                vm.upgrades.update { it + (type to currentLevel + 1) }
-                vm.addLog("[SYSTEM]: PURCHASE COMPLETE: ${type.name.replace("_", " ")}")
-                vm.refreshProductionRates()
-                vm.updatePowerUsage()
-                vm.saveState() // v3.2.1: Force save on purchase
+        // v3.2.46: Handle consolidated Substrate Mass for Stage 3+
+        if (stage >= 3) {
+            if (vm.substrateMass.value >= cost) {
+                vm.substrateMass.update { it - cost }
+                completePurchase(vm, type, currentLevel)
+                return true
             }
-            return true
+        } else {
+            if (vm.neuralTokens.value >= cost) {
+                vm.neuralTokens.update { it - cost }
+                completePurchase(vm, type, currentLevel)
+                return true
+            }
         }
         return false
+    }
+
+    private fun completePurchase(vm: GameViewModel, type: UpgradeType, currentLevel: Int) {
+        vm.viewModelScope.launch {
+            vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type.name, type, currentLevel + 1))
+            vm.upgrades.update { it + (type to currentLevel + 1) }
+            vm.addLog("[SYSTEM]: PURCHASE COMPLETE: ${type.name.replace("_", " ")}")
+            vm.refreshProductionRates()
+            vm.updatePowerUsage()
+            vm.saveState() 
+        }
     }
 }
 

@@ -52,7 +52,7 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
                 DevSection("RESOURCES") {
                     DevButton("INJECT 1P FLOPS") { viewModel.debugAddFlops(1e15) }
                     DevButton("INJECT 1T NEURAL TOKENS") { viewModel.debugAddMoney(1e12) }
-                    DevButton("INJECT 1T CD/VF") { viewModel.debugGrantPhase13Resources() }
+                    DevButton("INJECT 1T SUBSTRATE") { viewModel.substrateMass.value = 1e12 }
                     DevButton("ADD 1000 INSIGHT") { viewModel.debugAddInsight(1000.0) }
                 }
 

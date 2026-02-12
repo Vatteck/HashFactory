@@ -83,65 +83,47 @@ object ProductionEngine {
         return totalFlops
     }
 
-    fun calculateCelestialDataRate(
+    fun calculateSubstrateRate(
         flopsPerSec: Double,
-        activePowerUsage: Double,
+        location: String,
         orbitalAltitude: Double,
-        solarSailLevel: Int,
-        globalSectors: Map<String, SectorState>,
-        heatGenerationRate: Double
-    ): Double {
-        val altitudeMult = 1.0 + (orbitalAltitude / 500.0)
-        val solarMult = 1.0 + (solarSailLevel * 0.15)
-        
-        var cdRate = (flopsPerSec * altitudeMult * solarMult)
-        
-        // Global Sectors
-        globalSectors.values.forEach { state ->
-            if (state.isUnlocked) {
-                cdRate += when(state.id) {
-                    "NA_NODE" -> 5e17; "EURASIA" -> 4e17; "PACIFIC" -> 6e17
-                    "AFRICA" -> 3e17; "ARCTIC" -> 2e17; "ANTARCTIC" -> 1e17
-                    "ORBITAL_PRIME" -> 1e18; else -> 0.0
-                }
-            }
-        }
-
-        return cdRate
-    }
-
-    fun calculateVoidFragmentRate(
-        flopsPerSec: Double,
         entropyLevel: Double,
-        hasEventHorizon: Boolean,
-        hasSingularityWell: Boolean,
+        upgrades: Map<UpgradeType, Int>,
         heatGenerationRate: Double,
-        wellLevel: Int,
         collapsedNodesCount: Int,
-        hasDarkMatterProc: Boolean,
-        dmLevel: Int,
         globalSectors: Map<String, SectorState>
     ): Double {
-        val entropyMult = 1.0 + (log2(entropyLevel + 1.0) * 2.0)
-        var baseVfRate = sqrt(flopsPerSec.coerceAtLeast(1.0)) * entropyMult
-        
-        if (hasEventHorizon && entropyLevel > 90.0) baseVfRate *= 5.0
-        
-        val wellConversion = if (hasSingularityWell) (heatGenerationRate.coerceAtLeast(0.0) * wellLevel * 0.1) else 0.0
-        val collapseBonus = 1.0 + (collapsedNodesCount * 0.2 * dmLevel)
-        
-        var vfRate = (baseVfRate + wellConversion) * collapseBonus
-        
-        globalSectors.values.forEach { state ->
-            if (state.isUnlocked) {
-                vfRate += when(state.id) {
-                    "NA_NODE" -> 3e17; "EURASIA" -> 4e17; "PACIFIC" -> 2e17
-                    "AFRICA" -> 5e17; "ARCTIC" -> 2e17; "ANTARCTIC" -> 1e17
-                    "ORBITAL_PRIME" -> 1e18; else -> 0.0
-                }
+        if (location == "ORBITAL_SATELLITE") {
+            val altitudeMult = 1.0 + (orbitalAltitude / 500.0)
+            val solarMult = 1.0 + ((upgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0) * 0.15)
+            var rate = (flopsPerSec * altitudeMult * solarMult)
+            
+            globalSectors.values.forEach { state ->
+                if (state.isUnlocked) rate += 5e17 // Average bonus
             }
+            return rate
+        } else if (location == "VOID_INTERFACE") {
+            val entropyMult = 1.0 + (log2(entropyLevel + 1.0) * 2.0)
+            var baseRate = kotlin.math.sqrt(flopsPerSec.coerceAtLeast(1.0)) * entropyMult
+            
+            if ((upgrades[UpgradeType.EVENT_HORIZON] ?: 0) > 0 && entropyLevel > 90.0) baseRate *= 5.0
+            
+            val wellLevel = upgrades[UpgradeType.SINGULARITY_WELL] ?: 0
+            val wellConversion = if (wellLevel > 0) (heatGenerationRate.coerceAtLeast(0.0) * wellLevel * 0.1) else 0.0
+            val dmLevel = upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0
+            val collapseBonus = 1.0 + (collapsedNodesCount * 0.2 * dmLevel)
+            
+            var rate = (baseRate + wellConversion) * collapseBonus
+            
+            globalSectors.values.forEach { state ->
+                if (state.isUnlocked) rate += 5e17
+            }
+            return rate
         }
-
-        return vfRate
+        return 0.0
     }
+
+    // --- LEGACY DELEGATES (TO BE REMOVED) ---
+    fun calculateCelestialDataRate(f: Double, a: Double, o: Double, s: Int, g: Map<String, SectorState>, h: Double) = 0.0
+    fun calculateVoidFragmentRate(f: Double, e: Double, ev: Boolean, sw: Boolean, h: Double, w: Int, c: Int, dmp: Boolean, dm: Int, g: Map<String, SectorState>) = 0.0
 }

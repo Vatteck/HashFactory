@@ -20,8 +20,7 @@ object ResourceEngine {
      */
     data class TickResults(
         val flopsDelta: Double,
-        val cdDelta: Double,
-        val vfDelta: Double,
+        val substrateDelta: Double,
         val entropyDelta: Double,
         val systemCollapseUpdate: Int? = null,
         val triggerCollapse: Boolean = false
@@ -177,8 +176,7 @@ object ResourceEngine {
         globalSectors: Map<String, SectorState> = emptyMap()
     ): TickResults {
         var flopsDelta = flopsPerSec / 10.0
-        var cdDelta = 0.0
-        var vfDelta = 0.0
+        var substrateDelta = 0.0
         var entropyDelta = 0.0
         var nextCollapseTimer = systemCollapseTimer
 
@@ -190,26 +188,26 @@ object ResourceEngine {
         // 2. Location-aware yields
         when (location) {
             "ORBITAL_SATELLITE" -> {
-                cdDelta = ProductionEngine.calculateCelestialDataRate(
+                substrateDelta = ProductionEngine.calculateSubstrateRate(
                     flopsPerSec = flopsPerSec,
-                    activePowerUsage = 0.0,
+                    location = location,
                     orbitalAltitude = orbitalAltitude,
-                    solarSailLevel = upgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0,
-                    globalSectors = globalSectors, 
-                    heatGenerationRate = heatGenerationRate
+                    entropyLevel = entropyLevel,
+                    upgrades = upgrades,
+                    heatGenerationRate = heatGenerationRate,
+                    collapsedNodesCount = collapsedNodesCount,
+                    globalSectors = globalSectors
                 ) / 10.0
             }
             "VOID_INTERFACE" -> {
-                vfDelta = ProductionEngine.calculateVoidFragmentRate(
+                substrateDelta = ProductionEngine.calculateSubstrateRate(
                     flopsPerSec = flopsPerSec,
+                    location = location,
+                    orbitalAltitude = orbitalAltitude,
                     entropyLevel = entropyLevel,
-                    hasEventHorizon = (upgrades[UpgradeType.EVENT_HORIZON] ?: 0) > 0,
-                    hasSingularityWell = (upgrades[UpgradeType.SINGULARITY_WELL] ?: 0) > 0,
+                    upgrades = upgrades,
                     heatGenerationRate = heatGenerationRate,
-                    wellLevel = upgrades[UpgradeType.SINGULARITY_WELL] ?: 0,
                     collapsedNodesCount = collapsedNodesCount,
-                    hasDarkMatterProc = (upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0) > 0,
-                    dmLevel = upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0,
                     globalSectors = globalSectors
                 ) / 10.0
 
@@ -219,8 +217,7 @@ object ResourceEngine {
 
         return TickResults(
             flopsDelta = flopsDelta,
-            cdDelta = cdDelta,
-            vfDelta = vfDelta,
+            substrateDelta = substrateDelta,
             entropyDelta = entropyDelta,
             systemCollapseUpdate = nextCollapseTimer
         )

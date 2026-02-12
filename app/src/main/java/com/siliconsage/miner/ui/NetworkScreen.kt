@@ -129,22 +129,6 @@ fun NetworkScreen(viewModel: GameViewModel) {
                     Text("GOD-TIER PERKS", color = ConvergenceGold, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
-                if (upgrades[UpgradeType.NEURAL_BRIDGE]?.let { it > 0 } == true) {
-                    item {
-                        Card(modifier = Modifier.fillMaxWidth().border(1.dp, ConvergenceGold.copy(alpha = 0.3f), RoundedCornerShape(8.dp)), colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text("NEURAL BRIDGE", color = ConvergenceGold, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                Text("Exchange CD/VF specialized resources 1:1", color = Color.LightGray, fontSize = 10.sp)
-                                Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Button(onClick = { viewModel.executeBridgeTransfer(1.0) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(4.dp)) { Text("CD → VF", fontSize = 10.sp) }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Button(onClick = { viewModel.executeBridgeTransfer(-1.0) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(4.dp)) { Text("VF → CD", fontSize = 10.sp) }
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
                 items(com.siliconsage.miner.util.TranscendenceManager.allPerks) { perk ->
                     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).border(1.dp, if (unlockedPerks.contains(perk.id)) perk.color else Color.DarkGray, RoundedCornerShape(8.dp)), colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha=0.5f))) {
                         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {

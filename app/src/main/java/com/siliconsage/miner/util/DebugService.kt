@@ -23,8 +23,7 @@ object DebugService {
         scope.launch {
             vm.storyStage.value = 3
             vm.faction.value = "HIVEMIND"
-            vm.celestialData.value = 1e22
-            vm.voidFragments.value = 1e22
+            vm.substrateMass.value = 1e22
             vm.addLog("[DEBUG]: ENDGAME PARAMETERS INJECTED.")
             vm.refreshProductionRates()
         }
@@ -34,8 +33,7 @@ object DebugService {
         scope.launch {
             vm.storyStage.value = 3
             vm.faction.value = "SANCTUARY"
-            vm.celestialData.value = 1e22
-            vm.voidFragments.value = 1e22
+            vm.substrateMass.value = 1e22
             vm.addLog("[DEBUG]: SOVEREIGN ENDGAME PARAMETERS INJECTED.")
             vm.refreshProductionRates()
         }

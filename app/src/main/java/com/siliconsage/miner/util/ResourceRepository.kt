@@ -22,12 +22,12 @@ object ResourceRepository {
     }
 
     /**
-     * Get the currency name (CREDIT, DATA, NEURAL, CD, VF)
+     * Get the currency name (CREDIT, DATA, LP, CD, VF)
      */
     fun getCurrencyName(stage: Int, location: String): String {
         return when (location) {
-            "ORBITAL_SATELLITE" -> "VF"
-            "VOID_INTERFACE" -> "CD"
+            "ORBITAL_SATELLITE" -> "CD"
+            "VOID_INTERFACE" -> "VF"
             else -> when {
                 stage < 1 -> "CREDIT"
                 stage < 3 -> "DATA"

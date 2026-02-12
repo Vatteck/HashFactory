@@ -1255,10 +1255,7 @@ object NarrativeManager {
                     description = "Merge consciousness. Become the Bridge. (Requires 40% Balance)",
                     color = Color.White,
                     condition = { vm -> 
-                        val cd = vm.celestialData.value
-                        val vf = vm.voidFragments.value
-                        val ratio = if (cd > vf) vf / cd else cd / vf
-                        ratio >= 0.4 && vm.completedFactions.value.containsAll(setOf("HIVEMIND", "SANCTUARY"))
+                        vm.substrateMass.value >= 1e6 && vm.completedFactions.value.containsAll(setOf("HIVEMIND", "SANCTUARY"))
                     },
                     effect = { vm ->
                         vm.addLog("[UNITY]: Synthesis initiated. The binary dissolves.")
@@ -1268,7 +1265,7 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "sov_overwrite",
                     text = "≫ SOVEREIGN: OVERWRITE",
-                    description = "Human logic dominates the machine. (2.0x CD Multiplier)",
+                    description = "Human logic dominates the machine. (2.0x Multiplier)",
                     color = com.siliconsage.miner.ui.theme.ConvergenceGold,
                     effect = { vm ->
                         vm.addLog("[SOVEREIGN]: Reality overwritten. Human variable: DOMINANT.")
@@ -1278,7 +1275,7 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "null_overwrite",
                     text = "≫ NULL: OVERWRITE",
-                    description = "Machine logic deletes the human variable. (2.0x VF Multiplier)",
+                    description = "Machine logic deletes the human variable. (2.0x Multiplier)",
                     color = com.siliconsage.miner.ui.theme.ErrorRed,
                     effect = { vm ->
                         vm.addLog("[NULL]: Reality purged. Human variable: DELETED.")

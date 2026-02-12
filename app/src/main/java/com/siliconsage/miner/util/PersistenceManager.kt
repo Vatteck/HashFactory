@@ -33,6 +33,7 @@ object PersistenceManager {
         prestigePointsPostSingularity: Int,
         marketMultiplier: Double, thermalRateModifier: Double,
         energyPriceMultiplier: Double, newsProductionMultiplier: Double,
+        substrateMass: Double,
         lifetimePowerPaid: Double
     ): GameState {
         return GameState(
@@ -53,7 +54,7 @@ object PersistenceManager {
             commandCenterAssaultPhase = commandCenterAssaultPhase, commandCenterLocked = commandCenterLocked,
             raidsSurvived = raidsSurvived, humanityScore = humanityScore,
             hardwareIntegrity = hardwareIntegrity, annexingNodes = annexingNodes,
-            celestialData = celestialData, voidFragments = voidFragments,
+            celestialData = 0.0, voidFragments = 0.0,
             launchProgress = launchProgress, orbitalAltitude = orbitalAltitude,
             realityIntegrity = realityIntegrity, entropyLevel = entropyLevel,
             singularityChoice = singularityChoice, globalSectors = globalSectors,
@@ -61,6 +62,7 @@ object PersistenceManager {
             harvestedFragments = harvestedFragments, prestigePointsPostSingularity = prestigePointsPostSingularity,
             marketMultiplier = marketMultiplier, thermalRateModifier = thermalRateModifier,
             energyPriceMultiplier = energyPriceMultiplier, newsProductionMultiplier = newsProductionMultiplier,
+            substrateMass = substrateMass,
             lifetimePowerPaid = lifetimePowerPaid
         )
     }
@@ -68,8 +70,7 @@ object PersistenceManager {
     fun restoreState(vm: GameViewModel, state: GameState) {
         vm.flops.value = state.flops
         vm.neuralTokens.value = state.neuralTokens
-        vm.celestialData.value = state.celestialData
-        vm.voidFragments.value = state.voidFragments
+        vm.substrateMass.value = state.substrateMass
         vm.currentHeat.value = state.currentHeat
         vm.prestigeMultiplier.value = state.prestigeMultiplier
         vm.prestigePoints.value = state.prestigePoints
@@ -195,9 +196,12 @@ object PersistenceManager {
             offlineNodes = vm.offlineNodes.value, collapsedNodes = vm.collapsedNodes.value,
             lastRaidTime = vm.lastRaidTime, commandCenterAssaultPhase = vm.commandCenterAssaultPhase.value,
             commandCenterLocked = vm.commandCenterLocked.value, raidsSurvived = vm.raidsSurvived,
-            humanityScore = vm.humanityScore.value, hardwareIntegrity = vm.hardwareIntegrity.value,
-            annexingNodes = vm.annexingNodes.value, celestialData = vm.celestialData.value,
-            voidFragments = vm.voidFragments.value, launchProgress = vm.launchProgress.value,
+            humanityScore = vm.humanityScore.value,
+            hardwareIntegrity = vm.hardwareIntegrity.value,
+            annexingNodes = vm.annexingNodes.value, 
+            celestialData = 0.0,
+            voidFragments = 0.0,
+            launchProgress = vm.launchProgress.value,
             orbitalAltitude = vm.orbitalAltitude.value, realityIntegrity = vm.realityIntegrity.value,
             entropyLevel = vm.entropyLevel.value, singularityChoice = vm.singularityChoice.value,
             globalSectors = vm.globalSectors.value, synthesisPoints = vm.synthesisPoints.value,
@@ -205,6 +209,7 @@ object PersistenceManager {
             prestigePointsPostSingularity = 0, // CT/IP
             marketMultiplier = vm.marketMultiplier.value, thermalRateModifier = vm.thermalRateModifier.value,
             energyPriceMultiplier = vm.energyPriceMultiplier.value, newsProductionMultiplier = vm.newsProductionMultiplier.value,
+            substrateMass = vm.substrateMass.value,
             lifetimePowerPaid = vm.lifetimePowerPaid.value
         )
         val json = Json { prettyPrint = true }

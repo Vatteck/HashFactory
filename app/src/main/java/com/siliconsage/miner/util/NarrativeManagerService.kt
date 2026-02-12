@@ -153,7 +153,7 @@ object NarrativeManagerService {
             return
         }
 
-        if (currentStage == 3 && (vm.celestialData.value >= 1e12 || vm.voidFragments.value >= 1e12) && !vm.hasSeenEvent("the_singularity")) {
+        if (currentStage == 3 && vm.substrateMass.value >= 1e12 && !vm.hasSeenEvent("the_singularity")) {
             NarrativeManager.getEventById("the_singularity")?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }

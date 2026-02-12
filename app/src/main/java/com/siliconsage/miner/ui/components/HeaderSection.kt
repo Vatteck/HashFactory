@@ -293,27 +293,22 @@ fun HeaderSection(
                         singularityChoice == "NULL_OVERWRITE" -> "CD"
                         singularityChoice == "SOVEREIGN" -> "VF"
                         singularityChoice == "UNITY" -> "SYN"
-                        currentLocation == "ORBITAL_SATELLITE" -> "VF"
-                        currentLocation == "VOID_INTERFACE" -> "CD"
+                        currentLocation == "ORBITAL_SATELLITE" -> "CD"
+                        currentLocation == "VOID_INTERFACE" -> "VF"
                         storyStage < 1 -> "CRED"
                         storyStage < 2 -> "DATA"
                         else -> "NEUR"
                     }
                     val tokenSource = when {
-                        currentLocation == "ORBITAL_SATELLITE" || singularityChoice == "SOVEREIGN" -> viewModel.voidFragments
-                        currentLocation == "VOID_INTERFACE" || singularityChoice == "NULL_OVERWRITE" -> viewModel.celestialData
+                        storyStage >= 3 -> viewModel.substrateMass
                         else -> viewModel.neuralTokens
                     }
                     
                     ResourceDisplay(tokenSource, null, tokensLabel, Icons.Default.AttachMoney, color, droopAlpha, false, 0.1, true, 130.dp) { viewModel.formatLargeNumber(it) }
                     
                     if (storyStage >= 3) {
-                         val secondaryLabel = if (tokensLabel == "CD") "VF" else "CD"
-                         val secondarySource = if (tokensLabel == "CD") viewModel.voidFragments else viewModel.celestialData
-                         val secValue by secondarySource.collectAsState()
-                         
                          Text(
-                             text = "$secondaryLabel: ${viewModel.formatLargeNumber(secValue)}",
+                             text = "SUBSTRATE ACTIVE",
                              color = Color.White.copy(alpha = 0.5f * droopAlpha),
                              fontSize = 9.sp,
                              fontWeight = FontWeight.Bold,
