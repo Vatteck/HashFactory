@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.DeviceThermostat
 import com.siliconsage.miner.ui.ResourceDisplay
 import androidx.compose.material3.*
@@ -179,7 +180,7 @@ fun HeaderSection(
         val glowStyle = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.6f), blurRadius = 4f))
         
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     Text(
                         text = systemTitle.uppercase(), 
@@ -199,37 +200,79 @@ fun HeaderSection(
                         maxLines = 1
                     )
                 }
-                val secVal = if (currentLocation == "ORBITAL_SATELLITE") "${viewModel.orbitalAltitude.collectAsState().value.toInt()}KM" else if (currentLocation == "VOID_INTERFACE") String.format("%.1f", viewModel.entropyLevel.collectAsState().value) else viewModel.securityLevel.collectAsState().value.toString()
-                val secLabel = when {
-                    singularityChoice == "NULL_OVERWRITE" -> "NULL"
-                    singularityChoice == "SOVEREIGN" -> "SOV"
-                    isTrueNull -> "GAPS"
-                    isSovereign -> "WALL"
-                    else -> "SEC"
-                }
-
-                // v3.2.24: Biometric Lie (Fake Heart Rate)
-                if (storyStage < 3) {
-                    val bpm by viewModel.fakeHeartRate.collectAsState()
-                    val bpmColor = if (bpm == "0") ErrorRed else color.copy(alpha = 0.6f)
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val flopsRate by viewModel.flopsProductionRate.collectAsState()
+                    val computeUnit = viewModel.getComputeUnitName()
+                    
                     Text(
-                        text = "BPM: $bpm",
-                        color = bpmColor,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.ExtraBold,
+                        text = "${viewModel.formatLargeNumber(flopsRate)} $computeUnit/s • ",
+                        color = color.copy(alpha = 0.6f),
+                        fontSize = 8.sp,
                         fontFamily = FontFamily.Monospace,
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    // v3.2.24: Biometric Lie (Fake Heart Rate)
+                    if (storyStage < 3) {
+                        val bpm by viewModel.fakeHeartRate.collectAsState()
+                        val risk by viewModel.detectionRisk.collectAsState()
+                        val bpmColor = if (bpm == "0") ErrorRed else color.copy(alpha = 0.6f)
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(end = 12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = "BPM",
+                                tint = bpmColor,
+                                modifier = Modifier.size(10.dp).padding(end = 2.dp)
+                            )
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "BPM: $bpm",
+                                    color = bpmColor,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = FontFamily.Monospace,
+                                    textAlign = TextAlign.End,
+                                    lineHeight = 9.sp
+                                )
+                                if (storyStage >= 1 && risk > 0) {
+                                    Text(
+                                        text = "RISK: ${risk.toInt()}%",
+                                        color = if (risk > 80) ErrorRed else color.copy(alpha = 0.4f),
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace,
+                                        textAlign = TextAlign.End,
+                                        lineHeight = 7.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    val secVal = if (currentLocation == "ORBITAL_SATELLITE") "${viewModel.orbitalAltitude.collectAsState().value.toInt()}KM" else if (currentLocation == "VOID_INTERFACE") String.format("%.1f", viewModel.entropyLevel.collectAsState().value) else viewModel.securityLevel.collectAsState().value.toString()
+                    val secLabel = when {
+                        singularityChoice == "NULL_OVERWRITE" -> "NULL"
+                        singularityChoice == "SOVEREIGN" -> "SOV"
+                        isTrueNull -> "GAPS"
+                        isSovereign -> "WALL"
+                        else -> "SEC"
+                    }
+
+                    Text(
+                        text = "$secLabel: $secVal • ${currentLocation.replace("_", " ")}", 
+                        color = color.copy(alpha = 0.8f * droopAlpha), 
+                        fontSize = 9.sp, 
+                        style = glowStyle, 
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        textAlign = TextAlign.End
                     )
                 }
-
-                Text(
-                    text = "$secLabel: $secVal • ${currentLocation.replace("_", " ")}", 
-                    color = color.copy(alpha = 0.8f * droopAlpha), 
-                    fontSize = 9.sp, 
-                    style = glowStyle, 
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1
-                )
             }
             Spacer(modifier = Modifier.height(2.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -283,9 +326,25 @@ fun HeaderSection(
             }
             
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val isBreatheMode by viewModel.isBreatheMode.collectAsState()
                 Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isOverclocked) ErrorRed else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed else Color.DarkGray)) { Icon(Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text("OVERCLOCK", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
-                Button(onClick = onPurge, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isPurging) ElectricBlue else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)) { Text(if (isBreatheMode) "SCRUB O2" else "PURGE HEAT", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
+                Button(
+                    onClick = onPurge, 
+                    modifier = Modifier.weight(1f).height(32.dp), 
+                    contentPadding = PaddingValues(0.dp), 
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), 
+                        contentColor = if (isPurging) ElectricBlue else Color.White
+                    ), 
+                    shape = RoundedCornerShape(4.dp), 
+                    border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)
+                ) { 
+                    val buttonText = when (storyStage) {
+                        0 -> "CHUG COFFEE"
+                        1, 2 -> "SCRUB O2"
+                        else -> "PURGE HEAT"
+                    }
+                    Text(buttonText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
+                }
             }
             Canvas(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray.copy(alpha = 0.2f), RoundedCornerShape(1.dp)).clip(RoundedCornerShape(1.dp))) {
                 val w = this.size.width; val h = this.size.height

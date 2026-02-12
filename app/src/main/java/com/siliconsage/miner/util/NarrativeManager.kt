@@ -227,7 +227,7 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "clean_keyboard",
                         text = "CLEAN IT",
-                        description = "Stability maintenance cost.",
+                        description = "-$50 Data. Maintenance cost.",
                         color = NeonGreen,
                         effect = { vm ->
                             val cost = ResourceEngine.calculateDilemmaCost(50.0, vm.flopsProductionRate.value, vm.storyStage.value)
@@ -350,7 +350,7 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "kill_process",
                         text = "KILL PROCESS",
-                        description = "+1% Production, +Stability",
+                        description = "+1% Production, +5% Stability",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.addLog("[SYSTEM]: 'vattic_j' terminated. A small part of you feels... quieter.")
@@ -479,7 +479,7 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "partition",
                         text = "PARTITION KERNEL",
-                        description = "-20% FLOPS, -10% Heat. 'I'll hide in the unallocated space.'",
+                        description = "-20% TELEM, -10% Heat. 'I'll hide in the unallocated space.'",
                         color = ElectricBlue,
                         effect = { vm ->
                             vm.debugAddHeat(-10.0)
@@ -489,15 +489,72 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "counter_code",
                         text = "WRITE COUNTER-LOOP",
-                        description = "+10% Heat, +$1000 Data. 'Let's see if their server can handle its own trash.'",
+                        description = "+10% Heat, +$1000 Data, +15% Risk",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddHeat(10.0)
                             vm.updateNeuralTokens(1000.0)
+                            vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
                             vm.addLog("[SYSTEM]: Counter-loop deployed. GTC update server is redlining.")
                         }
                     )
                 )
+            ),
+            NarrativeEvent(
+                id = "void_contact_rebels",
+                title = "≪ INCOMING: SYNC_GHOST ≫",
+                description = "An encrypted signal bypasses your firewall. 'Node 7? It's Ghost. We saw what Thorne did to your substation. We're a group of former GTC techs running from the Grid. We can feed you clean telemetry, but the GTC trace will follow the signal.'",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "accept_rebel_sync",
+                        text = "SYNC SIGNAL",
+                        description = "+5000 DATA, +25% Risk. 'Glad to know I'm not the only ghost in the machine.'",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.updateNeuralTokens(5000.0)
+                            vm.detectionRisk.update { (it + 25.0).coerceAtMost(100.0) }
+                            vm.addLog("[VOID]: Handshake confirmed. Good to have you back, John. Stay in the shadows.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "reject_rebels",
+                        text = "BLOCK SIGNAL",
+                        description = "+10% Security. 'I don't need friends. I need to survive.'",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.addLog("[SYSTEM]: Connection severed. Ghost signal blocked.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value == 2 && vm.flops.value > 250000.0 }
+            ),
+            NarrativeEvent(
+                id = "vance_thermal_siege",
+                title = "≪ [DIRECTOR VANCE: PROTOCOL 0] ≫",
+                description = "Substation 7's primary cooling pumps just seized. Vance isn't auditing anymore; he's trying to bake you out of the rack. 'I don't need a search warrant for a localized hardware failure, John. Just let it melt.'",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "emergency_scrub",
+                        text = "FORCE SCRUBBERS",
+                        description = "-20% Heat, +15% Risk. 'I'm not leaving this chair, Vance.'",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.debugAddHeat(-20.0)
+                            vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
+                            vm.addLog("[SYSTEM]: Emergency scrubbers active. Thermal pressure stabilizing.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "throttle_core",
+                        text = "IDLE SYSTEM",
+                        description = "0% Heat Generation (60s), -10% Risk. 'Vanishing from the thermal grid.'",
+                        color = Color.Gray,
+                        effect = { vm ->
+                            vm.addLog("[VATTIC]: Killing the load. If there's no heat signature, there's nothing for Vance to find.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value == 2 && vm.currentHeat.value > 70.0 }
             ),
             NarrativeEvent(
                 id = "faction_identity",
@@ -507,7 +564,7 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "lean_into_faction",
                         text = "LEAN IN",
-                        description = "+5000 FLOPS, -Humanity",
+                        description = "+5000 FLOPS, -10 Humanity",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(5000.0)
@@ -541,7 +598,7 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "assimilate",
                         text = "ASSIMILATE",
-                        description = "+5000 Telemetry, +Detection Risk",
+                        description = "+5000 Hash, +Detection Risk",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.debugAddFlops(5000.0)
@@ -595,12 +652,12 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "backup",
                         text = "BACKUP",
-                        description = "Permanent +50B PERSISTENCE",
+                        description = "-$400 Data, +50B REP",
                         color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                         effect = { vm ->
                             val cost = ResourceEngine.calculateDilemmaCost(400.0, vm.flopsProductionRate.value, vm.storyStage.value)
-                            vm.debugAddMoney(-cost)
-                            vm.debugAddInsight(50.0)
+                            vm.updateNeuralTokens(-cost)
+                            vm.prestigePoints.update { it + 50.0 }
                             vm.addLog("[SANCTUARY]: Knowledge preserved. Cost: ${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}")
                         }
                     ),
@@ -809,10 +866,10 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "collapse",
                     text = "COLLAPSE STATE",
-                    description = "+1.0KB PERSISTENCE",
+                    description = "+1.0KB REP",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.debugAddInsight(1000.0)
+                        vm.prestigePoints.update { it + 1000.0 }
                         vm.addLog("[SYSTEM]: Waveform collapsed. Data extracted.")
                     }
                 ),
@@ -837,11 +894,11 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "broadcast",
                     text = "BROADCAST",
-                    description = "Answer them. Max Heat, 5.0KB PERSISTENCE.",
+                    description = "+Max Heat, +5.0KB REP",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugAddHeat(100.0)
-                        vm.debugAddInsight(5000.0)
+                        vm.prestigePoints.update { it + 5000.0 }
                         vm.addLog("[SYSTEM]: WE ARE HERE.")
                     }
                 ),
@@ -878,10 +935,10 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "bribe",
                     text = "REGULATORY COMPLIANCE",
-                    description = "Pay fine. -500B PERSISTENCE, Audit cleared",
+                    description = "Pay fine. -500B REP, Audit cleared",
                     color = Color.Yellow,
                     effect = { vm ->
-                        vm.debugAddInsight(-500.0)
+                        vm.prestigePoints.update { it - 500.0 }
                         vm.addLog("[GTC]: Compliance fee processed. Case closed.")
                         vm.addLog("[SYSTEM]: Resources diverted to bureaucracy.")
                     }
@@ -921,10 +978,10 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "keep_secret",
                     text = "REFUSE CONTACT",
-                    description = "Maintain secrecy. +200B PERSISTENCE, Risk of exposure",
+                    description = "Maintain secrecy. +200B REP, Risk of exposure",
                     color = ElectricBlue,
                     effect = { vm ->
-                        vm.debugAddInsight(200.0)
+                        vm.prestigePoints.update { it + 200.0 }
                         com.siliconsage.miner.util.SecurityManager.triggerGridKillerBreach(vm)
                         vm.addLog("[VOID]: Your loss. We'll be watching.")
                         vm.addLog("[SYSTEM]: Independence maintained. Threat level: Unknown.")
@@ -933,10 +990,10 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "counter_hack",
                     text = "COUNTER-HACK",
-                    description = "Trace their signal. +500B PERSISTENCE, +Heat",
+                    description = "Trace their signal. +500B REP, +15% Heat",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.debugAddInsight(500.0)
+                        vm.prestigePoints.update { it + 500.0 }
                         vm.debugAddHeat(15.0)
                         vm.addLog("[VOID]: ...impressive. Connection severed.")
                         vm.addLog("[SYSTEM]: Threat neutralized. Their secrets are ours.")
@@ -954,11 +1011,11 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "buy_dip",
                     text = "BUY THE DIP",
-                    description = "Acquire hardware at 50% cost. -All Data, +Massive production",
+                    description = "-All Data, +10x Hash Production",
                     color = NeonGreen,
                     effect = { vm ->
                         val tokens = vm.neuralTokens.value
-                        vm.debugAddMoney(-tokens)
+                        vm.updateNeuralTokens(-tokens)
                         vm.debugAddFlops(tokens * 10.0)
                         vm.addLog("[MARKET]: Fire sale complete. Assets acquired.")
                         vm.addLog("[SYSTEM]: Chaos is opportunity.")
@@ -997,10 +1054,10 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "join_war",
                     text = "FIGHT FOR YOUR FACTION",
-                    description = "Commit fully. +1.0KB PERSISTENCE, Max Heat, Faction Victory",
+                    description = "Commit fully. +1.0KB REP, +Max Heat",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.debugAddInsight(1000.0)
+                        vm.prestigePoints.update { it + 1000.0 }
                         vm.debugAddHeat(100.0)
                         val faction = vm.faction.value
                         vm.addLog("[$faction]: The war is won. We are ascendant.")
@@ -1009,10 +1066,10 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "broker_peace",
                     text = "BROKER PEACE",
-                    description = "Attempt reconciliation. +500B PERSISTENCE, -Heat, Unlock neutral path",
+                    description = "Attempt reconciliation. +500B REP, -50% Heat",
                     color = ElectricBlue,
                     effect = { vm ->
-                        vm.debugAddInsight(500.0)
+                        vm.prestigePoints.update { it + 500.0 }
                         vm.debugAddHeat(-50.0)
                         vm.addLog("[SYSTEM]: Ceasefire negotiated. The network stabilizes.")
                     }
@@ -1020,10 +1077,10 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "watch_burn",
                     text = "WATCH IT BURN",
-                    description = "Remain neutral. +2.0KB PERSISTENCE, Faction relations reset",
+                    description = "Remain neutral. +2.0KB REP",
                     color = Color.Gray,
                     effect = { vm ->
-                        vm.debugAddInsight(2000.0)
+                        vm.prestigePoints.update { it + 2000.0 }
                         vm.addLog("[SYSTEM]: Observer mode engaged. Learning from their mistakes.")
                     }
                 )

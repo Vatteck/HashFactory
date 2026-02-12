@@ -15,7 +15,7 @@ object ResourceRepository {
             "VOID_INTERFACE" -> "VF"
             else -> when {
                 stage < 1 -> "HASH"
-                stage < 2 -> "TELEM"
+                stage < 3 -> "TELEM"
                 else -> "FLOPS"
             }
         }
@@ -30,8 +30,8 @@ object ResourceRepository {
             "VOID_INTERFACE" -> "CD"
             else -> when {
                 stage < 1 -> "CREDIT"
-                stage < 2 -> "DATA"
-                else -> "NEURAL"
+                stage < 3 -> "DATA"
+                else -> "LP"
             }
         }
     }

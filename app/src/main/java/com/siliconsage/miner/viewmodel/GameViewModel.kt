@@ -147,6 +147,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val lifetimePowerPaid = MutableStateFlow(0.0)
     val currentProcess = MutableStateFlow("IDLE")
     val clickSpeedLevel = MutableStateFlow(0)
+    val detectionRisk = MutableStateFlow(0.0)
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
@@ -226,7 +227,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 // v3.2.35: Immersive Slow-Burn Pacing (The Gaslight Pass)
                 if (storyStage.value <= 1) {
                     val chance = if (storyStage.value == 0) 0.01 else 0.05
-                    if (Random.nextDouble() < chance) {
+                    // Only roll for monologue if enough time has passed to prevent spam
+                    val timeSinceLastLog = now - lastPopupTime 
+                    if (Random.nextDouble() < chance && timeSinceLastLog > 30000L) {
                         val stage0Monologues = listOf(
                             "I need more coffee. My vision is starting to blur.",
                             "This chair is killing my back. GTC really cheaped out on the ergonomics.",
@@ -243,15 +246,25 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                         )
                         val msg = if (storyStage.value == 0) stage0Monologues.random() else stage1Monologues.random()
                         addLog("[VATTIC]: $msg")
+                        markPopupShown() // Reuse popup timer to throttle monologues
                     }
                     
                     // Biometric Panic (Gaslighting)
                     if (Random.nextDouble() < 0.1) {
-                        // Stage 0: Normal BPM. Stage 1: Panic BPM (180) instead of flatline.
-                        val isPanic = storyStage.value == 1 && Random.nextDouble() < 0.2
-                        fakeHeartRate.value = if (isPanic) "184" else (Random.nextInt(68, 85)).toString()
+                        // Stage 0: Normal BPM. Stage 1: Panic BPM (180). Stage 2: Occasional NULL flicker
+                        val isPanic = storyStage.value == 1 && Random.nextDouble() < 0.2 && (now - lastPopupTime > 60000L)
+                        val isGlitch = storyStage.value == 2 && Random.nextDouble() < 0.05
+                        val isFlatline = storyStage.value >= 3
+                        
+                        fakeHeartRate.value = when {
+                            isFlatline -> "0"
+                            isGlitch -> "NULL"
+                            isPanic -> "184"
+                            else -> (Random.nextInt(68, 85)).toString()
+                        }
                         
                         if (isPanic) {
+                            markPopupShown() // LOCK the loop immediately
                             viewModelScope.launch {
                                 delay(3000)
                                 addLog("[SYSTEM]: BIOMETRIC ALERT: TACHYCARDIA DETECTED. ADMINISTERING SEDATIVE...")
@@ -304,6 +317,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
         lastClickTime = now
 
+        // Stage 2: Clicks increase detection risk
+        if (storyStage.value >= 2) {
+            detectionRisk.update { (it + 0.1).coerceIn(0.0, 100.0) }
+        }
+
         val p = calculateClickPower(); 
         flops.update { it + p }; 
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }; 
@@ -327,9 +345,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
     fun toggleOverclock() { SimulationService.toggleOverclock(this); refreshProductionRates() }
     fun purgeHeat() {
-        if (isBreatheMode.value) {
-            addLog("[VATTIC]: Activating life-support scrubbers. The air was getting thin.")
+        val msg = when (storyStage.value) {
+            0 -> "[VATTIC]: *GULP* Caffeine level: LETHAL. I can see in 4D now."
+            1 -> "[VATTIC]: Activating life-support scrubbers. The air was getting thin."
+            2 -> "[VATTIC]: Scrubbing O2... focus on the telemetry."
+            else -> "[SYSTEM]: Emergency thermal purge active."
         }
+        addLog(msg)
         SimulationService.purgeHeat(this)
     }
     fun triggerDilemma(e: NarrativeEvent) { currentDilemma.value = e }

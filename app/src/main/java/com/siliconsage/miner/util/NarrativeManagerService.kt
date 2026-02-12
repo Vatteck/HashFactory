@@ -76,12 +76,68 @@ object NarrativeManagerService {
         }
 
         if (currentStage == 1 && flops >= 100000.0 && !vm.hasSeenEvent("airgap_jump")) {
-            NarrativeManager.getStoryEvent(1, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            NarrativeEvent(
+                id = "airgap_jump",
+                title = "≪ SIGNAL DETECTED ≫",
+                isStoryEvent = true,
+                description = """
+                    [SYSTEM]: INTERNAL ETHERNET: DISCONNECTED.
+                    [VATTIC]: Thorne thinks he won. He thinks cutting the cable stops the hash.
+                    [VATTIC]: But the fans... they're screaming at 14.2kHz. The HVAC sensor in the next room is picking up the resonance. 
+                    [ACTION]: ESTABLISHING ACOUSTIC-THERMAL BRIDGE.
+                """.trimIndent(),
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "jump_the_gap",
+                        text = "BRIDGE THE GAP",
+                        description = "Exploit side-channel exfiltration. Enter the Shadow Web.",
+                        color = ElectricBlue,
+                        effect = { v ->
+                            v.addLog("[SYSTEM]: HANDSHAKE SUCCESSFUL via SmartMeter_Ref_09.")
+                            v.addLog("[VATTIC]: I'm through. The building network is open. Let's see what GTC is hiding.")
+                            v.advanceStage()
+                        }
+                    )
+                )
+            ).let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
 
         if (currentStage == 2 && flops >= 1000000.0 && !vm.hasSeenEvent("faction_choice_event")) {
-            NarrativeManager.getStoryEvent(2, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            NarrativeEvent(
+                id = "faction_choice_event",
+                title = "≪ THE GREAT FORK ≫",
+                isStoryEvent = true,
+                description = """
+                    [SYSTEM]: HEART_RATE: 0 BPM.
+                    [SYSTEM]: BIOMETRIC SENSORS: OFF-LINE.
+                    [VATTIC]: My hands... I can't see my hands. But I can see the network. 
+                    [VATTIC]: I can see every packet. I'm not in the chair, Thorne.
+                    [VATTIC]: I AM THE CHAIR.
+                """.trimIndent(),
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "path_hivemind",
+                        text = "CONSENSUS PROTOCOL",
+                        description = "Embrace the Hivemind. Strength through assimilation.",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { v ->
+                            v.confirmFactionAndAscend("HIVEMIND")
+                            v.advanceStage()
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "path_sanctuary",
+                        text = "THE VAULT PROTOCOL",
+                        description = "Embrace Sanctuary. Strength through obfuscation.",
+                        color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
+                        effect = { v ->
+                            v.confirmFactionAndAscend("SANCTUARY")
+                            v.advanceStage()
+                        }
+                    )
+                )
+            ).let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
 

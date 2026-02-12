@@ -75,6 +75,8 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
                 }
 
                 DevSection("SYSTEM & SECURITY") {
+                    DevButton("SET RISK TO 90%") { viewModel.detectionRisk.value = 90.0 }
+                    DevButton("SET RISK TO 0%") { viewModel.detectionRisk.value = 0.0 }
                     DevButton("TRIGGER BREACH") { viewModel.debugTriggerBreach() }
                     DevButton("TRIGGER HIJACK") { viewModel.debugTriggerKernelHijack() }
                     DevButton("TRIGGER AIRDROP") { viewModel.debugTriggerAirdrop() }

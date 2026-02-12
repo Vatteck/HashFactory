@@ -29,8 +29,25 @@ object SecurityManager {
     fun checkSecurityThreats(vm: GameViewModel) {
         val stage = vm.storyStage.value
         val rank = vm.playerRank.value
+        val detectionRisk = vm.detectionRisk.value
+        val secLevel = vm.securityLevel.value
         
-        if (stage < 3 || isBreachInProgress) return
+        // Stage 2+ Logic: Detection Risk vs Security Level
+        if (stage >= 2) {
+            val drift = (0.2 + (vm.flopsProductionRate.value / 1e6).coerceIn(0.0, 5.0))
+            val recovery = (secLevel * 0.1).coerceIn(0.05, 10.0)
+            
+            vm.detectionRisk.update { (it + drift - recovery).coerceIn(0.0, 100.0) }
+            
+            // Siege trigger: If risk hits 100% and we aren't already fighting
+            if (vm.detectionRisk.value >= 100.0 && !isBreachInProgress && !vm.isBreachActive.value) {
+                vm.addLogPublic("[SYS-LOG]: SECURITY_EXPOSURE_CRITICAL. Log cleansing failed.")
+                triggerGridKillerBreach(vm)
+                vm.detectionRisk.value = 50.0 // Reset to 50 on trigger
+            }
+        }
+
+        if (stage < 2 || isBreachInProgress) return
 
         if (vm.unlockedPerks.value.contains("gtc_backdoor") && Random.nextDouble() < 0.25) {
             vm.addLogPublic("[SYSTEM]: GTC Backdoor active. Breach attempt suppressed.")
