@@ -94,24 +94,28 @@ object ProductionEngine {
         globalSectors: Map<String, SectorState>
     ): Double {
         if (location == "ORBITAL_SATELLITE") {
+            // Orbit Path: Altitude and Solar Sails drive yield
             val altitudeMult = 1.0 + (orbitalAltitude / 500.0)
             val solarMult = 1.0 + ((upgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0) * 0.15)
             var rate = (flopsPerSec * altitudeMult * solarMult)
             
             globalSectors.values.forEach { state ->
-                if (state.isUnlocked) rate += 5e17 // Average bonus
+                if (state.isUnlocked) rate += 5e17 
             }
             return rate
         } else if (location == "VOID_INTERFACE") {
-            val entropyMult = 1.0 + (log2(entropyLevel + 1.0) * 2.0)
+            // Void Path: Entropy is the engine. High entropy = massive yield.
+            val entropyMult = 1.0 + (kotlin.math.log2(entropyLevel + 1.0) * 4.0)
             var baseRate = kotlin.math.sqrt(flopsPerSec.coerceAtLeast(1.0)) * entropyMult
             
-            if ((upgrades[UpgradeType.EVENT_HORIZON] ?: 0) > 0 && entropyLevel > 90.0) baseRate *= 5.0
+            if ((upgrades[UpgradeType.EVENT_HORIZON] ?: 0) > 0 && entropyLevel > 90.0) {
+                baseRate *= 5.0
+            }
             
             val wellLevel = upgrades[UpgradeType.SINGULARITY_WELL] ?: 0
-            val wellConversion = if (wellLevel > 0) (heatGenerationRate.coerceAtLeast(0.0) * wellLevel * 0.1) else 0.0
+            val wellConversion = if (wellLevel > 0) (kotlin.math.abs(heatGenerationRate) * wellLevel * 2.0) else 0.0
             val dmLevel = upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0
-            val collapseBonus = 1.0 + (collapsedNodesCount * 0.2 * dmLevel)
+            val collapseBonus = 1.0 + (collapsedNodesCount * 0.5 * dmLevel)
             
             var rate = (baseRate + wellConversion) * collapseBonus
             

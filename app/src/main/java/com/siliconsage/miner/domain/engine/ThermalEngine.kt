@@ -38,6 +38,7 @@ object ThermalEngine {
         // 2. Base Heat Generation & Cooling
         var netChangeUnits = 0.0
         val isVacuum = location == "ORBITAL_SATELLITE"
+        val isVoid = location == "VOID_INTERFACE"
 
         currentUpgrades.forEach { upgrade ->
             if (upgrade.count > 0) {
@@ -45,15 +46,21 @@ object ThermalEngine {
                 val isConvectionCooling = isConvectionCooling(upgrade.type)
 
                 if (!(isCageActive && isExternal)) {
-                    if (isVacuum && isConvectionCooling) {
-                        // Vacuum Penalty: Residual heat from stagnant fans
-                        netChangeUnits += (abs(upgrade.type.baseHeat) * 0.1) * upgrade.count
+                    if ((isVacuum || isVoid) && isConvectionCooling) {
+                        // High-Frontier Penalty: Fans don't work in a vacuum or void.
+                        // They actually generate minor heat from friction without cooling.
+                        netChangeUnits += 0.5 * upgrade.count
                     } else {
                         var heat = upgrade.type.baseHeat
                         
                         // Radiator Bonus in Space
                         if (isVacuum && upgrade.type == UpgradeType.RADIATOR_FINS) {
-                            heat *= 2.0
+                            heat *= 2.5 // Radiators are mandatory in Orbit
+                        }
+                        
+                        // Singularity Well in Void
+                        if (isVoid && upgrade.type == UpgradeType.SINGULARITY_WELL) {
+                            heat *= 1.5 // Wells consume heat to make VF
                         }
 
                         if (isOverclocked && heat > 0) heat *= 2.0
@@ -63,15 +70,20 @@ object ThermalEngine {
             }
         }
 
-        // 3. Base Dissipation (Disabled in Vacuum)
-        if (!isVacuum) {
+        // 3. Base Dissipation (Disabled in Vacuum/Void)
+        if (!isVacuum && !isVoid) {
             netChangeUnits -= 1.0
         }
 
-        // 4. Emergency Heat Purge (v3.2.6: Restore functionality)
+        // 4. Emergency Heat Purge
         if (isPurging) {
-            // Drop heat by 5% of total buffer per second, regardless of generation
-            netChangeUnits -= (totalThermalBuffer * 0.05)
+            if (isVoid) {
+                // Void Venting: Heat is gone, but it becomes Entropy
+                netChangeUnits -= (totalThermalBuffer * 0.15)
+            } else {
+                // Standard Purge
+                netChangeUnits -= (totalThermalBuffer * 0.05)
+            }
         }
 
         // 5. Protection & Caps

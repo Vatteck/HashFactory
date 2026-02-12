@@ -124,8 +124,21 @@ object SimulationService {
 
         if (vm.purgeExhaustTimer > 0 && vm.faction.value != "SANCTUARY") vm.purgeExhaustTimer--
         if (vm.currentLocation.value == "VOID_INTERFACE" && heatResults.netChangeUnits < 0) {
-            vm.entropyLevel.update { it + kotlin.math.abs(heatResults.netChangeUnits) * 0.005 }
+            // v3.2.46: Venting heat in the Void creates Entropy
+            vm.entropyLevel.update { it + kotlin.math.abs(heatResults.netChangeUnits) * 0.01 }
         }
+        
+        // Reality Drift (Void Path)
+        if (vm.currentLocation.value == "VOID_INTERFACE" && vm.entropyLevel.value > 80.0) {
+            if (Random.nextDouble() < 0.1) {
+                vm.triggerGlitchEffect()
+                if (Random.nextDouble() < 0.05) {
+                    vm.addLog("[VOID]: REALITY_DRIFT_DETECTED. SCRAMBLING BUFFER.")
+                    vm.substrateMass.update { (it * 0.95).coerceAtLeast(0.0) }
+                }
+            }
+        }
+
         vm.refreshProductionRates()
         
         var totalDecay = heatResults.integrityDecay
