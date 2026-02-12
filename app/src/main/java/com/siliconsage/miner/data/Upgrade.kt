@@ -55,6 +55,10 @@ enum class UpgradeType {
         isHardware -> 5.0 + (ordinal * 2.0)
         isCooling -> 2.0 + (ordinal % 10 * 5.0)
         isSecurity -> 10.0 + (ordinal % 10 * 10.0)
+        isGenerator -> -30.0 - (ordinal % 10 * 100.0) // Produces power
+        this == RESIDENTIAL_TAP -> 5.0
+        this == INDUSTRIAL_FEED -> 25.0
+        this == SUBSTATION_LEASE -> 100.0
         else -> 0.0
     }
 
