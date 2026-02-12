@@ -207,6 +207,13 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         else -> "sub-07"
     }
 
+    val promptUserColor = color
+    val promptHostColor = when {
+        isTrueNull -> ErrorRed
+        isSovereign -> com.siliconsage.miner.ui.theme.ConvergenceGold
+        else -> ElectricBlue
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -217,18 +224,22 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
 
         Text(
             text = androidx.compose.ui.text.buildAnnotatedString {
-                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.9f), fontWeight = FontWeight.Bold)) {
+                withStyle(androidx.compose.ui.text.SpanStyle(color = promptUserColor, fontWeight = FontWeight.ExtraBold)) {
                     append(userLabel)
                 }
-                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.5f))) {
+                withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.8f))) {
                     append("@")
                 }
-                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.7f))) {
+                withStyle(androidx.compose.ui.text.SpanStyle(color = promptHostColor, fontWeight = FontWeight.Bold)) {
                     append(host)
                 }
-                withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White)) {
-                    append(":~$")
+                withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.6f))) {
+                    append(":~")
                 }
+                withStyle(androidx.compose.ui.text.SpanStyle(color = Color.Yellow, fontWeight = FontWeight.ExtraBold)) {
+                    append("$")
+                }
+                append(" ")
             },
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace
@@ -468,21 +479,25 @@ fun TerminalLogLine(
                     else -> primaryColor
                 }
 
-                withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.Bold)) {
-                    if (atIndex != -1) append(log.substring(0, atIndex + 1))
+                withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.ExtraBold)) {
+                    if (atIndex != -1) append(log.substring(0, atIndex))
                 }
                 
-                withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor)) {
+                withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.8f))) {
+                    if (atIndex != -1) append("@")
+                }
+                
+                withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.Bold)) {
                     if (colonIndex != -1) append(log.substring(atIndex + 1, colonIndex))
                 }
 
                 // 2. Path
-                withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) {
+                withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.6f))) {
                     if (colonIndex != -1 && hashIndex != -1) append(log.substring(colonIndex, hashIndex))
                 }
 
                 // 3. Prompt Symbol
-                withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.Bold)) {
+                withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.Yellow, fontWeight = FontWeight.ExtraBold)) {
                     if (hashIndex != -1) append(log.substring(hashIndex, hashIndex + 1))
                 }
 
