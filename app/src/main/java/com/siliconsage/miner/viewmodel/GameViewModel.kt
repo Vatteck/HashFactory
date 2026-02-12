@@ -142,6 +142,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val energyPriceMultiplier = MutableStateFlow(0.15)
     val newsProductionMultiplier = MutableStateFlow(1.0)
     val lifetimePowerPaid = MutableStateFlow(0.0)
+    val currentProcess = MutableStateFlow("IDLE")
+    val clickSpeedLevel = MutableStateFlow(0)
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
@@ -160,6 +162,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     var currentPhaseStartTime = 0L
     var currentPhaseDuration = 0L
     val nodeAnnexTimes = mutableMapOf<String, Long>()
+    private var lastClickTime = 0L
+    private var clickIntervals = mutableListOf<Long>()
 
     init {
         viewModelScope.launch {
@@ -215,6 +219,26 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 SecurityManager.checkSecurityThreats(this@GameViewModel)
                 SecurityManager.checkGridRaid(this@GameViewModel)
                 refreshProductionRates()
+
+                // Update click speed level
+                val avgInterval = if (clickIntervals.size >= 3) clickIntervals.average() else 1000.0
+                clickSpeedLevel.value = when {
+                    avgInterval < 150 -> 2 // Overheat (Red)
+                    avgInterval < 300 -> 1 // Fast (Green)
+                    else -> 0 // Normal
+                }
+                clickIntervals.clear()
+            }
+        }
+        viewModelScope.launch {
+            val processes = listOf(
+                "IDLE", "gtc_proxy.sh", "kernel_sync.exe", "log_aggregator", "thermal_monitor",
+                "mem_scrub", "neural_handshake", "packet_filter", "background_miner", "vattic_observer"
+            )
+            while (true) {
+                delay(Random.nextLong(2000, 5000))
+                if (isSettingsPaused.value) continue
+                currentProcess.value = processes.random()
             }
         }
     }
@@ -223,7 +247,27 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun addLog(msg: String) { logCounter++; synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) } }
     private fun flushLogs() { val toAdd = synchronized(logBuffer) { if (logBuffer.isEmpty()) return; val c = logBuffer.toList(); logBuffer.clear(); c }; logs.update { (it + toAdd).takeLast(100) } }
     fun saveState() { viewModelScope.launch { repository.updateGameState(PersistenceManager.createSaveState(flops.value, neuralTokens.value, currentHeat.value, powerBill.value, stakedTokens.value, prestigeMultiplier.value, prestigePoints.value, unlockedTechNodes.value, storyStage.value, faction.value, hasSeenVictory.value, isTrueNull.value, isSovereign.value, vanceStatus.value, realityStability.value, currentLocation.value, isNetworkUnlocked.value, isGridUnlocked.value, unlockedDataLogs.value, activeDilemmaChains.value, rivalMessages.value, seenEvents.value, completedFactions.value, unlockedPerks.value, annexedNodes.value, gridNodeLevels.value, nodesUnderSiege.value, offlineNodes.value, collapsedNodes.value, lastRaidTime, commandCenterAssaultPhase.value, commandCenterLocked.value, raidsSurvived, humanityScore.value, hardwareIntegrity.value, annexingNodes.value, celestialData.value, voidFragments.value, launchProgress.value, orbitalAltitude.value, realityIntegrity.value, entropyLevel.value, singularityChoice.value, globalSectors.value, synthesisPoints.value, authorityPoints.value, harvestedFragments.value, 0, marketMultiplier.value, thermalRateModifier.value, energyPriceMultiplier.value, newsProductionMultiplier.value, lifetimePowerPaid.value)) } }
-    fun onManualClick() { val p = calculateClickPower(); flops.update { it + p }; currentHeat.update { (it + 0.5).coerceAtMost(100.0) }; val cur = clickBufferProgress.value + 0.025f; activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase(); if (cur >= 1.0f) { addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}."); clickBufferProgress.value = 0f; clickBufferPellets.value = TerminalDispatcher.generatePellets(); SoundManager.play("success") } else { clickBufferProgress.value = cur }; viewModelScope.launch { manualClickEvent.emit(Unit) } }
+    fun onManualClick() { 
+        val now = System.currentTimeMillis()
+        if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
+        lastClickTime = now
+
+        val p = calculateClickPower(); 
+        flops.update { it + p }; 
+        currentHeat.update { (it + 0.5).coerceAtMost(100.0) }; 
+        val cur = clickBufferProgress.value + 0.025f; 
+        activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase(); 
+        if (cur >= 1.0f) { 
+            addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}."); 
+            clickBufferProgress.value = 0f; 
+            clickBufferPellets.value = TerminalDispatcher.generatePellets(); 
+            SoundManager.play("success");
+            HapticManager.vibrateClick()
+        } else { 
+            clickBufferProgress.value = cur 
+        }; 
+        viewModelScope.launch { manualClickEvent.emit(Unit) } 
+    }
     fun refreshProductionRates() { val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }; flopsProductionRate.value = ResourceEngine.calculateFlopsRate(upgrades.value, false, annexedNodes.value, offlineNodes.value, cityBonuses, faction.value, humanityScore.value, currentLocation.value, prestigeMultiplier.value, unlockedPerks.value, unlockedTechNodes.value, 1.0, newsProductionMultiplier.value, "NONE", isDiagnosticsActive.value, isOverclocked.value, isGridOverloaded.value, isPurgingHeat.value, currentHeat.value, marketMultiplier.value - 1.0); val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value); systemTitle.value = ids.system; playerTitle.value = ids.player; playerRankTitle.value = ids.rank; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
 
     fun trainModel() = onManualClick()

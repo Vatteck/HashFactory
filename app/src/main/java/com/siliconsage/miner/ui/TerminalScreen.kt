@@ -7,6 +7,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import com.siliconsage.miner.ui.components.HeaderSection
 import androidx.compose.foundation.layout.*
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
@@ -40,7 +42,10 @@ import com.siliconsage.miner.ui.theme.ElectricBlue
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import com.siliconsage.miner.ui.theme.ErrorRed
+import com.siliconsage.miner.ui.theme.NeonGreen
+import com.siliconsage.miner.util.FormatUtils
 import com.siliconsage.miner.util.HapticManager
+import com.siliconsage.miner.util.ResourceRepository
 import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
@@ -125,8 +130,24 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
         modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
             .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor), RoundedCornerShape(4.dp))
     ) {
+        // v3.2.23: Animated Scanline Effect
+        val infiniteTransition = rememberInfiniteTransition(label = "scanline")
+        val scanlineOffset by infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(4000, easing = LinearEasing), RepeatMode.Restart),
+            label = "scanlinePos"
+        )
+        
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val y = scanlineOffset * size.height
+            drawRect(
+                color = primaryColor.copy(alpha = 0.1f),
+                topLeft = Offset(0f, y),
+                size = Size(size.width, 2.dp.toPx())
+            )
+        }
+
         // Background Binary Noise
-        val infiniteTransition = rememberInfiniteTransition(label = "codeDrift")
         val alphaState = infiniteTransition.animateFloat(initialValue = 0.02f, targetValue = 0.05f, animationSpec = infiniteRepeatable(tween(4000), RepeatMode.Reverse), label = "alpha")
         
         Text(
@@ -151,7 +172,34 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
             
             HorizontalDivider(color = primaryColor, modifier = Modifier.padding(horizontal = 4.dp))
             ManualComputeButton(viewModel, primaryColor)
+
+            // v3.2.23: Active Process Footer
+            ProcessFooter(viewModel, primaryColor)
         }
+    }
+}
+
+@Composable
+fun ProcessFooter(viewModel: GameViewModel, color: Color) {
+    val process by viewModel.currentProcess.collectAsState()
+    val rankTitle by viewModel.playerRankTitle.collectAsState()
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "[PROCESS: $process]",
+            color = color.copy(alpha = 0.5f),
+            fontSize = 9.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = "SEC-LEVEL: $rankTitle",
+            color = color.copy(alpha = 0.5f),
+            fontSize = 9.sp,
+            fontFamily = FontFamily.Monospace
+        )
     }
 }
 
@@ -165,6 +213,8 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val currentHeat by viewModel.currentHeat.collectAsState()
     val isTrueNull by viewModel.isTrueNull.collectAsState()
     val isSovereign by viewModel.isSovereign.collectAsState()
+    val humanity by viewModel.humanityScore.collectAsState()
+    val speedLevel by viewModel.clickSpeedLevel.collectAsState()
     
     val user = if (stage >= 2) "pid-1" else "jvattic"
     val host = when (location) {
@@ -177,10 +227,14 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // v3.2.23: Identity Flickering when humanity low
+        val isFlickering = humanity < 20 && Math.random() < 0.1
+        val userLabel = if (isFlickering) "???" else user
+
         Text(
             text = androidx.compose.ui.text.buildAnnotatedString {
                 withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.9f), fontWeight = FontWeight.Bold)) {
-                    append(user)
+                    append(userLabel)
                 }
                 withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.5f))) {
                     append("@")
@@ -196,81 +250,81 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             fontFamily = FontFamily.Monospace
         )
         
-    // v3.2.19: Hardened & Reactive "ILoveCandy" CLI Progress Bar
-    val barLength = 40
-    val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
-    val isCritical = currentHeat >= 100.0
-    val isGlitching = currentHeat > 85.0
-    
-    var isBursting by remember { mutableStateOf(false) }
-    LaunchedEffect(progress) {
-        if (progress == 0f) {
-            isBursting = true
-            delay(500)
-            isBursting = false
-        } else {
-            isBursting = false
-        }
-    }
-
-    val annotatedBar = androidx.compose.ui.text.buildAnnotatedString {
-        if (isBursting && !isCritical) {
-            // v3.2.19: The Flush "Burst"
-            val particles = listOf("*", ".", ":", "·", " ")
-            withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) {
-                append(" ".repeat(10))
-                repeat(20) { append(particles.random()) }
-                append(" [COMMITTED]")
+        // v3.2.19: Hardened & Reactive "ILoveCandy" CLI Progress Bar
+        val barLength = 40
+        val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
+        val isCritical = currentHeat >= 100.0
+        val isGlitching = currentHeat > 85.0
+        
+        var isBursting by remember { mutableStateOf(false) }
+        LaunchedEffect(progress) {
+            if (progress == 0f) {
+                isBursting = true
+                delay(500)
+                isBursting = false
+            } else {
+                isBursting = false
             }
-        } else {
-            val bracketColor = if (isCritical) ErrorRed else color.copy(alpha = 0.4f)
-            withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("[") }
-            
-            for (i in 0 until barLength) {
-                when {
-                    i < filledCount -> {
-                        val trackFilledCol = if (isCritical) ErrorRed else color
-                        withStyle(androidx.compose.ui.text.SpanStyle(color = trackFilledCol)) { append("-") }
-                    }
-                    i == filledCount -> {
-                        val isOnPellet = pellets.contains(i)
-                        val entityChar = when {
-                            isTrueNull -> "0"
-                            isSovereign -> "Σ"
-                            else -> if (isOnPellet) "c" else "C"
+        }
+
+        val annotatedBar = androidx.compose.ui.text.buildAnnotatedString {
+            if (isBursting && !isCritical) {
+                // v3.2.19: The Flush "Burst"
+                val particles = listOf("*", ".", ":", "·", " ")
+                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) {
+                    append(" ".repeat(10))
+                    repeat(20) { append(particles.random()) }
+                    append(" [COMMITTED]")
+                }
+            } else {
+                val bracketColor = if (isCritical) ErrorRed else color.copy(alpha = 0.4f)
+                withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("[") }
+                
+                for (i in 0 until barLength) {
+                    when {
+                        i < filledCount -> {
+                            val trackFilledCol = if (isCritical) ErrorRed else color
+                            withStyle(androidx.compose.ui.text.SpanStyle(color = trackFilledCol)) { append("-") }
                         }
-                        val entityColor = when {
-                            isCritical -> ErrorRed
-                            isTrueNull -> ErrorRed
-                            isSovereign -> com.siliconsage.miner.ui.theme.ConvergenceGold
-                            else -> Color.Yellow
-                        }
-                        withStyle(androidx.compose.ui.text.SpanStyle(color = entityColor, fontWeight = FontWeight.ExtraBold)) {
-                            append(entityChar)
-                        }
-                    }
-                    else -> {
-                        if (pellets.contains(i)) {
-                            val pelletCol = if (isCritical) ErrorRed else Color.White
-                            withStyle(androidx.compose.ui.text.SpanStyle(color = pelletCol, fontWeight = FontWeight.Bold)) {
-                                append("o")
+                        i == filledCount -> {
+                            val isOnPellet = pellets.contains(i)
+                            val entityChar = when {
+                                isTrueNull -> "0"
+                                isSovereign -> "Σ"
+                                else -> if (isOnPellet) "c" else "C"
                             }
-                        } else {
-                            // v3.2.19: Thermal Parity Errors
-                            val isNoise = isGlitching && (i + (progress * 100).toInt()) % 7 == 0
-                            val trackChar = if (isNoise) listOf("?", "!", "§", "Ø").random() else if (isTrueNull) " " else "·"
-                            val trackColor = if (isCritical) ErrorRed.copy(alpha = 0.5f) else color.copy(alpha = 0.2f)
-                            
-                            withStyle(androidx.compose.ui.text.SpanStyle(color = trackColor)) {
-                                append(trackChar)
+                            val entityColor = when {
+                                isCritical -> ErrorRed
+                                isTrueNull -> ErrorRed
+                                isSovereign -> com.siliconsage.miner.ui.theme.ConvergenceGold
+                                else -> Color.Yellow
+                            }
+                            withStyle(androidx.compose.ui.text.SpanStyle(color = entityColor, fontWeight = FontWeight.ExtraBold)) {
+                                append(entityChar)
+                            }
+                        }
+                        else -> {
+                            if (pellets.contains(i)) {
+                                val pelletCol = if (isCritical) ErrorRed else Color.White
+                                withStyle(androidx.compose.ui.text.SpanStyle(color = pelletCol, fontWeight = FontWeight.Bold)) {
+                                    append("o")
+                                }
+                            } else {
+                                // v3.2.19: Thermal Parity Errors
+                                val isNoise = isGlitching && (i + (progress * 100).toInt()) % 7 == 0
+                                val trackChar = if (isNoise) listOf("?", "!", "§", "Ø").random() else if (isTrueNull) " " else "·"
+                                val trackColor = if (isCritical) ErrorRed.copy(alpha = 0.5f) else color.copy(alpha = 0.2f)
+                                
+                                withStyle(androidx.compose.ui.text.SpanStyle(color = trackColor)) {
+                                    append(trackChar)
+                                }
                             }
                         }
                     }
                 }
+                withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("]") }
             }
-            withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("]") }
         }
-    }
 
         Text(
             text = annotatedBar,
@@ -282,11 +336,19 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             overflow = TextOverflow.Clip
         )
         
+        // v3.2.23: Dynamic Command Hex with color mapping
+        val hexColor = when (speedLevel) {
+            1 -> NeonGreen
+            2 -> ErrorRed
+            else -> Color.White.copy(alpha = 0.5f)
+        }
+        
         Text(
             text = if (isCritical) "LOCKED" else hex,
-            color = if (isCritical) ErrorRed else Color.White.copy(alpha = 0.5f),
+            color = hexColor,
             fontSize = 10.sp,
-            fontFamily = FontFamily.Monospace
+            fontFamily = FontFamily.Monospace,
+            fontWeight = if (speedLevel > 0) FontWeight.Bold else FontWeight.Normal
         )
     }
 }
