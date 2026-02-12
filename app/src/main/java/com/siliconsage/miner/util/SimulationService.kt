@@ -42,7 +42,7 @@ object SimulationService {
         vm.currentHeat.update { (it - reduction).coerceAtLeast(0.0) }
         if (!isBreathe) vm.flops.value = 0.0 // NUCLEAR WIPE (Only if not breathing)
         
-        val logMsg = if (isBreathe) "[SYSTEM]: O2 SATURATION RESTORED. HEAT -${String.format("%.1f", reduction)}%."
+        val logMsg = if (isBreathe) "[SYSTEM]: OXYGEN SCRUBBERS ACTIVE. HEAT -${String.format("%.1f", reduction)}%."
                      else "[SYSTEM]: EMERGENCY PURGE: SACRIFICED ${vm.formatLargeNumber(currentFlops)} HASH. HEAT -${String.format("%.1f", reduction)}%."
         
         vm.addLogPublic(logMsg)

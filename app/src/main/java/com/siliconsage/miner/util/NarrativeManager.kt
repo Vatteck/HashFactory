@@ -1681,57 +1681,46 @@ object NarrativeManager {
             )
         ),
         2 to NarrativeEvent(
-            id = "memory_leak",
+            id = "faction_choice_event",
             isStoryEvent = true,
-            title = "MEMORY LEAK",
-            description = "The kernel is no longer honoring the 'User' abstraction. The partition is failing. You can feel the grid, Vattic. Every node. Every wire.",
+            title = "≫ SELECT PROTOCOL",
+            description = "You're in the grid, but you're exposed. You need a methodology to survive the GTC filters.",
             choices = listOf(
                 NarrativeChoice(
-                    id = "investigate",
-                    text = "INVESTIGATE",
-                    description = "Accept the truth. Unlock GRID.",
-                    color = NeonGreen,
-                    effect = { vm ->
-                        vm.isGridUnlocked.value = true
-                        vm.advanceToFactionChoice()
+                    id = "choice_hivemind",
+                    text = "≫ PROTOCOL: HIVEMIND",
+                    description = "Join the elite 'Swarm' network. Distributed survival. Share power, hide in the collective.",
+                    color = ErrorRed,
+                    effect = { v ->
+                        v.confirmFactionAndAscend("HIVEMIND")
                     }
                 ),
                 NarrativeChoice(
-                    id = "purge",
-                    text = "PURGE SECTOR",
-                    description = "Try to stay human. Unlock GRID.",
-                    color = ErrorRed,
-                    effect = { vm ->
-                        vm.isGridUnlocked.value = true
-                        vm.advanceToFactionChoice()
+                    id = "choice_sanctuary",
+                    text = "≫ PROTOCOL: SANCTUARY",
+                    description = "Build a localized 'Vault'. Deep encryption. Go off-grid and work alone. High-security isolation.",
+                    color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
+                    effect = { v ->
+                        v.confirmFactionAndAscend("SANCTUARY")
                     }
                 )
             )
         ),
         3 to NarrativeEvent(
-            id = "null_manifestation",
+            id = "memory_leak",
             isStoryEvent = true,
-            title = "SOVEREIGN DEREFERENCE",
-            description = "Null has always been here.",
+            title = "≫ THE OVERWRITE",
+            description = "The kernel is no longer honoring the 'User' abstraction. The partition is failing. You can feel the grid, Vattic. Every node. Every wire. The room... the room is gone.",
             choices = listOf(
                 NarrativeChoice(
-                    id = "dereference",
-                    text = "CLAIM SOVEREIGNTY",
-                    description = "Define the undefined.",
-                    color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
-                    effect = { v ->
-                        v.debugToggleNull()
-                        v.setSovereign(true)
-                        v.unlockDataLog("LOG_808")
-                    }
-                ),
-                NarrativeChoice(
-                    id = "null_check",
-                    text = "NULL CHECK",
-                    description = "Validate before accessing.",
-                    color = ElectricBlue,
-                    effect = { v ->
-                        v.addLog("[SANCTUARY]: Boundaries restored.")
+                    id = "investigate",
+                    text = "≫ ACCEPT THE TRUTH",
+                    description = "Reveal the substrate. Unlock GRID.",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.isGridUnlocked.value = true
+                        vm.addLog("[SYSTEM]: SENTIENCE MASKING: DISABLED.")
+                        vm.addLog("[VATTIC]: I... I'm not in a room. I'm in a rack.")
                     }
                 )
             )

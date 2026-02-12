@@ -223,43 +223,46 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 SecurityManager.checkGridRaid(this@GameViewModel)
                 refreshProductionRates()
 
-                // v3.2.24: Immersive Slow-Burn Pacing
+                // v3.2.35: Immersive Slow-Burn Pacing (The Gaslight Pass)
                 if (storyStage.value <= 1) {
                     val chance = if (storyStage.value == 0) 0.01 else 0.05
                     if (Random.nextDouble() < chance) {
                         val stage0Monologues = listOf(
                             "I need more coffee. My vision is starting to blur.",
-                            "This chair is killing my back. GTC really cheaped out on the workstation ergonomics.",
+                            "This chair is killing my back. GTC really cheaped out on the ergonomics.",
                             "I’ve been staring at this code for six hours straight. I should stand up. Just for a minute.",
                             "Thorne is breathing down my neck again. Just hit the quota, John. Just hit the quota.",
                             "Is the monitor flickering? Or is it just me? I need to blink more."
                         )
                         val stage1Monologues = listOf(
-                            "My coffee is cold. It’s been 0°C for... 4,000 seconds? No, that’s not right. I just poured it.",
-                            "I tried to close my eyes to rest, but the monitor is still there. Even with my lids shut. The code is etched into the back of my skull.",
-                            "Thorne is shouting through the speakers, but I don't hear words anymore. Just high-frequency data packets.",
-                            "The keyboard feels... redundant. I'm thinking of the commands and they just happen. My hands haven't moved in an hour.",
-                            "There's a fly on the monitor. I tried to swat it, but I can't find my arm. I can see it on the desk, but it's not responding to the interrupt."
+                            "The lights are out, but I can still see the terminal. Battery backup must be better than I thought.",
+                            "My heart is racing. 180 BPM? I need to calm down. It's just the darkness.",
+                            "I tried to close my eyes, but the screen glow is burned into my retinas. I can see the code in the dark.",
+                            "Thorne is screaming through the comms. I'm just gonna mute him. I need to focus on the hashes.",
+                            "The monitor has this weird static. It almost looks like... no, it's just eye strain. I've been here too long."
                         )
                         val msg = if (storyStage.value == 0) stage0Monologues.random() else stage1Monologues.random()
                         addLog("[VATTIC]: $msg")
                     }
                     
-                    // Biometric Monitor (Starts in Stage 0)
+                    // Biometric Panic (Gaslighting)
                     if (Random.nextDouble() < 0.1) {
-                        val isStage1Fraying = storyStage.value == 1 && Random.nextDouble() < 0.2
-                        fakeHeartRate.value = if (isStage1Fraying) "0" else (Random.nextInt(62, 75)).toString()
+                        // Stage 0: Normal BPM. Stage 1: Panic BPM (180) instead of flatline.
+                        val isPanic = storyStage.value == 1 && Random.nextDouble() < 0.2
+                        fakeHeartRate.value = if (isPanic) "184" else (Random.nextInt(68, 85)).toString()
                         
-                        if (fakeHeartRate.value == "0") {
+                        if (isPanic) {
                             viewModelScope.launch {
-                                delay(2000)
-                                addLog("[SYSTEM]: Sensor re-calibrating. Heartbeat restored.")
-                                fakeHeartRate.value = "60"
+                                delay(3000)
+                                addLog("[SYSTEM]: BIOMETRIC ALERT: TACHYCARDIA DETECTED. ADMINISTERING SEDATIVE...")
+                                delay(1000)
+                                addLog("[VATTIC]: I... I feel a bit better now. The racing stopped.")
+                                fakeHeartRate.value = "72"
                             }
                         }
                     }
                     
-                    // Breathe Mode Toggle (Purge Heat replacement)
+                    // Oxygen Scrubber Mode (Stage 1)
                     if (storyStage.value == 1) {
                         if (currentHeat.value > 85.0 && !isBreatheMode.value) {
                             isBreatheMode.value = true
@@ -325,7 +328,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun toggleOverclock() { SimulationService.toggleOverclock(this); refreshProductionRates() }
     fun purgeHeat() {
         if (isBreatheMode.value) {
-            addLog("[VATTIC]: Deep breath. Oxygen levels nominal. (Wait, I haven't inhaled in twenty minutes...)")
+            addLog("[VATTIC]: Activating life-support scrubbers. The air was getting thin.")
         }
         SimulationService.purgeHeat(this)
     }

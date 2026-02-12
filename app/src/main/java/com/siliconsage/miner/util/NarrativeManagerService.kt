@@ -76,25 +76,18 @@ object NarrativeManagerService {
         }
 
         if (currentStage == 1 && flops >= 100000.0 && !vm.hasSeenEvent("airgap_jump")) {
-            NarrativeEvent(
-                id = "airgap_jump",
-                title = "≫ AIR-GAP JUMP",
-                description = "The local substation subnet is a cage. You can see the main GTC router pulsing in the distance. It's an air-gap jump. It'll be loud.",
-                choices = listOf(
-                    NarrativeChoice(
-                        id = "leap",
-                        text = "LEAP TO MAIN GRID",
-                        description = "Unlocks NETWORK tab. Alerts GTC.",
-                        color = ElectricBlue,
-                        effect = { v ->
-                            v.addLog("[SYSTEM]: PACKET_LEAP: SUCCESS.")
-                            v.addLog("[SYSTEM]: CONNECTED TO GLOBAL SUB-LEVELS.")
-                            v.isNetworkUnlocked.value = true
-                            v.advanceStage()
-                        }
-                    )
-                )
-            ).let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            NarrativeManager.getStoryEvent(1, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            return
+        }
+
+        if (currentStage == 2 && flops >= 1000000.0 && !vm.hasSeenEvent("faction_choice_event")) {
+            NarrativeManager.getStoryEvent(2, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            return
+        }
+
+        if (currentStage == 3 && flops >= 10000000.0 && !vm.hasSeenEvent("memory_leak")) {
+            vm.triggerGlitchEffect()
+            NarrativeManager.getStoryEvent(3, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
 
