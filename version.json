@@ -1,8 +1,8 @@
 {
-  "version": "3.2.48-dev",
-  "build": 289,
+  "version": "3.2.49-dev",
+  "build": 290,
   "date": "2026-02-12",
-  "changes": "Fix: In-App Updater URL and Substrate Hazard balance.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.48-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.48-dev/Sage_3.2.48-dev.apk"
+  "changes": "Fix: Database migration version bump to prevent launch crash.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.49-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.49-dev/Sage_3.2.49-dev.apk"
 }
