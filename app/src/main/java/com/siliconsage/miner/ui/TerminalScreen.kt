@@ -134,7 +134,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
         val infiniteTransition = rememberInfiniteTransition(label = "scanline")
         val scanlineOffset by infiniteTransition.animateFloat(
             initialValue = 0f, targetValue = 1f,
-            animationSpec = infiniteRepeatable(tween(4000, easing = LinearEasing), RepeatMode.Restart),
+            animationSpec = infiniteRepeatable(tween(6000, easing = LinearEasing), RepeatMode.Restart),
             label = "scanlinePos"
         )
         
@@ -158,69 +158,32 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
+            // v3.2.24: Background Process as tiny, dim header inside the terminal box
+            val process by viewModel.currentProcess.collectAsState()
+            Text(
+                text = "[PROCESS: $process]".uppercase(),
+                color = primaryColor.copy(alpha = 0.25f),
+                fontSize = 7.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+
             LazyColumn(
                 state = listState,
-                modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
+                modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
                 itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
                     TerminalLogLine(log = entry.message, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
                 }
             }
             
-            // v3.2.24: Active Process & Command Status (Compacted)
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val process by viewModel.currentProcess.collectAsState()
-                Text(
-                    text = "[JOB: $process]",
-                    color = primaryColor.copy(alpha = 0.4f),
-                    fontSize = 8.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                // v3.2.23: Dynamic Command Hex
-                val hex by viewModel.activeCommandHex.collectAsState()
-                val speedLevel by viewModel.clickSpeedLevel.collectAsState()
-                val hexColor = when (speedLevel) {
-                    1 -> NeonGreen
-                    2 -> ErrorRed
-                    else -> Color.White.copy(alpha = 0.3f)
-                }
-                Text(
-                    text = hex,
-                    color = hexColor,
-                    fontSize = 8.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
-
             // v3.2.9: Persistent Active Command / I/O Buffer
             ActiveCommandBuffer(viewModel, primaryColor)
             
             HorizontalDivider(color = primaryColor.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 4.dp))
             ManualComputeButton(viewModel, primaryColor)
         }
-    }
-}
-
-@Composable
-fun ProcessFooter(viewModel: GameViewModel, color: Color) {
-    val process by viewModel.currentProcess.collectAsState()
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        Text(
-            text = "[PROCESS: $process]",
-            color = color.copy(alpha = 0.5f),
-            fontSize = 9.sp,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 

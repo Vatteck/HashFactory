@@ -1452,6 +1452,10 @@ object NarrativeManager {
     fun rollForEvent(viewModel: GameViewModel): NarrativeEvent? {
         val faction = viewModel.faction.value
         val stage = viewModel.storyStage.value
+        val flops = viewModel.flops.value
+
+        // v3.2.24: Prevent random dilemmas from triggering before system stabilization (1k hash floor)
+        if (flops < 1000.0) return null
 
         // Prioritize stage-specific events
         val stagePool = (stageEvents[stage] ?: emptyList()).filter { it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) }

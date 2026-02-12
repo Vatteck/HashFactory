@@ -29,4 +29,7 @@ interface GameDao {
 
     @Update
     suspend fun updateUpgrade(upgrade: Upgrade)
+
+    @Query("DELETE FROM upgrades")
+    suspend fun clearUpgrades()
 }

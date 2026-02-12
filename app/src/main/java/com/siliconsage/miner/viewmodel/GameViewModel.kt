@@ -287,9 +287,24 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         logs.value = emptyList()
         logCounter = 0
         upgrades.value = emptyMap()
-        PersistenceManager.restoreState(this@GameViewModel, PersistenceManager.createWipeState()); 
+        seenEvents.value = emptySet()
+        unlockedTechNodes.value = emptyList()
+        
+        // 1. Clear database
+        repository.clearUpgrades()
         repository.updateGameState(PersistenceManager.createWipeState()); 
-        addLog("[SYSTEM]: DATA WIPE COMPLETE."); 
+        
+        // 2. Re-initialize baseline upgrades (set them to 0)
+        repository.ensureInitialized()
+        
+        // 3. Sync local state
+        PersistenceManager.restoreState(this@GameViewModel, PersistenceManager.createWipeState()); 
+        
+        addLog("[SYSTEM]: KERNEL WIPE SUCCESSFUL.")
+        addLog("[SYSTEM]: INITIALIZING BOOT SEQUENCE...")
+        addLog("[SYSTEM]: HARDWARE DETECTED: SUBSTATION 7.")
+        addLog("[VATTIC]: Is this thing on? Testing 1, 2... okay, hash rate is stable.")
+        
         refreshProductionRates() 
     }
     fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }

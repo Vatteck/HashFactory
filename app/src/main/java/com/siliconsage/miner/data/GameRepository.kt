@@ -30,6 +30,10 @@ class GameRepository(private val gameDao: GameDao) {
     suspend fun updateUpgrade(upgrade: Upgrade) {
         gameDao.updateUpgrade(upgrade)
     }
+
+    suspend fun clearUpgrades() {
+        gameDao.clearUpgrades()
+    }
     
     suspend fun getGameStateOneShot(): GameState? {
         return gameDao.getGameStateOneShot()
