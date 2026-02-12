@@ -1,8 +1,8 @@
 {
-  "version": "3.2.37",
-  "build": 275,
+  "version": "3.2.38",
+  "build": 276,
   "date": "2026-02-12",
-  "changes": "Narrative Gating: Hidden migration and prestige stats until Stage 3.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.37",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.37/Sage_3.2.37.apk"
+  "changes": "Tech Tree Overhaul: Added a software protocol layer to Stage 2.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.38",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.38/Sage_3.2.38.apk"
 }
