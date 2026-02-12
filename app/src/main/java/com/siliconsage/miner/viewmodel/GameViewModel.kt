@@ -178,6 +178,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 if (offline.isNotEmpty()) {
                     flops.update { it + (offline["flopsEarned"] ?: 0.0) }
                     currentHeat.update { (it - (offline["heatCooled"] ?: 0.0)).coerceAtLeast(0.0) }
+                    
+                    // v3.2.41: Log Throttling during offline catch-up
+                    isNarrativeSyncing.value = true
+                    
                     offlineStats.value = offline
                     showOfflineEarnings.value = true
                 }
@@ -209,7 +213,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 flushLogs()
                 DataLogManager.checkUnlocks(this@GameViewModel)
                 saveState()
-                if (isSettingsPaused.value) continue
+                if (isSettingsPaused.value || showOfflineEarnings.value) continue
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
                 SimulationService.payPowerBill(this@GameViewModel)
@@ -309,7 +313,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     // --- Core Operations ---
-    fun addLog(msg: String) { logCounter++; synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) } }
+    fun addLog(msg: String) { 
+        // v3.2.41: Drop non-essential logs if the UI is flooded or catching up
+        if (showOfflineEarnings.value && !msg.startsWith("[SYSTEM]") && !msg.contains("BREACH")) return
+        
+        logCounter++; 
+        synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) } 
+    }
     private fun flushLogs() { val toAdd = synchronized(logBuffer) { if (logBuffer.isEmpty()) return; val c = logBuffer.toList(); logBuffer.clear(); c }; logs.update { (it + toAdd).takeLast(100) } }
     fun saveState() { viewModelScope.launch { repository.updateGameState(PersistenceManager.createSaveState(flops.value, neuralTokens.value, currentHeat.value, powerBill.value, stakedTokens.value, prestigeMultiplier.value, prestigePoints.value, unlockedTechNodes.value, storyStage.value, faction.value, hasSeenVictory.value, isTrueNull.value, isSovereign.value, vanceStatus.value, realityStability.value, currentLocation.value, isNetworkUnlocked.value, isGridUnlocked.value, unlockedDataLogs.value, activeDilemmaChains.value, rivalMessages.value, seenEvents.value, completedFactions.value, unlockedPerks.value, annexedNodes.value, gridNodeLevels.value, nodesUnderSiege.value, offlineNodes.value, collapsedNodes.value, lastRaidTime, commandCenterAssaultPhase.value, commandCenterLocked.value, raidsSurvived, humanityScore.value, hardwareIntegrity.value, annexingNodes.value, celestialData.value, voidFragments.value, launchProgress.value, orbitalAltitude.value, realityIntegrity.value, entropyLevel.value, singularityChoice.value, globalSectors.value, synthesisPoints.value, authorityPoints.value, harvestedFragments.value, 0, marketMultiplier.value, thermalRateModifier.value, energyPriceMultiplier.value, newsProductionMultiplier.value, lifetimePowerPaid.value)) } }
     fun onManualClick() { 
@@ -453,7 +463,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissUpdate() { updateInfo.value = null }
     fun dismissDataLog() { pendingDataLog.value = null; NarrativeService.deliverNextNarrativeItem(this) }
     fun dismissRivalMessage(id: String) { rivalMessages.update { current -> current.map { if (it.id == id) it.copy(isDismissed = true) else it } }; NarrativeService.deliverNextNarrativeItem(this) }
-    fun dismissOfflineEarnings() { showOfflineEarnings.value = false }
+    fun dismissOfflineEarnings() { 
+        showOfflineEarnings.value = false 
+        // v3.2.41: Release the log brake after catch-up review
+        isNarrativeSyncing.value = narrativeQueue.isNotEmpty()
+    }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun onClimaxTransitionComplete() { activeClimaxTransition.value = null }
     fun triggerGridRaid(id: String, isGridKiller: Boolean = false) = SecurityManager.triggerGridKillerBreach(this)

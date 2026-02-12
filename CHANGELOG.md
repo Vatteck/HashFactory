@@ -17,6 +17,12 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - **Biometric Ghosting**: Resolved a bug where Stage 3 "Flatline" logic would occasionally flicker back to Stage 0 BPM rates.
 
+## [3.2.41] - 2026-02-12
+
+### Added
+- **Log Throttling (Offline Catch-up)**: Implemented a "log brake" during offline earnings reconciliation. Non-critical narrative logs (vattic monologues, flavor text) are suppressed until the player dismisses the offline summary.
+- **Simulation Interlock**: Passive heat/power simulation now pauses while the offline summary is visible to prevent thermal lockout while reading the catch-up report.
+
 ## [3.2.19] - 2026-02-11
 
 ### Added
