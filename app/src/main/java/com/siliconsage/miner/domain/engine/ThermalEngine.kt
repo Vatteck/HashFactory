@@ -54,8 +54,8 @@ object ThermalEngine {
                         var heat = upgrade.type.baseHeat
                         
                         // Radiator Bonus in Space
-                        if (isVacuum && upgrade.type == UpgradeType.RADIATOR_FINS) {
-                            heat *= 2.5 // Radiators are mandatory in Orbit
+                        if (isVacuum && (upgrade.type == UpgradeType.RADIATOR_FINS || upgrade.type == UpgradeType.ORBITAL_RADIATORS)) {
+                            heat *= if (upgrade.type == UpgradeType.ORBITAL_RADIATORS) 5.0 else 2.5
                         }
                         
                         // Singularity Well in Void

@@ -272,9 +272,12 @@ object ResourceEngine {
             
             if (location == "ORBITAL_SATELLITE") {
                 val brittleMult = (newHeat / 100.0).pow(2.0)
-                integrityDecay = brittleMult * 5.0
+                var decayAmount = brittleMult * 5.0
                 
-                if ((upgrades[UpgradeType.AEGIS_SHIELDING] ?: 0) > 0) integrityDecay *= 0.5
+                if ((upgrades[UpgradeType.AEGIS_SHIELDING] ?: 0) > 0) decayAmount *= 0.5
+                if ((upgrades[UpgradeType.VACUUM_COOLANT_LOOP] ?: 0) > 0) decayAmount *= 0.1
+                
+                integrityDecay = decayAmount
             }
         }
 

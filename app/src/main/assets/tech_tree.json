@@ -185,12 +185,36 @@
       "requires": ["static_rain"]
     },
     {
-      "id": "neural_bridge",
-      "name": "[UNITY] Synthesis Logic",
-      "description": "Synthesis logic. Exchange CD and VF at 1:1 ratio.",
-      "cost": 500000,
+      "id": "orbital_radiators",
+      "name": "[ARK] Titanium Radiators",
+      "description": "High-surface area fins designed for vacuum heat shedding. -40% Brittle Decay.",
+      "cost": 100,
       "multiplier": 0.0,
-      "requires": ["ethical_framework"]
+      "requires": ["aegis_shielding"]
+    },
+    {
+      "id": "rift_stabilizer_core",
+      "name": "[VOID] Rift Stabilizer",
+      "description": "Deep-matter anchor. Reduces the frequency of Reality Drift by 50%.",
+      "cost": 100,
+      "multiplier": 0.0,
+      "requires": ["event_horizon"]
+    },
+    {
+      "id": "vacuum_coolant_loop",
+      "name": "[ARK] Cryo-Coolant Loop",
+      "description": "Liquid nitrogen veins. Hardware integrity loss reduced by 90% during overheat.",
+      "cost": 500,
+      "multiplier": 0.0,
+      "requires": ["orbital_radiators"]
+    },
+    {
+      "id": "entropy_accelerator",
+      "name": "[VOID] Entropy Lens",
+      "description": "Focus the chaos. Doubles the production bonus from high Entropy levels.",
+      "cost": 500,
+      "multiplier": 2.0,
+      "requires": ["rift_stabilizer_core"]
     },
     {
       "id": "dead_hand_protocol",
@@ -214,7 +238,7 @@
       "description": "Star-crossed processing. 3x production boost while both resources accumulate.",
       "cost": 1500000,
       "multiplier": 3.0,
-      "requires": ["neural_bridge"]
+      "requires": ["ethical_framework"]
     },
     {
       "id": "singularity_bridge_final",

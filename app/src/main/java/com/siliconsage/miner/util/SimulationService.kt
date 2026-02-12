@@ -130,7 +130,10 @@ object SimulationService {
         
         // Reality Drift (Void Path)
         if (vm.currentLocation.value == "VOID_INTERFACE" && vm.entropyLevel.value > 80.0) {
-            if (Random.nextDouble() < 0.1) {
+            var driftChance = 0.1
+            if ((vm.upgrades.value[UpgradeType.RIFT_STABILIZER_CORE] ?: 0) > 0) driftChance *= 0.5
+            
+            if (Random.nextDouble() < driftChance) {
                 vm.triggerGlitchEffect()
                 if (Random.nextDouble() < 0.05) {
                     vm.addLog("[VOID]: REALITY_DRIFT_DETECTED. SCRAMBLING BUFFER.")

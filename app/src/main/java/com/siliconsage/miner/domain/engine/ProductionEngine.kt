@@ -105,7 +105,9 @@ object ProductionEngine {
             return rate
         } else if (location == "VOID_INTERFACE") {
             // Void Path: Entropy is the engine. High entropy = massive yield.
-            val entropyMult = 1.0 + (kotlin.math.log2(entropyLevel + 1.0) * 4.0)
+            var entropyMult = 1.0 + (kotlin.math.log2(entropyLevel + 1.0) * 4.0)
+            if ((upgrades[UpgradeType.ENTROPY_ACCELERATOR] ?: 0) > 0) entropyMult *= 2.0
+            
             var baseRate = kotlin.math.sqrt(flopsPerSec.coerceAtLeast(1.0)) * entropyMult
             
             if ((upgrades[UpgradeType.EVENT_HORIZON] ?: 0) > 0 && entropyLevel > 90.0) {
