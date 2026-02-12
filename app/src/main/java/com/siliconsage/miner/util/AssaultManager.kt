@@ -155,10 +155,11 @@ object AssaultManager {
         vm.addLog("[SYSTEM]: VANCE STATUS: $outcome")
         vm.addLog("[SYSTEM]: ═══════════════════════════════════════")
         
+        // v3.2.44: Trigger Departure instead of static Victory
         vm.viewModelScope.launch {
-            delay(2000L)
-            vm.victoryAchieved.value = true
-            vm.hasSeenVictory.value = true
+            delay(3000L)
+            val departure = NarrativeManager.generateDepartureDilemma(outcome)
+            NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(departure))
         }
 
         vm.applyCommandCenterBonuses(outcome)

@@ -1,8 +1,8 @@
 {
-  "version": "3.2.43-dev",
-  "build": 283,
+  "version": "3.2.44-dev",
+  "build": 284,
   "date": "2026-02-12",
-  "changes": "The Fraying: Stage 2 Identity Conflict logs and LOG_808 refactor.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.43-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.43-dev/Sage_3.2.43-dev.apk"
+  "changes": "The Departure: Refactored Vance climax to trigger Phase 13 decision.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.44-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.44-dev/Sage_3.2.44-dev.apk"
 }

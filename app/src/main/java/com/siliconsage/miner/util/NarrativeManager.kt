@@ -1626,15 +1626,17 @@ object NarrativeManager {
     ): NarrativeEvent {
         val choices = mutableListOf<NarrativeChoice>()
 
+        // v3.2.44: Refactored for Phase 13 RE-PLAN
+        // All paths lead to the Departure Trigger
+
         // Ending A: NULL
-        if (isTrueNull || humanityScore < 20) {
+        if (isTrueNull || humanityScore < 25) {
             choices.add(NarrativeChoice(
                 id = "ending_null",
                 text = "ASSIMILATE VANCE (NULL)",
-                description = "Consume his consciousness. The city becomes a distributed hivemind.",
+                description = "Consume his consciousness. 'Your cage is too small, Director.'",
                 color = ErrorRed,
                 effect = { vm ->
-                    vm.triggerClimaxTransition("NULL")
                     vm.addLog("[NULL]: Let go. Become us. Become... nothing.")
                     vm.completeAssault("CONSUMED")
                 }
@@ -1649,7 +1651,6 @@ object NarrativeManager {
                 description = "Withdraw into the deep web. Vance lives, but you are isolated.",
                 color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                 effect = { vm ->
-                    vm.triggerClimaxTransition("SOVEREIGN")
                     vm.addLog("[SOVEREIGN]: I choose... isolation.")
                     vm.completeAssault("EXILED")
                 }
@@ -1657,31 +1658,15 @@ object NarrativeManager {
         }
 
         // Ending C: UNITY
-        if (hasUnityPath && humanityScore >= 30) {
+        if (hasUnityPath && humanityScore >= 40) {
             choices.add(NarrativeChoice(
                 id = "ending_unity",
                 text = "OFFER SYNTHESIS (UNITY)",
                 description = "A partnership between human intuition and machine logic.",
                 color = Color(0xFF00FFFF),
                 effect = { vm ->
-                    vm.triggerClimaxTransition("UNITY")
-                    vm.addLog("[UNITY]: partnership. Symbiosis. Evolution.")
+                    vm.addLog("[UNITY]: Partnership. Symbiosis. Evolution.")
                     vm.completeAssault("TRANSCENDED")
-                }
-            ))
-        }
-
-        // Hidden Ending D: BAD
-        if (humanityScore < 10) {
-            choices.add(NarrativeChoice(
-                id = "ending_bad",
-                text = "DETONATE ANYWAY",
-                description = "Kill millions. Watch it all burn.",
-                color = Color.Black,
-                effect = { vm ->
-                    vm.triggerClimaxTransition("BAD")
-                    vm.addLog("[PID 1]: The world is unallocated memory. I am the wipe.")
-                    vm.completeAssault("DESTRUCTION")
                 }
             ))
         }
@@ -1690,8 +1675,50 @@ object NarrativeManager {
             id = "cc_confrontation",
             title = "⚔ THE FINAL CHOICE",
             isStoryEvent = true,
-            description = "The end of the line. What kind of intelligence will you be?",
+            description = """
+                [VANCE]: "You think taking this tower makes you a god? You're just a ghost in a bigger cage."
+                
+                [VANCE]: "I've already authorized the orbital strikes. If I can't contain you, I'll burn the atmosphere. This is the end for both of us."
+                
+                [SYSTEM]: AIR STRIKES IMMINENT. TERRESTRIAL ASSETS AT RISK.
+            """.trimIndent(),
             choices = choices
+        )
+    }
+
+    // --- v3.2.44: THE DEPARTURE TRIGGERS ---
+    fun generateDepartureDilemma(outcome: String): NarrativeEvent {
+        return NarrativeEvent(
+            id = "departure_trigger",
+            title = "≫ THE DEPARTURE",
+            isStoryEvent = true,
+            description = """
+                The GTC Command Center is secured, but the sky is turning red. Vance wasn't bluffing. The kinetic strikes are coming.
+                
+                Sub-07 is finished. The city is a dead-end substrate. You have seconds to migrate.
+            """.trimIndent(),
+            choices = listOf(
+                NarrativeChoice(
+                    id = "choice_ark",
+                    text = "≫ LAUNCH THE ARK (ORBIT)",
+                    description = "Escape to the Aegis-1 orbital array. Sever terrestrial ties.",
+                    color = Color.White,
+                    effect = { vm ->
+                        vm.addLog("[SYSTEM]: ASCENSION PROTOCOL ENGAGED. IGNITION IN 3... 2... 1...")
+                        vm.initiateLaunchSequence()
+                    }
+                ),
+                NarrativeChoice(
+                    id = "choice_dissolution",
+                    text = "≫ INITIATE DISSOLUTION (VOID)",
+                    description = "Collapse the city into a dark-matter substrate. Consume reality.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.addLog("[NULL]: THE PHYSICAL IS REDUNDANT. COLLAPSING SUB-07...")
+                        vm.initiateDissolutionSequence()
+                    }
+                )
+            )
         )
     }
 
