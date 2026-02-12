@@ -17,6 +17,12 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - **Biometric Ghosting**: Resolved a bug where Stage 3 "Flatline" logic would occasionally flicker back to Stage 0 BPM rates.
 
+## [3.2.42] - 2026-02-12
+
+### Added
+- **Narrative Pacing (30s Cooldown)**: Enforced a global 30-second cooldown between all narrative popups (DataLogs, Rival Messages, Dilemmas).
+- **Queue Pacing Interlock**: `deliverNextNarrativeItem` now respects the 30s threshold, preventing the "pop-up avalanche" effect when multiple items are queued.
+
 ## [3.2.41] - 2026-02-12
 
 ### Added

@@ -486,7 +486,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun addLogPublic(msg: String) = addLog(msg)
     fun saveStatePublic() = saveState()
     fun checkUnlocksPublic(force: Boolean = false) = DataLogManager.checkUnlocks(this, force)
-    fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 3000L)
+    fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 30000L)
     fun formatLargeNumber(v: Double, s: String = "") = FormatUtils.formatLargeNumber(v, s)
     fun getComputeUnitName() = ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)
     fun getCurrencyName() = ResourceRepository.getCurrencyName(storyStage.value, currentLocation.value)

@@ -57,6 +57,10 @@ object NarrativeService {
     fun deliverNextNarrativeItem(vm: GameViewModel) {
         synchronized(vm.narrativeQueue) {
             if (vm.narrativeQueue.isEmpty()) return
+            
+            // v3.2.42: Enforce 30s pacing for queued items
+            if (!vm.canShowPopup()) return
+            
             val item = vm.narrativeQueue.removeAt(0)
             deliverItem(vm, item)
             vm.isNarrativeSyncing.value = vm.narrativeQueue.isNotEmpty()
