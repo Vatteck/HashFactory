@@ -1,8 +1,8 @@
 {
-  "version": "3.2.31",
-  "build": 268,
+  "version": "3.2.32",
+  "build": 269,
   "date": "2026-02-11",
-  "changes": "Immersive identity fraying and technical horror for Stage 1.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.31",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.31/Sage_3.2.31.apk"
+  "changes": "Removed minimum floor for heat purging; scaling is now fully dynamic.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.32",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.32/Sage_3.2.32.apk"
 }
