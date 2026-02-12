@@ -2,6 +2,7 @@ package com.siliconsage.miner.util
 
 import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.viewmodel.GameViewModel
+import com.siliconsage.miner.viewmodel.NarrativeItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
