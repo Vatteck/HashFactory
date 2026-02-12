@@ -73,6 +73,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isAirdropActive = MutableStateFlow(false)
     val isKernelHijackActive = MutableStateFlow(false)
     val isBridgeSyncEnabled = MutableStateFlow(false)
+    val isBooting = MutableStateFlow(false)
 
     // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -283,22 +284,25 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun modifyHumanity(d: Int) { humanityScore.update { (it + d).coerceIn(0, 100) }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
     fun triggerGlitchEffect() { SoundManager.play("glitch"); HapticManager.vibrateGlitch() }
     fun resetGame(force: Boolean = false) = viewModelScope.launch { 
+        isBooting.value = true
         synchronized(logBuffer) { logBuffer.clear() }
         logs.value = emptyList()
         logCounter = 0
         upgrades.value = emptyMap()
         seenEvents.value = emptySet()
+        unlockedDataLogs.value = emptySet() // Explicit clear
         unlockedTechNodes.value = emptyList()
         
         // 1. Clear database
         repository.clearUpgrades()
-        repository.updateGameState(PersistenceManager.createWipeState()); 
+        val wipeState = PersistenceManager.createWipeState()
+        repository.updateGameState(wipeState); 
         
         // 2. Re-initialize baseline upgrades (set them to 0)
         repository.ensureInitialized()
         
         // 3. Sync local state
-        PersistenceManager.restoreState(this@GameViewModel, PersistenceManager.createWipeState()); 
+        PersistenceManager.restoreState(this@GameViewModel, wipeState); 
         
         addLog("[SYSTEM]: KERNEL WIPE SUCCESSFUL.")
         addLog("[SYSTEM]: INITIALIZING BOOT SEQUENCE...")
@@ -307,6 +311,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         
         refreshProductionRates() 
     }
+    fun completeBoot() { isBooting.value = false }
     fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
     fun initiateLaunchSequence() = LaunchManager.initiateLaunchSequence(this, viewModelScope)

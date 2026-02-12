@@ -342,6 +342,14 @@ fun MainScreen(viewModel: GameViewModel) {
                         viewModel.debugToggleDevMenu()
                     }
                 }
+
+                val isBooting by viewModel.isBooting.collectAsState()
+                if (isBooting) {
+                    BootSequenceOverlay(
+                        onComplete = { viewModel.completeBoot() },
+                        primaryColor = themeColor
+                    )
+                }
             }
         }
     }

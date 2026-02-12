@@ -132,7 +132,7 @@ object PersistenceManager {
             storyStage = 0,
             faction = "NONE",
             hasSeenVictory = false,
-            unlockedDataLogs = setOf("LOG_000"),
+            unlockedDataLogs = emptySet(), // v3.2.24: Empty so intro triggers
             activeDilemmaChains = "{}",
             rivalMessages = "[]",
             dismissedRivalIds = emptySet(),
