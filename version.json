@@ -1,8 +1,8 @@
 {
-  "version": "3.2.19",
-  "build": 256,
+  "version": "3.2.20",
+  "build": 257,
   "date": "2026-02-11",
-  "changes": "Phase 16: Data Sovereignty. Implemented lifetime power tracking (Utility Audit) and human-readable JSON save import/export.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.19",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.19/Sage_3.2.19.apk"
+  "changes": "Terminal I/O Buffer overhaul: added thermal noise, faction entities (Sigma/Zero), and ASCII flush effects.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.20",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.20/Sage_3.2.20.apk"
 }

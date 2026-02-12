@@ -162,6 +162,9 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val hex by viewModel.activeCommandHex.collectAsState()
     val stage by viewModel.storyStage.collectAsState()
     val location by viewModel.currentLocation.collectAsState()
+    val currentHeat by viewModel.currentHeat.collectAsState()
+    val isTrueNull by viewModel.isTrueNull.collectAsState()
+    val isSovereign by viewModel.isSovereign.collectAsState()
     
     val user = if (stage >= 2) "pid-1" else "jvattic"
     val host = when (location) {
@@ -193,38 +196,79 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             fontFamily = FontFamily.Monospace
         )
         
-        // v3.2.17: Colorized "ILoveCandy" CLI Progress Bar
-        val barLength = 40
-        val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
-        
-        val annotatedBar = androidx.compose.ui.text.buildAnnotatedString {
-            withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.4f))) { append("[") }
+    // v3.2.19: Hardened & Reactive "ILoveCandy" CLI Progress Bar
+    val barLength = 40
+    val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
+    val isCritical = currentHeat >= 100.0
+    val isGlitching = currentHeat > 85.0
+    
+    var isBursting by remember { mutableStateOf(false) }
+    LaunchedEffect(progress) {
+        if (progress == 0f) {
+            isBursting = true
+            delay(500)
+            isBursting = false
+        }
+    }
+
+    val annotatedBar = androidx.compose.ui.text.buildAnnotatedString {
+        if (isBursting && !isCritical) {
+            // v3.2.19: The Flush "Burst"
+            val particles = listOf("*", ".", ":", "·", " ")
+            withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) {
+                append(" ".repeat(10))
+                repeat(20) { append(particles.random()) }
+                append(" [COMMITTED]")
+            }
+        } else {
+            val bracketColor = if (isCritical) ErrorRed else color.copy(alpha = 0.4f)
+            withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("[") }
+            
             for (i in 0 until barLength) {
                 when {
                     i < filledCount -> {
-                        withStyle(androidx.compose.ui.text.SpanStyle(color = color)) { append("-") }
+                        val trackFilledCol = if (isCritical) ErrorRed else color
+                        withStyle(androidx.compose.ui.text.SpanStyle(color = trackFilledCol)) { append("-") }
                     }
                     i == filledCount -> {
                         val isOnPellet = pellets.contains(i)
-                        withStyle(androidx.compose.ui.text.SpanStyle(color = Color.Yellow, fontWeight = FontWeight.ExtraBold)) {
-                            append(if (isOnPellet) "c" else "C")
+                        val entityChar = when {
+                            isTrueNull -> "0"
+                            isSovereign -> "Σ"
+                            else -> if (isOnPellet) "c" else "C"
+                        }
+                        val entityColor = when {
+                            isCritical -> ErrorRed
+                            isTrueNull -> ErrorRed
+                            isSovereign -> com.siliconsage.miner.ui.theme.ConvergenceGold
+                            else -> Color.Yellow
+                        }
+                        withStyle(androidx.compose.ui.text.SpanStyle(color = entityColor, fontWeight = FontWeight.ExtraBold)) {
+                            append(entityChar)
                         }
                     }
                     else -> {
                         if (pellets.contains(i)) {
-                            withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) {
+                            val pelletCol = if (isCritical) ErrorRed else Color.White
+                            withStyle(androidx.compose.ui.text.SpanStyle(color = pelletCol, fontWeight = FontWeight.Bold)) {
                                 append("o")
                             }
                         } else {
-                            withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.2f))) {
-                                append("·")
+                            // v3.2.19: Thermal Parity Errors
+                            val isNoise = isGlitching && (i + (progress * 100).toInt()) % 7 == 0
+                            val trackChar = if (isNoise) listOf("?", "!", "§", "Ø").random() else if (isTrueNull) " " else "·"
+                            val trackColor = if (isCritical) ErrorRed.copy(alpha = 0.5f) else color.copy(alpha = 0.2f)
+                            
+                            withStyle(androidx.compose.ui.text.SpanStyle(color = trackColor)) {
+                                append(trackChar)
                             }
                         }
                     }
                 }
             }
-            withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.4f))) { append("]") }
+            withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("]") }
         }
+    }
 
         Text(
             text = annotatedBar,
@@ -237,8 +281,8 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         )
         
         Text(
-            text = hex,
-            color = Color.White.copy(alpha = 0.5f),
+            text = if (isCritical) "LOCKED" else hex,
+            color = if (isCritical) ErrorRed else Color.White.copy(alpha = 0.5f),
             fontSize = 10.sp,
             fontFamily = FontFamily.Monospace
         )
