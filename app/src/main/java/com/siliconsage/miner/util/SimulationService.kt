@@ -28,15 +28,16 @@ object SimulationService {
         val currentFlops = vm.flops.value
         val isBreathe = vm.isBreatheMode.value
         
-        if (currentFlops < 100.0 && !isBreathe) {
-            vm.addLogPublic("[SYSTEM]: PURGE FAILED: INSUFFICIENT HASH FOR SACRIFICE.")
+        if (currentFlops <= 0.0 && !isBreathe) {
+            vm.addLogPublic("[SYSTEM]: PURGE FAILED: ZERO HASH BUFFER DETECTED.")
             SoundManager.play("error")
             return
         }
 
-        // Calculate a one-time massive reduction based on FLOPS sacrificed
-        // Formula: 5% + 2% per order of magnitude above 100
-        val reduction = (5.0 + kotlin.math.log10(currentFlops.coerceAtLeast(100.0) / 100.0) * 2.0).coerceIn(5.0, 95.0)
+        // v3.2.28: Dynamic Scaling Purge (No minimum floor)
+        // Formula: log10(flops + 1) normalized against 1e15 (Quadrillion) for max 95% reduction
+        val reduction = if (isBreathe) 15.0 // Flat breath boost
+                        else (kotlin.math.log10(currentFlops + 1.0) / 15.0 * 95.0).coerceIn(1.0, 95.0)
         
         vm.currentHeat.update { (it - reduction).coerceAtLeast(0.0) }
         if (!isBreathe) vm.flops.value = 0.0 // NUCLEAR WIPE (Only if not breathing)
