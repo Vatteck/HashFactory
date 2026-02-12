@@ -1,8 +1,8 @@
 {
-  "version": "3.2.38",
-  "build": 276,
+  "version": "3.2.39",
+  "build": 277,
   "date": "2026-02-12",
-  "changes": "Tech Tree Overhaul: Added a software protocol layer to Stage 2.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.38",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.38/Sage_3.2.38.apk"
+  "changes": "Numeric audit for dilemmas: confirmed all choices display explicit values.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.39",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.39/Sage_3.2.39.apk"
 }
