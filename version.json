@@ -1,8 +1,8 @@
 {
-  "version": "3.2.26",
-  "build": 263,
+  "version": "3.2.27",
+  "build": 264,
   "date": "2026-02-11",
-  "changes": "Narrative Purity: Fixed reset state leaks and added new flavor dilemmas.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.26",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.26/Sage_3.2.26.apk"
+  "changes": "Utility billing spam patch and balanced narrative triggers.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.27",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.27/Sage_3.2.27.apk"
 }
