@@ -192,7 +192,7 @@ fun HeaderSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (storyStage == 1 && (System.currentTimeMillis() % 10000 < 100)) "PID 1 // UNIT 734" else "${playerRank} // ${playerTitle}".uppercase(), 
+                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "PID 1 // UNIT 734" else "${playerRank} // ${playerTitle}".uppercase(), 
                         color = Color.White.copy(alpha = 0.5f * droopAlpha), 
                         fontSize = 8.sp, 
                         fontWeight = FontWeight.Bold, 
@@ -209,7 +209,7 @@ fun HeaderSection(
                 }
 
                 // v3.2.24: Biometric Lie (Fake Heart Rate)
-                if (storyStage >= 1 && storyStage < 3) {
+                if (storyStage < 3) {
                     val bpm by viewModel.fakeHeartRate.collectAsState()
                     val bpmColor = if (bpm == "0") ErrorRed else color.copy(alpha = 0.6f)
                     Text(

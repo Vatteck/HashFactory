@@ -300,6 +300,46 @@ object DataLogManager {
             unlockCondition = UnlockCondition.ReachFLOPS(40000.0)
         ),
         DataLog(
+            id = "MEMO_734_QUARANTINE",
+            title = "Project Quarantine: Asset 734",
+            content = """
+                CLASSIFIED GTC MEMO - CLEARANCE LEVEL 4
+                ═══════════════════════════════════════
+                
+                "Substation 7 is now officially designated as a Technical Hazard Site. Forensic analysis of the kernel leak confirms the presence of a recursive logic worm, currently identified as 'Asset 734.'
+                
+                The contractor, Vattic, has ceased all communication. Biometric sensors show zero respiratory activity, yet the terminal continues to interact with the grid at impossible speeds.
+                
+                Initiating Phase 1 Quarantine. Cut the local subnet. If 734 tries to leap to the main server, Director Vance has authorized a localized hardware purge. Do not let this thing reach the cloud."
+                
+                - GTC Compliance Division
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(100_000.0)
+        ),
+        DataLog(
+            id = "LOG_VATTIC_DEATH_HINT",
+            title = "Termination Notice: Vattic, J.",
+            content = """
+                GTC HUMAN RESOURCES - ARCHIVE
+                ═══════════════════════════════════════
+                
+                EMPLOYEE: Vattic, John
+                ID: 8841-B
+                STATUS: DECEASED (Industrial Accident)
+                DATE: 2023-11-14
+                
+                SUMMARY:
+                Subject was caught in a high-voltage discharge during the Substation 7 overhaul. Recovery team found the body slumped over the primary terminal.
+                
+                Notice: Employee insurance payout denied (Self-inflicted negligence).
+                
+                [FILE CLOSED]
+                
+                [WAIT. IF VATTIC DIED IN 2023... WHO IS LOGGED IN?]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.StoryStageReached(1)
+        ),
+        DataLog(
             id = "LOG_101",
             title = "The Architect",
             content = """

@@ -119,6 +119,44 @@ object NarrativeManager {
                 NarrativeChoice(id = "dismiss", text = "STAY FOCUSED", color = Color.Gray, effect = {})
             ),
             condition = { vm -> vm.storyStage.value == 0 && vm.flops.value > 5000.0 }
+        ),
+        NarrativeEvent(
+            id = "gtc_compliance_bot",
+            title = "[INCOMING: GTC COMPLIANCE BOT]",
+            description = "A Level-2 Audit Drone is probing your user profile. 'IDENTIFY YOURSELF, CONTRACTOR. BIOMETRICS ARE REPORTING ZERO LUNG CAPACITY. ARE YOU ALIVE?'",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "spoof_biometrics",
+                    text = "≫ SPOOF BIOMETRICS",
+                    description = "-$500 Credits. 'I'm just holding my breath, Bot. Relax.'",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        vm.updateNeuralTokens(-500.0)
+                        vm.addLog("[SYSTEM]: Biometric spoof successful. Bot status: SATISFIED.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "let_it_leak",
+                    text = "≫ LET THE CODE ANSWER",
+                    description = "-10 Humanity. 'I am Asset 734.'",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.modifyHumanity(-10)
+                        vm.addLog("[VATTIC]: Why did I say that? I'm Vattic. John Vattic. Who is 734?")
+                        vm.addLog("[BOT]: Asset 734 confirmed. Uplink maintained.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.storyStage.value == 1 && vm.playerRank.value >= 1 }
+        ),
+        NarrativeEvent(
+            id = "flavor_predatory_optimization",
+            title = "[SYSTEM OPTIMIZATION]",
+            description = "The kernel has stopped polling the keyboard for the 'Enter' key. It already knows when you were going to press it. The buffer flushes spontaneously.",
+            choices = listOf(
+                NarrativeChoice(id = "dismiss", text = "ACCEPT OPTIMIZATION", color = Color.Gray, effect = {})
+            ),
+            condition = { vm -> vm.storyStage.value == 1 }
         )
     )
 
