@@ -1,8 +1,8 @@
 {
-  "version": "3.2.18",
-  "build": 255,
+  "version": "3.2.19",
+  "build": 256,
   "date": "2026-02-11",
-  "changes": "Phase 15 Reinjection complete. Hardened Kernel v1.0. Dynamic market modifiers persistent, base rate scaling restored, and resonance narrative artifacts purged.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.18",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.18/Sage_3.2.18.apk"
+  "changes": "Phase 16: Data Sovereignty. Implemented lifetime power tracking (Utility Audit) and human-readable JSON save import/export.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.19",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.19/Sage_3.2.19.apk"
 }
