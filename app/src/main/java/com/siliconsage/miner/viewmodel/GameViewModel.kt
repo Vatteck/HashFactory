@@ -76,6 +76,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isBooting = MutableStateFlow(false)
     val isBreatheMode = MutableStateFlow(false)
     val fakeHeartRate = MutableStateFlow("60")
+    val isJettisonAvailable = MutableStateFlow(false)
+    val nodesCollapsedCount = MutableStateFlow(0)
+    val launchVelocity = MutableStateFlow(1.0f)
 
     // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -382,8 +385,26 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             else -> "[SYSTEM]: Emergency thermal purge active."
         }
         addLog(msg)
+        
+        // v3.2.45: Jettison Bridge
+        if (isJettisonAvailable.value) {
+            isJettisonAvailable.value = false
+            return
+        }
+
         SimulationService.purgeHeat(this)
     }
+    
+    // v3.2.45: Collapse Bridge
+    fun collapseSubstation() {
+        if (currentLocation.value == "VOID_PRELUDE") {
+            nodesCollapsedCount.update { (it + 1).coerceAtMost(5) }
+            realityIntegrity.update { (it - 0.2).coerceAtLeast(0.0) }
+            triggerGlitchEffect()
+            addLog("[NULL]: NODE_DEREFERENCED. INTEGRITY: ${(realityIntegrity.value * 100).toInt()}%")
+        }
+    }
+    
     fun triggerDilemma(e: NarrativeEvent) { currentDilemma.value = e }
     fun selectChoice(c: NarrativeChoice) = NarrativeService.selectChoice(this, c)
     fun annexNode(c: String) = SectorManager.annexNode(this, c)

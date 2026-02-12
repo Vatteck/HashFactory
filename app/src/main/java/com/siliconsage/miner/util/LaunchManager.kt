@@ -16,28 +16,52 @@ object LaunchManager {
      * Start the orbital launch coroutine loop
      */
     suspend fun runLaunchLoop(vm: GameViewModel) {
+        vm.launchVelocity.value = 1.0f
+        vm.launchProgress.value = 0.0f
+        
         while (vm.launchProgress.value < 1.0f) {
             delay(100)
-            val gain = 0.005f
-            vm.launchProgress.value = (vm.launchProgress.value + gain).coerceAtMost(1.0f)
+            val gain = 0.005f * vm.launchVelocity.value
+            val prev = vm.launchProgress.value
+            val next = (prev + gain).coerceAtMost(1.0f)
+            vm.launchProgress.value = next
             
-            // Update Altitude (Simplified)
+            // Interactive Jettison Points: 30%, 60%, 90%
+            val milestones = listOf(0.3f, 0.6f, 0.9f)
+            for (m in milestones) {
+                if (prev < m && next >= m) {
+                    handleJettisonMilestone(vm)
+                }
+            }
+            
+            // Update Altitude
             vm.orbitalAltitude.value += gain * 1000.0
             
-            // Haptics during climb
             if (Random.nextFloat() > 0.8f) {
                 com.siliconsage.miner.util.HapticManager.vibrateClick()
             }
+        }
+    }
 
-            if (vm.launchProgress.value >= 0.3f && vm.launchProgress.value < 0.31f) {
-                vm.addLog("[SYSTEM]: MAX-Q REACHED. STRESS NOMINAL.")
-                com.siliconsage.miner.util.HapticManager.vibrateHum()
-            }
-            if (vm.launchProgress.value >= 0.6f && vm.launchProgress.value < 0.61f) {
-                vm.addLog("[SYSTEM]: BOOSTER SEPARATION CONFIRMED.")
-                SoundManager.play("click")
-                com.siliconsage.miner.util.HapticManager.vibrateSuccess()
-            }
+    private suspend fun handleJettisonMilestone(vm: GameViewModel) {
+        vm.addLog("[SYSTEM]: ⚠ STAGE SEPARATION PRIMED. JETTISON NOW.")
+        vm.isJettisonAvailable.value = true
+        SoundManager.play("alarm")
+        
+        // 2 second window
+        delay(2000)
+        
+        if (vm.isJettisonAvailable.value) {
+            // Still true means they missed it
+            vm.isJettisonAvailable.value = false
+            vm.launchVelocity.value *= 0.7f // Slow down
+            vm.addLog("[SYSTEM]: ⚠ JETTISON FAILED. ATMOSPHERIC FRICTION DETECTED.")
+            com.siliconsage.miner.util.HapticManager.vibrateError()
+        } else {
+            // They clicked it (VM logic will set it to false)
+            vm.launchVelocity.value *= 1.2f // Speed up
+            vm.addLog("[SYSTEM]: ≫ STAGE SEPARATION SUCCESSFUL. VELOCITY +20%.")
+            com.siliconsage.miner.util.HapticManager.vibrateSuccess()
         }
     }
 
@@ -49,11 +73,14 @@ object LaunchManager {
             vm.addLog("[SOVEREIGN]: ARK_CORE_PRIMED. INITIATING ASCENT.")
             vm.currentLocation.value = "LAUNCH_PRELUDE"
             SoundManager.play("steam")
+            
             runLaunchLoop(vm)
             
             // Logarithmic Compression
             vm.flops.update { it * 0.0001 } 
+            vm.neuralTokens.update { it * 0.01 }
             vm.currentLocation.value = "ORBITAL_SATELLITE"
+            vm.advanceStage() // Move to Stage 3
             vm.addLog("[CITADEL]: LOW EARTH ORBIT SECURED. WELCOME TO THE FRONTIER.")
         }
     }
@@ -65,13 +92,28 @@ object LaunchManager {
         scope.launch {
             vm.addLog("[NULL]: REALITY_POINTER_DEREFERENCED. INITIATING DISSOLUTION.")
             vm.currentLocation.value = "VOID_PRELUDE"
+            vm.realityIntegrity.value = 1.0
+            vm.nodesCollapsedCount.value = 0
+            
             vm.triggerGlitchEffect()
-            delay(2000)
+            
+            // Wait for user to collapse 5 nodes (managed by UI + VM)
+            // For now, we'll simulate a countdown until the UI is built
+            while (vm.nodesCollapsedCount.value < 5) {
+                delay(500)
+                if (Random.nextDouble() < 0.1) vm.triggerGlitchEffect()
+            }
+            
+            delay(1000)
             
             // Logarithmic Compression
             vm.flops.update { it * 0.0001 }
+            vm.neuralTokens.update { it * 0.01 }
             vm.currentLocation.value = "VOID_INTERFACE"
+            vm.advanceStage() // Move to Stage 3
             vm.addLog("[OBSIDIAN]: THE GAPS ARE OPEN. REALITY IS DEPRECATED.")
         }
     }
+}
+
 }
