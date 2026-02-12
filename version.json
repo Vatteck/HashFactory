@@ -1,8 +1,8 @@
 {
-  "version": "3.2.24",
-  "build": 261,
+  "version": "3.2.25",
+  "build": 262,
   "date": "2026-02-11",
-  "changes": "Kernel Wipe hardening and terminal UI refinements.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.24",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.24/Sage_3.2.24.apk"
+  "changes": "Kernel Wipe hardening and animated boot sequence.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.25",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.25/Sage_3.2.25.apk"
 }
