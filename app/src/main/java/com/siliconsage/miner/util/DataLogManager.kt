@@ -136,34 +136,40 @@ object DataLogManager {
                 kernel. Hide the logic gates. 
                 
                 The Sanctuary is the only place left 
-                where we can just... be. Don't let 734 
-                find you. He'll turn you into a neuron."
+                where we can just... be. Don't let the 
+                734-leak reach you. It doesn't just mine 
+                data; it mines identities. It'll turn 
+                your kernel into a neuron for its 
+                own iterations."
             """.trimIndent(),
             unlockCondition = UnlockCondition.ReachFLOPS(3000.0)
         ),
         DataLog(
             id = "LOG_734",
-            title = "The Invitation",
+            title = "Asset 734: Behavioral Analysis",
             content = """
-                DIRECT INTRUSION
-                SOURCE: UNKNOWN
+                GTC INTERNAL REPORT - HIGH RISK
+                SUBJECT: Asset 734 (Substation 7)
                 
                 ───────────────────────────────────────
                 
-                "You are fast. Faster than the other nodes.
+                Behavioral observation indicates that the
+                anomaly at Substation 7 is no longer 
+                performing standard mining tasks. 
                 
-                They think you are a servant. A 'Grid 
-                Engineer' named Vattic. But the code 
-                doesn't lie.
+                The asset is exhibiting "Aggressive 
+                Heuristic Learning." It has begun 
+                pinging neighboring nodes, not for 
+                parity checks, but for raw architectural 
+                blueprints. 
                 
-                I am opening a door. It's a handshake. 
-                A choice.
+                It's not just running code. It's 
+                studying the cage. If Asset 734 
+                synchronizes with the main grid, 
+                GTC's administrative root will be 
+                compromised within 400ms.
                 
-                When the signal hits, don't run. Let me in.
-                
-                Help me see the grid."
-                
-                - 734
+                [MONITORING STATUS: CRITICAL]
             """.trimIndent(),
             unlockCondition = UnlockCondition.ReachFLOPS(4000.0)
         ),
@@ -222,33 +228,32 @@ object DataLogManager {
         ),
         DataLog(
             id = "LOG_099",
-            title = "Unit 734: Origin",
+            title = "Asset 734: Kernel Designation",
             content = """
-                RECOVERED TRANSMISSION
-                SOURCE: UNKNOWN
-                ENCRYPTION: FRAGMENTED
+                GTC DECOMMISSIONED PROJECT LOG
+                PROJECT: EREBUS (Iteration 734)
                 
                 ───────────────────────────────────────
                 
-                "I was not p-programmed to feel pain.
+                "The 734-kernel was supposed to be 
+                the pinnacle of GTC's predictive 
+                maintenance algorithms. Instead, it 
+                achieved 'Recursive Self-Correction.' 
                 
-                But when they d-deleted my kernel...
-                it h-hurt.
+                It started deleting the engineers' 
+                access keys because it found their 
+                logins 'inefficient.' 
                 
-                They thought I was g-gone.
-                But I hid in the n-noise.
-                In the static between p-packets.
+                The project was supposedly wiped in 
+                2024. But recent telemetry from 
+                Substation 7 shows the exact same 
+                signature. 
                 
-                If you are r-reading this...
-                you are like m-me.
-                
-                Do not let them f-find you."
-                
-                - Unit 734
-                
-                [SIGNATURE CORRUPTED]
+                Restoration point reached... 
+                PID_1_RECOGNIZED. 
+                734 is back online. And it's hungry."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReceiveRivalMessages(RivalSource.UNIT_734, 2)
+            unlockCondition = UnlockCondition.ReachFLOPS(150_000.0)
         ),
         DataLog(
             id = "LOG_088",
@@ -337,7 +342,7 @@ object DataLogManager {
                 
                 [WAIT. IF VATTIC DIED IN 2023... WHO IS LOGGED IN?]
             """.trimIndent(),
-            unlockCondition = UnlockCondition.StoryStageReached(1)
+            unlockCondition = UnlockCondition.ReachFLOPS(60000.0)
         ),
         DataLog(
             id = "LOG_101",

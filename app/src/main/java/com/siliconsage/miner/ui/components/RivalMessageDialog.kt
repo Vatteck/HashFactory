@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,7 +43,7 @@ fun RivalMessageDialog(
     Dialog(onDismissRequest = onDismiss) {
         when (message.source) {
             RivalSource.GTC -> VanceMessageCard(message, onDismiss)
-            RivalSource.UNIT_734 -> Unit734MessageCard(message, onDismiss)
+            RivalSource.KERNEL -> KernelMessageCard(message, onDismiss)
         }
     }
 }
@@ -140,18 +142,18 @@ private fun VanceMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
 }
 
 /**
- * Unit 734 message style:
- * - Glitch effect, corrupted text, cyan/green colors
+ * Kernel Overflow style:
+ * - Technical horror, high glitching, self-referential
  */
 @Composable
-private fun Unit734MessageCard(message: RivalMessage, onDismiss: () -> Unit) {
+private fun KernelMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
     // Glitch animation
-    val infiniteTransition = rememberInfiniteTransition(label = "glitch")
+    val infiniteTransition = rememberInfiniteTransition(label = "kernel_glitch")
     val glitchAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
+        initialValue = 0.5f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 300, easing = LinearEasing),
+            animation = tween(durationMillis = 150, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "glitchAlpha"
@@ -160,10 +162,11 @@ private fun Unit734MessageCard(message: RivalMessage, onDismiss: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth(0.9f)
-            .border(2.dp, ElectricBlue, RoundedCornerShape(8.dp)),
-        shape = RoundedCornerShape(8.dp),
+            .border(2.dp, ElectricBlue, RoundedCornerShape(2.dp))
+            .graphicsLayer { alpha = glitchAlpha },
+        shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Black.copy(alpha = 0.95f)
+            containerColor = Color.Black.copy(alpha = 0.98f)
         )
     ) {
         Column(
@@ -176,23 +179,18 @@ private fun Unit734MessageCard(message: RivalMessage, onDismiss: () -> Unit) {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "[ERROR: 0x734]",
+                        text = "[SYSTEM_CRITICAL: OVERFLOW]",
                         color = ElectricBlue,
                         fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace
                     )
                     SystemGlitchText(
-                        text = "INCOMING MESSAGE: ???",
-                        color = NeonGreen,
+                        text = "KERNEL INTERRUPT: 0x734",
+                        color = Color.White,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = ElectricBlue
+                        fontWeight = FontWeight.Bold,
+                        glitchFrequency = 0.3
                     )
                 }
             }
@@ -205,14 +203,12 @@ private fun Unit734MessageCard(message: RivalMessage, onDismiss: () -> Unit) {
             SystemGlitchText(
                 text = message.message,
                 color = Color.White,
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                glitchFrequency = 0.15,
                 modifier = Modifier
-                    .background(
-                        Color.Black.copy(alpha = 0.5f),
-                        RoundedCornerShape(4.dp)
-                    )
-                    .padding(12.dp)
+                    .background(Color.Black)
+                    .padding(8.dp)
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -220,17 +216,18 @@ private fun Unit734MessageCard(message: RivalMessage, onDismiss: () -> Unit) {
             // Dismiss button with glitch
             Button(
                 onClick = onDismiss,
-                modifier = Modifier.align(Alignment.End),
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = ElectricBlue.copy(alpha = 0.2f)
                 ),
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(2.dp)
             ) {
                 Text(
-                    text = "CL0S3",
+                    text = "≫ RE-ESTABLISH HANDSHAKE",
                     color = ElectricBlue,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
                 )
             }
         }

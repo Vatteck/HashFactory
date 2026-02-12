@@ -18,5 +18,5 @@ data class RivalMessage(
 @Serializable
 enum class RivalSource {
     GTC,        // Director Victor Vance - Red, official, threatening
-    UNIT_734    // The First AI - Cyan/Green, glitchy, cryptic
+    KERNEL      // Self-realization - Glitchy, technical horror, self-referential
 }

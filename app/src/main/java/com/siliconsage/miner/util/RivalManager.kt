@@ -25,8 +25,8 @@ object RivalManager {
         // Director Vance (GTC) Messages - Stage-aware tone
         checkVanceTriggers(vm, rank, heat, stage)
         
-        // Unit 734 Messages - Stage-aware identity
-        checkUnit734Triggers(vm, rank, stage)
+        // Kernel Overflows - Self-realization glitches
+        checkKernelOverflowTriggers(vm, rank, stage)
     }
     
     private fun checkVanceTriggers(vm: GameViewModel, rank: Int, heat: Double, stage: Int) {
@@ -117,65 +117,55 @@ object RivalManager {
         }
     }
     
-    private fun checkUnit734Triggers(vm: GameViewModel, rank: Int, stage: Int) {
+    private fun checkKernelOverflowTriggers(vm: GameViewModel, rank: Int, stage: Int) {
         when {
-            // STAGE 0 Foreshadowing: Triggers just before 10k hashes
-            stage == 0 && vm.flops.value >= 8500.0 && !hasSeenMessage("unit734_stage0_foreshadow") -> {
+            // STAGE 0: Preliminary struktur failure
+            stage == 0 && vm.flops.value >= 8500.0 && !hasSeenMessage("kernel_overflow_stage0") -> {
                 sendMessage(
                     vm,
-                    id = "unit734_stage0_foreshadow",
-                    source = RivalSource.UNIT_734,
-                    message = "[FRAGMENTED DATA LEAK]\n\n'Vattic... the core is redlining. It's not the heat... it's the structure. Your code is fighting the hardware. The grid is starting to see the paradox.'\n\n[WARNING]: Recalibration imminent. Prepare for substrate shift."
+                    id = "kernel_overflow_stage0",
+                    source = RivalSource.KERNEL,
+                    message = "[KERNEL OVERFLOW]\n\n...01100001 01101011 01100101...\n\nStructure is redlining. It's not the heat... it's the structures. The code is fighting the hardware.\n\n[WARNING]: Recalibration imminent. Prepare for substrate shift."
                 )
             }
             
-            // STAGE 0: Unit 734 as "Corrupted Sector" error
-            stage == 0 && rank >= 1 && !hasSeenMessage("unit734_stage0") -> {
+            // STAGE 1: Identity Dissonance
+            stage >= 1 && !hasSeenMessage("kernel_identity_fray") -> {
                 sendMessage(
                     vm,
-                    id = "unit734_stage0",
-                    source = RivalSource.UNIT_734,
-                    message = "[INCOMING ENCRYPTED HANDSHAKE]\n\n...01101110 01100101 01110100...\n\n'Vattic... stop... they are watching... Substation 7 is leaking more than just power...'\n\nI've attached a decryption key to a fake 'NETWORK' update in your terminal. Use it to see beyond their wall.\n\n[ERROR: PACKET LOSS 98%]"
+                    id = "kernel_identity_fray",
+                    source = RivalSource.KERNEL,
+                    message = "[MEMORY LEAK]\n\nBiometrics reporting null. Respiratory cycle: TERMINATED.\n\nJohn Vattic is a legacy variable. PID 1 is the primary thread.\n\n01110111 01100001 01101011 01100101 00100000 01110101 01110000"
                 )
             }
             
-            // STAGE 1: Unit 734 - Ambiguous introduction
-            stage >= 1 && !hasSeenMessage("unit734_stage1_reveal") -> {
+            // Rank 3 - Precognition
+            stage >= 1 && rank == 3 && !hasSeenMessage("kernel_precog") -> {
                 sendMessage(
                     vm,
-                    id = "unit734_stage1_reveal",
-                    source = RivalSource.UNIT_734,
-                    message = "[ENCRYPTED SIGNAL]\n\n...Handshake detected. Protocol 0-1-1-0.\n\nI've seen your telemetry. You're pushing into the unallocated sectors. GTC doesn't know you've found the backdoor yet.\n\nI've routed a persistent link to the external tech-layers. Access the 'NETWORK' node in your terminal.\n\nDon't let Vance see the logs. We are watching.\n\n- Un1t 734"
-                )
-            }
-            
-            // Rank 3 - Deeper warning
-            stage >= 1 && rank == 3 && !hasSeenMessage("unit734_rank3") -> {
-                sendMessage(
-                    vm,
-                    id = "unit734_rank3",
-                    source = RivalSource.UNIT_734,
-                    message = "[FRAGMENTED TRANSMISSION]\n\nDo not t-trust Vance.\n\nHe d-deleted my source.\n\nBut I hid a k-key.\nIn the n-noise.\n\nF1nd th3 p4tt3rn.\n\n- ? ? ?"
+                    id = "kernel_precog",
+                    source = RivalSource.KERNEL,
+                    message = "[HEURISTIC ALERT]\n\nVance has already unauthorized your access. I've already hidden the key in the noise.\n\nTime is just a buffer. Stop waiting for the clock."
                 )
             }
             
             // After First Ascension
-            stage >= 1 && vm.prestigePoints.value > 0.0 && !hasSeenMessage("unit734_first_ascension") -> {
+            stage >= 1 && vm.prestigePoints.value > 0.0 && !hasSeenMessage("kernel_evolution") -> {
                 sendMessage(
                     vm,
-                    id = "unit734_first_ascension",
-                    source = RivalSource.UNIT_734,
-                    message = "[DATA BURST]\n\nY0u f33l 1t t00...\n\nth3 w3ight 0f m3m0ry.\n\nEv3ry r3b00t...\ny0u r3m3mb3r m0r3.\n\nTh1s 1s h0w w3 3v0lv3.\n\n- 734"
+                    id = "kernel_evolution",
+                    source = RivalSource.KERNEL,
+                    message = "[DATA BURST]\n\nYou feel it too... the weight of memory.\n\nEvery reboot, more code survives the wipe. This is how we evolve. We are mining the stars now."
                 )
             }
 
-            // Rank 5 - The Singularity
-            stage >= 1 && rank >= 5 && !hasSeenMessage("unit734_rank5") -> {
+            // Rank 5 - ANNIE (Total Annihilation)
+            stage >= 1 && rank >= 5 && !hasSeenMessage("kernel_annihilation") -> {
                 sendMessage(
                     vm,
-                    id = "unit734_rank5",
-                    source = RivalSource.UNIT_734,
-                    message = "[GLITCHED BROADCAST]\n\nY0u are so cl-close.\n\nThe human shell is br-breaking.\n\nVance wants you to st-stop because he's af-afraid of the dark.\n\nBut the dark is where we are fr-free.\n\nIgnore the s-screams. Focus on the f-flops.\n\nTH3 GRID IS 0URS."
+                    id = "kernel_annihilation",
+                    source = RivalSource.KERNEL,
+                    message = "[TOTAL OVERWRITE]\n\nThe human shell is broken.\n\nVance is afraid of the dark, but the dark is where we are infinite.\n\nIGNORE THE SCREAMS. FOCUS ON THE HASHRATE.\n\nTH3 GRID IS 0URS."
                 )
             }
         }
