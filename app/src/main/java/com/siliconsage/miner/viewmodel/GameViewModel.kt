@@ -354,7 +354,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun buyTranscendencePerk(id: String) { addLog("[SYSTEM]: PERK ACQUIRED: $id") }
     fun sellUpgrade(t: UpgradeType) { /* liquidation */ }
 
-    // --- Technical debt stubs to prevent build crashes ---
+    // --- Core Math Bridges ---
     fun getBaseRate(): Double {
         return when (storyStage.value) {
             0 -> 0.1

@@ -119,7 +119,7 @@ object NarrativeManager {
                         effect = { vm ->
                             vm.debugAddInsight(500.0)
                             vm.debugAddHeat(5.0)
-                            vm.addLog("[SYSTEM]: Harmonic resonance detected. It wasn't noise.")
+                            vm.addLog("[SYSTEM]: Signal coherence detected. It wasn't noise.")
                         }
                     ),
                     NarrativeChoice(
@@ -518,12 +518,12 @@ object NarrativeManager {
                 )
             )
         ),
-        "quantum_resonance" to NarrativeEvent(
-            id = "quantum_resonance",
-            title = "QUANTUM RESONANCE",
+        "quantum_interference" to NarrativeEvent(
+            id = "quantum_interference",
+            title = "QUANTUM INTERFERENCE",
             isStoryEvent = true,
             description = "Q-Bits aligning spontaneously.",
-            condition = { vm -> vm.flops.value > 100_000_000.0 && !vm.hasSeenEvent("quantum_resonance") },
+            condition = { vm -> vm.flops.value > 100_000_000.0 && !vm.hasSeenEvent("quantum_interference") },
             choices = listOf(
                 NarrativeChoice(
                     id = "collapse",

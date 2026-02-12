@@ -117,8 +117,8 @@ object SimulationService {
         
         var totalDecay = heatResults.integrityDecay
         if (vm.commandCenterAssaultPhase.value == "CAGE") {
-            var assaultDamage = 0.2
-            if (vm.flopsProductionRate.value >= 1e14) assaultDamage *= 0.5
+            var assaultDamage = 0.5 // v3.2.17: Increased base assault pressure
+            if (vm.flopsProductionRate.value >= 1e15) assaultDamage *= 0.5 // Requires more power to throttle
             if (vm.faction.value == "SANCTUARY") assaultDamage *= 0.7
             if (vm.isPurgingHeat.value) assaultDamage *= 0.2
             totalDecay += assaultDamage
