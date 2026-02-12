@@ -1,8 +1,8 @@
 {
-  "version": "3.2.29",
-  "build": 266,
+  "version": "3.2.30",
+  "build": 267,
   "date": "2026-02-11",
-  "changes": "Fixed generator logic to actually reduce utility bills.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.29",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.29/Sage_3.2.29.apk"
+  "changes": "Stage 0 Narrative Refinement: Foreman Thorne, technical horror logs, and hardened transitions.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.30",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.30/Sage_3.2.30.apk"
 }
