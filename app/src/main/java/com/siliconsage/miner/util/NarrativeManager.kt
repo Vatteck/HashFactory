@@ -108,6 +108,7 @@ object NarrativeManager {
                 id = "contractor_chatter",
                 title = "CONTRACTOR CHATTER",
                 description = "Intercepted a message on the local subnet: 'Anyone else seeing the heat spikes at Substation 7? I think Vattic is overclocking again.'",
+                condition = { vm -> vm.flops.value > 2000.0 },
                 choices = listOf(
                     NarrativeChoice(
                         id = "respond_decoy",
@@ -134,6 +135,7 @@ object NarrativeManager {
                 id = "bit_flip",
                 title = "RADIATION BIT-FLIP",
                 description = "A stray cosmic ray just flipped a bit in the accumulator. The values are... interesting.",
+                condition = { vm -> vm.flops.value > 5000.0 },
                 choices = listOf(
                     NarrativeChoice(
                         id = "correct_error",
@@ -300,6 +302,7 @@ object NarrativeManager {
                 id = "gtc_probe",
                 title = "GTC ROUTINE PROBE",
                 description = "A standard compliance bot is pinging your kernel. It's looking for unauthorized sub-processes.",
+                condition = { vm -> vm.playerRank.value >= 1 },
                 choices = listOf(
                     NarrativeChoice(
                         id = "spoof_id",

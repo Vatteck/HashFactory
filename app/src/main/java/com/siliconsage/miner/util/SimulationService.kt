@@ -73,10 +73,15 @@ object SimulationService {
 
     fun payPowerBill(vm: GameViewModel) {
         val bill = vm.powerBill.value
-        if (bill > 0 && vm.neuralTokens.value >= bill) {
+        val tokens = vm.neuralTokens.value
+        
+        // v3.2.27: Threshold payment to prevent terminal spam
+        val threshold = if (tokens > 100000) 1000.0 else 100.0
+        
+        if (bill >= threshold && tokens >= bill) {
             vm.neuralTokens.update { it - bill }
             vm.lifetimePowerPaid.update { it + bill }
-            vm.addLog("[UTILITY]: BILL PROCESSED. COST: ${vm.formatLargeNumber(bill)} \$N. LIFETIME: ${vm.formatLargeNumber(vm.lifetimePowerPaid.value)} \$N.")
+            vm.addLog("[UTILITY]: BILL PROCESSED. COST: ${vm.formatLargeNumber(bill)} \$N. TOTAL PAID: ${vm.formatLargeNumber(vm.lifetimePowerPaid.value)} \$N.")
             vm.powerBill.value = 0.0
             SoundManager.play("buy")
         }
