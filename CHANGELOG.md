@@ -21,7 +21,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **Narrative Pacing (30s Cooldown)**: Enforced a global 30-second cooldown between all narrative popups (DataLogs, Rival Messages, Dilemmas).
-- **Queue Pacing Interlock**: `deliverNextNarrativeItem` now respects the 30s threshold, preventing the "pop-up avalanche" effect when multiple items are queued.
+- **Queue Pacing Interlock**: `deliverNextNarrativeItem` and `queueNarrativeItem` now respect the 30s threshold. 
+- **Queue Drain Loop**: Added a queue drain check to the main 1s simulation loop to ensure items waiting in the queue are delivered as soon as the cooldown expires.
 
 ## [3.2.41] - 2026-02-12
 

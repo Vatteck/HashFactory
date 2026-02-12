@@ -78,7 +78,9 @@ object NarrativeService {
             )
             
             if (!isDuplicate) {
-                if (!vm.isNarrativeBusy()) {
+                // v3.2.42: Check pacing before immediate delivery. 
+                // If it's too soon, add to queue and let the main loop or dismissal trigger it.
+                if (!vm.isNarrativeBusy() && vm.canShowPopup()) {
                     deliverItem(vm, item)
                 } else {
                     vm.narrativeQueue.add(item)

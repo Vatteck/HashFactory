@@ -226,6 +226,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 SectorManager.processAnnexations(this@GameViewModel)
                 SecurityManager.checkSecurityThreats(this@GameViewModel)
                 SecurityManager.checkGridRaid(this@GameViewModel)
+                
+                // v3.2.42: Drain the narrative queue if pacing allows
+                NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
+                
                 refreshProductionRates()
 
                 // v3.2.35: Immersive Slow-Burn Pacing (The Gaslight Pass)
