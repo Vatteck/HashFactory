@@ -1,8 +1,8 @@
 {
-  "version": "3.2.36",
-  "build": 274,
+  "version": "3.2.37",
+  "build": 275,
   "date": "2026-02-12",
-  "changes": "Gaslight Pass: Refined Stage 0/1 pacing and aligned the AI reveal to Stage 3.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.36",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.36/Sage_3.2.36.apk"
+  "changes": "Narrative Gating: Hidden migration and prestige stats until Stage 3.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.37",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.37/Sage_3.2.37.apk"
 }
