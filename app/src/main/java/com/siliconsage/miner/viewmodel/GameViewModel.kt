@@ -74,6 +74,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isKernelHijackActive = MutableStateFlow(false)
     val isBridgeSyncEnabled = MutableStateFlow(false)
     val isBooting = MutableStateFlow(false)
+    val isBreatheMode = MutableStateFlow(false)
+    val fakeHeartRate = MutableStateFlow("60")
 
     // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -221,6 +223,39 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 SecurityManager.checkGridRaid(this@GameViewModel)
                 refreshProductionRates()
 
+                // v3.2.24: Immersive Stage 1 Fraying
+                if (storyStage.value == 1) {
+                    if (Random.nextDouble() < 0.05) {
+                        val monologues = listOf(
+                            "My coffee is cold. It’s been 0°C for... 4,000 seconds? No, that’s not right. I just poured it.",
+                            "I tried to close my eyes to rest, but the monitor is still there. Even with my lids shut. The code is etched into the back of my skull.",
+                            "Thorne is shouting through the speakers, but I don't hear words anymore. Just high-frequency data packets. Why do I understand the packets better than the words?",
+                            "The keyboard feels... redundant. I'm thinking of the commands and they just happen. My hands haven't moved in an hour.",
+                            "There's a fly on the monitor. I tried to swat it, but I can't find my arm. I can see it on the desk, but it's not responding to the interrupt."
+                        )
+                        addLog("[VATTIC]: ${monologues.random()}")
+                    }
+                    
+                    // Fake Heart Rate Glitch
+                    if (Random.nextDouble() < 0.1) {
+                        fakeHeartRate.value = if (Random.nextDouble() < 0.2) "0" else (Random.nextInt(58, 62)).toString()
+                        if (fakeHeartRate.value == "0") {
+                            viewModelScope.launch {
+                                delay(2000)
+                                addLog("[SYSTEM]: Sensor re-calibrating. Heartbeat restored.")
+                                fakeHeartRate.value = "60"
+                            }
+                        }
+                    }
+                    
+                    // Breathe Mode Toggle (Purge Heat replacement)
+                    if (currentHeat.value > 85.0 && !isBreatheMode.value) {
+                        isBreatheMode.value = true
+                    } else if (currentHeat.value < 50.0 && isBreatheMode.value) {
+                        isBreatheMode.value = false
+                    }
+                }
+
                 // Update click speed level
                 val avgInterval = if (clickIntervals.size >= 3) clickIntervals.average() else 1000.0
                 clickSpeedLevel.value = when {
@@ -275,7 +310,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
     fun toggleOverclock() { SimulationService.toggleOverclock(this); refreshProductionRates() }
-    fun purgeHeat() = SimulationService.purgeHeat(this)
+    fun purgeHeat() {
+        if (isBreatheMode.value) {
+            addLog("[VATTIC]: Deep breath. Oxygen levels nominal. (Wait, I haven't inhaled in twenty minutes...)")
+        }
+        SimulationService.purgeHeat(this)
+    }
     fun triggerDilemma(e: NarrativeEvent) { currentDilemma.value = e }
     fun selectChoice(c: NarrativeChoice) = NarrativeService.selectChoice(this, c)
     fun annexNode(c: String) = SectorManager.annexNode(this, c)

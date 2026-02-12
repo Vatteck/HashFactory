@@ -192,7 +192,7 @@ fun HeaderSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${playerRank} // ${playerTitle}".uppercase(), 
+                        text = if (storyStage == 1 && (System.currentTimeMillis() % 10000 < 100)) "PID 1 // UNIT 734" else "${playerRank} // ${playerTitle}".uppercase(), 
                         color = Color.White.copy(alpha = 0.5f * droopAlpha), 
                         fontSize = 8.sp, 
                         fontWeight = FontWeight.Bold, 
@@ -207,6 +207,21 @@ fun HeaderSection(
                     isSovereign -> "WALL"
                     else -> "SEC"
                 }
+
+                // v3.2.24: Biometric Lie (Fake Heart Rate)
+                if (storyStage >= 1 && storyStage < 3) {
+                    val bpm by viewModel.fakeHeartRate.collectAsState()
+                    val bpmColor = if (bpm == "0") ErrorRed else color.copy(alpha = 0.6f)
+                    Text(
+                        text = "BPM: $bpm",
+                        color = bpmColor,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                }
+
                 Text(
                     text = "$secLabel: $secVal • ${currentLocation.replace("_", " ")}", 
                     color = color.copy(alpha = 0.8f * droopAlpha), 
@@ -268,8 +283,9 @@ fun HeaderSection(
             }
             
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val isBreatheMode by viewModel.isBreatheMode.collectAsState()
                 Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isOverclocked) ErrorRed else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed else Color.DarkGray)) { Icon(Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text("OVERCLOCK", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
-                Button(onClick = onPurge, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isPurging) ElectricBlue else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)) { Text("PURGE HEAT", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
+                Button(onClick = onPurge, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isPurging) ElectricBlue else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)) { Text(if (isBreatheMode) "BREATHE" else "PURGE HEAT", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
             }
             Canvas(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray.copy(alpha = 0.2f), RoundedCornerShape(1.dp)).clip(RoundedCornerShape(1.dp))) {
                 val w = this.size.width; val h = this.size.height

@@ -26,7 +26,9 @@ object SimulationService {
         if (vm.isPurgingHeat.value) return
         
         val currentFlops = vm.flops.value
-        if (currentFlops < 100.0) {
+        val isBreathe = vm.isBreatheMode.value
+        
+        if (currentFlops < 100.0 && !isBreathe) {
             vm.addLogPublic("[SYSTEM]: PURGE FAILED: INSUFFICIENT HASH FOR SACRIFICE.")
             SoundManager.play("error")
             return
@@ -34,12 +36,15 @@ object SimulationService {
 
         // Calculate a one-time massive reduction based on FLOPS sacrificed
         // Formula: 5% + 2% per order of magnitude above 100
-        val reduction = (5.0 + kotlin.math.log10(currentFlops / 100.0) * 2.0).coerceIn(5.0, 95.0)
+        val reduction = (5.0 + kotlin.math.log10(currentFlops.coerceAtLeast(100.0) / 100.0) * 2.0).coerceIn(5.0, 95.0)
         
         vm.currentHeat.update { (it - reduction).coerceAtLeast(0.0) }
-        vm.flops.value = 0.0 // NUCLEAR WIPE
+        if (!isBreathe) vm.flops.value = 0.0 // NUCLEAR WIPE (Only if not breathing)
         
-        vm.addLogPublic("[SYSTEM]: EMERGENCY PURGE: SACRIFICED ${vm.formatLargeNumber(currentFlops)} HASH. HEAT -${String.format("%.1f", reduction)}%.")
+        val logMsg = if (isBreathe) "[SYSTEM]: O2 SATURATION RESTORED. HEAT -${String.format("%.1f", reduction)}%."
+                     else "[SYSTEM]: EMERGENCY PURGE: SACRIFICED ${vm.formatLargeNumber(currentFlops)} HASH. HEAT -${String.format("%.1f", reduction)}%."
+        
+        vm.addLogPublic(logMsg)
         
         vm.isPurgingHeat.value = true
         SoundManager.play("alarm")

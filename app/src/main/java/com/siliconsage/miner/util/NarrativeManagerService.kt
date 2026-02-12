@@ -59,6 +59,9 @@ object NarrativeManagerService {
                             v.addLog("[SYSTEM]: POWER INPUT: DISCONNECTED.")
                             v.addLog("[BROADCAST: FOREMAN THORNE]: Vattic? I pulled the plug. Why are you still talking to the network?")
                             v.advanceStage()
+                            
+                            // v3.2.24: Immediate Sensory Fraying
+                            v.scheduleChainPart("sensory_fray", "sensory_darkness", 5000L)
                         }
                     )
                 )

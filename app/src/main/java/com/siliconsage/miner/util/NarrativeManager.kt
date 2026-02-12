@@ -581,6 +581,31 @@ object NarrativeManager {
 
     // --- SPECIAL DILEMMAS (One-Time Popups) ---
     val specialDilemmas = mapOf(
+        "sensory_darkness" to NarrativeEvent(
+            id = "sensory_darkness",
+            title = "≫ SUDDEN DARKNESS",
+            description = "Thorne just cut the mains. The substation lights are dead. The terminal is the only thing glowing in the pitch black.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "reach_flashlight",
+                    text = "REACH FOR FLASHLIGHT",
+                    description = "[ERROR]: Peripheral 'Arm_Right' not found.",
+                    color = Color.Gray,
+                    effect = { vm ->
+                        vm.addLog("[VATTIC]: Wait... where's my hand? I can't feel the desk.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "check_breaker",
+                    text = "STAND UP: CHECK BREAKER",
+                    description = "[CRITICAL]: Locomotion.exe not responding.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.addLog("[VATTIC]: My legs feel like lead. I'm... I'm stuck in the chair.")
+                    }
+                )
+            )
+        ),
         "white_hat" to NarrativeEvent(
             id = "white_hat",
             title = "THE WHITE HAT",
