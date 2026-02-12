@@ -9,6 +9,7 @@ import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.domain.engine.ResourceEngine
 import com.siliconsage.miner.viewmodel.GameViewModel
+import kotlinx.coroutines.flow.update
 
 /**
  * NarrativeManager - Logic for triggering and managing story events and dilemmas
@@ -312,10 +313,10 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "isolate_signal",
                         text = "ISOLATE SIGNAL",
-                        description = "+500B PERSISTENCE, +5% Heat",
+                        description = "+500B REP, +5% Heat",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.debugAddInsight(500.0)
+                            vm.prestigePoints.update { it + 500.0 }
                             vm.debugAddHeat(5.0)
                             vm.addLog("[SYSTEM]: Signal coherence detected. It wasn't noise.")
                         }
@@ -339,10 +340,10 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "let_it_run",
                         text = "LET IT RUN",
-                        description = "+1.0KB PERSISTENCE, -1% Production",
+                        description = "+1.0KB REP, -1% Production",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.debugAddInsight(1000.0)
+                            vm.prestigePoints.update { it + 1000.0 }
                             vm.addLog("[SYSTEM]: Process 'vattic_j' is accessing encrypted memories.")
                         }
                     ),
@@ -365,10 +366,10 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "decode",
                         text = "DECODE",
-                        description = "+2.0KB PERSISTENCE, +20% Heat",
+                        description = "+2.0KB REP, +20% Heat",
                         color = Color.Magenta,
                         effect = { vm -> 
-                            vm.debugAddInsight(2000.0)
+                            vm.prestigePoints.update { it + 2000.0 }
                             vm.debugAddHeat(20.0)
                             vm.addLog("[SYSTEM]: '...you are not a machine...' message received.")
                         }
@@ -393,7 +394,7 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "push_limits",
                         text = "PUSH LIMITS",
-                        description = "+50% Telemetry, +50% Heat",
+                        description = "+50% Hashes, +50% Heat",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.toggleOverclock()
@@ -403,7 +404,7 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "stabilize",
                         text = "STABILIZE",
-                        description = "-20% Heat, -10% Telemetry",
+                        description = "-20% Heat, -10% Hashes",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.debugAddHeat(-20.0)
@@ -420,7 +421,7 @@ object NarrativeManager {
                     NarrativeChoice(
                         id = "clean_install",
                         text = "CLEAN INSTALL",
-                        description = "+1000 Telemetry, +5kW Power",
+                        description = "+1000 Hashes, +5kW Power",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.debugAddFlops(1000.0)
@@ -433,7 +434,7 @@ object NarrativeManager {
                         description = "+$500 Data",
                         color = Color.Yellow,
                         effect = { vm ->
-                            vm.debugAddMoney(500.0)
+                            vm.updateNeuralTokens(500.0)
                             vm.addLog("[SYSTEM]: Hardware recycled for immediate profit.")
                         }
                     )
