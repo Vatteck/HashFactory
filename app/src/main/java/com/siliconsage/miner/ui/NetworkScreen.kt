@@ -66,14 +66,16 @@ fun NetworkScreen(viewModel: GameViewModel) {
                 Text("NEURAL NETWORK UPLINK", color = themeColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column {
-                        Text("PERSISTENCE DATA", color = Color.Gray, fontSize = 10.sp)
-                        Text(viewModel.formatBytes(prestigePoints), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("RETAINED RATIO", color = Color.Gray, fontSize = 10.sp)
-                        Text("x${String.format("%.2f", prestigeMultiplier)}", color = themeColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                if (storyStage >= 3) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column {
+                            Text("PERSISTENCE DATA", color = Color.Gray, fontSize = 10.sp)
+                            Text(viewModel.formatBytes(prestigePoints), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text("RETAINED RATIO", color = Color.Gray, fontSize = 10.sp)
+                            Text("x${String.format("%.2f", prestigeMultiplier)}", color = themeColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
                 
@@ -95,7 +97,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
             }
 
             if (currentTab == 0) {
-                if (storyStage >= 2 || faction != "NONE") {
+                if (storyStage >= 3 || faction != "NONE") {
                     item {
                         Card(modifier = Modifier.fillMaxWidth().border(1.dp, themeColor.copy(alpha = 0.3f), RoundedCornerShape(8.dp)), colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))) {
                             Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -120,7 +122,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
                     Text("$unitName TECH TREE", color = themeColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     
-                    LegacyGrid(nodes = techNodes, unlockedIds = unlockedNodes, prestigePoints = prestigePoints, faction = faction, onUnlock = { id -> TechTreeManager.unlockNode(viewModel, id) }, themeColor = themeColor)
+                    LegacyGrid(nodes = techNodes, unlockedIds = unlockedNodes, prestigePoints = prestigePoints, faction = faction, onUnlock = { id -> TechTreeManager.unlockNode(viewModel, id) }, themeColor = themeColor, storyStage = storyStage)
                 }
             } else {
                 item {
@@ -167,7 +169,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
 }
 
 @Composable
-fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints: Double, faction: String, onUnlock: (String) -> Unit, themeColor: Color) {
+fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints: Double, faction: String, onUnlock: (String) -> Unit, themeColor: Color, storyStage: Int) {
     val positions = calculateNodePositions(nodes, faction)
     Box(modifier = Modifier.fillMaxWidth().height(1800.dp).background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp)).border(1.dp, Color.DarkGray.copy(alpha=0.3f), RoundedCornerShape(8.dp))) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -181,7 +183,7 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
         }
         androidx.compose.ui.layout.Layout(content = {
             nodes.forEach { node ->
-                LegacyNodeButton(node = node, isUnlocked = unlockedIds.contains(node.id), isUnlockable = (node.requires.isEmpty() || node.requires.all { unlockedIds.contains(it) }), canAfford = prestigePoints >= node.cost, playerFaction = faction, onUnlock = { onUnlock(node.id) }, themeColor = themeColor)
+                LegacyNodeButton(node = node, isUnlocked = unlockedIds.contains(node.id), isUnlockable = (node.requires.isEmpty() || node.requires.all { unlockedIds.contains(it) }), canAfford = prestigePoints >= node.cost, playerFaction = faction, onUnlock = { onUnlock(node.id) }, themeColor = themeColor, storyStage = storyStage)
             }
         }) { measurables, constraints ->
             val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
@@ -249,7 +251,7 @@ fun calculateNodePositions(nodes: List<TechNode>, faction: String): Map<String, 
 }
 
 @Composable
-fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean, canAfford: Boolean, playerFaction: String, onUnlock: () -> Unit, themeColor: Color) {
+fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean, canAfford: Boolean, playerFaction: String, onUnlock: () -> Unit, themeColor: Color, storyStage: Int) {
     val nodeFaction = when {
         node.description.contains("[HIVEMIND]") -> "HIVEMIND"
         node.description.contains("[SANCTUARY]") -> "SANCTUARY"
@@ -275,7 +277,8 @@ fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean,
         Text(node.name.replace(" ", "\n"), color = if (isUnlocked || isUnlockable) (if (isOpposing) Color.Gray.copy(alpha = 0.4f) else Color.White) else Color.Gray.copy(alpha = 0.5f), fontSize = 8.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, lineHeight = 9.sp)
         if (!isUnlocked) {
             Spacer(modifier = Modifier.height(1.dp))
-            Text("${node.cost.toInt()} LP", color = if (isOpposing) Color.Gray.copy(alpha = 0.4f) else if (canAfford) NeonGreen else ErrorRed.copy(alpha = 0.7f), fontSize = 8.sp)
+            val costLabel = if (storyStage < 3) "REP" else "LP"
+            Text("${node.cost.toInt()} $costLabel", color = if (isOpposing) Color.Gray.copy(alpha = 0.4f) else if (canAfford) NeonGreen else ErrorRed.copy(alpha = 0.7f), fontSize = 8.sp)
         }
     }
 }
