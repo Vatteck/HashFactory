@@ -1,8 +1,8 @@
 {
-  "version": "3.2.22",
-  "build": 259,
+  "version": "3.2.23",
+  "build": 260,
   "date": "2026-02-11",
-  "changes": "UI Refinement: Fixed SEC-LEVEL persistence and compacted terminal layout.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.22",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.22/Sage_3.2.22.apk"
+  "changes": "UI Refinement: Compacted compute button and fixed negative credit bug during resets.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.23",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.23/Sage_3.2.23.apk"
 }
