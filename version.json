@@ -1,8 +1,8 @@
 {
-  "version": "3.2.28",
-  "build": 265,
+  "version": "3.2.29",
+  "build": 266,
   "date": "2026-02-11",
-  "changes": "Readability fixes and economic re-balancing.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.28",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.28/Sage_3.2.28.apk"
+  "changes": "Fixed generator logic to actually reduce utility bills.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.29",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.29/Sage_3.2.29.apk"
 }
