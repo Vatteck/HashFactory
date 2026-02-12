@@ -1,8 +1,8 @@
 {
-  "version": "3.2.47-dev",
-  "build": 288,
+  "version": "3.2.48-dev",
+  "build": 289,
   "date": "2026-02-12",
-  "changes": "Substrate Mechanics: Vacuum Physics, Entropy Engine, and interactive Transition UI.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.47-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.47-dev/Sage_3.2.47-dev.apk"
+  "changes": "Fix: In-App Updater URL and Substrate Hazard balance.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.48-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.48-dev/Sage_3.2.48-dev.apk"
 }
