@@ -1,8 +1,8 @@
 {
-  "version": "3.2.35",
-  "build": 273,
+  "version": "3.2.36",
+  "build": 274,
   "date": "2026-02-12",
-  "changes": "Narrative Overhaul: Restructured Stages 1 and 2 for better technical horror pacing.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.35",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.35/Sage_3.2.35.apk"
+  "changes": "Gaslight Pass: Refined Stage 0/1 pacing and aligned the AI reveal to Stage 3.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.36",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.36/Sage_3.2.36.apk"
 }
