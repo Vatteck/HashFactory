@@ -1,8 +1,8 @@
 {
-  "version": "3.2.25",
-  "build": 262,
+  "version": "3.2.26",
+  "build": 263,
   "date": "2026-02-11",
-  "changes": "Kernel Wipe hardening and animated boot sequence.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.25",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.25/Sage_3.2.25.apk"
+  "changes": "Narrative Purity: Fixed reset state leaks and added new flavor dilemmas.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.26",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.26/Sage_3.2.26.apk"
 }
