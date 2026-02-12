@@ -1,8 +1,8 @@
 {
-  "version": "3.2.39",
-  "build": 277,
+  "version": "3.2.40",
+  "build": 280,
   "date": "2026-02-12",
-  "changes": "Numeric audit for dilemmas: confirmed all choices display explicit values.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.39",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.39/Sage_3.2.39.apk"
+  "changes": "Stage 2: Shadow Web Integration. Added detectionRisk mechanics and tech tree re-theme.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.40",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.40/Sage_3.2.40.apk"
 }
