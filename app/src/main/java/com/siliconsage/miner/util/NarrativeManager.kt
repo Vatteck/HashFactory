@@ -89,7 +89,7 @@ object NarrativeManager {
                         color = NeonGreen,
                         effect = { vm ->
                             val cost = ResourceEngine.calculateDilemmaCost(50.0, vm.flopsProductionRate.value, vm.storyStage.value)
-                            vm.debugAddMoney(-cost)
+                            vm.updateNeuralTokens(-cost)
                             vm.addLog("[SYSTEM]: Peripheral cleaned. Smells like vanilla bean. Cost: ${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}")
                         }
                     ),
@@ -100,6 +100,61 @@ object NarrativeManager {
                         color = Color.Gray,
                         effect = { vm ->
                             vm.addLog("[SYSTEM]: Keystrokes delayed. The 'Enter' key is fighting back.")
+                        }
+                    )
+                )
+            ),
+            NarrativeEvent(
+                id = "contractor_chatter",
+                title = "CONTRACTOR CHATTER",
+                description = "Intercepted a message on the local subnet: 'Anyone else seeing the heat spikes at Substation 7? I think Vattic is overclocking again.'",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "respond_decoy",
+                        text = "SEND DECOY",
+                        description = "-$100 Credits, -Detection Risk",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.updateNeuralTokens(-100.0)
+                            vm.addLog("[VATTIC]: DECOY SENT: 'Just a dusty fan, guys. Move along.'")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "ignore_chatter",
+                        text = "IGNORE",
+                        description = "Let them talk.",
+                        color = Color.Gray,
+                        effect = { vm ->
+                            vm.addLog("[SYSTEM]: Chatter continues. Background noise +1dB.")
+                        }
+                    )
+                )
+            ),
+            NarrativeEvent(
+                id = "bit_flip",
+                title = "RADIATION BIT-FLIP",
+                description = "A stray cosmic ray just flipped a bit in the accumulator. The values are... interesting.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "correct_error",
+                        text = "CORRECT ERROR",
+                        description = "+10% Integrity, -5% Hashes",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.debugAddIntegrity(10.0)
+                            vm.debugAddFlops(-(vm.flops.value * 0.05))
+                            vm.addLog("[SYSTEM]: Error corrected. Parity restored.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "exploit_anomaly",
+                        text = "EXPLOIT ANOMALY",
+                        description = "+20% Hashes, -10% Integrity",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(vm.flops.value * 0.20)
+                            vm.debugAddIntegrity(-10.0)
+                            vm.addLog("[PID 1]: Beautiful failure. Harvesting the residue.")
                         }
                     )
                 )
@@ -237,6 +292,34 @@ object NarrativeManager {
                         effect = { vm ->
                             vm.debugAddMoney(500.0)
                             vm.addLog("[SYSTEM]: Hardware recycled for immediate profit.")
+                        }
+                    )
+                )
+            ),
+            NarrativeEvent(
+                id = "gtc_probe",
+                title = "GTC ROUTINE PROBE",
+                description = "A standard compliance bot is pinging your kernel. It's looking for unauthorized sub-processes.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "spoof_id",
+                        text = "SPOOF IDENTITY",
+                        description = "-$500 Credits, -10% Heat",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.updateNeuralTokens(-500.0)
+                            vm.debugAddHeat(-10.0)
+                            vm.addLog("[SYSTEM]: Identity spoofed. Bot reports 'All Clear'.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "silent_mode",
+                        text = "SILENT MODE",
+                        description = "+5% Heat, -Detection Risk",
+                        color = Color.Gray,
+                        effect = { vm ->
+                            vm.debugAddHeat(5.0)
+                            vm.addLog("[SYSTEM]: Minimum power state engaged. Waiting for the probe to pass.")
                         }
                     )
                 )

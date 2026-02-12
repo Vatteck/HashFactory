@@ -290,8 +290,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         logCounter = 0
         upgrades.value = emptyMap()
         seenEvents.value = emptySet()
-        unlockedDataLogs.value = emptySet() // Explicit clear
+        unlockedDataLogs.value = emptySet() 
         unlockedTechNodes.value = emptyList()
+        
+        // v3.2.24: Clear static leaks
+        DataLogManager.reset()
+        SecurityManager.reset()
+        NarrativeService.reset()
         
         // 1. Clear database
         repository.clearUpgrades()
@@ -357,7 +362,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
     fun checkTransitionsPublic(force: Boolean = false) = NarrativeManagerService.checkStoryTransitions(this, force)
-    fun updateNeuralTokens(v: Double) { neuralTokens.update { it + v } }
+    fun updateNeuralTokens(v: Double) { neuralTokens.update { (it + v).coerceAtLeast(0.0) } }
     fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { upgrades.update { it + (t to (it[t] ?: 0) + c) } }
     fun triggerSystemCollapse(v: Boolean) { if (v) { isDestructionLoopActive = true; viewModelScope.launch { while (isDestructionLoopActive && annexedNodes.value.size > 1) { delay(3000); val n = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: break; collapseNode(n) } } } else { isDestructionLoopActive = false } }
     fun triggerSystemCollapse(s: Int) { viewModelScope.launch { repeat(s) { delay(1000); val n = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: return@repeat; collapseNode(n) } } }

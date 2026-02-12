@@ -12,6 +12,10 @@ object NarrativeService {
 
     private val dataLogUnlockInProgress = mutableSetOf<String>()
 
+    fun reset() {
+        dataLogUnlockInProgress.clear()
+    }
+
     fun unlockDataLog(logId: String, vm: GameViewModel) {
         if (vm.unlockedDataLogs.value.contains(logId)) return
         if (dataLogUnlockInProgress.contains(logId)) return

@@ -19,6 +19,13 @@ object SecurityManager {
     private var breachSeverity = 1.0 
     private var internalLastRaidTime = 0L
 
+    fun reset() {
+        isBreachInProgress = false
+        breachSeverity = 1.0
+        internalLastRaidTime = 0L
+        SoundManager.stop("alarm")
+    }
+
     fun checkSecurityThreats(vm: GameViewModel) {
         val stage = vm.storyStage.value
         val rank = vm.playerRank.value

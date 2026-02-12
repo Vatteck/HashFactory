@@ -346,7 +346,10 @@ fun MainScreen(viewModel: GameViewModel) {
                 val isBooting by viewModel.isBooting.collectAsState()
                 if (isBooting) {
                     BootSequenceOverlay(
-                        onComplete = { viewModel.completeBoot() },
+                        onComplete = { 
+                            viewModel.completeBoot()
+                            currentScreen = Screen.TERMINAL
+                        },
                         primaryColor = themeColor
                     )
                 }

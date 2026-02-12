@@ -1035,6 +1035,11 @@ object DataLogManager {
     private val recentlyUnlocked = mutableSetOf<String>()
     private var lastCleanupTime = 0L
     
+    fun reset() {
+        recentlyUnlocked.clear()
+        lastCleanupTime = 0L
+    }
+    
     /**
      * Check if any data logs should be unlocked based on current game state
      */
