@@ -1,8 +1,8 @@
 {
   "version": "3.2.35",
-  "build": 272,
-  "date": "2026-02-11",
-  "changes": "Finalized Stage 1 leak logs and technical horror narrative.",
+  "build": 273,
+  "date": "2026-02-12",
+  "changes": "Narrative Overhaul: Restructured Stages 1 and 2 for better technical horror pacing.",
   "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.35",
   "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.35/Sage_3.2.35.apk"
 }
