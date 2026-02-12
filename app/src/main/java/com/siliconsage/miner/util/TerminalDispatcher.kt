@@ -70,7 +70,7 @@ object TerminalDispatcher {
     /**
      * v3.2.17: Generate randomized pellet indices for the I/O buffer
      */
-    fun generatePellets(countRange: IntRange = 3..10, trackWidth: Int = 40): List<Int> {
+    fun generatePellets(countRange: IntRange = 6..10, trackWidth: Int = 40): List<Int> {
         val pellets = mutableListOf<Int>()
         val count = countRange.random()
         var attempts = 0
