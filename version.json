@@ -1,8 +1,8 @@
 {
-  "version": "3.2.21",
-  "build": 258,
+  "version": "3.2.22",
+  "build": 259,
   "date": "2026-02-11",
-  "changes": "Terminal UI Polish: Added CRT scanlines, background process ledger, haptic feedback for buffer flushes, and identity flickering.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.21",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.21/Sage_3.2.21.apk"
+  "changes": "UI Refinement: Fixed SEC-LEVEL persistence and compacted terminal layout.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.22",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.22/Sage_3.2.22.apk"
 }
