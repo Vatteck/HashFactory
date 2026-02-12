@@ -1,8 +1,8 @@
 {
-  "version": "3.2.34",
-  "build": 271,
+  "version": "3.2.35",
+  "build": 272,
   "date": "2026-02-11",
-  "changes": "Unit 734 Narrative Pivot: Asset 734 is now a GTC designation, not a character.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.34",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.34/Sage_3.2.34.apk"
+  "changes": "Finalized Stage 1 leak logs and technical horror narrative.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.35",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.35/Sage_3.2.35.apk"
 }
