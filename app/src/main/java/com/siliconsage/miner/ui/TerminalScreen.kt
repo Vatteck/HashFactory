@@ -158,15 +158,15 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // v3.2.24: Background Process as tiny, dim header inside the terminal box
+            // v3.2.24: Background Process as tiny header inside the terminal box
             val process by viewModel.currentProcess.collectAsState()
             Text(
                 text = "[PROCESS: $process]".uppercase(),
-                color = primaryColor.copy(alpha = 0.25f),
-                fontSize = 7.sp,
+                color = primaryColor.copy(alpha = 0.5f),
+                fontSize = 9.sp,
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
 
             LazyColumn(

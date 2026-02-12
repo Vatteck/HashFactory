@@ -171,7 +171,7 @@ object PersistenceManager {
             harvestedFragments = 0.0,
             marketMultiplier = 1.0,
             thermalRateModifier = 1.0,
-            energyPriceMultiplier = 0.15,
+            energyPriceMultiplier = 0.02,
             newsProductionMultiplier = 1.0,
             lifetimePowerPaid = 0.0
         )

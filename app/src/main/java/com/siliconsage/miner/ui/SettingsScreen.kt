@@ -139,11 +139,12 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.4f)),
+                    border = BorderStroke(1.dp, themeColor.copy(alpha = 0.6f))
                 ) {
-                    Text("EXPORT SYSTEM DUMP (JSON)", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("EXPORT SYSTEM DUMP (JSON)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 
                 var showImportDialog by remember { mutableStateOf(false) }
                 var importText by remember { mutableStateOf("") }
@@ -194,9 +195,10 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 Button(
                     onClick = { showImportDialog = true },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray.copy(alpha = 0.8f)),
+                    border = BorderStroke(1.dp, Color.Gray)
                 ) {
-                    Text("IMPORT SYSTEM DUMP", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("IMPORT SYSTEM DUMP", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
                 }
             }
 

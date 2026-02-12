@@ -140,7 +140,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     // Market Modifiers
     val marketMultiplier = MutableStateFlow(1.0)
     val thermalRateModifier = MutableStateFlow(1.0)
-    val energyPriceMultiplier = MutableStateFlow(0.15)
+    val energyPriceMultiplier = MutableStateFlow(0.02)
     val newsProductionMultiplier = MutableStateFlow(1.0)
     val lifetimePowerPaid = MutableStateFlow(0.0)
     val currentProcess = MutableStateFlow("IDLE")

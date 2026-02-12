@@ -76,7 +76,7 @@ object SimulationService {
         val tokens = vm.neuralTokens.value
         
         // v3.2.27: Threshold payment to prevent terminal spam
-        val threshold = if (tokens > 100000) 1000.0 else 100.0
+        val threshold = if (tokens > 100000) 1000.0 else 50.0
         
         if (bill >= threshold && tokens >= bill) {
             vm.neuralTokens.update { it - bill }

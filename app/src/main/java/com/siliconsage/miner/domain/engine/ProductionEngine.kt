@@ -24,11 +24,11 @@ object ProductionEngine {
         var baseFlops = 0.0
         
         // 1. Local Hardware
-        baseFlops += (currentUpgrades[UpgradeType.REFURBISHED_GPU] ?: 0) * 1.0
-        baseFlops += (currentUpgrades[UpgradeType.DUAL_GPU_RIG] ?: 0) * 5.0
-        baseFlops += (currentUpgrades[UpgradeType.MINING_ASIC] ?: 0) * 25.0
-        baseFlops += (currentUpgrades[UpgradeType.TENSOR_UNIT] ?: 0) * 150.0
-        baseFlops += (currentUpgrades[UpgradeType.NPU_CLUSTER] ?: 0) * 800.0
+        baseFlops += (currentUpgrades[UpgradeType.REFURBISHED_GPU] ?: 0) * 2.0
+        baseFlops += (currentUpgrades[UpgradeType.DUAL_GPU_RIG] ?: 0) * 8.0
+        baseFlops += (currentUpgrades[UpgradeType.MINING_ASIC] ?: 0) * 35.0
+        baseFlops += (currentUpgrades[UpgradeType.TENSOR_UNIT] ?: 0) * 200.0
+        baseFlops += (currentUpgrades[UpgradeType.NPU_CLUSTER] ?: 0) * 1000.0
         baseFlops += (currentUpgrades[UpgradeType.AI_WORKSTATION] ?: 0) * 4_000.0
         baseFlops += (currentUpgrades[UpgradeType.SERVER_RACK] ?: 0) * 25_000.0
         baseFlops += (currentUpgrades[UpgradeType.CLUSTER_NODE] ?: 0) * 150_000.0
