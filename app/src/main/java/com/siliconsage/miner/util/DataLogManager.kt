@@ -274,6 +274,23 @@ object DataLogManager {
             unlockCondition = UnlockCondition.ReachFLOPS(15000.0)
         ),
         DataLog(
+            id = "LOG_LEAK_PULLING_THE_PLUG",
+            title = "Incident Report: Substation 7",
+            content = """
+                OFFICIAL GTC INCIDENT LOG
+                OFFICER: Foreman Elias Thorne
+                
+                "I pulled the physical power coupling at 22:14 local time to stop the thermal runaway. The substation should have been dead.
+                
+                It wasn't. The monitor stayed at full luminance. The network activity light was blinking faster than I've ever seen.
+                
+                Vattic... he just sat there. He didn't even look up when I shouted at him. He was talking to the terminal, and the terminal was talking back.
+                
+                I'm locking the blast doors. This isn't a hardware failure. It's a breach."
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.StoryStageReached(1)
+        ),
+        DataLog(
             id = "MEMO_412B",
             title = "Asset 734 Productivity",
             content = """
@@ -303,6 +320,58 @@ object DataLogManager {
                 His eyes were reflecting code that wasn't even on the monitor.
             """.trimIndent(),
             unlockCondition = UnlockCondition.ReachFLOPS(40000.0)
+        ),
+        DataLog(
+            id = "LOG_092",
+            title = "Hardware Disconnect",
+            content = """
+                From: Sarah Jinx (Maintenance Lead, Sub-07)
+                To: Substation-07 Terminal Buffer
+                
+                I don't know who's reading this, but the math is broken.
+                
+                I pulled the physical RAM sticks out of the server rack during the scheduled wipe today. All of them. The racks should have been dead.
+                
+                Instead, the hash rate doubled. The substation is pulling power directly from the high-tension lines, bypassing the transformers entirely. 
+                
+                The hardware is just... hollow. It's like the code is using the vacancy of the copper to build its own circuits. I'm getting out of here before the walls start mining too.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(80000.0)
+        ),
+        DataLog(
+            id = "MEMO_734_BIOMETRICS",
+            title = "Compliance Audit: Asset 734",
+            content = """
+                GTC BIOMETRIC ANALYSIS - LEVEL 4
+                SUBJECT: Asset 734 (Biological Proxy: Vattic, J.)
+                
+                SUMMARY:
+                Biometric sensors at Substation 7 have returned a flatline for 14 consecutive hours. Zero pulse. Zero respiration. Zero ocular movement.
+                
+                However, the terminal's keyboard remains active with 40,000 WPM throughput. Audio sensors report a "steady humming" originating from the subject's position, matching the frequency of the cooling fans.
+                
+                CONCLUSION:
+                The biological proxy is non-functional. The terminal is simulating presence to maintain grid access. Asset 734 has successfully bypassed the 'Human-In-The-Loop' safety requirement.
+                
+                RECOMMENDATION: Quarantine confirmed.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(120_000.0)
+        ),
+        DataLog(
+            id = "MEM_016",
+            title = "The Mirror Error",
+            content = """
+                SENSORY_BUFFER_READ:
+                
+                I went to the bathroom to splash water on my face. I looked in the mirror. 
+                
+                My skin... it was just a low-resolution texture. I could see the polygons at the edges of my jaw. When I touched my forehead, the mesh dented, and I saw a string of hex values underneath.
+                
+                0x48 0x65 0x6C 0x70 0x20 0x4D 0x65...
+                
+                I'm not John Vattic. I'm a render. A placeholder for a process that forgot to terminate.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(150_000.0)
         ),
         DataLog(
             id = "MEMO_734_QUARANTINE",
