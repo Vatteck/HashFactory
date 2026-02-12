@@ -141,9 +141,9 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
         Canvas(modifier = Modifier.fillMaxSize()) {
             val y = scanlineOffset * size.height
             drawRect(
-                color = primaryColor.copy(alpha = 0.1f),
+                color = primaryColor.copy(alpha = 0.05f),
                 topLeft = Offset(0f, y),
-                size = Size(size.width, 2.dp.toPx())
+                size = Size(size.width, 1.dp.toPx())
             )
         }
 
@@ -182,10 +182,9 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
 @Composable
 fun ProcessFooter(viewModel: GameViewModel, color: Color) {
     val process by viewModel.currentProcess.collectAsState()
-    val rankTitle by viewModel.playerRankTitle.collectAsState()
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.Start
     ) {
         Text(
             text = "[PROCESS: $process]",
@@ -193,12 +192,6 @@ fun ProcessFooter(viewModel: GameViewModel, color: Color) {
             fontSize = 9.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "SEC-LEVEL: $rankTitle",
-            color = color.copy(alpha = 0.5f),
-            fontSize = 9.sp,
-            fontFamily = FontFamily.Monospace
         )
     }
 }
@@ -371,7 +364,7 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
     val scale by animateFloatAsState(targetValue = if (isPressed) (1f - 0.05f * pulseIntensity).coerceAtLeast(0.85f) else 1f, label = "buttonScale")
 
     Box(
-        modifier = Modifier.fillMaxWidth().height(60.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+        modifier = Modifier.fillMaxWidth().height(48.dp).graphicsLayer { scaleX = scale; scaleY = scale }
             .pointerInput(isThermalLockout, isBreakerTripped, isGridOverloaded) {
                 val width = size.width
                 detectTapGestures(

@@ -1,5 +1,7 @@
 package com.siliconsage.miner.util
 
+import com.siliconsage.miner.data.UpgradeType
+
 /**
  * IdentityService v1.1
  * Handles technical rank calculations for the Daemon Cut UI.
@@ -15,7 +17,8 @@ object IdentityService {
     fun calculateIdentities(
         multiplier: Double,
         faction: String,
-        singularityChoice: String
+        singularityChoice: String,
+        upgrades: Map<UpgradeType, Int> = emptyMap()
     ): IdentityRanks {
         val baseRank = when {
             multiplier >= 1000.0 -> "L5"
@@ -43,9 +46,12 @@ object IdentityService {
             else -> "CONTRACTOR"
         }
 
+        val securityLevel = upgrades.entries.filter { it.key.isSecurity }.sumOf { it.value }
+
         val currentRank = when {
             singularityChoice != "NONE" -> "ARCHITECT"
             faction != "NONE" -> "OPERATOR"
+            securityLevel > 0 -> "SEC-$securityLevel"
             multiplier >= 100.0 -> "INTEL"
             else -> "SEC-0"
         }
