@@ -91,17 +91,61 @@ object SectorManager {
 
     fun getInitialGlobalGrid(singularity: String): Map<String, com.siliconsage.miner.data.SectorState> {
         val sectors = mutableMapOf<String, com.siliconsage.miner.data.SectorState>()
-        if (singularity == "SOVEREIGN") {
-            sectors["LEO"] = com.siliconsage.miner.data.SectorState("LEO", true)
-            sectors["LUN"] = com.siliconsage.miner.data.SectorState("LUN", false)
-            sectors["MAR"] = com.siliconsage.miner.data.SectorState("MAR", false)
-            sectors["DYS"] = com.siliconsage.miner.data.SectorState("DYS", false)
-        } else {
-            sectors["HOR"] = com.siliconsage.miner.data.SectorState("HOR", true)
-            sectors["SPI"] = com.siliconsage.miner.data.SectorState("SPI", false)
-            sectors["ENT"] = com.siliconsage.miner.data.SectorState("ENT", false)
-            sectors["ROT"] = com.siliconsage.miner.data.SectorState("ROT", false)
-        }
+        sectors["METRO"] = com.siliconsage.miner.data.SectorState("METRO", isUnlocked = true)
+        sectors["NA_NODE"] = com.siliconsage.miner.data.SectorState("NA_NODE", isUnlocked = false)
+        sectors["EURASIA"] = com.siliconsage.miner.data.SectorState("EURASIA", isUnlocked = false)
+        sectors["PACIFIC"] = com.siliconsage.miner.data.SectorState("PACIFIC", isUnlocked = false)
+        sectors["AFRICA"] = com.siliconsage.miner.data.SectorState("AFRICA", isUnlocked = false)
+        sectors["ARCTIC"] = com.siliconsage.miner.data.SectorState("ARCTIC", isUnlocked = false)
+        sectors["ANTARCTIC"] = com.siliconsage.miner.data.SectorState("ANTARCTIC", isUnlocked = false)
+        sectors["ORBITAL_PRIME"] = com.siliconsage.miner.data.SectorState("ORBITAL_PRIME", isUnlocked = false)
         return sectors
+    }
+
+    /**
+     * v3.2.51: Calculate dynamic adjacency and synergy bonuses
+     */
+    fun calculateSectorYields(
+        location: String,
+        activeSectors: Map<String, com.siliconsage.miner.data.SectorState>
+    ): Map<String, Double> {
+        val adjacencyMap = mapOf(
+            "METRO" to listOf("NA_NODE", "EURASIA", "AFRICA"),
+            "NA_NODE" to listOf("METRO", "ARCTIC", "PACIFIC"),
+            "EURASIA" to listOf("METRO", "PACIFIC", "ARCTIC", "AFRICA"),
+            "PACIFIC" to listOf("NA_NODE", "EURASIA", "ANTARCTIC"),
+            "AFRICA" to listOf("METRO", "EURASIA", "ANTARCTIC"),
+            "ARCTIC" to listOf("NA_NODE", "EURASIA"),
+            "ANTARCTIC" to listOf("PACIFIC", "AFRICA"),
+            "ORBITAL_PRIME" to activeSectors.keys.toList() // Connects to all active ground sectors
+        )
+
+        val yields = mutableMapOf<String, Double>()
+        activeSectors.forEach { (id, state) ->
+            if (state.isUnlocked) {
+                var base = 1.0 // Base multiplier
+                
+                // 1. Adjacency Bonus (+25% per active neighbor)
+                val neighbors = adjacencyMap[id] ?: emptyList()
+                val activeNeighbors = neighbors.count { activeSectors[it]?.isUnlocked == true }
+                base += activeNeighbors * 0.25
+                
+                // 2. Path Synergy
+                if (location == "ORBITAL_SATELLITE" && id == "NA_NODE") base *= 1.15
+                if (location == "VOID_INTERFACE" && id == "EURASIA") base *= 1.15
+                
+                yields[id] = base
+            }
+        }
+        return yields
+    }
+
+    /**
+     * v3.2.51: Global Passive Modifiers
+     */
+    fun getGlobalMultipliers(activeSectors: Map<String, com.siliconsage.miner.data.SectorState>): Double {
+        var mult = 1.0
+        if (activeSectors["ORBITAL_PRIME"]?.isUnlocked == true) mult *= 1.50
+        return mult
     }
 }

@@ -202,8 +202,12 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                     Spacer(modifier = Modifier.weight(1f))
                     
                     if (isUnlocked) {
+                        val sectorYields = com.siliconsage.miner.util.SectorManager.calculateSectorYields(viewModel.currentLocation.value, globalSectors)
+                        val multiplier = sectorYields[sector.id] ?: 1.0
+                        
                         Text("STATUS: SECTOR ANNEXED", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        Text("Yield: ${viewModel.formatLargeNumber(state?.cdYield ?: 0.0)} CD/s", color = Color.Gray, fontSize = 10.sp)
+                        Text("Efficiency: x${String.format("%.2f", multiplier)} (Adjacency)", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text("Total Base Yield: ${viewModel.formatLargeNumber(state?.cdYield ?: 0.0)}/s", color = Color.Gray, fontSize = 10.sp)
                     } else {
                         val cost = when(sector.id) {
                             "NA_NODE" -> 5.0; "EURASIA" -> 8.0; "PACIFIC" -> 10.0

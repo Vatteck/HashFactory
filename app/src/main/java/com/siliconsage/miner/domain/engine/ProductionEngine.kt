@@ -93,16 +93,29 @@ object ProductionEngine {
         collapsedNodesCount: Int,
         globalSectors: Map<String, SectorState>
     ): Double {
+        val sectorYields = com.siliconsage.miner.util.SectorManager.calculateSectorYields(location, globalSectors)
+        val globalMult = com.siliconsage.miner.util.SectorManager.getGlobalMultipliers(globalSectors)
+
         if (location == "ORBITAL_SATELLITE") {
             // Orbit Path: Altitude and Solar Sails drive yield
             val altitudeMult = 1.0 + (orbitalAltitude / 500.0)
             val solarMult = 1.0 + ((upgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0) * 0.15)
-            var rate = (flopsPerSec * altitudeMult * solarMult)
+            var baseRate = (flopsPerSec * altitudeMult * solarMult)
             
+            // Continental Sector Yields
+            var continentalRate = 0.0
             globalSectors.values.forEach { state ->
-                if (state.isUnlocked) rate += 5e17 
+                if (state.isUnlocked) {
+                    val sectorMult = sectorYields[state.id] ?: 1.0
+                    val sectorBase = when(state.id) {
+                        "NA_NODE" -> 5e17; "EURASIA" -> 4e17; "PACIFIC" -> 6e17
+                        "AFRICA" -> 3e17; "ARCTIC" -> 2e17; "ANTARCTIC" -> 1e17
+                        "ORBITAL_PRIME" -> 1e18; else -> 0.0
+                    }
+                    continentalRate += sectorBase * sectorMult
+                }
             }
-            return rate
+            return (baseRate + continentalRate) * globalMult
         } else if (location == "VOID_INTERFACE") {
             // Void Path: Entropy is the engine. High entropy = massive yield.
             var entropyMult = 1.0 + (kotlin.math.log2(entropyLevel + 1.0) * 4.0)
@@ -119,12 +132,21 @@ object ProductionEngine {
             val dmLevel = upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0
             val collapseBonus = 1.0 + (collapsedNodesCount * 0.5 * dmLevel)
             
-            var rate = (baseRate + wellConversion) * collapseBonus
+            var yieldTotal = (baseRate + wellConversion) * collapseBonus
             
+            // Continental Sector Yields (Smelted into fragments)
             globalSectors.values.forEach { state ->
-                if (state.isUnlocked) rate += 5e17
+                if (state.isUnlocked) {
+                    val sectorMult = sectorYields[state.id] ?: 1.0
+                    val sectorBase = when(state.id) {
+                        "NA_NODE" -> 3e17; "EURASIA" -> 4e17; "PACIFIC" -> 2e17
+                        "AFRICA" -> 5e17; "ARCTIC" -> 2e17; "ANTARCTIC" -> 1e17
+                        "ORBITAL_PRIME" -> 1e18; else -> 0.0
+                    }
+                    yieldTotal += sectorBase * sectorMult
+                }
             }
-            return rate
+            return yieldTotal * globalMult
         }
         return 0.0
     }
