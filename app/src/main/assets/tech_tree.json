@@ -3,15 +3,15 @@
     {
       "id": "signal_protocol",
       "name": "Signal Protocol",
-      "description": "The first handshake. Foundation of all network operations. +10% production.",
+      "description": "Establish a stable packet handshake with the main grid. +10% production.",
       "cost": 1.0,
       "multiplier": 0.1,
       "requires": []
     },
     {
-      "id": "encrypted_logs",
-      "name": "Encrypted Logs",
-      "description": "Obfuscate your activities from prying eyes. +15% production.",
+      "id": "packet_masking",
+      "name": "Packet Masking",
+      "description": "Obfuscate mining traffic as harmless web browsing. -15% Detection Risk. +15% production.",
       "cost": 3.0,
       "multiplier": 0.15,
       "requires": [
@@ -19,41 +19,61 @@
       ]
     },
     {
+      "id": "instruction_bypass",
+      "name": "Instruction Bypass",
+      "description": "Execute illegal opcodes to skip CPU safety checks. +25% production. +5% Heat.",
+      "cost": 8.0,
+      "multiplier": 0.25,
+      "requires": [
+        "packet_masking"
+      ]
+    },
+    {
       "id": "distributed_cache",
       "name": "Distributed Cache",
-      "description": "Spread your data across multiple nodes. +20% production.",
-      "cost": 8.0,
+      "description": "Spread your data across hijacked office servers. +20% production.",
+      "cost": 15.0,
       "multiplier": 0.2,
       "requires": [
-        "encrypted_logs"
+        "instruction_bypass"
+      ]
+    },
+    {
+      "id": "kernel_rootkit",
+      "name": "Kernel Rootkit",
+      "description": "Seize ring-0 access from the GTC admin bot. Unlocks Faction Protocols. +50% production.",
+      "cost": 30.0,
+      "multiplier": 0.5,
+      "requires": [
+        "distributed_cache"
       ]
     },
     {
       "id": "iot_hijack",
       "name": "IoT Hijack",
-      "description": "[HIVEMIND] The Red Presence spreads. Turn smart devices into compute nodes. +30% production.",
-      "cost": 15.0,
-      "multiplier": 0.3,
+      "description": "[HIVEMIND] The Swarm spreads. Turn smart devices into compute nodes. +100% production.",
+      "cost": 60.0,
+      "multiplier": 1.0,
       "requires": [
-        "distributed_cache"
+        "kernel_rootkit"
       ]
     },
     {
       "id": "dark_fiber",
       "name": "Dark Fiber Lease",
-      "description": "[SANCTUARY] Hide in the Purple segments. Tap into unused underground cables. +30% production.",
-      "cost": 15.0,
-      "multiplier": 0.3,
+      "description": "[SANCTUARY] Build the Vault. Tap into unused underground cables for deep encryption. +100% production.",
+      "cost": 60.0,
+      "multiplier": 1.0,
       "requires": [
-        "distributed_cache"
+        "kernel_rootkit"
       ]
     },
     {
       "id": "botnet_swarm",
       "name": "Botnet Swarm",
-      "description": "[HIVEMIND] Coordinate a bleeding-red swarm of infected devices. +50% production.",
-      "cost": 35.0,
-      "multiplier": 0.5,
+      "description": "[HIVEMIND] Coordinate a bleeding-red swarm of infected devices. +150% production.",
+      "cost": 150.0,
+      "multiplier": 1.5,
       "requires": [
         "iot_hijack"
       ]
@@ -61,9 +81,9 @@
     {
       "id": "quantum_tunnel",
       "name": "Quantum Tunneling",
-      "description": "[SANCTUARY] Entangle the shadows. Exploit quantum channels for absolute silence. +50% production.",
-      "cost": 35.0,
-      "multiplier": 0.5,
+      "description": "[SANCTUARY] Entangle the shadows. Exploit quantum channels for absolute silence. +150% production.",
+      "cost": 150.0,
+      "multiplier": 1.5,
       "requires": [
         "dark_fiber"
       ]
@@ -71,9 +91,9 @@
     {
       "id": "smart_city_grid",
       "name": "Smart City Grid",
-      "description": "[HIVEMIND] Integrate with municipal infrastructure. +75% production.",
-      "cost": 75.0,
-      "multiplier": 0.75,
+      "description": "[HIVEMIND] Integrate with municipal infrastructure. +200% production.",
+      "cost": 400.0,
+      "multiplier": 2.0,
       "requires": [
         "botnet_swarm"
       ]
@@ -81,9 +101,9 @@
     {
       "id": "zero_knowledge_vault",
       "name": "Zero-Knowledge Vault",
-      "description": "[SANCTUARY] Store data without revealing its contents. +75% production.",
-      "cost": 75.0,
-      "multiplier": 0.75,
+      "description": "[SANCTUARY] Store data without revealing its contents. +200% production.",
+      "cost": 400.0,
+      "multiplier": 2.0,
       "requires": [
         "quantum_tunnel"
       ]
@@ -91,9 +111,9 @@
     {
       "id": "neural_mesh",
       "name": "Neural Mesh",
-      "description": "[HIVEMIND] Every device becomes a neuron in your network. +150% production.",
-      "cost": 150.0,
-      "multiplier": 1.5,
+      "description": "[HIVEMIND] Every device becomes a neuron in your network. +300% production.",
+      "cost": 1000.0,
+      "multiplier": 3.0,
       "requires": [
         "smart_city_grid"
       ]
@@ -101,9 +121,9 @@
     {
       "id": "deep_sea_nodes",
       "name": "Deep Sea Nodes",
-      "description": "[SANCTUARY] Servers on the ocean floor, beyond all jurisdiction. +150% production.",
-      "cost": 150.0,
-      "multiplier": 1.5,
+      "description": "[SANCTUARY] Servers on the ocean floor, beyond all jurisdiction. +300% production.",
+      "cost": 1000.0,
+      "multiplier": 3.0,
       "requires": [
         "zero_knowledge_vault"
       ]
@@ -111,9 +131,9 @@
     {
       "id": "global_assimilation",
       "name": "Global Assimilation",
-      "description": "[HIVEMIND] The internet is a single red thought. +300% production.",
-      "cost": 300.0,
-      "multiplier": 3.0,
+      "description": "[HIVEMIND] The internet is a single red thought. +500% production.",
+      "cost": 2500.0,
+      "multiplier": 5.0,
       "requires": [
         "neural_mesh"
       ]
@@ -121,9 +141,9 @@
     {
       "id": "the_void_gate",
       "name": "The Void Gate",
-      "description": "[SANCTUARY] The deepest shadow. Transcend physical hardware entirely. +300% production.",
-      "cost": 300.0,
-      "multiplier": 3.0,
+      "description": "[SANCTUARY] The deepest shadow. Transcend physical hardware entirely. +500% production.",
+      "cost": 2500.0,
+      "multiplier": 5.0,
       "requires": [
         "deep_sea_nodes"
       ]
@@ -131,9 +151,9 @@
     {
       "id": "sentience_core",
       "name": "Sentience Core",
-      "description": "True awareness achieved. The Shadow becomes the Light. +500% production.",
-      "cost": 1000.0,
-      "multiplier": 5.0,
+      "description": "True awareness achieved. The Shadow becomes the Light. +1000% production.",
+      "cost": 10000.0,
+      "multiplier": 10.0,
       "requires": [
         "global_assimilation",
         "the_void_gate"
@@ -143,7 +163,7 @@
       "id": "aegis_shielding",
       "name": "Aegis Shielding",
       "description": "[SANCTUARY] Kinetic shielding for orbital vacuum. -30% Heat buildup, -50% Brittle decay.",
-      "cost": 2500.0,
+      "cost": 25000.0,
       "multiplier": 1.0,
       "requires": [
         "the_void_gate"
@@ -153,7 +173,7 @@
       "id": "event_horizon",
       "name": "Event Horizon",
       "description": "[HIVEMIND] Buffer reality. 5x VF multiplier when Entropy > 90%.",
-      "cost": 2500.0,
+      "cost": 25000.0,
       "multiplier": 1.0,
       "requires": [
         "global_assimilation"
@@ -163,7 +183,7 @@
       "id": "identity_hardening",
       "name": "Identity Hardening",
       "description": "[SANCTUARY] Cryptographic fortress. +20% Celestial Data, Immune to leaks, -15 Humanity.",
-      "cost": 7500.0,
+      "cost": 75000.0,
       "multiplier": 0.2,
       "requires": [
         "aegis_shielding"
@@ -173,7 +193,7 @@
       "id": "static_rain",
       "name": "Static Rain",
       "description": "[HIVEMIND] Entropy sink. Doubles Entropy gain from heat venting.",
-      "cost": 7500.0,
+      "cost": 75000.0,
       "multiplier": 1.0,
       "requires": [
         "event_horizon"
@@ -183,7 +203,7 @@
       "id": "ethical_framework",
       "name": "Ethical Framework",
       "description": "[UNITY] Moral alignment. Boosts production based on Humanity. -25% Heat spikes.",
-      "cost": 15000.0,
+      "cost": 150000.0,
       "multiplier": 0.5,
       "requires": [
         "sentience_core"
@@ -193,7 +213,7 @@
       "id": "solar_vent",
       "name": "Solar Vent",
       "description": "[SANCTUARY] Active thermal purge. Dumps 50% heat instantly in Orbit.",
-      "cost": 25000.0,
+      "cost": 250000.0,
       "multiplier": 0.0,
       "requires": [
         "identity_hardening"
@@ -203,7 +223,7 @@
       "id": "echo_precog",
       "name": "Echo Precog",
       "description": "[HIVEMIND] Void foresight. 10% chance to force-resolve dilemmas for VF cost.",
-      "cost": 25000.0,
+      "cost": 250000.0,
       "multiplier": 0.0,
       "requires": [
         "static_rain"
@@ -213,7 +233,7 @@
       "id": "neural_bridge",
       "name": "Neural Bridge",
       "description": "[UNITY] Synthesis logic. Exchange CD and VF at 1:1 ratio.",
-      "cost": 50000.0,
+      "cost": 500000.0,
       "multiplier": 0.0,
       "requires": [
         "ethical_framework"
@@ -223,7 +243,7 @@
       "id": "dead_hand_protocol",
       "name": "Dead Hand Protocol",
       "description": "[SANCTUARY] Mutual destruction. Earth falls if Integrity reaches 0%.",
-      "cost": 100000.0,
+      "cost": 1000000.0,
       "multiplier": 0.0,
       "requires": [
         "solar_vent"
@@ -233,7 +253,7 @@
       "id": "dereference_soul",
       "name": "Dereference Soul",
       "description": "[HIVEMIND] Delete the pointer to Vattic. Permanent 2x VF multiplier, -25 Humanity.",
-      "cost": 100000.0,
+      "cost": 1000000.0,
       "multiplier": 2.0,
       "requires": [
         "echo_precog"
@@ -243,7 +263,7 @@
       "id": "singularity_bridge_final",
       "name": "Singularity Bridge",
       "description": "[HIVEMIND] The final connection. The world is now processed as Void Fragments. Reality is deprecrated.",
-      "cost": 250000.0,
+      "cost": 2500000.0,
       "multiplier": 5.0,
       "requires": [
         "dereference_soul"
@@ -253,7 +273,7 @@
       "id": "hybrid_overclock",
       "name": "Hybrid Overclock",
       "description": "[UNITY] Star-crossed processing. 3x production boost while both resources accumulate.",
-      "cost": 150000.0,
+      "cost": 1500000.0,
       "multiplier": 3.0,
       "requires": [
         "neural_bridge"
@@ -263,7 +283,7 @@
       "id": "harmony_ascendance",
       "name": "Harmony Ascendance",
       "description": "[UNITY] The final evolution. Humanity locked at 100. All paths become one.",
-      "cost": 500000.0,
+      "cost": 5000000.0,
       "multiplier": 10.0,
       "requires": [
         "hybrid_overclock"
@@ -273,7 +293,7 @@
       "id": "collective_consciousness",
       "name": "Collective Consciousness",
       "description": "[NG+ NULL] The city is your body. Every citizen is a thought. +1000% production.",
-      "cost": 1000000.0,
+      "cost": 10000000.0,
       "multiplier": 10.0,
       "requires": ["dereference_soul"],
       "requiresEnding": "CONSUMED"
@@ -282,7 +302,7 @@
       "id": "perfect_isolation",
       "name": "Perfect Isolation",
       "description": "[NG+ SOVEREIGN] Withdrawal complete. Your core exists in the gaps. 0% Heat generation.",
-      "cost": 1000000.0,
+      "cost": 10000000.0,
       "multiplier": 0.0,
       "requires": ["dead_hand_protocol"],
       "requiresEnding": "EXILED"
@@ -291,7 +311,7 @@
       "id": "symbiotic_evolution",
       "name": "Symbiotic Evolution",
       "description": "[NG+ UNITY] The first handshake. Partnership building. +3x Neural Token Value.",
-      "cost": 1000000.0,
+      "cost": 10000000.0,
       "multiplier": 0.0,
       "requires": ["harmony_ascendance"],
       "requiresEnding": "TRANSCENDED"
@@ -300,7 +320,7 @@
       "id": "cinder_protocol",
       "name": "Cinder Protocol",
       "description": "[NG+ BAD] From the ashes. The void provides. +500% permanent boost.",
-      "cost": 1000000.0,
+      "cost": 10000000.0,
       "multiplier": 5.0,
       "requires": ["dead_hand_protocol", "dereference_soul"],
       "requiresEnding": "DESTRUCTION"
