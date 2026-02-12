@@ -1,8 +1,8 @@
 {
-  "version": "3.2.20",
-  "build": 257,
+  "version": "3.2.21",
+  "build": 258,
   "date": "2026-02-11",
-  "changes": "Terminal I/O Buffer overhaul: added thermal noise, faction entities (Sigma/Zero), and ASCII flush effects.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.20",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.20/Sage_3.2.20.apk"
+  "changes": "Terminal UI Polish: Added CRT scanlines, background process ledger, haptic feedback for buffer flushes, and identity flickering.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.21",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.21/Sage_3.2.21.apk"
 }
