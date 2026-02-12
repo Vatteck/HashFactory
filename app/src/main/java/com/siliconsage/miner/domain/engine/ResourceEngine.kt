@@ -45,7 +45,8 @@ object ResourceEngine {
         passiveRate: Double,
         singularityChoice: String,
         prestigeMultiplier: Double,
-        isOverclocked: Boolean
+        isOverclocked: Boolean,
+        newsProductionMultiplier: Double
     ): Double {
         val totalLevels = upgrades.values.sum()
         
@@ -59,7 +60,7 @@ object ResourceEngine {
         hardwareMult += (upgrades[UpgradeType.DYSON_NANO_SWARM] ?: 0) * 0.50
         
         // 3. Prestige and Overclock
-        var multiplier = prestigeMultiplier
+        var multiplier = prestigeMultiplier * newsProductionMultiplier
         if (isOverclocked) {
             // v3.0.19: Path-specific overclock scaling
             multiplier *= if (singularityChoice == "NULL_OVERWRITE") 2.5 else 1.5

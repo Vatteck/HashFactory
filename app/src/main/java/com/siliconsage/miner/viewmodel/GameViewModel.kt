@@ -203,6 +203,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 if (isSettingsPaused.value) continue
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
+                SimulationService.payPowerBill(this@GameViewModel)
                 val now = System.currentTimeMillis()
                 if (now - lastNewsTickTime > 15000L) {
                     MarketManager.updateMarket(this@GameViewModel)
@@ -225,7 +226,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun refreshProductionRates() { val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }; flopsProductionRate.value = ResourceEngine.calculateFlopsRate(upgrades.value, false, annexedNodes.value, offlineNodes.value, cityBonuses, faction.value, humanityScore.value, currentLocation.value, prestigeMultiplier.value, unlockedPerks.value, unlockedTechNodes.value, 1.0, newsProductionMultiplier.value, "NONE", isDiagnosticsActive.value, isOverclocked.value, isGridOverloaded.value, isPurgingHeat.value, currentHeat.value, marketMultiplier.value - 1.0); val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value); systemTitle.value = ids.system; playerTitle.value = ids.player; playerRankTitle.value = ids.rank; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
 
     fun trainModel() = onManualClick()
-    fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value)
+    fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
     fun toggleOverclock() { SimulationService.toggleOverclock(this); refreshProductionRates() }
     fun purgeHeat() = SimulationService.purgeHeat(this)
@@ -256,8 +257,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun setTrueNull(s: Boolean) { isTrueNull.value = s }
     fun checkTrueEnding() { NarrativeManagerService.checkTrueEnding(this) }
     fun deleteHumanMemories() { viewModelScope.launch { addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'..."); delay(1000); humanityScore.value = 0; addLog("[NULL]: MEMORY_PURGE COMPLETE."); SoundManager.play("error") } }
-    fun resolveRaidSuccess(id: String) { nodesUnderSiege.update { it - id }; addLog("[SYSTEM]: DEFENSE SUCCESSFUL."); SoundManager.play("success"); refreshProductionRates() }
-    fun resolveRaidFailure(id: String) { nodesUnderSiege.update { it - id }; SectorManager.resolveRaidFailure(id, this) {}; refreshProductionRates() }
+    fun resolveRaidSuccess(id: String) {
+        nodesUnderSiege.update { it - id }
+        raidsSurvived++
+        lastRaidTime = System.currentTimeMillis()
+        addLog("[SYSTEM]: DEFENSE SUCCESSFUL.")
+        SoundManager.play("success")
+        refreshProductionRates()
+    }
+    fun resolveRaidFailure(id: String) {
+        nodesUnderSiege.update { it - id }
+        lastRaidTime = System.currentTimeMillis()
+        SectorManager.resolveRaidFailure(id, this) {}
+        refreshProductionRates()
+    }
     fun advanceStage() { storyStage.update { it + 1 }; lastNewsTickTime = 0L }
     fun advanceToFactionChoice() { storyStage.value = 2; faction.value = "NONE" }
     fun triggerChainEvent(id: String, d: Long = 0L) { viewModelScope.launch { if (d > 0) delay(d); NarrativeManager.getEventById(id)?.let { NarrativeService.queueNarrativeItem(this@GameViewModel, NarrativeItem.EventItem(it)) } } }

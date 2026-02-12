@@ -109,6 +109,7 @@ object SecurityManager {
 
     fun checkGridRaid(vm: GameViewModel) {
         val now = System.currentTimeMillis()
+        if (now - vm.lastRaidTime < 180_000L) return
         if (vm.vanceStatus.value != "ACTIVE") return
         
         val raidableNodes = vm.annexedNodes.value.filter { nodeId ->
@@ -117,7 +118,6 @@ object SecurityManager {
             (now - (vm.nodeAnnexTimes[nodeId] ?: 0L)) > 300_000L 
         }
         if (raidableNodes.isEmpty()) return
-        if (now - internalLastRaidTime < 180_000L) return
         
         val siegeChance = (0.03 + vm.playerRank.value * 0.02).coerceAtMost(0.15)
         val finalChance = if (vm.unlockedPerks.value.contains("gtc_backdoor")) siegeChance * 0.75 else siegeChance
@@ -125,10 +125,10 @@ object SecurityManager {
         if (Random.nextDouble() < finalChance) {
             if (vm.canShowPopup()) {
                 val targetNode = raidableNodes.random()
-                internalLastRaidTime = now
+                vm.lastRaidTime = now
                 vm.triggerGridRaid(targetNode)
             } else {
-                internalLastRaidTime = now
+                vm.lastRaidTime = now
             }
         }
     }
