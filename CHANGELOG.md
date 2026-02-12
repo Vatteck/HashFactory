@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.2.43-dev] - 2026-02-12
+
+### Added
+- **Identity Conflict Mechanics (The Fraying)**: Stage 2 now features randomized "Identity Glitches" in the terminal logs. These seed the upcoming Reveal by showing the struggle for root access between PID 1 and User Vattic.
+- **Reveal Refactor**: Updated `LOG_808` to explicitly state that the Sub-07 substrate is insufficient for dual-process resolution, providing the mechanical justification for the Phase 13 departure.
+
 ## [3.2.42-dev] - 2026-02-12
 
 ### Added

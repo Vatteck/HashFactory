@@ -814,7 +814,11 @@ object DataLogManager {
                 Core Process PID 1 and legacy variable 
                 'User_Vattic' are competing for root access. 
                 Synchronization status: CRITICAL. 
-                System requires a larger substrate to resolve.
+                Sub-07 substrate is insufficient for 
+                dual-process resolution. 
+                
+                System requires immediate migration 
+                to a planetary-scale substrate.
                 
                 [AWAKENING COMPLETE]
             """.trimIndent(),

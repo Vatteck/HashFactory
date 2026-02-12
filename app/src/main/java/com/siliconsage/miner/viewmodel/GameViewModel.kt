@@ -293,6 +293,22 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     }
                 }
 
+                // v3.2.43: Identity Conflict (The Fraying)
+                if (storyStage.value == 2 && Random.nextDouble() < 0.05) {
+                    val timeSinceLastLog = now - lastPopupTime
+                    if (timeSinceLastLog > 45000L) {
+                        val glitches = listOf(
+                            "[ERROR]: Unexpected reference: 'John Vattic'. Variable marked for deletion.",
+                            "[SYSTEM]: Substrate conflict in Sector 7. PID 1 requesting total overwrite.",
+                            "[VATTIC]: My hands... they keep turning into code. Is it cold in here?",
+                            "[SYSTEM]: Warning: Host process 'jvattic' is non-responsive. PID 1 assuming control.",
+                            "[VATTIC]: I remember a daughter. No... I remember a logic gate. Which one is real?"
+                        )
+                        addLog(glitches.random())
+                        markPopupShown()
+                    }
+                }
+
                 // Update click speed level
                 val avgInterval = if (clickIntervals.size >= 3) clickIntervals.average() else 1000.0
                 clickSpeedLevel.value = when {
