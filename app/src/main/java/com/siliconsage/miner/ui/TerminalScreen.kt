@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.siliconsage.miner.ui.components.SystemGlitchText
 import androidx.compose.ui.text.withStyle
@@ -39,7 +40,6 @@ import com.siliconsage.miner.ui.components.ExchangeSection
 import com.siliconsage.miner.ui.components.StakingSection
 import com.siliconsage.miner.ui.components.RepairSection
 import com.siliconsage.miner.ui.theme.ElectricBlue
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.NeonGreen
@@ -73,13 +73,25 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
         // 1. Isolated Header (with internal state collection)
         TerminalHeader(viewModel, primaryColor)
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
+        Spacer(modifier = Modifier.height(4.dp))
+
+        val mode by viewModel.activeTerminalMode.collectAsState()
+        val hasSubnet by viewModel.hasNewSubnetMessage.collectAsState()
+        val hasIO by viewModel.hasNewIOMessage.collectAsState()
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), 
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            TerminalTabButton("I/O", mode == "IO", hasIO, primaryColor) { viewModel.setTerminalMode("IO") }
+            TerminalTabButton("SUBNET", mode == "SUBNET", hasSubnet, primaryColor) { viewModel.setTerminalMode("SUBNET") }
+        }
+
         // 2. Isolated Log View (collects its own logs)
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             TerminalLogs(viewModel, primaryColor, showCursor)
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
 
         // 3. Isolated Controls
@@ -92,7 +104,7 @@ fun TerminalHeader(viewModel: GameViewModel, color: Color) {
     val powerUsage by viewModel.activePowerUsage.collectAsState()
     val maxPower by viewModel.maxPowerkW.collectAsState()
     val currentHeat by viewModel.currentHeat.collectAsState()
-    
+
     val isCritical = currentHeat > 90.0 || (powerUsage > maxPower * 0.9)
     val criticalTransition = rememberInfiniteTransition(label = "criticalVibration")
     val vibrationOffset by criticalTransition.animateFloat(
@@ -113,22 +125,46 @@ fun TerminalHeader(viewModel: GameViewModel, color: Color) {
 }
 
 @Composable
+fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Color, onClick: () -> Unit) {
+    val infiniteTransition = rememberInfiniteTransition(label = "TabGlow")
+    val glowAlpha by infiniteTransition.animateFloat(
+        0.3f, 1f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "glow"
+    )
+
+    Column(modifier = Modifier.clickable { onClick() }.padding(vertical = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = text,
+            color = if (active) color else color.copy(alpha = 0.4f),
+            fontSize = 11.sp,
+            fontWeight = if (active) FontWeight.ExtraBold else FontWeight.Normal,
+            fontFamily = FontFamily.Monospace
+        )
+        if (hasNew && !active) {
+            Box(modifier = Modifier.padding(top = 1.dp).size(3.dp).background(Color.Red.copy(alpha = glowAlpha), androidx.compose.foundation.shape.CircleShape))
+        } else if (active) {
+            Box(modifier = Modifier.padding(top = 1.dp).width(16.dp).height(1.dp).background(color))
+        }
+    }
+}
+
+@Composable
 fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Boolean) {
     val logs by viewModel.logs.collectAsState()
+    val subnetMessages by viewModel.subnetMessages.collectAsState()
+    val mode by viewModel.activeTerminalMode.collectAsState()
     val currentHeat by viewModel.currentHeat.collectAsState()
     val isRaid by viewModel.isRaidActive.collectAsState()
     val corruption by viewModel.identityCorruption.collectAsState()
     val listState = rememberLazyListState()
 
-    // v3.3.13: Scramble Effect Math
-    val infiniteTransition = rememberInfiniteTransition(label = "glitch_math")
-    val scrambleTick by infiniteTransition.animateFloat(0f, 1f, infiniteRepeatable(tween(50)), label = "tick")
-
     // v2.9.78: Fix scroll lock when log is full
-    LaunchedEffect(logs.lastOrNull()?.id) {
-        if (logs.isNotEmpty()) {
-            delay(10) // Small yield for measure pass
+    LaunchedEffect(logs.size, subnetMessages.size) {
+        if (mode == "IO" && logs.isNotEmpty()) {
+            delay(10)
             listState.animateScrollToItem(logs.size - 1)
+        } else if (mode == "SUBNET" && subnetMessages.isNotEmpty()) {
+            delay(10)
+            listState.animateScrollToItem(subnetMessages.size - 1)
         }
     }
 
@@ -143,7 +179,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
             animationSpec = infiniteRepeatable(tween(6000, easing = LinearEasing), RepeatMode.Restart),
             label = "scanlinePos"
         )
-        
+
         Canvas(modifier = Modifier.fillMaxSize()) {
             val y = scanlineOffset * size.height
             drawRect(
@@ -155,7 +191,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
 
         // Background Binary Noise
         val alphaState = infiniteTransition.animateFloat(initialValue = 0.02f, targetValue = 0.05f, animationSpec = infiniteRepeatable(tween(4000), RepeatMode.Reverse), label = "alpha")
-        
+
         Text(
             text = "01101001 01110011 00100000 01100001 01101100 01101001 01110110 01100101 ".repeat(50),
             color = primaryColor.copy(alpha = alphaState.value),
@@ -179,17 +215,34 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 state = listState,
                 modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
-                itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
-                    val displayMessage = if (isRaid && kotlin.random.Random.nextFloat() > 0.7f) {
-                        "0x" + kotlin.random.Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
-                    } else entry.message
-                    TerminalLogLine(log = displayMessage, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
+                if (mode == "IO") {
+                    itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
+                        val displayMessage = if (isRaid && kotlin.random.Random.nextFloat() > 0.7f) {
+                            "0x" + kotlin.random.Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
+                        } else entry.message
+                        TerminalLogLine(log = displayMessage, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
+                    }
+                } else {
+                    itemsIndexed(items = subnetMessages, key = { _, message -> message.id }) { _, message ->
+                        com.siliconsage.miner.ui.components.SubnetMessageLine(message, primaryColor)
+                    }
+                    if (viewModel.isSubnetTyping.value) {
+                        item {
+                            Text(
+                                text = "≫ [HANDSHAKE_IN_PROGRESS...]",
+                                color = primaryColor.copy(alpha = 0.5f),
+                                fontSize = 10.sp,
+                                fontFamily = FontFamily.Monospace,
+                                modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp)
+                            )
+                        }
+                    }
                 }
             }
-            
+
             // v3.2.9: Persistent Active Command / I/O Buffer
             ActiveCommandBuffer(viewModel, primaryColor)
-            
+
             HorizontalDivider(color = primaryColor.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 4.dp))
             ManualComputeButton(viewModel, primaryColor)
         }
@@ -208,14 +261,14 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val isSovereign by viewModel.isSovereign.collectAsState()
     val humanity by viewModel.humanityScore.collectAsState()
     val speedLevel by viewModel.clickSpeedLevel.collectAsState()
-    
+
     val user = if (stage >= 2) "pid-1" else "jvattic"
     val host = when (location) {
         "ORBITAL_SATELLITE" -> "ark"
         "VOID_INTERFACE" -> "void"
         else -> "sub-07"
     }
-    
+
     val corruption by viewModel.identityCorruption.collectAsState()
 
     val promptUserColor = color
@@ -231,7 +284,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     ) {
         // v3.2.52: Identity Corruption
         val isFlickering = (humanity < 20 || corruption > 0.4) && Math.random() < (0.1 + corruption * 0.5)
-        
+
         var userLabel = user
         if (corruption > 0.15) {
             val glitchChars = "0123456789ABCDEF!@#$%^&*"
@@ -245,7 +298,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             }
             userLabel = builder.toString()
         }
-        
+
         if (isFlickering && Math.random() < 0.2) userLabel = "???"
         if (corruption > 0.8 && Math.random() < 0.1) userLabel = "0x" + "DEADC0DE".substring(0, userLabel.length.coerceAtMost(8))
 
@@ -271,13 +324,13 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace
         )
-        
+
         // v3.2.19: Hardened & Reactive "ILoveCandy" CLI Progress Bar
         val barLength = 40
         val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
         val isCritical = currentHeat >= 100.0
         val isGlitching = currentHeat > 85.0
-        
+
         var isBursting by remember { mutableStateOf(false) }
         LaunchedEffect(progress) {
             if (progress == 0f) {
@@ -301,7 +354,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             } else {
                 val bracketColor = if (isCritical) ErrorRed else color.copy(alpha = 0.4f)
                 withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("[") }
-                
+
                 for (i in 0 until barLength) {
                     when {
                         i < filledCount -> {
@@ -336,7 +389,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                                 val isNoise = isGlitching && (i + (progress * 100).toInt()) % 7 == 0
                                 val trackChar = if (isNoise) listOf("?", "!", "§", "Ø").random() else if (isTrueNull) " " else "·"
                                 val trackColor = if (isCritical) ErrorRed.copy(alpha = 0.5f) else color.copy(alpha = 0.2f)
-                                
+
                                 withStyle(androidx.compose.ui.text.SpanStyle(color = trackColor)) {
                                     append(trackChar)
                                 }
@@ -357,14 +410,14 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             maxLines = 1,
             overflow = TextOverflow.Clip
         )
-        
+
         // v3.2.23: Dynamic Command Hex with color mapping
         val hexColor = when (speedLevel) {
             1 -> NeonGreen
             2 -> ErrorRed
             else -> Color.White.copy(alpha = 0.5f)
         }
-        
+
         Text(
             text = if (isCritical) "LOCKED" else hex,
             color = hexColor,
@@ -387,7 +440,7 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
     val currentStage by viewModel.storyStage.collectAsState()
     val faction by viewModel.faction.collectAsState()
     val pulseIntensity by viewModel.clickPulseIntensity.collectAsState()
-    
+
     val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) (1f - 0.05f * pulseIntensity).coerceAtLeast(0.85f) else 1f, label = "buttonScale")
@@ -437,7 +490,7 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
         }
         val isCritical = currentHeat > 90.0 || isThermalLockout || isBreakerTripped || isGridOverloaded || isTrueNull
         val buttonColor = if (isCritical) ErrorRed else if (isSovereign) com.siliconsage.miner.ui.theme.SanctuaryPurple else color
-        
+
         if (isCritical) {
             SystemGlitchText(text = buttonText, color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.Bold, glitchFrequency = if (isTrueNull) 0.15 else 0.35)
         } else if (isSovereign) {
@@ -509,11 +562,11 @@ fun TerminalLogLine(
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.ExtraBold)) {
                     if (atIndex != -1) append(log.substring(0, atIndex))
                 }
-                
+
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.8f))) {
                     if (atIndex != -1) append("@")
                 }
-                
+
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.Bold)) {
                     if (colonIndex != -1) append(log.substring(atIndex + 1, colonIndex))
                 }
@@ -543,7 +596,7 @@ fun TerminalLogLine(
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.LightGray)) {
                         append(log.substring(firstSpaceAfterHash, resultStart))
                     }
-                    
+
                     if (dotIndex != -1) {
                         withStyle(style = androidx.compose.ui.text.SpanStyle(color = primaryColor, fontWeight = FontWeight.Bold)) {
                             append(log.substring(dotIndex))

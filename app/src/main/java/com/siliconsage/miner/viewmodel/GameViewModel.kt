@@ -64,6 +64,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isSettingsPaused = MutableStateFlow(false)
     val isNarrativeSyncing = MutableStateFlow(false)
     val isUpdateDownloading = MutableStateFlow(false)
+    
+    // v3.4.0: Social Subnet State
+    val subnetMessages = MutableStateFlow<List<com.siliconsage.miner.util.SocialManager.SubnetMessage>>(emptyList())
+    val activeTerminalMode = MutableStateFlow("IO") // "IO" or "SUBNET"
+    val hasNewSubnetMessage = MutableStateFlow(false)
+    val hasNewIOMessage = MutableStateFlow(false)
+    val isSubnetTyping = MutableStateFlow(false)
     val isDevMenuVisible = MutableStateFlow(false)
     val isDiagnosticsActive = MutableStateFlow(false)
     val isAuditChallengeActive = MutableStateFlow(false)
@@ -451,6 +458,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
 
         val cur = clickBufferProgress.value + 0.025f; 
+        
+        // v3.4.0: Social Subnet Chance on click
+        if (Random.nextFloat() < 0.01f) {
+            addSubnetChatter()
+        }
+
         activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase(); 
         if (cur >= 1.0f) { 
             addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}."); 
@@ -814,6 +827,33 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     fun overvoltNode(id: String) = com.siliconsage.miner.util.GridManagerService.overvoltNode(this, id)
     fun redactNode(id: String) = com.siliconsage.miner.util.GridManagerService.redactNode(this, id)
+
+    fun addSubnetChatter() {
+        if (isSubnetTyping.value) return // Prevent overlapping typing indicators
+        
+        viewModelScope.launch {
+            isSubnetTyping.value = true
+            delay(Random.nextLong(800, 2000)) // Fake "typing" time
+            
+            val pool = com.siliconsage.miner.util.SocialManager.getChatter(storyStage.value, faction.value, singularityChoice.value)
+            val newMessage = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                id = java.util.UUID.randomUUID().toString(),
+                handle = pool.first,
+                content = pool.second
+            )
+            subnetMessages.update { (it + newMessage).takeLast(50) }
+            if (activeTerminalMode.value != "SUBNET") {
+                hasNewSubnetMessage.value = true
+            }
+            isSubnetTyping.value = false
+        }
+    }
+
+    fun setTerminalMode(mode: String) {
+        activeTerminalMode.value = mode
+        if (mode == "IO") hasNewIOMessage.value = false
+        else hasNewSubnetMessage.value = false
+    }
 
     fun debugWarpToPath(loc: String, fac: String) {
         val targetStage = 5
