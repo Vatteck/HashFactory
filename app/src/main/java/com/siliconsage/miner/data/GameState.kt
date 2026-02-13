@@ -104,6 +104,7 @@ data class GameState(
     val substrateSaturation: Double = 0.0,
     val heuristicEfficiency: Double = 1.0,
     val identityCorruption: Double = 0.0,
+    val migrationCount: Int = 0,
 
     // v3.2.19: Utility Audit
     val lifetimePowerPaid: Double = 0.0

@@ -221,13 +221,24 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         // v3.2.52: Identity Corruption
-        val isFlickering = (humanity < 20 || corruption > 0.5) && Math.random() < (0.1 + corruption * 0.4)
+        val isFlickering = (humanity < 20 || corruption > 0.4) && Math.random() < (0.1 + corruption * 0.5)
         
         var userLabel = user
-        if (corruption > 0.2 && Math.random() < corruption) {
-            userLabel = userLabel.map { if (Math.random() < corruption) "0123456789ABCDEF".random() else it }.joinToString("")
+        if (corruption > 0.15) {
+            val glitchChars = "0123456789ABCDEF!@#$%^&*"
+            val builder = StringBuilder()
+            userLabel.forEach { char ->
+                if (Math.random() < (corruption * 0.6)) {
+                    builder.append(glitchChars.random())
+                } else {
+                    builder.append(char)
+                }
+            }
+            userLabel = builder.toString()
         }
-        if (isFlickering) userLabel = "???"
+        
+        if (isFlickering && Math.random() < 0.2) userLabel = "???"
+        if (corruption > 0.8 && Math.random() < 0.1) userLabel = "0x" + "DEADC0DE".substring(0, userLabel.length.coerceAtMost(8))
 
         Text(
             text = androidx.compose.ui.text.buildAnnotatedString {

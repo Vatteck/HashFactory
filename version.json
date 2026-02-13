@@ -1,8 +1,8 @@
 {
-  "version": "3.2.53-dev",
-  "build": 291,
+  "version": "3.2.54-dev",
+  "build": 292,
   "date": "2026-02-12",
-  "changes": "Fix: Second database bump (v22) for Migration mechanics.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.53-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.53-dev/Sage_3.2.53-dev.apk"
+  "changes": "Phase 13: Migration Targets and Identity Corruption Visuals.",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.54-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.54-dev/Sage_3.2.54-dev.apk"
 }

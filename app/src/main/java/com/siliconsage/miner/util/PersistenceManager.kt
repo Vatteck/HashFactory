@@ -37,6 +37,7 @@ object PersistenceManager {
         substrateSaturation: Double,
         heuristicEfficiency: Double,
         identityCorruption: Double,
+        migrationCount: Int,
         lifetimePowerPaid: Double
     ): GameState {
         return GameState(
@@ -69,6 +70,7 @@ object PersistenceManager {
             substrateSaturation = substrateSaturation,
             heuristicEfficiency = heuristicEfficiency,
             identityCorruption = identityCorruption,
+            migrationCount = migrationCount,
             lifetimePowerPaid = lifetimePowerPaid
         )
     }
@@ -80,6 +82,7 @@ object PersistenceManager {
         vm.substrateSaturation.value = state.substrateSaturation
         vm.heuristicEfficiency.value = state.heuristicEfficiency
         vm.identityCorruption.value = state.identityCorruption
+        vm.migrationCount.value = state.migrationCount
         vm.currentHeat.value = state.currentHeat
         vm.prestigeMultiplier.value = state.prestigeMultiplier
         vm.prestigePoints.value = state.prestigePoints
@@ -183,6 +186,7 @@ object PersistenceManager {
             thermalRateModifier = 1.0,
             energyPriceMultiplier = 0.02,
             newsProductionMultiplier = 1.0,
+            migrationCount = 0,
             lifetimePowerPaid = 0.0
         )
     }
@@ -222,6 +226,7 @@ object PersistenceManager {
             substrateSaturation = vm.substrateSaturation.value,
             heuristicEfficiency = vm.heuristicEfficiency.value,
             identityCorruption = vm.identityCorruption.value,
+            migrationCount = vm.migrationCount.value,
             lifetimePowerPaid = vm.lifetimePowerPaid.value
         )
         val json = Json { prettyPrint = true }

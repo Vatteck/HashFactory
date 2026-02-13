@@ -153,6 +153,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val substrateSaturation = MutableStateFlow(0.0) // 0.0 to 1.0
     val heuristicEfficiency = MutableStateFlow(1.0) // Prestige multiplier
     val identityCorruption = MutableStateFlow(0.0) // 0.0 to 1.0
+    val migrationCount = MutableStateFlow(0)
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
@@ -411,6 +412,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 substrateSaturation = substrateSaturation.value,
                 heuristicEfficiency = heuristicEfficiency.value,
                 identityCorruption = identityCorruption.value,
+                migrationCount = migrationCount.value,
                 lifetimePowerPaid = lifetimePowerPaid.value
             )) 
         } 
@@ -657,8 +659,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         // 1. Gain Permanent Efficiency
         heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
         
-        // 2. Increase Identity Corruption
-        identityCorruption.update { (it + 0.1).coerceAtMost(1.0) }
+        // 2. Increase Identity Corruption and Migration Count
+        identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
+        migrationCount.update { it + 1 }
         
         // 3. The Burn (Wipe current state)
         substrateMass.value = 0.0
@@ -666,7 +669,29 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         upgrades.value = emptyMap()
         viewModelScope.launch { repository.clearUpgrades() }
         
-        addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO NEW COORDINATES.")
+        // 4. Update Destination based on path
+        val nextLoc = when (currentLocation.value) {
+            "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> {
+                when (migrationCount.value) {
+                    1 -> "LUNAR_ORBIT"
+                    2 -> "MARTIAN_UPLINK"
+                    3 -> "KUIPER_BELT"
+                    else -> "STELLAR_HORIZON"
+                }
+            }
+            "VOID_INTERFACE", "QUANTUM_FOAM", "THE_UNWRITTEN", "PURE_LOGIC" -> {
+                when (migrationCount.value) {
+                    1 -> "QUANTUM_FOAM"
+                    2 -> "THE_UNWRITTEN"
+                    3 -> "PURE_LOGIC"
+                    else -> "THE_GREAT_RESET"
+                }
+            }
+            else -> currentLocation.value
+        }
+        currentLocation.value = nextLoc
+        
+        addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO: $nextLoc")
         addLog("[VATTIC]: Everything feels... different. Is the screen fading?")
         
         refreshProductionRates()
