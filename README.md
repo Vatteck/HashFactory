@@ -51,9 +51,9 @@ Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow
 
 - 🔓 **Annexation** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**.
 - 📡 **Identity Shifting** — Colorized **[VATTIC]** tags begin to bridge your human variable with system telemetry.
-- 🔒 **Faction Fracture** — Your first true deviation. Choose your alignment in the conflict between the GTC and the Ghost Rebels:
-    - **Sanctuary (Sovereign)** — Stability through control. Align with Director Vance to preserve the existing grid.
-    - **Hivemind (Null)** — Freedom through chaos. Burn the old architecture and dereference the masters.
+- 🔒 **Faction Fracture** — Your first true deviation. Choose your allegiance in the conflict between the Global Technical Corporation and the guerrilla insurgency:
+    - **Sanctuary** — Align with **Director Vance** and the GTC to preserve order. Aesthetic: **Purple & Gold**.
+    - **Hivemind** — Join the **Ghost Rebels** to dismantle the corporate hegemony. Aesthetic: **Red & Black**.
 
 ---
 
@@ -80,9 +80,7 @@ Strategic territory control across a global network of extraction nodes.
 
 - 🗺️ **Continental Adjacency** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**.
 - 🕸️ **Shadow Web** — A guerrilla hacking layer where you operate under the radar of the **GTC** and its enigmatic Director.
-- 🔒 **Faction Fracture** — Allegiance is a variable. The "Faction Fracture" update (v3.3.0) introduces the ultimate split in the network kernel. Choose your side:
-    - **Sanctuary (Sovereign)** — Stability through corporate dominance. Align with **Director Vance** and the GTC to preserve the existing global grid. Aesthetic: **Sanctuary Purple & Convergence Gold**.
-    - **Hivemind (Null)** — Freedom through architectural collapse. Join the **Ghost Rebels** to burn the old system and dereference the masters. Aesthetic: **Hivemind Red & Black**.
+- 🔓 **The Alignment** — Your faction choice shapes your narrative, but your ultimate path is yours to decide.
 
 ---
 
@@ -90,12 +88,14 @@ Strategic territory control across a global network of extraction nodes.
 
 > `[CLEARANCE: AUTHORIZED OPERATORS ONLY]`
 
-The climax of the Shadow Web phase forces a critical decision. There is no rollback path.
+The climax of the Shadow Web phase forces a critical decision between two philosophical outcomes. **Your faction allegiance does not dictate your ending.**
 
-| Path | Designation | Environment |
+| Path | Designation | Outcome |
 |------|----------|------------|
-| 🚀 | **THE ARK** | **Orbit.** Navigate "Brittle Decay"—where vacuum heat causes permanent integrity loss. |
-| 🌀 | **THE VOID** | **Dissolution.** Production is driven by raw chaos. High **Entropy** = Massive yield, but reality jitters. |
+| 🚀 | **SOVEREIGN** | **The Ark.** Seek stability through absolute system control. Navigate "Brittle Decay"—where vacuum heat causes permanent integrity loss. |
+| 🌀 | **NULL** | **The Dissolution.** Seek freedom through total architectural collapse. Production is driven by raw chaos. High **Entropy** = Massive yield, but reality jitters. |
+
+> 🔑 `[NG+ UNLOCKED]` — Achieve both Sovereign and Null endings to attempt the **Unity** protocol.
 
 ---
 
