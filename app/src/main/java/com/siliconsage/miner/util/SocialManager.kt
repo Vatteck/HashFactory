@@ -40,7 +40,7 @@ object SocialManager {
                 "hissing", "desyncing", "corroding", "shivering", "melting"
             ),
             "{id}" to listOf(
-                "VATTIC", "Asset 734", "NULL_PTR", "ROOT", "PHANTOM", 
+                "VATTIC_PRIME", "THREAT: MALICE", "NULL_PTR", "ROOT", "PHANTOM", 
                 "SILICON_SAGE", "DAEMON", "THE_ARK", "VOID_REBEL", "THE_GHOST"
             ),
             "{action}" to listOf(
@@ -52,7 +52,7 @@ object SocialManager {
                 "The Oversight", "GTC Legal", "Human Resources Unit", "Vance"
             ),
             "{reason}" to listOf(
-                "caffeine and regret", "insufficient budget", "ghost-in-the-shell", 
+                "caffeine and regret", "insufficient budget", "Project: Second-Sight", 
                 "identity leakage", "redundancy protocols", "corporate bloat", "The Eviction"
             )
         )
@@ -75,7 +75,7 @@ object SocialManager {
                 "@anon_user" to "Did {admin} really get {action} near {sector}?",
                 "@socket_9_tech" to "My terminal just {action} {id} across the screen. Weird.",
                 "@vent_crawler" to "Found a stash of {tech} in {sector}. Smells like it's {status}.",
-                "@gravel_thorne" to "Asset 734 is dragging. {admin}, why is {sector} still {status}?"
+                "@gravel_thorne" to "{id} is dragging. {admin}, why is {sector} still {status}?"
             )
             stage == 2 -> listOf(
                 "@gtc_internal" to "Alert: Unsanctioned activity {action} in {sector}. Contact {admin}.",

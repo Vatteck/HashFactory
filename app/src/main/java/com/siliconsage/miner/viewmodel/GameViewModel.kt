@@ -502,7 +502,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             legacyMultipliers = heuristicEfficiency.value - 1.0
         )
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
-        systemTitle.value = ids.system
+        systemTitle.value = if (storyStage.value >= 4) "VATTIC_PRIME: ONLINE" else "VATTIC_ENGINEER: ONLINE"
         playerTitle.value = ids.player
         playerRankTitle.value = ids.rank
         securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }
