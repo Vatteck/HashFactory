@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -78,10 +80,17 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val location by viewModel.currentLocation.collectAsState()
-                    if (location == "LAUNCH_PRELUDE" || location == "VOID_PRELUDE") {
-                        TransitionScreen(viewModel = viewModel)
-                    } else {
-                        MainScreen(viewModel = viewModel)
+                    val uiScale by viewModel.uiScale.collectAsState()
+                    
+                    Box(modifier = Modifier.fillMaxSize().graphicsLayer {
+                        scaleX = uiScale.scaleFactor
+                        scaleY = uiScale.scaleFactor
+                    }) {
+                        if (location == "LAUNCH_PRELUDE" || location == "VOID_PRELUDE") {
+                            TransitionScreen(viewModel = viewModel)
+                        } else {
+                            MainScreen(viewModel = viewModel)
+                        }
                     }
                 }
             }
