@@ -1,8 +1,8 @@
 {
-  "version": "3.2.62-dev",
-  "build": 310,
+  "version": "3.3.0",
+  "build": 311,
   "date": "2026-02-13",
-  "summary": "Infrastructure Hardening & Internal Cache Fix",
+  "summary": "Project Rebrand: SUBSTRATE: MINER",
   "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.62-dev",
   "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.62-dev/Sage_3.2.62-dev.apk",
   "changelog": [
