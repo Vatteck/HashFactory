@@ -21,7 +21,7 @@ data class UpdateInfo(
     val version: String,
     val build: Int = 0,
     val date: String = "",
-    val changes: String = "",
+    val changelog: List<String> = emptyList(),
     val url: String = "", // Release page URL
     val downloadUrl: String = "" // Direct APK download URL
 )
@@ -157,7 +157,8 @@ object UpdateManager {
             
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "application/vnd.android.package-archive")
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
         } catch (e: Exception) {
