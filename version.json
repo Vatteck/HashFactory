@@ -1,8 +1,8 @@
 {
-  "version": "3.2.54-dev",
-  "build": 292,
+  "version": "3.2.55-dev",
+  "build": 294,
   "date": "2026-02-12",
-  "changes": "Phase 13: Migration Targets and Identity Corruption Visuals.",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.54-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.54-dev/Sage_3.2.54-dev.apk"
+  "changes": "Dev Console Overhaul v2.0",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.55-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.55-dev/Sage_3.2.55-dev.apk"
 }
