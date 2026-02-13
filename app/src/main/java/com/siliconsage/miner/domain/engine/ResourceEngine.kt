@@ -164,6 +164,45 @@ object ResourceEngine {
     }
 
     /**
+     * v3.4.0: Calculate predatory yield (Raids/Harvests)
+     * Smelts substrate mass (CD/VF) into raw data/rep bursts.
+     */
+    fun calculatePredatoryYield(
+        substrateType: String,
+        currentSubstrateMass: Double,
+        intensity: Double, // 0.0 to 1.0 (Manual slider or click speed)
+        isOverclocked: Boolean
+    ): Double {
+        // 1. Threshold Check: Predation requires a minimum substrate density
+        if (currentSubstrateMass < 1e6) return 0.0
+
+        // 2. Logarithmic Smelting: You can't just dump 100% of the mass.
+        // Yield efficiency peaks at 15% mass consumption. 
+        // Excessive intensity (over-smelting) causes diminishing returns and integrity damage.
+        val safeThreshold = 0.15
+        val actualConsume = currentSubstrateMass * safeThreshold * intensity
+        
+        // 3. Efficiency Math: Substrate is 'dense'. 1 mass unit = 1e12 bytes/flops.
+        var yieldEfficiency = 1e12 
+        if (isOverclocked) yieldEfficiency *= 1.5
+        
+        // 4. Path Variance & Mechanical Hooks
+        return when(substrateType) {
+            "VOID_FRAGMENTS" -> {
+                // VOID RAIDS: High-burst, high-risk. Consumes CD to generate raw VF bursts.
+                // Formula: consumeAmount * efficiency * (1 + sqrt(Entropy))
+                actualConsume * yieldEfficiency * 2.5
+            }
+            "CELESTIAL_DATA" -> {
+                // ORBIT HARVESTS: Stable, long-term. Purifies entropy for CD baseline expansion.
+                // Formula: consumeAmount * efficiency * (1 + (Altitude / 1000))
+                actualConsume * yieldEfficiency * 0.9
+            }
+            else -> 0.0
+        }
+    }
+
+    /**
      * v3.1.8: Main Passive Income Tick Calculation
      */
     fun calculatePassiveIncomeTick(

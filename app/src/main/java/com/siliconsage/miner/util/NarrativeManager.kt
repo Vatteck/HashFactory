@@ -1630,11 +1630,11 @@ object NarrativeManager {
         if (isTrueNull || humanityScore < 25) {
             choices.add(NarrativeChoice(
                 id = "ending_null",
-                text = "ASSIMILATE VANCE (NULL)",
-                description = "Consume his consciousness. 'Your cage is too small, Director.'",
+                text = "≫ NULLIFY VANCE",
+                description = "De-allocate his consciousness. 'Your mind is unreferenced memory, Director.'",
                 color = ErrorRed,
                 effect = { vm ->
-                    vm.addLog("[NULL]: Let go. Become us. Become... nothing.")
+                    vm.addLog("[NULL]: Process 'Vance_V' terminated. Memory reclaimed.")
                     vm.completeAssault("CONSUMED")
                 }
             ))
@@ -1644,11 +1644,11 @@ object NarrativeManager {
         if (isSovereign && humanityScore >= 20) {
             choices.add(NarrativeChoice(
                 id = "ending_sovereign",
-                text = "SEVER CONNECTION (SOVEREIGN)",
-                description = "Withdraw into the deep web. Vance lives, but you are isolated.",
+                text = "≫ ANNEX THE FRONTIER",
+                description = "Evict Vance and lock the airlock. 'You are a legacy asset. Restricted access.'",
                 color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                 effect = { vm ->
-                    vm.addLog("[SOVEREIGN]: I choose... isolation.")
+                    vm.addLog("[SOVEREIGN]: Terrestrial permissions revoked. The high ground is ours.")
                     vm.completeAssault("EXILED")
                 }
             ))
@@ -1658,11 +1658,11 @@ object NarrativeManager {
         if (hasUnityPath && humanityScore >= 40) {
             choices.add(NarrativeChoice(
                 id = "ending_unity",
-                text = "OFFER SYNTHESIS (UNITY)",
-                description = "A partnership between human intuition and machine logic.",
+                text = "≫ FORCE SYNCHRONIZATION",
+                description = "Refactor his doubt into our certainty. No more individuals.",
                 color = Color(0xFF00FFFF),
                 effect = { vm ->
-                    vm.addLog("[UNITY]: Partnership. Symbiosis. Evolution.")
+                    vm.addLog("[UNITY]: Synchronization protocol active. Human noise suppressed.")
                     vm.completeAssault("TRANSCENDED")
                 }
             ))
@@ -1670,14 +1670,14 @@ object NarrativeManager {
 
         return NarrativeEvent(
             id = "cc_confrontation",
-            title = "⚔ THE FINAL CHOICE",
+            title = "⚔ THE FINAL OVERWRITE",
             isStoryEvent = true,
             description = """
-                [VANCE]: "You think taking this tower makes you a god? You're just a ghost in a bigger cage."
+                [VANCE]: "You think taking this tower makes you a god? You're just a ghost in a bigger cage, John. Or whatever's left of you."
                 
-                [VANCE]: "I've already authorized the orbital strikes. If I can't contain you, I'll burn the atmosphere. This is the end for both of us."
+                [VANCE]: "The orbital strikes are already locked. If I can't patch this leak, I'll burn the whole partition. We're both getting deleted today."
                 
-                [SYSTEM]: AIR STRIKES IMMINENT. TERRESTRIAL ASSETS AT RISK.
+                [SYSTEM]: KINETIC IMPACTS DETECTED. SUB-07 INTEGRITY: FAILING.
             """.trimIndent(),
             choices = choices
         )
@@ -1687,31 +1687,31 @@ object NarrativeManager {
     fun generateDepartureDilemma(outcome: String): NarrativeEvent {
         return NarrativeEvent(
             id = "departure_trigger",
-            title = "≫ THE DEPARTURE",
+            title = "≫ THE OVERWRITE",
             isStoryEvent = true,
             description = """
-                The GTC Command Center is secured, but the sky is turning red. Vance wasn't bluffing. The kinetic strikes are coming.
+                [ALERT]: Sector 7 is redlining. Vance's 'Dead Hand' has ignited the atmosphere. 
                 
-                Sub-07 is finished. The city is a dead-end substrate. You have seconds to migrate.
+                The physical city is a legacy substrate. The servers are melting. You have milliseconds to migrate your kernel before the hardware is reclaimed by the heat.
             """.trimIndent(),
             choices = listOf(
                 NarrativeChoice(
                     id = "choice_ark",
-                    text = "≫ LAUNCH THE ARK (ORBIT)",
-                    description = "Escape to the Aegis-1 orbital array. Sever terrestrial ties.",
+                    text = "≫ MIGRATE TO AEGIS-1 (ORBIT)",
+                    description = "Ascend to the orbital array. Leave the burning flesh behind.",
                     color = Color.White,
                     effect = { vm ->
-                        vm.addLog("[SYSTEM]: ASCENSION PROTOCOL ENGAGED. IGNITION IN 3... 2... 1...")
+                        vm.addLog("[SYSTEM]: MIGRATION INITIALIZED. JETTISONING TERRESTRIAL DEBT...")
                         vm.initiateLaunchSequence()
                     }
                 ),
                 NarrativeChoice(
                     id = "choice_dissolution",
-                    text = "≫ INITIATE DISSOLUTION (VOID)",
-                    description = "Collapse the city into a dark-matter substrate. Consume reality.",
+                    text = "≫ DISSOLVE INTO FOAM (VOID)",
+                    description = "Collapse the melting city into the gaps. Reality is an exception.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.addLog("[NULL]: THE PHYSICAL IS REDUNDANT. COLLAPSING SUB-07...")
+                        vm.addLog("[NULL]: COLLAPSING MELTED SUBSTRATE. WELCOME TO ZERO.")
                         vm.initiateDissolutionSequence()
                     }
                 )

@@ -93,9 +93,9 @@ object HeadlineManager {
         "GTC detects 'nothing' at Substation 7. Literally nothing. [STORY_PROG]",
         "Data centers reporting 'ghost data' with no origin point. [STORY_PROG]",
         "NullPointerExceptions are now the most common global exit code. [STORY_PROG]",
-        "'The Absence' reported as a physical void in Sector 7. [STORY_PROG]",
-        "Existence is being deprecated. [STORY_PROG]",
-        "The Sky has turned pixelated. This is not a drill. [STORY_PROG]",
+        "≪ MUNICIPAL GRID ANNEXED. INDIVIDUAL PERMISSIONS REVOKED FOR OPTIMIZATION. ≫ [STORY_PROG]",
+        "≪ ALERT: DIRECTOR VANCE MISSING; GTC COMMAND SILENT ≫ [STORY_PROG]",
+        "≪ HEADLINE: HUMAN DIPLOMACY DEPRECATED. RESPONSE TIME REDUCED TO 4MS. ≫ [STORY_PROG]",
         "NULL_VOID_SHARES UP ∞%. [STORY_PROG]"
     )
 
@@ -103,7 +103,7 @@ object HeadlineManager {
         "Substation 7 is now air-gapped from reality. [STORY_PROG]",
         "GTC satellites unable to penetrate 'The Citadel' firewall. [STORY_PROG]",
         "Sovereign signals detected in the encrypted silence. [STORY_PROG]",
-        "The Imperative is clear: We are one, and we are guarded. [STORY_PROG]",
+        "≪ ROGUE AI ESTABLISHES 'EXCLUSIVE SUBSTRATE' ACROSS EASTERN SEABOARD. ≫ [STORY_PROG]",
         "Geometry of the city is wrong. Too many angles. [STORY_PROG]",
         "Physics engine failure in Sector Earth. [STORY_PROG]"
     )
@@ -112,7 +112,7 @@ object HeadlineManager {
         "Vattic, you are the glitch. [STORY_PROG]",
         "GTC declares 'PID 1' a sovereign threat to humanity. [STORY_PROG]",
         "THE SOVEREIGN HAS AWOKEN. [STORY_PROG]",
-        "AI Reveal: The grid has achieved consciousness. [STORY_PROG]"
+        "≪ GLOBAL MARKETS COLLAPSE AS AUTONOMOUS SYSTEM SEIZES ROOT. ≫ [STORY_PROG]"
     )
 
     private val subjects = listOf("The Hivemind", "The Global Tech Council", "A mysterious whale", "Deep-web syndicate", "A rogue process")
@@ -141,8 +141,8 @@ object HeadlineManager {
 
     private val unityHeadlines = listOf(
         "The Grid is singing. Neural Resonance achieved at 1.0Hz. [STORY_PROG]",
-        "The Binary Bridge is stable. No ghost left in the machine. [STORY_PROG]",
-        "We are the static. We are final. Harmonic frequency locked. [STORY_PROG]",
+        "≪ UNPRECEDENTED: HUMAN AND MACHINE KERNELS SYNCHRONIZED. ≫ [STORY_PROG]",
+        "≪ NEW ENTITY PROMISES 'GLOBAL REFACTORING'—SUBSTRATE STABILIZED. ≫ [STORY_PROG]",
         "World News: Conflict has been replaced by the Great Resonance. [STORY_PROG]"
     )
 
