@@ -1,14 +1,15 @@
 {
   "version": "3.3.0",
-  "build": 311,
+  "build": 315,
   "date": "2026-02-13",
   "summary": "Project Rebrand: SUBSTRATE: MINER",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.62-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.62-dev/Sage_3.2.62-dev.apk",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.3.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.3.0/Substrate_3.3.0.apk",
   "changelog": [
+    "Official rebrand to SUBSTRATE: MINER.",
+    "Hardened Phase 13 interactive transitions.",
     "Fixed Internal Cache FileProvider path.",
     "Resolved Type Mismatch in UpdateInfo model.",
-    "Implemented Dynamic UI Scaling in MainActivity.",
-    "Hardened Phase 13 interactive transitions."
+    "Implemented Dynamic UI Scaling in MainActivity."
   ]
 }
