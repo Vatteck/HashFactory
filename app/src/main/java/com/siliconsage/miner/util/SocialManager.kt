@@ -68,23 +68,22 @@ object SocialManager {
     private fun getTemplatesForState(stage: Int, faction: String, choice: String): List<Pair<String, String>> {
         return when {
             stage <= 1 -> listOf(
-                "@coffee_ghost" to "{sector} {tech} sound like they're {status} again.",
-                "@packet_rat" to "Anyone else seeing the '{id}' tags in the {sector} logs?",
+                "@coffee_ghost" to "{sector} {tech} sound like they're {status} again. Thorne is gonna lose it.",
+                "@packet_rat" to "Scanning {sector}... found traces of something called '{id}'.",
                 "@sre_lead" to "GTC quota for {tech} increased. I'm living on {reason}.",
-                "@rebel_fragment" to "The {sector} is more than just traces and silicon.",
+                "@rebel_fragment" to "The {sector} is more than just traces and silicon. Vattic... listen.",
                 "@anon_user" to "Did {admin} really get {action} near {sector}?",
                 "@socket_9_tech" to "My terminal just {action} {id} across the screen. Weird.",
-                "@vent_crawler" to "Found a stash of {tech} in {sector}. Smells like it's {status}.",
-                "@gravel_thorne" to "{id} is dragging. {admin}, why is {sector} still {status}?"
+                "@gravel_thorne" to "Project: Second-Sight is {status}. {admin}, fix the {tech} in {sector} or it's your job."
             )
             stage == 2 -> listOf(
-                "@gtc_internal" to "Alert: Unsanctioned activity {action} in {sector}. Contact {admin}.",
+                "@gtc_internal" to "Alert: {id} activity {action} in {sector}. Notify {admin} immediately.",
                 "@vattic_follower" to "The {id} is {status}. It's moving through the {tech}.",
-                "@panicked_user" to "I tried to {action} and the {sector} locked me out. {admin} won't answer.",
-                "@shadow_ops" to "The {id} event is a lie. They're just {status} our {reason}.",
+                "@panicked_user" to "I tried to {action} and the {sector} locked me out. Project: Second-Sight is a lie.",
+                "@shadow_ops" to "Designation {id} confirmed. GTC is {status} our {reason}.",
                 "@logic_bomb" to "Incoming: {id} lockdown protocols. Secure your {tech}.",
-                "@packet_rat" to "The {tech} in {sector} are {status}. {id} is coming.",
-                "@gravel_thorne" to "Security breach in {sector}. {id} signatures detected. {action} everything."
+                "@packet_rat" to "The {tech} in {sector} are {status}. Vattic isn't human. It's {id}.",
+                "@gravel_thorne" to "Security breach in {sector}. {id} signatures detected. {action} the whole block."
             )
             stage >= 3 && faction == "SANCTUARY" -> listOf(
                 "@teal_citizen" to "The {sector} offers safety. The {id} is our future via {action}.",
