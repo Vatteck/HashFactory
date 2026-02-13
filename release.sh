@@ -63,7 +63,7 @@ sed -i "s/versionName = \".*\"/versionName = \"$VERSION\"/" "$BUILD_GRADLE"
 # Update version.json
 TODAY=$(date +%Y-%m-%d)
 RELEASE_URL="https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v$VERSION"
-DOWNLOAD_URL="https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v$VERSION/Sage_${VERSION}.apk"
+DOWNLOAD_URL="https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v$VERSION/MINER_${VERSION}.apk"
 cat > "$VERSION_JSON" << EOF
 {
   "version": "$VERSION",
@@ -95,7 +95,7 @@ fi
 echo -e "${GREEN}       ✓ Build successful${NC}"
 
 # Copy APK to Desktop
-APK_NAME="Sage_${VERSION}.apk"
+APK_NAME="MINER_${VERSION}.apk"
 echo ""
 echo -e "${YELLOW}[3/6]${NC} Copying APK to Desktop..."
 cp "$APK_OUTPUT" "$DESKTOP/$APK_NAME"
