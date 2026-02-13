@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.2.58] - 2026-02-13
+### Added
+- **Phase 13 Transitions**: Interactive "Jettison" and "Dereference" sequences for Ark/Void departure.
+- **Narrative Infrastructure**: State-aware DataLog gating (Time, Corruption, Path, Faction).
+- **Substrate Variety**: Added 20+ logic-gated narrative logs for Sovereign, Null, Hivemind, Sanctuary, and Unity paths.
+- **Dynamic News**: Ticker now adapts to industrial, orbital, and reality-melt substrates.
+- **UI Scaling**: Restored scaling options (Compact/Normal/Large) in Settings.
+- **Synthesis Engine**: Implemented the procedural "Scream" synth in `SoundManager`.
+
+### Fixed
+- **Atmospheric Friction**: Patched "Vacuum Instant-Kill" bug for high-tier fan counts in Orbit.
+- **Story Continuity**: Slowed Stage 0/1 log pacing to prevent "Popup Avalanche."
+- **Terminal Polish**: High-intensity flashing/scaling for emergency jettison cues.
+
 ## [3.2.57-dev] - 2026-02-12
 
 ### Fixed

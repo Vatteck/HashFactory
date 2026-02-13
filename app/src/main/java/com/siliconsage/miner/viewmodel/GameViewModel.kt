@@ -154,6 +154,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val heuristicEfficiency = MutableStateFlow(1.0) // Prestige multiplier
     val identityCorruption = MutableStateFlow(0.0) // 0.0 to 1.0
     val migrationCount = MutableStateFlow(0)
+    val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
@@ -163,6 +164,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     var lastPopupTime = 0L
     var raidsSurvived = 0
     var lastRaidTime = 0L
+    var lastStageChangeTime = System.currentTimeMillis()
     val narrativeQueue = mutableListOf<NarrativeItem>()
     var isDestructionLoopActive = false
     val newsHistoryInternal = mutableListOf<String>()
@@ -536,6 +538,18 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun completeBoot() { isBooting.value = false }
     fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
+    fun confirmJettison() {
+        if (isJettisonAvailable.value) {
+            isJettisonAvailable.value = false
+            addLog("[FLIGHT]: Manual jettison sequence confirmed. Mass reduced.")
+        }
+    }
+
+    fun applyJettisonPenalty() {
+        substrateMass.update { (it * 0.7) }
+        addLog("[WARNING]: Stage separation failed. Substrate integrity compromised.")
+    }
+
     fun initiateLaunchSequence() = LaunchManager.initiateLaunchSequence(this, viewModelScope)
     fun initiateDissolutionSequence() = LaunchManager.initiateDissolutionSequence(this, viewModelScope)
     fun reannexNode(id: String) { offlineNodes.update { it - id }; addLog("[SYSTEM]: NODE $id RE-INITIALIZED."); refreshProductionRates() }
@@ -567,7 +581,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         SectorManager.resolveRaidFailure(id, this) {}
         refreshProductionRates()
     }
-    fun advanceStage() { storyStage.update { it + 1 }; lastNewsTickTime = 0L }
+    fun advanceStage() { 
+        storyStage.update { it + 1 }
+        lastStageChangeTime = System.currentTimeMillis()
+        lastNewsTickTime = 0L 
+    }
     fun advanceToFactionChoice() { storyStage.value = 2; faction.value = "NONE" }
     fun triggerChainEvent(id: String, d: Long = 0L) { viewModelScope.launch { if (d > 0) delay(d); NarrativeManager.getEventById(id)?.let { NarrativeService.queueNarrativeItem(this@GameViewModel, NarrativeItem.EventItem(it)) } } }
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
@@ -596,8 +614,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissRivalMessage(id: String) { rivalMessages.update { current -> current.map { if (it.id == id) it.copy(isDismissed = true) else it } }; NarrativeService.deliverNextNarrativeItem(this) }
     fun dismissOfflineEarnings() { 
         showOfflineEarnings.value = false 
-        // v3.2.41: Release the log brake after catch-up review
-        isNarrativeSyncing.value = narrativeQueue.isNotEmpty()
+        isNarrativeSyncing.value = false
+    }
+
+    fun setUIScale(scale: com.siliconsage.miner.data.UIScale) {
+        uiScale.value = scale
+        saveState()
     }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun onClimaxTransitionComplete() { activeClimaxTransition.value = null }

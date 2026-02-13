@@ -279,8 +279,9 @@ object ResourceEngine {
                 val brittleMult = (newHeat / 100.0).pow(2.0)
                 var decayAmount = brittleMult * 5.0
                 
-                if ((upgrades[UpgradeType.AEGIS_SHIELDING] ?: 0) > 0) decayAmount *= 0.5
-                if ((upgrades[UpgradeType.VACUUM_COOLANT_LOOP] ?: 0) > 0) decayAmount *= 0.1
+                if (unlockedTechNodes.contains("aegis_shielding")) decayAmount *= 0.5
+                if (unlockedTechNodes.contains("orbital_radiators")) decayAmount *= 0.6
+                if (unlockedTechNodes.contains("vacuum_coolant_loop")) decayAmount *= 0.1
                 
                 integrityDecay = decayAmount
             }

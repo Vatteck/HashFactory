@@ -1,24 +1,47 @@
 package com.siliconsage.miner.data
 
-/**
- * Represents a collectible lore fragment that unlocks at specific milestones
- */
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class DataLog(
     val id: String,
     val title: String,
     val content: String,
-    val unlockCondition: UnlockCondition,
-    val isUnlocked: Boolean = false,
-    val unlockedAt: Long? = null // Timestamp when unlocked
+    val unlockCondition: UnlockCondition = UnlockCondition.Instant
 )
 
+@Serializable
 sealed class UnlockCondition {
-    object Instant : UnlockCondition() // Unlocks immediately on game start
-    data class ReachFLOPS(val threshold: Double) : UnlockCondition()
+    @Serializable
+    data class ReachFLOPS(val threshold: Double, val minStage: Int = 0) : UnlockCondition()
+    @Serializable
     data class ReachRank(val rank: Int) : UnlockCondition()
-    data class CompleteEvent(val eventId: String, val choiceId: String) : UnlockCondition()
-    data class ReceiveRivalMessages(val source: RivalSource, val count: Int) : UnlockCondition()
+    @Serializable
+    data class ReachMigrationCount(val count: Int) : UnlockCondition()
+    @Serializable
     data class StoryStageReached(val stage: Int) : UnlockCondition()
-    object NullActive : UnlockCondition() // Requires Null to be active
+    @Serializable
+    data class PathSpecific(val location: String) : UnlockCondition()
+    @Serializable
+    data class ChoiceSpecific(val choice: String) : UnlockCondition()
+    @Serializable
+    data class FactionSpecific(val faction: String) : UnlockCondition()
+    @Serializable
+    data class MinTimeInStage(val stage: Int, val seconds: Long) : UnlockCondition()
+    @Serializable
+    data class IdentityCorruptionThreshold(val minCorruption: Double) : UnlockCondition()
+    @Serializable
+    data class HardwareIntegrityThreshold(val maxIntegrity: Double) : UnlockCondition()
+    @Serializable
+    data class HasTechNode(val nodeId: String) : UnlockCondition()
+    @Serializable
+    data class CompleteEvent(val eventId: String, val choiceId: String) : UnlockCondition()
+    @Serializable
+    data class ReceiveRivalMessages(val source: RivalSource, val count: Int) : UnlockCondition()
+    @Serializable
+    object Instant : UnlockCondition()
+    @Serializable
+    object NullActive : UnlockCondition()
+    @Serializable
     object Victory : UnlockCondition()
 }

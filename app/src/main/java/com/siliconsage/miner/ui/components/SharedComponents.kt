@@ -254,6 +254,7 @@ fun SystemGlitchText(
     fontWeight: FontWeight? = null,
     glitchFrequency: Double = 0.15,
     glitchDurationMs: Long = 200,
+    corruptionLevel: Double = 0.0, // New: Linked to identityCorruption
     overflow: TextOverflow = TextOverflow.Ellipsis,
     softWrap: Boolean = true,
     maxLines: Int = 1,
@@ -262,10 +263,30 @@ fun SystemGlitchText(
 ) {
     var displayedText by remember(text) { mutableStateOf(text) }
     var isGlitching by remember { mutableStateOf(false) }
-    val glitchedVariant = remember(text) {
+    
+    val effectiveFrequency = (glitchFrequency + (corruptionLevel / 2.0)).coerceIn(0.0, 0.8)
+    
+    val glitchedVariant = remember(text, corruptionLevel) {
         val glitched = text.toCharArray()
-        for (i in glitched.indices) { if (Math.random() > 0.85) { glitched[i] = listOf('!', '@', '#', '$', '%', '^', '&', '*', '?', 'X', '0', '1').random() } }
-        String(glitched)
+        val symbols = if (corruptionLevel > 0.6) {
+            listOf('0', '1', 'X', '□', '■', ' ') 
+        } else {
+            listOf('!', '@', '#', '$', '%', '^', '&', '*', '?', 'X', '0', '1')
+        }
+        
+        for (i in glitched.indices) { 
+            // Glitch density increases with corruption
+            if (Math.random() > (0.9 - (corruptionLevel * 0.4))) { 
+                glitched[i] = symbols.random()
+            } 
+        }
+        
+        var result = String(glitched)
+        // Critical Identity Melt: Randomly inject DEADC0DE strings at high corruption
+        if (corruptionLevel > 0.8 && Math.random() > 0.7 && result.length > 10) {
+            result = "0xDEADC0DE" 
+        }
+        result
     }
     val canGlitch = remember { if (activeGlitchCount < MAX_ACTIVE_GLITCHES) { activeGlitchCount++; true } else { false } }
     DisposableEffect(Unit) { onDispose { if (canGlitch) activeGlitchCount-- } }

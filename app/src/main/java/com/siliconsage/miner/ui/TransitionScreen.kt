@@ -38,7 +38,7 @@ fun TransitionScreen(viewModel: GameViewModel) {
             "LAUNCH_PRELUDE" -> {
                 StarfieldParallax(launchProgress)
                 LaunchOverlay(launchProgress, isJettisonAvailable) {
-                    viewModel.purgeHeat()
+                    viewModel.confirmJettison()
                 }
             }
             "VOID_PRELUDE" -> {
@@ -98,19 +98,34 @@ fun LaunchOverlay(progress: Float, jettisonAvailable: Boolean, onJettison: () ->
         Spacer(modifier = Modifier.height(40.dp))
         
         if (jettisonAvailable) {
+            val infiniteTransition = rememberInfiniteTransition(label = "jettison")
+            val alpha by infiniteTransition.animateFloat(
+                initialValue = 0.3f,
+                targetValue = 0.8f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(200, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "flash"
+            )
+            
             Box(
                 modifier = Modifier
-                    .size(200.dp)
-                    .background(Color.Red.copy(alpha = 0.3f))
+                    .size(240.dp)
+                    .background(Color.Red.copy(alpha = alpha))
                     .clickable { onJettison() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "≫ JETTISON ≪",
-                    color = Color.Red,
-                    fontSize = 24.sp,
+                    color = Color.White,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.graphicsLayer {
+                        scaleX = 1f + (alpha - 0.3f)
+                        scaleY = 1f + (alpha - 0.3f)
+                    }
                 )
             }
         }

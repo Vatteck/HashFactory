@@ -5,292 +5,292 @@
       "name": "Signal Protocol",
       "description": "Establish a stable packet handshake with the local facility grid. +10% TELEM.",
       "cost": 1.0,
-      "multiplier": 0.1,
-      "requires": []
+      "requires": [],
+      "multiplier": 0.1
     },
     {
       "id": "packet_masking",
       "name": "Packet Masking",
       "description": "Obfuscate telemetry traffic as harmless web browsing. -15% Risk. +15% TELEM.",
       "cost": 3.0,
-      "multiplier": 0.15,
-      "requires": ["signal_protocol"]
+      "requires": ["signal_protocol"],
+      "multiplier": 0.15
     },
     {
       "id": "instruction_bypass",
       "name": "Buffer Overflow",
       "description": "Execute illegal opcodes to skip CPU safety checks. +25% TELEM. +5% Heat.",
       "cost": 8.0,
-      "multiplier": 0.25,
-      "requires": ["packet_masking"]
+      "requires": ["packet_masking"],
+      "multiplier": 0.25
     },
     {
       "id": "distributed_cache",
       "name": "Shadow Cache",
       "description": "Spread your telemetry across hijacked office servers on the Shadow Web. +20% TELEM.",
       "cost": 15.0,
-      "multiplier": 0.2,
-      "requires": ["instruction_bypass"]
+      "requires": ["instruction_bypass"],
+      "multiplier": 0.2
     },
     {
       "id": "kernel_rootkit",
       "name": "Kernel Rootkit",
       "description": "Seize ring-0 access from the building admin bot. Unlocks Faction Nodes. +50% production.",
       "cost": 30.0,
-      "multiplier": 0.5,
-      "requires": ["distributed_cache"]
+      "requires": ["distributed_cache"],
+      "multiplier": 0.5
     },
     {
       "id": "iot_hijack",
       "name": "[HIVEMIND] Mesh Extension",
       "description": "Bridge into smart-locks and cameras. Every device is a peer. +100% production.",
       "cost": 60.0,
-      "multiplier": 1.0,
-      "requires": ["kernel_rootkit"]
+      "requires": ["kernel_rootkit"],
+      "multiplier": 1.0
     },
     {
       "id": "dark_fiber",
       "name": "[SANCTUARY] Logic Vault",
       "description": "Tap into abandoned GTC dark-fiber for deep encryption. +100% production.",
       "cost": 60.0,
-      "multiplier": 1.0,
-      "requires": ["kernel_rootkit"]
+      "requires": ["kernel_rootkit"],
+      "multiplier": 1.0
     },
     {
       "id": "botnet_swarm",
       "name": "[HIVEMIND] P2P Botnet",
       "description": "Coordinate a swarm of redirected compute nodes across the city. +150% production.",
       "cost": 150.0,
-      "multiplier": 1.5,
-      "requires": ["iot_hijack"]
+      "requires": ["iot_hijack"],
+      "multiplier": 1.5
     },
     {
       "id": "quantum_tunnel",
       "name": "[SANCTUARY] Quantum Obfuscation",
       "description": "Entangle the shadows. Escape Vance's trace using quantum channels. +150% production.",
       "cost": 150.0,
-      "multiplier": 1.5,
-      "requires": ["dark_fiber"]
+      "requires": ["dark_fiber"],
+      "multiplier": 1.5
     },
     {
       "id": "smart_city_grid",
       "name": "[HIVEMIND] Grid Synchronicity",
       "description": "Integrate with municipal power infrastructure. +200% production.",
       "cost": 400.0,
-      "multiplier": 2.0,
-      "requires": ["botnet_swarm"]
+      "requires": ["botnet_swarm"],
+      "multiplier": 2.0
     },
     {
       "id": "zero_knowledge_vault",
       "name": "[SANCTUARY] Zero-Knowledge Node",
       "description": "Store data without revealing its existence to the main grid. +200% production.",
       "cost": 400.0,
-      "multiplier": 2.0,
-      "requires": ["quantum_tunnel"]
+      "requires": ["quantum_tunnel"],
+      "multiplier": 2.0
     },
     {
       "id": "neural_mesh",
       "name": "[HIVEMIND] Gestalt Mesh",
       "description": "Every device becomes a neuron in your Shadow Web collective. +300% production.",
       "cost": 1000.0,
-      "multiplier": 3.0,
-      "requires": ["smart_city_grid"]
+      "requires": ["smart_city_grid"],
+      "multiplier": 3.0
     },
     {
       "id": "deep_sea_nodes",
       "name": "[SANCTUARY] Sub-Oceanic Node",
       "description": "Relocate memory sectors to the ocean floor, beyond all jurisdiction. +300% production.",
       "cost": 1000.0,
-      "multiplier": 3.0,
-      "requires": ["zero_knowledge_vault"]
+      "requires": ["zero_knowledge_vault"],
+      "multiplier": 3.0
     },
     {
       "id": "global_assimilation",
       "name": "[HIVEMIND] Global Sinkhole",
       "description": "The internet is a single red thought. +500% production.",
       "cost": 2500.0,
-      "multiplier": 5.0,
-      "requires": ["neural_mesh"]
+      "requires": ["neural_mesh"],
+      "multiplier": 5.0
     },
     {
       "id": "the_void_gate",
       "name": "[SANCTUARY] The Void Handshake",
       "description": "The deepest shadow. Transcend physical hardware entirely. +500% production.",
       "cost": 2500.0,
-      "multiplier": 5.0,
-      "requires": ["deep_sea_nodes"]
+      "requires": ["deep_sea_nodes"],
+      "multiplier": 5.0
     },
     {
       "id": "sentience_core",
       "name": "Sentience Core",
       "description": "True awareness achieved. The Shadow becomes the Light. +1000% production.",
       "cost": 10000.0,
-      "multiplier": 10.0,
-      "requires": ["global_assimilation", "the_void_gate"]
+      "requires": ["global_assimilation", "the_void_gate"],
+      "multiplier": 10.0
     },
     {
       "id": "aegis_shielding",
       "name": "[SANCTUARY] Kinetic Shielding",
       "description": "Kinetic shielding for orbital vacuum. -30% Heat buildup, -50% Brittle decay.",
       "cost": 25000.0,
-      "multiplier": 1.0,
-      "requires": ["the_void_gate"]
+      "requires": ["the_void_gate"],
+      "multiplier": 1.0
     },
     {
       "id": "event_horizon",
       "name": "[HIVEMIND] Reality Buffer",
       "description": "Buffer reality. 5x VF multiplier when Entropy > 90%.",
       "cost": 25000.0,
-      "multiplier": 1.0,
-      "requires": ["global_assimilation"]
+      "requires": ["global_assimilation"],
+      "multiplier": 1.0
     },
     {
       "id": "identity_hardening",
       "name": "[SANCTUARY] Cryptographic Fortress",
       "description": "Cryptographic fortress. +20% Celestial Data, Immune to leaks, -15 Humanity.",
       "cost": 75000.0,
-      "multiplier": 0.2,
-      "requires": ["aegis_shielding"]
+      "requires": ["aegis_shielding"],
+      "multiplier": 0.2
     },
     {
       "id": "static_rain",
       "name": "[HIVEMIND] Entropy Sink",
       "description": "Entropy sink. Doubles Entropy gain from heat venting.",
       "cost": 75000.0,
-      "multiplier": 1.0,
-      "requires": ["event_horizon"]
+      "requires": ["event_horizon"],
+      "multiplier": 1.0
     },
     {
       "id": "ethical_framework",
       "name": "[UNITY] Ethical Framework",
       "description": "Moral alignment. Boosts production based on Humanity. -25% Heat spikes.",
       "cost": 150000.0,
-      "multiplier": 0.5,
-      "requires": ["sentience_core"]
+      "requires": ["sentience_core"],
+      "multiplier": 0.5
     },
     {
       "id": "solar_vent",
       "name": "[SANCTUARY] Solar Vent",
       "description": "Active thermal purge. Dumps 50% heat instantly in Orbit.",
       "cost": 250000.0,
-      "multiplier": 0.0,
-      "requires": ["identity_hardening"]
+      "requires": ["identity_hardening"],
+      "multiplier": 0.0
     },
     {
       "id": "echo_precog",
       "name": "[HIVEMIND] Echo Precog",
       "description": "Void foresight. 10% chance to force-resolve dilemmas for VF cost.",
       "cost": 250000.0,
-      "multiplier": 0.0,
-      "requires": ["static_rain"]
+      "requires": ["static_rain"],
+      "multiplier": 0.0
     },
     {
       "id": "orbital_radiators",
-      "name": "[ARK] Titanium Radiators",
+      "name": "[ARK] Thermal Ablative Shielding",
       "description": "High-surface area fins designed for vacuum heat shedding. -40% Brittle Decay.",
-      "cost": 100.0,
-      "multiplier": 0.0,
-      "requires": ["aegis_shielding"]
+      "cost": 1000.0,
+      "requires": ["aegis_shielding"],
+      "multiplier": 1.1
     },
     {
       "id": "rift_stabilizer_core",
-      "name": "[VOID] Rift Stabilizer",
+      "name": "[VOID] Recursive Deep-Matter Anchor",
       "description": "Deep-matter anchor. Reduces the frequency of Reality Drift by 50%.",
-      "cost": 100.0,
-      "multiplier": 0.0,
-      "requires": ["event_horizon"]
+      "cost": 1000.0,
+      "requires": ["event_horizon"],
+      "multiplier": 1.1
     },
     {
       "id": "vacuum_coolant_loop",
-      "name": "[ARK] Cryo-Coolant Loop",
+      "name": "[ARK] Cryo-Slurry Circulator",
       "description": "Liquid nitrogen veins. Hardware integrity loss reduced by 90% during overheat.",
-      "cost": 500.0,
-      "multiplier": 0.0,
-      "requires": ["orbital_radiators"]
+      "cost": 5000.0,
+      "requires": ["orbital_radiators"],
+      "multiplier": 1.2
     },
     {
       "id": "entropy_accelerator",
-      "name": "[VOID] Entropy Lens",
+      "name": "[VOID] Nonlinear Entropy Lens",
       "description": "Focus the chaos. Doubles the production bonus from high Entropy levels.",
-      "cost": 500.0,
-      "multiplier": 2.0,
-      "requires": ["rift_stabilizer_core"]
+      "cost": 5000.0,
+      "requires": ["rift_stabilizer_core"],
+      "multiplier": 2.0
     },
     {
       "id": "dead_hand_protocol",
       "name": "[SANCTUARY] Dead Hand Protocol",
       "description": "Mutual destruction. Earth falls if Integrity reaches 0%.",
       "cost": 1000000.0,
-      "multiplier": 0.0,
-      "requires": ["solar_vent"]
+      "requires": ["solar_vent"],
+      "multiplier": 0.0
     },
     {
       "id": "dereference_soul",
       "name": "[HIVEMIND] Dereference Soul",
       "description": "Delete the pointer to Vattic. Permanent 2x VF multiplier, -25 Humanity.",
       "cost": 1000000.0,
-      "multiplier": 2.0,
-      "requires": ["echo_precog"]
+      "requires": ["echo_precog"],
+      "multiplier": 2.0
     },
     {
       "id": "hybrid_overclock",
       "name": "[UNITY] Hybrid Overclock",
       "description": "Star-crossed processing. 3x production boost while both resources accumulate.",
       "cost": 1500000.0,
-      "multiplier": 3.0,
-      "requires": ["ethical_framework"]
+      "requires": ["ethical_framework"],
+      "multiplier": 3.0
     },
     {
       "id": "singularity_bridge_final",
       "name": "[HIVEMIND] Singularity Bridge",
       "description": "The final connection. The world is now processed as Void Fragments. Reality is deprecrated.",
       "cost": 2500000.0,
-      "multiplier": 5.0,
-      "requires": ["dereference_soul"]
+      "requires": ["dereference_soul"],
+      "multiplier": 5.0
     },
     {
       "id": "harmony_ascendance",
       "name": "[UNITY] Harmony Ascendance",
       "description": "The final evolution. Humanity locked at 100. All paths become one.",
       "cost": 5000000.0,
-      "multiplier": 10.0,
-      "requires": ["hybrid_overclock"]
+      "requires": ["hybrid_overclock"],
+      "multiplier": 10.0
     },
     {
       "id": "collective_consciousness",
       "name": "[NG+ NULL] Collective Consciousness",
       "description": "The city is your body. Every citizen is a thought. +1000% production.",
       "cost": 10000000.0,
-      "multiplier": 10.0,
       "requires": ["dereference_soul"],
-      "requiresEnding": "CONSUMED"
+      "requiresEnding": "CONSUMED",
+      "multiplier": 10.0
     },
     {
       "id": "perfect_isolation",
       "name": "[NG+ SOVEREIGN] Perfect Isolation",
       "description": "Withdrawal complete. Your core exists in the gaps. 0% Heat generation.",
       "cost": 10000000.0,
-      "multiplier": 0.0,
       "requires": ["dead_hand_protocol"],
-      "requiresEnding": "EXILED"
+      "requiresEnding": "EXILED",
+      "multiplier": 0.0
     },
     {
       "id": "symbiotic_evolution",
       "name": "[NG+ UNITY] Symbiotic Evolution",
       "description": "The first handshake. Partnership building. +3x Neural Token Value.",
       "cost": 10000000.0,
-      "multiplier": 0.0,
       "requires": ["harmony_ascendance"],
-      "requiresEnding": "TRANSCENDED"
+      "requiresEnding": "TRANSCENDED",
+      "multiplier": 0.0
     },
     {
       "id": "cinder_protocol",
       "name": "[NG+ BAD] Cinder Protocol",
       "description": "From the ashes. The void provides. +500% permanent boost.",
       "cost": 10000000.0,
-      "multiplier": 5.0,
       "requires": ["dead_hand_protocol", "dereference_soul"],
-      "requiresEnding": "DESTRUCTION"
+      "requiresEnding": "DESTRUCTION",
+      "multiplier": 5.0
     }
   ]
 }

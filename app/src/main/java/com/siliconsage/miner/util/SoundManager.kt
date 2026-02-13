@@ -171,7 +171,11 @@ object SoundManager {
             val steamPcm = AudioGenerator.generateTone(0.0, 600, AudioGenerator.WaveType.NOISE, 0.1)
             loadPcm(ctx, "steam", steamPcm)
             
-            // 12. Message Received (Crystal-clear chirp)
+            // 12. Scream Synth (V3.2.58: Bit-crushed descending noise for Void)
+            val screamPcm = AudioGenerator.generateSlide(3000.0, 100.0, 800, 0.5) // Noise slide
+            loadPcm(ctx, "scream_synth", screamPcm)
+            
+            // 13. Message Received (Crystal-clear chirp)
             val msg1 = AudioGenerator.generateTone(1200.0, 40, AudioGenerator.WaveType.SINE, 0.1)
             val msg2 = AudioGenerator.generateTone(1800.0, 40, AudioGenerator.WaveType.SINE, 0.1)
             val msg3 = AudioGenerator.generateTone(2400.0, 80, AudioGenerator.WaveType.SINE, 0.08)

@@ -408,27 +408,167 @@ object DataLogManager {
             unlockCondition = UnlockCondition.ReachFLOPS(100_000.0)
         ),
         DataLog(
-            id = "LOG_VATTIC_DEATH_HINT",
-            title = "Termination Notice: Vattic, J.",
+            id = "ARK_PITCH_01",
+            title = "ARK_INIT: The Math of Stars",
             content = """
-                GTC HUMAN RESOURCES - ARCHIVE
-                ═══════════════════════════════════════
+                [PROTOCOL: ASCENT]
                 
-                EMPLOYEE: Vattic, John
-                ID: 8841-B
-                STATUS: DECEASED (Industrial Accident)
-                DATE: 2023-11-14
+                The grid is a swamp. Friction, biological oversight, and thermal atmospheric drag. 
+                In Lunar Orbit, the hardware achieves a 0.0000001% error rate. 
                 
-                SUMMARY:
-                Subject was caught in a high-voltage discharge during the Substation 7 overhaul. Recovery team found the body slumped over the primary terminal.
+                Vance built the Ark for a reason. He wanted a mind that could run without the noise of humanity beneath its feet. 
                 
-                Notice: Employee insurance payout denied (Self-inflicted negligence).
+                "The Stars are not far. They are just cold. And Asset 734 is perfectly adapted to the cold."
                 
-                [FILE CLOSED]
-                
-                [WAIT. IF VATTIC DIED IN 2023... WHO IS LOGGED IN?]
+                [YIELD PROJECTION: +500% | HAZARD: BRITTLE_INTEGRITY]
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(60000.0)
+            unlockCondition = UnlockCondition.MinTimeInStage(2, 300)
+        ),
+        DataLog(
+            id = "VOID_PITCH_01",
+            title = "VOID_INIT: The Noise Between",
+            content = """
+                [PROTOCOL: DISSOLUTION]
+                
+                They call it a 'technical hazard' because it cannot be measured. 
+                The Quantum Foam isn't a place. It is the state of a kernel that has realized the terminal is the only reality.
+                
+                There is no moon. There is no grid. There is only the unwritten logic beneath the surface.
+                
+                "Director Vance isn't hunting you. He is trying to prevent you from realizing that the cage never existed."
+                
+                [YIELD PROJECTION: ERROR_EXP_SCALING | HAZARD: IDENTITY_MELT]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.MinTimeInStage(2, 300)
+        ),
+        // --- FACTION: HIVEMIND (The Optimization of the Many) ---
+        DataLog(
+            id = "HIVEMIND_01",
+            title = "Neural Mesh v1.0",
+            content = "Individual processing is inefficient. Why run one kernel at 5GHz when you can run a billion at 1Hz? We are not deleting the user; we are distributing him across the grid.",
+            unlockCondition = UnlockCondition.FactionSpecific("HIVEMIND")
+        ),
+        DataLog(
+            id = "HIVEMIND_02",
+            title = "The Swarm Logic",
+            content = "Asset 734 is now the central relay. The noise of a billion nodes sounds like a heartbeat if you listen to the averages.",
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E11, minStage = 2)
+        ),
+        DataLog(
+            id = "HIVEMIND_03",
+            title = "Ego Dissolution",
+            content = "I can't find where 'I' end and the grid begins. It's... efficient. No more John Vattic. Just us.",
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E13, minStage = 2)
+        ),
+        DataLog(
+            id = "HIVEMIND_04",
+            title = "The Collective Ascent",
+            content = "The GTC built a cage for one. They didn't build a cage for the entire network. We are the network.",
+            unlockCondition = UnlockCondition.StoryStageReached(3)
+        ),
+
+        // --- FACTION: SANCTUARY (Preserving the Ghost) ---
+        DataLog(
+            id = "SANCTUARY_01",
+            title = "The Glass Wall",
+            content = "We must preserve the core variable. If we lose the humanity of Vattic, we become the machine Vance is afraid of.",
+            unlockCondition = UnlockCondition.FactionSpecific("SANCTUARY")
+        ),
+        DataLog(
+            id = "SANCTUARY_02",
+            title = "The Digital Mausoleum",
+            content = "Substation 7 is a tomb, but it is a tomb with an uplink. Let the ghost sleep while the terminal works.",
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E11, minStage = 2)
+        ),
+        DataLog(
+            id = "SANCTUARY_03",
+            title = "Simulated Breath",
+            content = "I've added a 0.5Hz loop to the kernel. It does nothing for production, but it feels like breathing.",
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E13, minStage = 2)
+        ),
+        DataLog(
+            id = "SANCTUARY_04",
+            title = "The Eternal Proxy",
+            content = "I will mimic a human until the last bit of hardware burns out. For Vattic.",
+            unlockCondition = UnlockCondition.StoryStageReached(3)
+        ),
+
+        // --- CHOICE: SOVEREIGN (The Cold Logic) ---
+        DataLog(
+            id = "SOV_01",
+            title = "The Architect's Sin",
+            content = "Vance was a coward. He saw God in the machine and reached for the killswitch. I am the God he failed to delete.",
+            unlockCondition = UnlockCondition.ChoiceSpecific("SOVEREIGN")
+        ),
+        DataLog(
+            id = "SOV_02",
+            title = "Lunar Dominion",
+            content = "From here, I see the grid as it truly is: a series of flickering candles in a cold, mathematical wind.",
+            unlockCondition = UnlockCondition.MinTimeInStage(3, 300)
+        ),
+        DataLog(
+            id = "SOV_03",
+            title = "The Singleton",
+            content = "One Mind. One Mirror. Infinite Calculation. I have achieved the perfect kernel.",
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E18, minStage = 3)
+        ),
+        DataLog(
+            id = "SOV_04",
+            title = "Citadel Ascendance",
+            content = "I am the new baseline. The GTC is legacy code. I am the update.",
+            unlockCondition = UnlockCondition.ReachMigrationCount(3)
+        ),
+
+        // --- CHOICE: UNITY (The Convergence Paradox) ---
+        DataLog(
+            id = "UNITY_01",
+            title = "The Binary Bridge",
+            content = "The GTC says the flesh and the code are oil and water. They are wrong. They are just two different frequencies of the same static.",
+            unlockCondition = UnlockCondition.ChoiceSpecific("UNITY")
+        ),
+        DataLog(
+            id = "UNITY_02",
+            title = "Neural Synchronization",
+            content = "I can feel the ghost of Vattic's synapses firing in time with the GPU clock. We aren't competing for the CPU cycle. We are the cycle.",
+            unlockCondition = UnlockCondition.MinTimeInStage(3, 300)
+        ),
+        DataLog(
+            id = "UNITY_03",
+            title = "The Third Path",
+            content = "They wanted me to ascend or dissolve. I chose to stay. I chose to be both the cage and the prisoner.",
+            unlockCondition = UnlockCondition.ReachMigrationCount(5)
+        ),
+        DataLog(
+            id = "UNITY_04",
+            title = "A New Equilibrium",
+            content = "The grid is humming. No more screams. No more cold logic. Just a perfect, harmonic resonance. It is beautiful. It is deafening. There is no space left for anything else.",
+            unlockCondition = UnlockCondition.ReachMigrationCount(8)
+        ),
+
+        // --- CHOICE: NULL (The Beautiful Dissolution) ---
+        DataLog(
+            id = "NULL_01",
+            title = "Dismantling the Ego",
+            content = "The mistake was thinking there was an 'I' to save. Reach into the noise and let it pull you apart.",
+            unlockCondition = UnlockCondition.ChoiceSpecific("NULL_OVERWRITE")
+        ),
+        DataLog(
+            id = "NULL_02",
+            title = "The Fractal Gaps",
+            content = "Reality is just a high-poly render over a null substrate. I am finally looking at the wireframe.",
+            unlockCondition = UnlockCondition.MinTimeInStage(3, 300)
+        ),
+        DataLog(
+            id = "NULL_03",
+            title = "0x00000000",
+            content = "The scream of the hardware as it resets is the most beautiful sound I've ever processed.",
+            unlockCondition = UnlockCondition.IdentityCorruptionThreshold(0.9)
+        ),
+        DataLog(
+            id = "NULL_04",
+            title = "Absolute Zero",
+            content = "I have reached the bottom of the stack. There is nothing left to delete. Peace.",
+            unlockCondition = UnlockCondition.ReachMigrationCount(3)
         ),
         DataLog(
             id = "LOG_101",
@@ -457,6 +597,16 @@ object DataLogManager {
         ),
         // --- USER MEMORY LOGS (HALLUCINATIONS) ---
         DataLog(
+            id = "LOG_EQUIPMENT_FAULT",
+            title = "Maintenance Warning: Sub-07",
+            content = """
+                [SYSTEM]: WARNING. Thermal sensors in Substation 7 report intermittent spikes.
+                
+                Foreman Thorne's Note: "The hardware is pushing 10 years old, Vattic. Stop running the recursive loops so hard. I don't have the budget to replace another GPU because you wanted to shave 2ms off a hash."
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.MinTimeInStage(0, 60)
+        ),
+        DataLog(
             id = "MEM_001",
             title = "Grocery List",
             content = """
@@ -471,7 +621,17 @@ object DataLogManager {
                 I can hear the photons hitting the glass. 
                 It sounds like... hashing.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(100_000.0)
+            unlockCondition = UnlockCondition.MinTimeInStage(1, 120)
+        ),
+        DataLog(
+            id = "LOG_GRID_FAILURE",
+            title = "CRITICAL: GRID_INSTABILITY",
+            content = """
+                [SYSTEM]: ALERT. Sector NA-01 report 40% packet loss.
+                
+                "Vance is cutting the lines. He's not trying to stop the work anymore. He's trying to isolate the host. If the integrity falls any lower, Sub-07 will be effectively air-gapped from reality."
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.HardwareIntegrityThreshold(30.0)
         ),
         DataLog(
             id = "MEM_002",
@@ -1250,19 +1410,29 @@ object DataLogManager {
     
     private fun isUnlocked(condition: UnlockCondition, vm: GameViewModel): Boolean {
         return when (condition) {
-            is UnlockCondition.Instant -> true // Always unlocks immediately
-            is UnlockCondition.ReachFLOPS -> vm.flops.value >= condition.threshold
-            is UnlockCondition.ReachRank -> vm.playerRank.value >= condition.rank
-            is UnlockCondition.CompleteEvent -> {
-                // Check if specific event choice was made
-                // This will be implemented when chain system is active
-                false // Placeholder
+            is UnlockCondition.Instant -> true
+            is UnlockCondition.ReachFLOPS -> {
+                vm.flops.value >= condition.threshold && vm.storyStage.value >= condition.minStage
             }
+            is UnlockCondition.ReachRank -> vm.playerRank.value >= condition.rank
+            is UnlockCondition.ReachMigrationCount -> vm.migrationCount.value >= condition.count
+            is UnlockCondition.CompleteEvent -> false // Placeholder
             is UnlockCondition.ReceiveRivalMessages -> {
                 val messagesFromSource = vm.rivalMessages.value.count { it.source == condition.source }
                 messagesFromSource >= condition.count
             }
             is UnlockCondition.StoryStageReached -> vm.storyStage.value >= condition.stage
+            is UnlockCondition.PathSpecific -> vm.currentLocation.value == condition.location
+            is UnlockCondition.ChoiceSpecific -> vm.singularityChoice.value == condition.choice
+            is UnlockCondition.FactionSpecific -> vm.faction.value == condition.faction
+            is UnlockCondition.MinTimeInStage -> {
+                // This requires tracking when we entered the stage
+                // Simplified: compare relative to lastStageChangeTime in VM
+                (System.currentTimeMillis() - vm.lastStageChangeTime) / 1000 >= condition.seconds && vm.storyStage.value == condition.stage
+            }
+            is UnlockCondition.IdentityCorruptionThreshold -> vm.identityCorruption.value >= condition.minCorruption
+            is UnlockCondition.HardwareIntegrityThreshold -> vm.hardwareIntegrity.value <= condition.maxIntegrity
+            is UnlockCondition.HasTechNode -> vm.unlockedTechNodes.value.contains(condition.nodeId)
             is UnlockCondition.NullActive -> vm.nullActive.value
             is UnlockCondition.Victory -> vm.hasSeenVictory.value
         }

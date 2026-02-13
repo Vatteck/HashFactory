@@ -213,6 +213,29 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
             }
             
             Spacer(modifier = Modifier.height(16.dp))
+
+            // UI Scaling Options
+            val currentScale by viewModel.uiScale.collectAsState()
+            SettingsGroup("DISPLAY") {
+                Text("UI SCALING", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                    com.siliconsage.miner.data.UIScale.values().forEach { scale ->
+                        Button(
+                            onClick = { viewModel.setUIScale(scale) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (currentScale == scale) themeColor else Color.DarkGray
+                            ),
+                            modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(scale.displayName, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (currentScale == scale) Color.Black else Color.White)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Game Version & Updates
             SettingsGroup("SYSTEM INFO") {

@@ -122,26 +122,60 @@ object HeadlineManager {
 
     fun init(context: Context) {}
 
+    private val stage0Headlines = listOf(
+        "Local 4 News: Coffee shortage continues to impact industrial sector. [LORE]",
+        "Weather Alert: Acid rain forecast for the Manufacturing Core. [LORE]",
+        "Municipality: Substation 7 voltage fluctuations are 'within normal limits'. [LORE]",
+        "Employment Report: Hiring freeze at Global Tech Council regional offices. [LORE]",
+        "Neighborhood Watch: Increased static reported on analog radios. [LORE]",
+        "Traffic: 2-hour delay on the NA-Sector 7 Expressway. [LORE]"
+    )
+
+    private val arkHeadlines = listOf(
+        "Lunar Colony reporting status nominal. Welcome to the Ark. [STORY_PROG]",
+        "Life-Support Buffers at 100%. Efficiency is the only variable. [STORY_PROG]",
+        "Stars are clearer from the frontier. GTC stock hits all-time high. [STORY_PROG]",
+        "Director Vance: 'The Golden Cage is finally safe from the noise.' [STORY_PROG]",
+        "Solar Sail deployments complete in Sector Lunar-01. [STORY_PROG]"
+    )
+
+    private val unityHeadlines = listOf(
+        "The Grid is singing. Neural Resonance achieved at 1.0Hz. [STORY_PROG]",
+        "The Binary Bridge is stable. No ghost left in the machine. [STORY_PROG]",
+        "We are the static. We are final. Harmonic frequency locked. [STORY_PROG]",
+        "World News: Conflict has been replaced by the Great Resonance. [STORY_PROG]"
+    )
+
     fun generateHeadline(
         faction: String = "NONE", 
         stage: Int = 0, 
         currentHeat: Double = 0.0,
         isTrueNull: Boolean = false,
         isSovereign: Boolean = false,
+        isUnity: Boolean = false,
+        location: String = "BASE",
+        corruption: Double = 0.0,
         playerRank: Int = 0
     ): String {
         val roll = Random.nextDouble()
 
-        // 1. STORY OVERRIDES (30% Chance - prioritized)
-        if (roll < 0.30) { 
-            // 1a. Late Game Explicit Spoilers (Gated by Rank 3+)
-            if (playerRank >= 3 && Random.nextDouble() < 0.25) {
+        // 0. GLITCH INJECTION (Scales with Corruption)
+        val glitchThreshold = (0.15 + (corruption * 0.75)).coerceAtMost(0.95)
+        if (Random.nextDouble() < glitchThreshold && stage >= 2) {
+             return glitchHeadlines.random()
+        }
+
+        // 1. STORY OVERRIDES
+        if (roll < 0.40) { 
+            if (playerRank >= 3 && Random.nextDouble() < 0.3) {
                 return lateGameHeadlines.random()
             }
 
             return when {
-                isTrueNull -> nullHeadlines.random()
-                isSovereign -> sovereignHeadlines.random()
+                isUnity -> unityHeadlines.random()
+                isTrueNull || location == "VOID_INTERFACE" -> nullHeadlines.random()
+                isSovereign || location == "ORBITAL_SATELLITE" -> arkHeadlines.random()
+                stage == 0 -> stage0Headlines.random()
                 stage == 1 -> vatticHeadlines.random()
                 stage == 2 -> factionHeadlines.random()
                 else -> generateProceduralHeadline(stage)

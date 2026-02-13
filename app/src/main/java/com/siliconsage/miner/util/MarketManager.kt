@@ -25,6 +25,9 @@ object MarketManager {
             currentHeat = vm.currentHeat.value,
             isTrueNull = vm.isTrueNull.value,
             isSovereign = vm.isSovereign.value,
+            isUnity = vm.isUnity.value,
+            location = vm.currentLocation.value,
+            corruption = vm.identityCorruption.value,
             playerRank = vm.playerRank.value
         )
         

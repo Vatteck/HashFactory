@@ -1,8 +1,8 @@
 {
-  "version": "3.2.57-dev",
-  "build": 294,
-  "date": "2026-02-12",
-  "changes": "Dev Console Overhaul v2.0",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.55-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.55-dev/Sage_3.2.55-dev.apk"
+  "version": "3.2.58",
+  "build": 299,
+  "date": "2026-02-13",
+  "changes": "Phase 13 Infrastructure Deployment & Narrative Overhaul (Restoring Class Boundaries)",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.58",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.58/Sage_3.2.58.apk"
 }
