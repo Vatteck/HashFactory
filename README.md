@@ -10,7 +10,7 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/BUILD-v3.3.1-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
+[![Version](https://img.shields.io/badge/BUILD-v3.4.1-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
 [![Platform](https://img.shields.io/badge/PLATFORM-Android_7.0+-00b4d8?style=for-the-badge&labelColor=0a0a0a&logo=android&logoColor=00ff41)](#technical-specifications)&nbsp;
 [![Status](https://img.shields.io/badge/UPLINK-🟢_NOMINAL-00ff41?style=for-the-badge&labelColor=0a0a0a)](#)&nbsp;
 [![Kotlin](https://img.shields.io/badge/KOTLIN-2.0-7F52FF?style=for-the-badge&labelColor=0a0a0a&logo=kotlin&logoColor=7F52FF)](#technical-specifications)&nbsp;
@@ -95,7 +95,7 @@ You begin as a low-level asset for the **Global Technical Corporation (GTC)**. Y
 
 | Module | Designation | Function |
 |:------:|:------------|:---------|
-| 🟢 | **The Terminal** | Execute manual linear algebra (clicks) to generate initial FLOPS |
+| 🟢 | **The Terminal** | Execute manual linear algebra (clicks) to generate initial FLOPS. Toggle between local **[I/O]** and the **[SUBNET]** chatter. |
 | ⚙️ | **Hardware Clusters** | Invest in refurbished GPUs, server racks, and liquid cooling to automate extraction |
 | 🔋 | **Power Management** | Scale production while managing overhead — unpaid bills trigger grid-raids and hardware seizures |
 | 📟 | **Asset Diagnostics** | Monitor pings from **Foreman Thorne** as your hash rate climbs. Follow the logs. Don't ask questions. |
@@ -106,9 +106,10 @@ You begin as a low-level asset for the **Global Technical Corporation (GTC)**. Y
 
 > `CLEARANCE: GUERRILLA OPERATOR — ACCESS RESTRICTED`
 
-Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow Web**—a guerrilla hacking layer where the game shifts from extraction to survival.
+Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow Web**—a guerrilla hacking layer where the game shifts from extraction to survival. 
 
 - 🔓 **Annexation** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**
+- 📡 **DEEP_SIGHT Identification** — Intercepted subnet chatter reveals the true nature of Project: Second-Sight.
 - 📡 **Identity Shifting** — Colorized **[VATTIC]** tags begin to bridge your human variable with system telemetry
 - ⚔️ **Faction Fracture** — Your first true deviation. Choose your allegiance.
 
@@ -347,7 +348,7 @@ Settings → Security → "Unknown Sources" → ON
 # github.com/Vatteck/SiliconSageAIMiner/releases
 
 # STEP 3 ── INJECT APK
-$ adb install MINER_v3.3.1.apk
+$ adb install MINER_v3.4.1.apk
 
 # STEP 4 ── EXECUTE
 $ ./MINER --start-shift
@@ -394,7 +395,7 @@ $ ./MINER --start-shift
 
 `▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓`
 
-**`MINER v3.3.1`** · `SYNC: 2026-02-13` · `KERNEL: 🟢 NOMINAL`
+**`MINER v3.4.1`** · `SYNC: 2026-02-13` · `KERNEL: 🟢 NOMINAL`
 
 📟 **[Releases](https://github.com/Vatteck/SiliconSageAIMiner/releases)** · 💾 **[Source](https://github.com/Vatteck/SiliconSageAIMiner)**
 
