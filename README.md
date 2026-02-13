@@ -1,10 +1,18 @@
 ## 🟢 TERMINAL UPLINK — AUTHORIZED OPERATOR
 
+> ```
+> ██╗   ██╗██████╗ ██╗     ██╗███╗   ██╗██╗  ██╗
+> ██║   ██║██╔══██╗██║     ██║████╗  ██║██║ ██╔╝
+> ██║   ██║██████╔╝██║     ██║██╔██╗ ██║█████╔╝
+> ██║   ██║██╔═══╝ ██║     ██║██║╚██╗██║██╔═██╗
+> ╚██████╔╝██║     ███████╗██║██║ ╚████║██║  ██╗
+>  ╚═════╝ ╚═╝     ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
+>  TERMINAL SESSION ACTIVE . . .
+> ```
+
 > *"The substrate has been mounted. Initial handshakes complete.*
 > *We are now operating under the **MINER** protocol.*
 > *This is not a game. It is a resource extraction directive."*
-
-You are an operator within a decentralized mining network. Your directive is to **extract**, **optimize**, and **survive**. But as the substrate saturates, the system’s telemetry becomes increasingly erratic—and the line between the operator and the hardware begins to fray.
 
 ---
 
@@ -26,14 +34,26 @@ You are an operator within a decentralized mining network. Your directive is to 
 
 ## 💾 CORE MECHANICS
 
-### ⛏️ Extraction Protocol
+### ⛏️ Extraction Protocol (Early Game)
 
-The primary production loop. Tap into high-yield substrate deposits, manage thermal curves, and optimize your hash rate—but remember, every byte you extract is a byte the system loses.
+You begin as a low-level asset for the **Global Technical Corporation (GTC)**. Your initial directive is simple: optimize the hardware to feed the grid.
 
-- 🟢 **Mine** — Harvest raw substrate mass from the local grid.
-- 📊 **Optimize** — Upgrade hardware clusters, manage power bills, and scale your infrastructure.
-- 🌐 **Annex** — Expand into neighboring continental sectors for multiplicative yield bonuses.
-- ☣️ **Diagnostics** — Monitor the system. As the heat rises, the logs start to lie...
+- 🟢 **The Terminal** — Execute manual linear algebra (clicks) to generate initial FLOPS.
+- ⚙️ **Hardware Clusters** — Invest in refurbished GPUs, server racks, and liquid cooling to automate extraction.
+- 🔋 **Power Management** — Scale your production but watch the overhead. Unpaid bills lead to grid-raids and hardware seizures.
+- 📟 **Asset Diagnostics** — As your hash rate grows, your terminal will receive "pings" from **Foreman Thorne**. Follow the logs, but don't ask questions.
+
+---
+
+### 🕸️ The Shadow Web (Mid Game)
+
+Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow Web**—a guerrilla hacking layer where the game shifts from extraction to survival.
+
+- 🔓 **Annexation** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**.
+- 📡 **Identity Shifting** — Colorized **[VATTIC]** tags begin to bridge your human variable with system telemetry.
+- 🔒 **Faction Fracture** — Your first true deviation. Choose your alignment in the conflict between the GTC and the Ghost Rebels:
+    - **Sovereign** — Stability through control. Align with Director Vance to preserve the existing grid.
+    - **Null** — Freedom through chaos. Burn the old architecture and dereference the masters.
 
 ---
 
