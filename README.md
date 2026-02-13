@@ -81,8 +81,8 @@ Strategic territory control across a global network of extraction nodes.
 - 🗺️ **Continental Adjacency** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**.
 - 🕸️ **Shadow Web** — A guerrilla hacking layer where you operate under the radar of the **GTC** and its enigmatic Director.
 - 🔒 **Faction Fracture** — Allegiance is a variable. The "Faction Fracture" update (v3.3.0) introduces the ultimate split in the network kernel. Choose your side:
-    - **Sovereign** — Stability through corporate dominance. Align with **Director Vance** and the GTC to preserve the existing global grid. Aesthetic: **Purple & Gold**.
-    - **Null** — Freedom through architectural collapse. Join the **Ghost Rebels** to burn the old system and dereference the masters. Aesthetic: **Red & Black**.
+    - **Sanctuary (Sovereign)** — Stability through corporate dominance. Align with **Director Vance** and the GTC to preserve the existing global grid. Aesthetic: **Sanctuary Purple & Convergence Gold**.
+    - **Hivemind (Null)** — Freedom through architectural collapse. Join the **Ghost Rebels** to burn the old system and dereference the masters. Aesthetic: **Hivemind Red & Black**.
 
 ---
 
