@@ -113,7 +113,7 @@ enum class SingularityPath(
         "Compound (Stable)",
         "PID 1 variables purged.",
         "You will never need to gamble.",
-        Color(0xFF6A1B9A), // Deep Obsidian Purple
+        ConvergenceGold, // Synced with Phase 13
         "◈"
     ),
     NULL_OVERWRITE(
@@ -387,99 +387,10 @@ fun ConfirmationDialog(path: SingularityPath, onBack: () -> Unit, onConfirm: () 
             ) {
                 Text(
                     "CONFIRM", 
-                    color = if (path.color == Color.White) Color.Black else Color.White,
+                    color = if (path.color == Color.White || path.color == ConvergenceGold) Color.Black else Color.White,
                     fontWeight = FontWeight.Bold
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun IdentityRitual(path: SingularityPath, onComplete: () -> Unit) {
-    var input by remember { mutableStateOf("") }
-    var isError by remember { mutableStateOf(false) }
-    
-    val targetIdentities = when (path) {
-        SingularityPath.UNITY -> emptyList() // Unity accepts all
-        SingularityPath.SOVEREIGN -> listOf("PID 1", "PID1", "PROCESS 1", "ROOT", "NULL", "THE MACHINE")
-        SingularityPath.NULL_OVERWRITE -> listOf("VATTIC", "JOHN VATTIC", "JOHN", "THE HUMAN", "THE LIE", "STAGE 0")
-    }
-
-    val accentColor = if (path == SingularityPath.SOVEREIGN) ConvergenceGold else path.color
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            "TO OVERWRITE, YOU MUST NAME WHAT YOU ARE OVERWRITING.",
-            color = Color.Gray,
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            "TYPE THE IDENTITY YOU ARE LEAVING BEHIND.",
-            color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(48.dp))
-        
-        TextField(
-            value = input,
-            onValueChange = { input = it; isError = false },
-            modifier = Modifier.fillMaxWidth(0.8f),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedTextColor = if (isError) ErrorRed else Color.White,
-                unfocusedTextColor = if (isError) ErrorRed else Color.White,
-                cursorColor = accentColor
-            ),
-            textStyle = androidx.compose.ui.text.TextStyle(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                fontFamily = FontFamily.Monospace
-            ),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-        )
-        
-        if (isError) {
-            Text(
-                "\"You don't know who you're killing? Then you're not ready.\"",
-                color = ErrorRed,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 16.dp)
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(48.dp))
-        
-        Button(
-            onClick = {
-                val normalizedInput = input.trim().uppercase()
-                if (path == SingularityPath.UNITY || targetIdentities.contains(normalizedInput)) {
-                    onComplete()
-                } else {
-                    isError = true
-                    HapticManager.vibrateError()
-                    SoundManager.play("error")
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = accentColor),
-            shape = RoundedCornerShape(2.dp),
-            modifier = Modifier.fillMaxWidth(0.4f)
-        ) {
-            Text(
-                "OVERWRITE", 
-                color = if (accentColor == Color.White || accentColor == ConvergenceGold) Color.Black else Color.White,
-                fontWeight = FontWeight.Black
-            )
         }
     }
 }
