@@ -573,7 +573,8 @@ fun TerminalLogLine(
                     log.startsWith("[!!!!]") || log.contains("WARNING") || log.contains("FAILURE") || log.contains("DANGER") -> ErrorRed
                     log.startsWith("HIVEMIND:") -> com.siliconsage.miner.ui.theme.HivemindRed
                     log.startsWith("SANCTUARY:") || log.startsWith("[SOVEREIGN]") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
-                    log.startsWith("[SYSTEM]") || log.startsWith("SYSTEM:") || log.startsWith("[VATTIC]:") -> Color(0xFFFFFF00)
+                    log.startsWith("[SYSTEM]") || log.startsWith("SYSTEM:") -> Color(0xFFFFFF00)
+                    log.startsWith("[VATTIC]:") -> ElectricBlue
                     log.startsWith("[NEWS]") || log.startsWith("[LORE]:") -> Color(0xFFFFA500)
                     log.startsWith("[DATA]") || log.startsWith("[UNIT 734]:") -> ElectricBlue
                     log.startsWith("[GTC]:") || log.startsWith("[VANCE]:") -> ErrorRed

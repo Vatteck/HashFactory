@@ -55,8 +55,11 @@ enum class UpgradeType {
 
     // Values for Simulation Engines
     val basePower: Double get() = when {
-        isHardware -> 5.0 + (ordinal * 2.0)
-        isCooling -> 2.0 + (ordinal % 10 * 5.0)
+        isHardware -> 1.0 + (ordinal * 1.5) // Reduced early power draw
+        isCooling -> {
+            val coolingIndex = ordinal - 15
+            1.0 + (coolingIndex * 4.0) // Scaled cooling power
+        }
         isSecurity -> 10.0 + (ordinal % 10 * 10.0)
         isGenerator -> -30.0 - (ordinal % 10 * 100.0) // Produces power
         this == RESIDENTIAL_TAP -> 5.0
@@ -76,12 +79,23 @@ enum class UpgradeType {
     }
 
     val baseHeat: Double get() = when {
-        isHardware -> 0.5 + (ordinal * 0.2)
-        isCooling -> -1.0 - (ordinal % 10 * 2.0)
+        isHardware -> 0.1 + (ordinal * 0.15) // Scaled hardware heat
+        isCooling -> {
+            val coolingIndex = ordinal - 15
+            -1.5 * (1.5.pow(coolingIndex.toDouble())) // Logarithmic cooling
+        }
         else -> 0.0
     }
 
-    val thermalBuffer: Double get() = if (isCooling) 50.0 else 0.0
+    val thermalBuffer: Double get() = when {
+        isCooling -> {
+            val coolingIndex = ordinal - 15
+            100.0 * (1.2.pow(coolingIndex.toDouble())) // Scaling buffer
+        }
+        else -> 0.0
+    }
+
+    private fun Double.pow(exp: Double) = Math.pow(this, exp)
     val efficiencyBonus: Double get() = if (this == AI_LOAD_BALANCER) 0.05 else 0.0
 }
 

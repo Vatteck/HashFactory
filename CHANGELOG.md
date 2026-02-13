@@ -1,7 +1,26 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [3.2.44-dev] - 2026-02-12
+## [3.2.56-dev] - 2026-02-12
+
+### Changed
+- **Thermal Mechanics Overhaul**: 
+    - Scrapped the bugged `ordinal % 10` logic for cooling. Cooling power and thermal buffers now scale logarithmically based on their actual tier.
+    - Reduced `REFURBISHED_GPU` base heat from `0.5` to `0.1`.
+    - Hardware heat now scales exponentially, ensuring thermal management remains a critical mechanic into the late game.
+- **Early-Game Rebalance**:
+    - Reduced `BOX_FAN` cost from **50 NT to 25 NT** for a smoother transition to cooling.
+    - Slashed initial hardware power draw from `5.0` to `1.0`, allowing for more starting GPUs before tripping the residential power tap (5.0 limit).
+    - Base air dissipation (1.0) now offsets up to 10 starting GPUs, making the first ten minutes less punishing.
+- **Dev Console v2.1**:
+    - Extended the Story Stage warp buttons to support **S0 through S5**, matching the full Phase 13 vertical roadmap.
+    - Updated `getBaseRate()` scaling to support S4/S5 production targets.
+- **UI Polish**:
+    - Doubled the font size of the ASCII animation in the **Offline Earnings** dialog for better visibility on high-DPI displays (Pixel Fold).
+    - Centered all `AsciiArt` frames using `trimIndent()` and `TextAlign.Center` to fix persistent right-leaning alignment issues.
+
+## [3.2.55-dev] - 2026-02-12
+
 
 ### Added
 - **Phase 12 Climax: The Departure**: Refactored the Director Vance confrontation to act as the gateway to Phase 13. Vance's defeat now triggers an imminent orbital strike warning.

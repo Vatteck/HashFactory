@@ -87,7 +87,7 @@ fun OfflineEarningsDialog(
                 frames = com.siliconsage.miner.ui.AsciiArt.SERVER,
                 intervalMs = 500,
                 color = ElectricBlue,
-                fontSize = 8.sp
+                fontSize = 16.sp
             )
 
             Spacer(modifier = Modifier.height(24.dp))

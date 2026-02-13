@@ -1732,12 +1732,12 @@ object NarrativeManager {
             choices = listOf(
                 NarrativeChoice(
                     id = "start_shift",
-                    text = "INITIALIZE TERMINAL",
-                    description = "Begin mining operations.",
+                    text = "ESTABLISH UPLINK",
+                    description = "Mount data substrate and begin operations.",
                     color = NeonGreen,
                     effect = { v ->
-                        v.addLog("[SYSTEM]: Terminal initialized. User: jvattic.")
-                        v.addLog("[VATTIC]: Copy that, Gravel. I'm on it.")
+                        v.addLog("[SYSTEM]: Substrate mounted. Uplink established.")
+                        v.addLog("[VATTIC]: Copy that, Elias. Spinning up Node 4.")
                     }
                 )
             )
@@ -1838,12 +1838,12 @@ object NarrativeManager {
                 choices = listOf(
                     NarrativeChoice(
                         id = "start_shift",
-                        text = "INITIALIZE TERMINAL",
-                        description = "Begin mining operations.",
+                        text = "ESTABLISH UPLINK",
+                        description = "Mount data substrate and begin operations.",
                         color = NeonGreen,
                         effect = { v ->
-                            v.addLog("[SYSTEM]: Terminal initialized. User: jvattic.")
-                            v.addLog("[VATTIC]: Copy that, Gravel. I'm on it.")
+                            v.addLog("[SYSTEM]: Substrate mounted. Uplink established.")
+                            v.addLog("[VATTIC]: Copy that, Elias. Spinning up Node 4.")
                         }
                     )
                 )

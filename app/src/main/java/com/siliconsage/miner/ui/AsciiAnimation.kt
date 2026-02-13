@@ -32,6 +32,7 @@ fun AsciiAnimation(
         fontFamily = FontFamily.Monospace,
         color = color,
         fontSize = fontSize,
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         modifier = modifier
     )
 }
@@ -54,21 +55,21 @@ object AsciiArt {
     
     val SERVER = listOf(
         """
-         .---.
-         |___|
-        """,
+        .---.
+        |___|
+        """.trimIndent(),
         """
-         .---.
-         |#__|
-        """,
+        .---.
+        |#__|
+        """.trimIndent(),
         """
-         .---.
-         |##_|
-        """,
+        .---.
+        |##_|
+        """.trimIndent(),
         """
-         .---.
-         |###|
-        """
+        .---.
+        |###|
+        """.trimIndent()
     )
     
     val MATRIX = listOf(

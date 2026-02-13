@@ -192,7 +192,7 @@ fun StoryTab(viewModel: GameViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
         Text("STORY_STAGE: $stage", color = Color.White, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            (0..3).forEach { s ->
+            (0..5).forEach { s ->
                 DevButton(text = "S$s", isSelected = stage == s, modifier = Modifier.weight(1f)) { viewModel.debugSkipToStage(s) }
             }
         }

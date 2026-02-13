@@ -721,7 +721,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             1 -> 0.5
             2 -> 1.0
             3 -> 5.0
-            else -> 10.0
+            4 -> 25.0
+            5 -> 100.0
+            else -> 250.0
         }
     }
     fun setMarketModifiers(

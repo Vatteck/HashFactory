@@ -38,10 +38,10 @@ object UpgradeManager {
             UpgradeType.DYSON_NANO_SWARM -> 10000000000.0
             UpgradeType.MATRIOSHKA_BRAIN -> 50000000000.0
             
-            UpgradeType.BOX_FAN -> 50.0
-            UpgradeType.AC_UNIT -> 250.0
-            UpgradeType.LIQUID_COOLING -> 1500.0
-            UpgradeType.INDUSTRIAL_CHILLER -> 8000.0
+            UpgradeType.BOX_FAN -> 25.0
+            UpgradeType.AC_UNIT -> 150.0
+            UpgradeType.LIQUID_COOLING -> 1000.0
+            UpgradeType.INDUSTRIAL_CHILLER -> 5000.0
             
             UpgradeType.SOLAR_PANEL -> 300.0
             UpgradeType.WIND_TURBINE -> 1200.0
@@ -74,9 +74,9 @@ object UpgradeManager {
 
     fun getUpgradeRate(type: UpgradeType, unit: String): String {
         val baseRate = when (type) {
-            UpgradeType.REFURBISHED_GPU -> 1.0
-            UpgradeType.DUAL_GPU_RIG -> 5.0
-            UpgradeType.MINING_ASIC -> 25.0
+            UpgradeType.REFURBISHED_GPU -> 1.5
+            UpgradeType.DUAL_GPU_RIG -> 7.5
+            UpgradeType.MINING_ASIC -> 35.0
             UpgradeType.TENSOR_UNIT -> 150.0
             UpgradeType.NPU_CLUSTER -> 1000.0
             UpgradeType.AI_WORKSTATION -> 6000.0
