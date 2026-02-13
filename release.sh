@@ -64,12 +64,15 @@ sed -i "s/versionName = \".*\"/versionName = \"$VERSION\"/" "$BUILD_GRADLE"
 TODAY=$(date +%Y-%m-%d)
 RELEASE_URL="https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v$VERSION"
 DOWNLOAD_URL="https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v$VERSION/MINER_${VERSION}.apk"
+# Note: changelog must be a JSON array for the UpdateManager.kt data class
 cat > "$VERSION_JSON" << EOF
 {
   "version": "$VERSION",
   "build": $NEW_CODE,
   "date": "$TODAY",
-  "changes": "${SUMMARY:-See CHANGELOG.md for details}",
+  "changelog": [
+    "${SUMMARY:-See CHANGELOG.md for details}"
+  ],
   "url": "$RELEASE_URL",
   "downloadUrl": "$DOWNLOAD_URL"
 }
