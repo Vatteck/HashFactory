@@ -9,10 +9,11 @@ val DarkGray = Color(0xFF121212)
 val TerminalText = Color(0xFF39FF14)
 val ErrorRed = Color(0xFFFF0033)
 
-val HivemindOrange = Color(0xFFFF6600)
+val HivemindOrange = Color(0xFFAA3300) // Deep Burnt Rust
 val HivemindRed = Color(0xFFFF1100)
 val HivemindMagenta = Color(0xFFFF00FF)
 val SanctuaryPurple = Color(0xFF9D4EDD)
+val SanctuaryTeal = Color(0xFF008080) // Deep Industrial Teal
 val ConvergenceGold = Color(0xFFFFD700)
 
 val Purple80 = Color(0xFFD0BCFF)

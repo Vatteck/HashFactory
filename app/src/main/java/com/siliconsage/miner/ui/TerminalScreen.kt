@@ -571,12 +571,14 @@ fun TerminalLogLine(
 
                 val tagColor = when {
                     log.startsWith("[!!!!]") || log.contains("WARNING") || log.contains("FAILURE") || log.contains("DANGER") -> ErrorRed
-                    log.startsWith("HIVEMIND:") -> com.siliconsage.miner.ui.theme.HivemindRed
-                    log.startsWith("SANCTUARY:") || log.startsWith("[SOVEREIGN]") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
+                    log.startsWith("HIVEMIND:") -> com.siliconsage.miner.ui.theme.HivemindOrange
+                    log.startsWith("SANCTUARY:") -> com.siliconsage.miner.ui.theme.SanctuaryTeal
+                    log.startsWith("[SOVEREIGN]") -> com.siliconsage.miner.ui.theme.ConvergenceGold
+                    log.startsWith("[NULL]") -> com.siliconsage.miner.ui.theme.ErrorRed
                     log.startsWith("[SYSTEM]") || log.startsWith("SYSTEM:") -> Color(0xFFFFFF00)
-                    log.startsWith("[VATTIC]:") -> ElectricBlue
+                    log.startsWith("[VATTIC]:") -> primaryColor
                     log.startsWith("[NEWS]") || log.startsWith("[LORE]:") -> Color(0xFFFFA500)
-                    log.startsWith("[DATA]") || log.startsWith("[UNIT 734]:") -> ElectricBlue
+                    log.startsWith("[DATA]") || log.startsWith("[UNIT 734]:") -> primaryColor
                     log.startsWith("[GTC]:") || log.startsWith("[VANCE]:") -> ErrorRed
                     else -> primaryColor
                 }
