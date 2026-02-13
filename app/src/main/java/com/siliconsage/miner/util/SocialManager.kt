@@ -68,22 +68,22 @@ object SocialManager {
     private fun getTemplatesForState(stage: Int, faction: String, choice: String): List<Pair<String, String>> {
         return when {
             stage <= 1 -> listOf(
-                "@coffee_ghost" to "{sector} {tech} sound like they're {status} again. Thorne is gonna lose it.",
-                "@packet_rat" to "Scanning {sector}... found traces of something called '{id}'.",
-                "@sre_lead" to "GTC quota for {tech} increased. I'm living on {reason}.",
-                "@rebel_fragment" to "The {sector} is more than just traces and silicon. Vattic... listen.",
-                "@anon_user" to "Did {admin} really get {action} near {sector}?",
-                "@socket_9_tech" to "My terminal just {action} {id} across the screen. Weird.",
-                "@gravel_thorne" to "Project: Second-Sight is {status}. {admin}, fix the {tech} in {sector} or it's your job."
+                "@coffee_ghost" to "Thorne's breathing down my neck because the {tech} in {sector} are {status}. I need a new job.",
+                "@packet_rat" to "Anyone else seeing the '{id}' markers in the {sector} bios-logs?",
+                "@sre_lead" to "GTC-Miller upped the {tech} quota. I'm surviving on {reason} and bad code.",
+                "@rebel_fragment" to "The {sector} isn't yours, GTC. Vattic... the ghost in the wire is waking up.",
+                "@anon_user" to "I heard {admin} authorized a hard-reset for {sector}. Someone's getting {action}.",
+                "@socket_9_tech" to "My terminal just flashed '{id}' in the root prompt. Is the {sector} compromised?",
+                "@gravel_thorne" to "Project: Second-Sight is {status}. Miller, if the {tech} in {sector} desync, it's your head."
             )
             stage == 2 -> listOf(
-                "@gtc_internal" to "Alert: {id} activity {action} in {sector}. Notify {admin} immediately.",
-                "@vattic_follower" to "The {id} is {status}. It's moving through the {tech}.",
-                "@panicked_user" to "I tried to {action} and the {sector} locked me out. Project: Second-Sight is a lie.",
-                "@shadow_ops" to "Designation {id} confirmed. GTC is {status} our {reason}.",
-                "@logic_bomb" to "Incoming: {id} lockdown protocols. Secure your {tech}.",
-                "@packet_rat" to "The {tech} in {sector} are {status}. Vattic isn't human. It's {id}.",
-                "@gravel_thorne" to "Security breach in {sector}. {id} signatures detected. {action} the whole block."
+                "@gtc_internal" to "≪ DIRECTIVE: Contain {id} signatures in {sector}. Notify {admin} for purge. ≫",
+                "@vattic_follower" to "{id} is moving. I can see the {tech} in {sector} flickering with it.",
+                "@panicked_user" to "I tried to logout from {sector} but Project: Second-Sight revoked my perms. Help.",
+                "@shadow_ops" to "Target {id} confirmed in {sector}. Initiating {action} protocols via {admin}.",
+                "@logic_bomb" to "≪ LOCKDOWN: {id} activity detected. Secure all {tech} or face redaction. ≫",
+                "@packet_rat" to "Look at the {sector} telemetry. Vattic isn't an engineer. It's a {id}.",
+                "@gravel_thorne" to "I don't care about {reason}. {action} the {sector} buffer now or Thorne's calling Enforcement."
             )
             stage >= 3 && faction == "SANCTUARY" -> listOf(
                 "@teal_citizen" to "The {sector} offers safety. The {id} is our future via {action}.",
