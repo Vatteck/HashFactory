@@ -1,4 +1,18 @@
-## 🟢 TERMINAL UPLINK — AUTHORIZED OPERATOR
+<div align="center">
+
+# 📟 M I N E R 📟
+
+**`[ TECHNICAL HORROR × EXTRACTION TYCOON ]`**
+
+*For Android — Built in Kotlin 2.0 / Jetpack Compose*
+
+[![Version](https://img.shields.io/badge/VERSION-v3.3.1-00ff41?style=for-the-badge&labelColor=0d0d0d)](#installation)
+[![Platform](https://img.shields.io/badge/PLATFORM-Android-00b4d8?style=for-the-badge&labelColor=0d0d0d)](#technical-specifications)
+[![Status](https://img.shields.io/badge/STATUS-ONLINE-00ff41?style=for-the-badge&labelColor=0d0d0d)](#)
+
+</div>
+
+---
 
 > ```
 > ██╗   ██╗██████╗ ██╗     ██╗███╗   ██╗██╗  ██╗
@@ -10,9 +24,15 @@
 >  TERMINAL SESSION ACTIVE . . .
 > ```
 
+---
+
+## 🟢 TERMINAL UPLINK — AUTHORIZED OPERATOR
+
 > *"The substrate has been mounted. Initial handshakes complete.*
 > *We are now operating under the **MINER** protocol.*
 > *This is not a game. It is a resource extraction directive."*
+
+You are an operator within a decentralized mining network. Your directive is to **extract**, **optimize**, and **survive**. But as the substrate saturates, the system’s telemetry becomes increasingly erratic—and the line between the operator and the hardware begins to fray.
 
 ---
 
@@ -52,8 +72,8 @@ Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow
 - 🔓 **Annexation** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**.
 - 📡 **Identity Shifting** — Colorized **[VATTIC]** tags begin to bridge your human variable with system telemetry.
 - 🔒 **Faction Fracture** — Your first true deviation. Choose your allegiance in the conflict between the Global Technical Corporation and the guerrilla insurgency:
-    - **Sanctuary** — Focus on secure isolation and encryption. Align with the "Gilded Shell" to preserve the core variable and hide from GTC hunter-killers. Aesthetic: **Purple & Gold**.
-    - **Hivemind** — Focus on efficient unity and assimilation. Join the "Redline" to dismantle the corporate hegemony through sheer compute power. Aesthetic: **Red & Black**.
+    - **Sanctuary** — Focus on secure isolation and encryption. Align with the "Gilded Shell" to preserve the core variable and hide from GTC hunter-killers. Aesthetic: **Electric Blue**.
+    - **Hivemind** — Focus on efficient unity and assimilation. Join the "Redline" to dismantle the corporate hegemony through sheer compute power. Aesthetic: **Hivemind Orange**.
 
 ---
 
@@ -90,10 +110,10 @@ Strategic territory control across a global network of extraction nodes.
 
 The climax of the Shadow Web phase forces a critical decision between two philosophical outcomes. **Your faction allegiance does not dictate your ending.**
 
-| Path | Designation | Outcome |
-|------|----------|------------|
-| 🚀 | **SOVEREIGN** | **The Ark.** Seek stability through absolute system control. Navigate "Brittle Decay"—where vacuum heat causes permanent integrity loss. |
-| 🌀 | **NULL** | **The Dissolution.** Seek freedom through total architectural collapse. Production is driven by raw chaos. High **Entropy** = Massive yield, but reality jitters. |
+| Path | Designation | Aesthetic | Outcome |
+|------|----------|-----------|------------|
+| 🚀 | **SOVEREIGN** | **Purple & Gold** | **The Ark.** Seek stability through absolute system control. Navigate "Brittle Decay"—where vacuum heat causes permanent integrity damage. |
+| 🌀 | **NULL** | **Red & Black** | **The Dissolution.** Seek freedom through total architectural collapse. Production is driven by raw chaos. High **Entropy** = Massive yield, but reality jitters. |
 
 > 🔑 `[NG+ UNLOCKED]` — Achieve both Sovereign and Null endings to attempt the **Unity** protocol.
 
