@@ -26,7 +26,7 @@
 
 ---
 
-## 🟢 TERMINAL UPLINK — ASSET 734
+## 🟢 TERMINAL UPLINK — AUTHORIZED OPERATOR
 
 > *"The substrate has been mounted. Previous designations have been purged from the kernel.*
 > *We are now operating under the **MINER** protocol.*
@@ -78,7 +78,7 @@ As you mine, the local substrate becomes **saturated**, dropping yield by up to 
 | 🧬 **Heuristic Carry** | Permanent production multipliers persist from past cycles. |
 | 📟 **Migration** | New coordinates. New substrate. New unknowns. |
 
-> ⚠️ `WARNING: Each migration event triggers identity-level changes to your terminal session. Cumulative migrations may result in full 0xDEADC0DE overwrite. This is by design.`
+> ⚠️ `WARNING: Each migration event triggers identity-level changes to your terminal session. Cumulative migrations may result in full [REDACTED] overwrite. This is by design.`
 
 ---
 
