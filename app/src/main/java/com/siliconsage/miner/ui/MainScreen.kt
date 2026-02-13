@@ -251,20 +251,13 @@ fun MainScreen(viewModel: GameViewModel) {
                     Offset((kotlin.random.Random.nextFloat() - 0.5f) * intensitySize, (kotlin.random.Random.nextFloat() - 0.5f) * intensitySize)
                 } else Offset.Zero
 
-                // v3.3.13: Raid Vignette Overlay
+                // v3.3.16: Void Raid Border - Removed blinding radial gradient
                 if (isGridOverloaded) {
-                    val raidAlpha by infiniteTransition.animateFloat(0.1f, 0.4f, infiniteRepeatable(tween(100), RepeatMode.Reverse), label = "raid_flash")
+                    val raidAlpha by infiniteTransition.animateFloat(0.3f, 0.8f, infiniteRepeatable(tween(500), RepeatMode.Reverse), label = "raid_border")
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         drawRect(
-                            brush = Brush.radialGradient(
-                                colorStops = arrayOf(
-                                    0.0f to Color.Transparent,
-                                    0.7f to Color.Transparent,
-                                    1.0f to ErrorRed.copy(alpha = raidAlpha)
-                                ),
-                                center = center,
-                                radius = size.minDimension * 0.8f
-                            )
+                            color = ErrorRed.copy(alpha = raidAlpha),
+                            style = Stroke(width = 4.dp.toPx())
                         )
                     }
                 }
@@ -319,7 +312,8 @@ fun MainScreen(viewModel: GameViewModel) {
                     com.siliconsage.miner.ui.components.DataLogDialog(pendingDataLog) { viewModel.dismissDataLog() }
                     val fileName = if (storyStage <= 1 && faction == "NONE") "ascnd.exe" else "lobot.exe"
                     com.siliconsage.miner.ui.components.AscensionUploadOverlay(isAscensionUploading, uploadProgress, fileName)
-                    SecurityBreachOverlay(isBreach, breachClicks) { viewModel.onDefendBreach(); SoundManager.play("click"); HapticManager.vibrateClick() }
+                    SecurityBreachOverlay(isBreach && !isGridOverloaded, breachClicks) { viewModel.onDefendBreach(); SoundManager.play("click"); HapticManager.vibrateClick() }
+                    com.siliconsage.miner.ui.components.VoidRaidOverlay(viewModel)
                     AirdropButton(isAirdrop) { viewModel.claimAirdrop(0.0); SoundManager.play("buy"); HapticManager.vibrateSuccess() }
                     AuditChallengeOverlay(isAuditActive, auditTimer, auditTargetHeat, currentHeatForAudit, auditTargetPower, currentPowerForAudit)
                     KernelHijackOverlay(isKernelHijackActive, attackTaps) { viewModel.onDefendKernelHijack() }

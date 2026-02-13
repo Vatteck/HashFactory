@@ -655,7 +655,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun onClimaxTransitionComplete() { activeClimaxTransition.value = null }
-    fun triggerGridRaid(id: String, isGridKiller: Boolean = false) = SecurityManager.triggerGridKillerBreach(this)
+    fun triggerGridRaid(id: String, isGridKiller: Boolean = false) = SecurityManager.triggerGridKillerBreach(this, id)
     fun unlockDataLog(id: String) = NarrativeService.unlockDataLog(id, this)
     fun addRivalMessage(m: RivalMessage) = NarrativeService.addRivalMessage(m, this)
     fun unlockSkillUpgrade(t: UpgradeType) { viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, 1)); upgrades.update { it + (t to 1) } } }
@@ -817,6 +817,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             neuralTokens.update { it - cost }
             currentHeat.update { (it + 5.0).coerceAtMost(100.0) }
             nodesUnderSiege.update { it - id }
+            
+            // v3.3.16: Clear raid state if all nodes are repelled
+            if (nodesUnderSiege.value.isEmpty()) {
+                isGridOverloaded.value = false
+            }
+
             addLog("[SYSTEM]: OVERVOLT SUCCESSFUL on NODE $id. Repelling GTC probes.")
             SoundManager.play("buy")
             refreshProductionRates()
@@ -825,12 +831,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     fun redactNode(id: String) {
         // v3.3.14: Shadow Relay Implementation
-        // Instead of removing, we convert it.
-        // We need a way to track which nodes are "Shadows" without bloating GameState.
-        // For now, we'll use a specific naming convention or a separate set.
-        
         if (annexedNodes.value.contains(id)) {
             shadowRelays.update { it + id }
+            nodesUnderSiege.update { it - id } // v3.3.16: Clear from siege on redact
+
+            // v3.3.16: Clear raid state if no more nodes under attack
+            if (nodesUnderSiege.value.isEmpty()) {
+                isGridOverloaded.value = false
+            }
+
             substrateMass.update { it + 5.0 }
             addLog("[SYSTEM]: TERMINAL REDACTION SUCCESSFUL. NODE $id DEREFERENCED.")
             addLog("[VATTIC]: Shadow Relay established. Connectivity maintained.")

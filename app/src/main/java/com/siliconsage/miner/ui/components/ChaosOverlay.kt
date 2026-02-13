@@ -32,10 +32,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.NeonGreen
+import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
 
 @Composable
@@ -308,6 +310,92 @@ fun AirdropButton(
                 tint = NeonGreen,
                 modifier = Modifier.size(32.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun VoidRaidOverlay(
+    viewModel: GameViewModel
+) {
+    val isRaid by viewModel.isGridOverloaded.collectAsState()
+    val integrity by viewModel.hardwareIntegrity.collectAsState()
+    val nodesUnderSiege by viewModel.nodesUnderSiege.collectAsState()
+    
+    if (!isRaid) return
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.85f)) // Darker, cleaner background
+            .clickable(enabled = false) {},
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(32.dp)
+                .background(Color(0xFF1A1A1A)) // Dark gray container instead of red-on-black
+                .border(1.dp, Color.White.copy(alpha = 0.4f)) // White border for clarity
+                .padding(24.dp)
+        ) {
+            Text(
+                text = "!! VOID RAID DETECTED !!",
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                fontFamily = FontFamily.Monospace
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "SUBSTRATE INTEGRITY: ${String.format("%.1f", integrity)}%",
+                color = if (integrity < 30) Color.Red else Color.Cyan,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "THE GTC IS SYSTEMATICALLY WIPING NODES:",
+                color = Color.LightGray,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            
+            Text(
+                text = nodesUnderSiege.joinToString(", "),
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Text(
+                text = "ACTION REQUIRED:\n1. OPEN THE GRID\n2. SELECT THE PULSING NODE\n3. USE [OVERVOLT] OR [REDACT]",
+                color = Color.White.copy(alpha = 0.9f),
+                fontSize = 12.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                lineHeight = 18.sp,
+                fontFamily = FontFamily.Monospace
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Button(
+                onClick = { viewModel.isGridOverloaded.value = false }, // Temporary bypass for testing
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                shape = RectangleShape,
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            ) {
+                Text("DISMISS AND GO TO GRID", color = Color.Black, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

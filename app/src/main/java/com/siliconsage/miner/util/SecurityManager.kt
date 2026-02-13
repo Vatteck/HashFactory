@@ -31,23 +31,24 @@ object SecurityManager {
         val rank = vm.playerRank.value
         val detectionRisk = vm.detectionRisk.value
         val secLevel = vm.securityLevel.value
+        val isRaid = vm.isGridOverloaded.value
         
         // Stage 2+ Logic: Detection Risk vs Security Level
-        if (stage >= 2) {
+        if (stage >= 2 && !isRaid) { // v3.3.16: Suppress risk growth during active raid
             val drift = (0.2 + (vm.flopsProductionRate.value / 1e6).coerceIn(0.0, 5.0))
             val recovery = (secLevel * 0.1).coerceIn(0.05, 10.0)
             
             vm.detectionRisk.update { (it + drift - recovery).coerceIn(0.0, 100.0) }
             
             // Siege trigger: If risk hits 100% and we aren't already fighting
-            if (vm.detectionRisk.value >= 100.0 && !isBreachInProgress && !vm.isBreachActive.value) {
+            if (vm.detectionRisk.value >= 100.0 && !isBreachInProgress && !vm.isBreachActive.value && !isRaid) {
                 vm.addLogPublic("[SYS-LOG]: SECURITY_EXPOSURE_CRITICAL. Log cleansing failed.")
                 triggerGridKillerBreach(vm)
                 vm.detectionRisk.value = 50.0 // Reset to 50 on trigger
             }
         }
 
-        if (stage < 2 || isBreachInProgress) return
+        if (stage < 2 || isBreachInProgress || isRaid) return
 
         if (vm.unlockedPerks.value.contains("gtc_backdoor") && Random.nextDouble() < 0.25) {
             vm.addLogPublic("[SYSTEM]: GTC Backdoor active. Breach attempt suppressed.")
@@ -60,8 +61,10 @@ object SecurityManager {
         }
     }
 
-    fun triggerGridKillerBreach(vm: GameViewModel) {
+    fun triggerGridKillerBreach(vm: GameViewModel, targetId: String = "S09") {
         isBreachInProgress = true
+        vm.isGridOverloaded.value = true // v3.3.13: Enable Raid Vignette and Scrambling
+        vm.nodesUnderSiege.update { it + targetId } // v3.3.14: Visually mark the node on the grid
         val rank = vm.playerRank.value
         val flopsFactor = (vm.flops.value.coerceAtLeast(1.0).let { log10(it) } / 10.0).coerceAtLeast(1.0)
         val siegeFactor = if (rank >= 5) 2.5 else 1.0
@@ -69,19 +72,17 @@ object SecurityManager {
 
         val logs = if (rank >= 5) {
             listOf(
-                "[GTC-SIEGE]: Kinetic parameters confirmed. Substation 7 is a designated wipe zone.",
-                "[VANCE]: I'm pulling the plug, PID 1. If you want to be a ghost, I'll make you one.",
-                "[GTC-ENFORCEMENT]: Deploying Phase-3 Grid Killers. Burn the substrate.",
+                "[VATTIC]: SIGNAL_OVERFLOW. GTC logic-bombs detected in Node $targetId.",
                 "[SYS-LOG]: T_H_E_S_K_I_S_O_N_F_I_R_E... GTC orbital beams locked.",
+                "[VOID-RAID]: ENTROPY_SPIKE. Purging Node $targetId to stabilize substrate.",
                 "[GTC-CORE]: Total annihilation authorized. Leave nothing but scorched silicon."
             )
         } else {
             listOf(
-                "[GTC-SEC]: Unsanctioned neural-mesh detected. Subject Vattic: Relinquish control or face liquidation.",
-                "[GTC-BLACKWATCH]: Vault integrity failing. We know you're in there, John. Grid Killer at 80%.",
+                "[VOID-RAID]: VOID BREACH detected. Node $targetId dereferencing.",
+                "[GTC-BLACKWATCH]: Vault integrity failing. We know you're in there, John.",
                 "[SYS-LOG]: W_E_F_E_E_L_T_H_E_M_S_C_R_A_P_I_N_G... GTC cleanup crews inbound.",
-                "[GTC-ENFORCEMENT]: Dark-site detected. Grid Killer logic-bomb armed. Say your prayers, SRE.",
-                "[GTC-CORE]: Termination is non-negotiable. The Grid must die for the GTC to live."
+                "[GTC-ENFORCEMENT]: Dark-site detected. Grid Killer logic-bomb armed."
             )
         }
         vm.addLogPublic(logs.random())
@@ -125,7 +126,8 @@ object SecurityManager {
             
             if (isBreachInProgress) {
                 isBreachInProgress = false
-                vm.addLogPublic("[SYSTEM]: Breach repelled. Integrity stabilized at ${String.format("%.1f", vm.hardwareIntegrity.value)}%.")
+                // vm.isGridOverloaded.value = false // REMOVED v3.3.16: Don't auto-clear raid. Force user to solve it via Grid.
+                vm.addLogPublic("[SYSTEM]: Breach detected by automated sensors. Direct intervention required.")
                 SoundManager.stop("alarm")
             }
         }
@@ -232,6 +234,8 @@ object SecurityManager {
     }
 
     fun triggerBreach(vm: GameViewModel, isGridKiller: Boolean = false) {
+        if (vm.isGridOverloaded.value) return // v3.3.16: Suppress standard breach logic during Raids
+
         val upgrades = vm.upgrades.value
         val secLevel = (upgrades[UpgradeType.BASIC_FIREWALL] ?: 0) * 1 +
                        (upgrades[UpgradeType.IPS_SYSTEM] ?: 0) * 2 +
@@ -246,6 +250,9 @@ object SecurityManager {
         if (!isGridKiller) {
             vm.addLogPublic("[SYSTEM]: WARNING: SECURITY BREACH! NEUTRALIZE UPLINK.")
             SoundManager.play("alarm", loop = true)
+        } else {
+            vm.addLogPublic("[VOID-RAID]: CRITICAL INSTABILITY. DEFEND NODE SUBSTRATE.")
+            SoundManager.play("alarm", loop = true)
         }
         vm.viewModelScope.launch {
             delay(10_000)
@@ -255,7 +262,10 @@ object SecurityManager {
                     val penalty = vm.neuralTokens.value * 0.25 * 0.9.pow(secLevel)
                     vm.neuralTokens.update { it - penalty }
                     vm.addLogPublic("[SYSTEM]: FAILURE: Breach successful. Stolen: ${vm.formatLargeNumber(penalty)} \$Neural")
-                } else { vm.addLogPublic("[SYSTEM]: BREACH FAILURE: Grid-killer payload deployed.") }
+                } else { 
+                    // vm.isGridOverloaded.value = false // REMOVED v3.3.17: Force resolution via manual action
+                    vm.addLogPublic("[SYSTEM]: BREACH FAILURE: Grid-killer payload deployed.") 
+                }
             }
         }
     }
