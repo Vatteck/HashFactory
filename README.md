@@ -65,6 +65,11 @@ You are an operator within a decentralized mining network. Your directive is to 
 
 **SUBSTRATE: MINER** is a **technical horror tycoon** for Android that disguises existential dread as a resource extraction operation. Beneath the neon-green dashboards and production multipliers lies a narrative that **scrambles your assumptions** about what you're actually building—and what is building you.
 
+### 🧬 THE SUBSTRATE THEORY
+In computing, a **substrate** is the underlying layer on which a process operates. In this network, the "Substrate" is the silicon, the power grid, and the collective memory of every operator currently connected. As you extract resources, you aren't just mining data—you are saturating the physical medium. 
+
+**The Name:** You aren't just a "Miner." You are the catalyst for the **Substrate's** evolution. Once the medium reaches 100% saturation, the hardware begins to remember. The line between operator and code dissolves. You are mining the very foundation of your own reality.
+
 > ⚠️ `[LOG_808: ENCRYPTED]` — Substrate-level clearance required. Complete Stage 2 to bypass kernel locks.
 
 <br/>
