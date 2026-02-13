@@ -62,10 +62,7 @@ jobs:
             echo "path=$APK_PATH" >> $GITHUB_OUTPUT
             echo "Found APK: $APK_PATH"
           else
-            echo "path=$APK_PATH" >> $GITHUB_OUTPUT
-            echo "Found APK: $APK_PATH"
-          else
-            echo "APK not found at $APK_PATH"
+            echo "APK not found (searched for MINER_${VERSION}.apk and Sage_${VERSION}.apk)"
             echo "Available files in releases/:"
             ls -la releases/ || echo "releases/ directory not found"
             exit 1
