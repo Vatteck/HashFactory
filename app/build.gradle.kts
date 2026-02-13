@@ -17,7 +17,7 @@ android {
         // ║  DO NOT MANUALLY EDIT VERSION BELOW                           ║
         // ║  Use ./release.sh <version> to bump versions automatically    ║
         // ╚═══════════════════════════════════════════════════════════════╝
-        versionCode = 306
+        versionCode = 310
         versionName = "3.2.62-dev"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
