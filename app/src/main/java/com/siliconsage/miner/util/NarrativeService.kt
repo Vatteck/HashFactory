@@ -18,9 +18,7 @@ object NarrativeService {
 
     fun unlockDataLog(logId: String, vm: GameViewModel) {
         if (vm.unlockedDataLogs.value.contains(logId)) return
-        if (dataLogUnlockInProgress.contains(logId)) return
         
-        dataLogUnlockInProgress.add(logId)
         vm.unlockedDataLogs.update { it + logId }
         
         DataLogManager.getLog(logId)?.let { log ->

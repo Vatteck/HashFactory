@@ -1398,11 +1398,13 @@ object DataLogManager {
         }
         
         allDataLogs.forEach { log ->
-            // Check against both VM state AND local cache to prevent race duplicates
             if (!vm.unlockedDataLogs.value.contains(log.id) && 
                 !recentlyUnlocked.contains(log.id) &&
                 isUnlocked(log.unlockCondition, vm)) {
-                recentlyUnlocked.add(log.id) // Mark as pending
+                
+                recentlyUnlocked.add(log.id) 
+                
+                // CRITICAL: Immediately mark as unlocked in VM to prevent 100ms re-trigger
                 vm.unlockDataLog(log.id)
             }
         }
