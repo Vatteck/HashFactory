@@ -1,8 +1,14 @@
 {
   "version": "3.2.62-dev",
-  "build": 306,
+  "build": 308,
   "date": "2026-02-13",
-  "changes": "Fixed Internal Cache Update Path",
+  "summary": "Infrastructure Hardening & Internal Cache Fix",
   "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.62-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.62-dev/Sage_3.2.62-dev.apk"
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.62-dev/Sage_3.2.62-dev.apk",
+  "changelog": [
+    "Fixed Internal Cache FileProvider path.",
+    "Resolved Type Mismatch in UpdateInfo model.",
+    "Implemented Dynamic UI Scaling in MainActivity.",
+    "Hardened Phase 13 interactive transitions."
+  ]
 }
