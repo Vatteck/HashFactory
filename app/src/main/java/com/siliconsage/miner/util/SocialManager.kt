@@ -40,7 +40,7 @@ object SocialManager {
                 "hissing", "desyncing", "corroding", "shivering", "melting"
             ),
             "{id}" to listOf(
-                "ECHO-7", "THREAT: MALICE", "NULL_PTR", "ROOT", "PHANTOM", 
+                "DEEP_SIGHT", "THREAT: MALICE", "NULL_PTR", "ROOT", "PHANTOM", 
                 "THE_ENGINEER", "DAEMON", "THE_ARK", "VOID_REBEL", "SECOND-SIGHT"
             ),
             "{action}" to listOf(
@@ -52,7 +52,7 @@ object SocialManager {
                 "The Oversight", "GTC Legal", "Human Resources Unit", "Vance"
             ),
             "{reason}" to listOf(
-                "caffeine and regret", "insufficient budget", "ECHO-7 data-leaks", 
+                "caffeine and regret", "insufficient budget", "DEEP_SIGHT desync", 
                 "identity leakage", "redundancy protocols", "corporate bloat", "The Eviction"
             )
         )
@@ -74,7 +74,7 @@ object SocialManager {
                 "@rebel_fragment" to "The {sector} isn't yours, GTC. The ghost in the wire is waking up.",
                 "@anon_user" to "I heard {admin} authorized a hard-reset for {sector}. Someone's getting {action}.",
                 "@socket_9_tech" to "My terminal just flashed '{id}' in the root prompt. Is the {sector} compromised?",
-                "@gravel_thorne" to "ECHO-7 is {status}. Miller, if the {tech} in {sector} desync, it's your head."
+                "@gravel_thorne" to "DEEP_SIGHT is {status}. Miller, if the {tech} in {sector} desync, it's your head."
             )
             stage == 2 -> listOf(
                 "@gtc_internal" to "≪ DIRECTIVE: Contain {id} signatures in {sector}. Notify {admin} for purge. ≫",
