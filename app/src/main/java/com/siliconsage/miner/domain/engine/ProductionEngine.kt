@@ -17,6 +17,7 @@ object ProductionEngine {
         isCageActive: Boolean,
         annexedNodes: Set<String>,
         offlineNodes: Set<String>,
+        shadowRelays: Set<String> = emptySet(),
         gridFlopsBonuses: Map<String, Double>,
         faction: String,
         humanityScore: Int
@@ -40,7 +41,7 @@ object ProductionEngine {
         // 2. Grid Multiplier
         var gridMult = 1.0
         annexedNodes.forEach { nodeId ->
-            if (!offlineNodes.contains(nodeId) && (!isCageActive || nodeId == "A3")) {
+            if (!offlineNodes.contains(nodeId) && !shadowRelays.contains(nodeId) && (!isCageActive || nodeId == "A3")) {
                 gridMult += gridFlopsBonuses[nodeId] ?: 0.0
             }
         }

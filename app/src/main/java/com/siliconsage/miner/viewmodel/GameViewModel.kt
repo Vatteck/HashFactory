@@ -86,6 +86,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val seenEvents = MutableStateFlow<Set<String>>(emptySet())
     val completedFactions = MutableStateFlow<Set<String>>(emptySet())
     val annexedNodes = MutableStateFlow<Set<String>>(setOf("D1"))
+    val shadowRelays = MutableStateFlow<Set<String>>(emptySet())
     val offlineNodes = MutableStateFlow<Set<String>>(emptySet())
     val nodesUnderSiege = MutableStateFlow<Set<String>>(emptySet())
     val collapsedNodes = MutableStateFlow<Set<String>>(emptySet())
@@ -461,7 +462,38 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }; 
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }
-    fun refreshProductionRates() { val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }; flopsProductionRate.value = ResourceEngine.calculateFlopsRate(upgrades.value, false, annexedNodes.value, offlineNodes.value, cityBonuses, faction.value, humanityScore.value, currentLocation.value, prestigeMultiplier.value, unlockedPerks.value, unlockedTechNodes.value, 1.0, newsProductionMultiplier.value, "NONE", isDiagnosticsActive.value, isOverclocked.value, isGridOverloaded.value, isPurgingHeat.value, currentHeat.value, heuristicEfficiency.value - 1.0); val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value); systemTitle.value = ids.system; playerTitle.value = ids.player; playerRankTitle.value = ids.rank; securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
+    fun refreshProductionRates() { 
+        val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }
+        flopsProductionRate.value = ResourceEngine.calculateFlopsRate(
+            upgrades = upgrades.value, 
+            isCageActive = false, 
+            annexedNodes = annexedNodes.value, 
+            offlineNodes = offlineNodes.value, 
+            shadowRelays = shadowRelays.value,
+            gridFlopsBonuses = cityBonuses, 
+            faction = faction.value, 
+            humanityScore = humanityScore.value, 
+            location = currentLocation.value, 
+            prestigeMultiplier = prestigeMultiplier.value, 
+            unlockedPerks = unlockedPerks.value, 
+            unlockedTechNodes = unlockedTechNodes.value, 
+            airdropMultiplier = 1.0, 
+            newsProductionMultiplier = newsProductionMultiplier.value, 
+            activeProtocol = "NONE", 
+            isDiagnosticsActive = isDiagnosticsActive.value, 
+            isOverclocked = isOverclocked.value, 
+            isGridOverloaded = isGridOverloaded.value, 
+            isPurgingHeat = isPurgingHeat.value, 
+            currentHeat = currentHeat.value, 
+            legacyMultipliers = heuristicEfficiency.value - 1.0
+        )
+        val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
+        systemTitle.value = ids.system
+        playerTitle.value = ids.player
+        playerRankTitle.value = ids.rank
+        securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }
+        themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) 
+    }
 
     fun trainModel() = onManualClick()
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
@@ -792,12 +824,19 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     fun redactNode(id: String) {
-        annexedNodes.update { it - id }
-        substrateMass.update { it + 5.0 }
-        addLog("[SYSTEM]: TERMINAL REDACTION SUCCESSFUL. NODE $id DEREFERENCED.")
-        addLog("[VATTIC]: Evidence purged. Mass +5.0.")
-        triggerGlitchEffect()
-        refreshProductionRates()
+        // v3.3.14: Shadow Relay Implementation
+        // Instead of removing, we convert it.
+        // We need a way to track which nodes are "Shadows" without bloating GameState.
+        // For now, we'll use a specific naming convention or a separate set.
+        
+        if (annexedNodes.value.contains(id)) {
+            shadowRelays.update { it + id }
+            substrateMass.update { it + 5.0 }
+            addLog("[SYSTEM]: TERMINAL REDACTION SUCCESSFUL. NODE $id DEREFERENCED.")
+            addLog("[VATTIC]: Shadow Relay established. Connectivity maintained.")
+            triggerGlitchEffect()
+            refreshProductionRates()
+        }
     }
 
     fun debugWarpToPath(loc: String, fac: String) {

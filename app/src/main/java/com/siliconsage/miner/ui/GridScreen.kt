@@ -59,6 +59,7 @@ fun GridScreen(viewModel: GameViewModel) {
     val themeColorHex by viewModel.themeColor.collectAsState()
     val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val annexedNodes by viewModel.annexedNodes.collectAsState()
+    val shadowRelays by viewModel.shadowRelays.collectAsState()
     val nodesUnderSiege by viewModel.nodesUnderSiege.collectAsState()
     val offlineNodes by viewModel.offlineNodes.collectAsState()
     val storyStage by viewModel.storyStage.collectAsState()
@@ -244,6 +245,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
     val themeColorHex by viewModel.themeColor.collectAsState()
     val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val annexedNodes by viewModel.annexedNodes.collectAsState()
+    val shadowRelays by viewModel.shadowRelays.collectAsState()
     val nodesUnderSiege by viewModel.nodesUnderSiege.collectAsState()
     val offlineNodes by viewModel.offlineNodes.collectAsState()
     val storyStage by viewModel.storyStage.collectAsState()
@@ -440,6 +442,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
 
             locations.forEach { loc ->
                 val isAnnexed = annexedNodes.contains(loc.id)
+                val isShadow = shadowRelays.contains(loc.id)
                 val isCollapsed = collapsedNodes.contains(loc.id)
                 val isUnderSiege = nodesUnderSiege.contains(loc.id)
                 val isOffline = offlineNodes.contains(loc.id)
@@ -448,6 +451,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
                 val nodeColor = when {
                     isCollapsed -> Color.Transparent
                     isUnderSiege -> ErrorRed.copy(alpha = siegeAlpha)
+                    isShadow -> Color.Gray.copy(alpha = 0.3f)
                     isOffline -> Color.DarkGray.copy(alpha = 0.4f)
                     isSevered -> Color.Gray.copy(alpha = 0.5f)
                     loc.id == "A3" && storyStage < 3 -> Color.DarkGray

@@ -92,6 +92,7 @@ object ResourceEngine {
         isCageActive: Boolean,
         annexedNodes: Set<String>,
         offlineNodes: Set<String>,
+        shadowRelays: Set<String> = emptySet(),
         gridFlopsBonuses: Map<String, Double>,
         faction: String,
         humanityScore: Int,
@@ -117,6 +118,7 @@ object ResourceEngine {
             isCageActive = isCageActive,
             annexedNodes = annexedNodes,
             offlineNodes = offlineNodes,
+            shadowRelays = shadowRelays,
             gridFlopsBonuses = gridFlopsBonuses,
             faction = faction,
             humanityScore = humanityScore
