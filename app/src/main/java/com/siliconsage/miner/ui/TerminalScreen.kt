@@ -116,7 +116,13 @@ fun TerminalHeader(viewModel: GameViewModel, color: Color) {
 fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Boolean) {
     val logs by viewModel.logs.collectAsState()
     val currentHeat by viewModel.currentHeat.collectAsState()
+    val isRaid by viewModel.isGridOverloaded.collectAsState()
+    val corruption by viewModel.identityCorruption.collectAsState()
     val listState = rememberLazyListState()
+
+    // v3.3.13: Scramble Effect Math
+    val infiniteTransition = rememberInfiniteTransition(label = "glitch_math")
+    val scrambleTick by infiniteTransition.animateFloat(0f, 1f, infiniteRepeatable(tween(50)), label = "tick")
 
     // v2.9.78: Fix scroll lock when log is full
     LaunchedEffect(logs.lastOrNull()?.id) {
@@ -174,7 +180,10 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
                 itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
-                    TerminalLogLine(log = entry.message, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
+                    val displayMessage = if (isRaid && kotlin.random.Random.nextFloat() > 0.7f) {
+                        "0x" + kotlin.random.Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
+                    } else entry.message
+                    TerminalLogLine(log = displayMessage, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
                 }
             }
             

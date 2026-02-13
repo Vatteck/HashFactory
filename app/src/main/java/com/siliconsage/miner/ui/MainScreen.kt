@@ -250,6 +250,25 @@ fun MainScreen(viewModel: GameViewModel) {
                     val intensitySize = (assaultProgress * 15f)
                     Offset((kotlin.random.Random.nextFloat() - 0.5f) * intensitySize, (kotlin.random.Random.nextFloat() - 0.5f) * intensitySize)
                 } else Offset.Zero
+
+                // v3.3.13: Raid Vignette Overlay
+                if (isGridOverloaded) {
+                    val raidAlpha by infiniteTransition.animateFloat(0.1f, 0.4f, infiniteRepeatable(tween(100), RepeatMode.Reverse), label = "raid_flash")
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        drawRect(
+                            brush = Brush.radialGradient(
+                                colorStops = arrayOf(
+                                    0.0f to Color.Transparent,
+                                    0.7f to Color.Transparent,
+                                    1.0f to ErrorRed.copy(alpha = raidAlpha)
+                                ),
+                                center = center,
+                                radius = size.minDimension * 0.8f
+                            )
+                        )
+                    }
+                }
+
                 Column(modifier = Modifier.padding(paddingValues).graphicsLayer { translationX = shakeOffset.x; translationY = shakeOffset.y }) {
                     var showNewsHistory by remember { mutableStateOf(false) }
                     Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
