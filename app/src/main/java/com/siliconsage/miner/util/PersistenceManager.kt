@@ -122,6 +122,11 @@ object PersistenceManager {
         vm.energyPriceMultiplier.value = state.energyPriceMultiplier
         vm.newsProductionMultiplier.value = state.newsProductionMultiplier
         vm.lifetimePowerPaid.value = state.lifetimePowerPaid
+        vm.unlockedTechNodes.value = state.unlockedTechNodes
+        vm.unlockedPerks.value = state.unlockedTranscendencePerks
+        vm.synthesisPoints.value = state.synthesisPoints
+        vm.authorityPoints.value = state.authorityPoints
+        vm.harvestedFragments.value = state.harvestedFragments
 
         try {
             vm.rivalMessages.value = Json.decodeFromString(state.rivalMessages)

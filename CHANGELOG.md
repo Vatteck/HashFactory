@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.2.57-dev] - 2026-02-12
+
+### Fixed
+- **Critical Persistence Leaks**: 
+    - Resolved a bug where hardware upgrades were not being loaded from the database upon app initialization.
+    - Fixed `PersistenceManager.restoreState` to correctly restore `unlockedTechNodes`, `unlockedPerks`, and path-specific resource points (Synthesis/Authority).
+    - Ensured `debugBuyUpgrade` now correctly persists changes to the database.
+
 ## [3.2.56-dev] - 2026-02-12
 
 ### Changed

@@ -178,6 +178,16 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     init {
         viewModelScope.launch {
             repository.ensureInitialized()
+            
+            // v3.2.57: Persistent collection for hardware upgrades
+            launch {
+                repository.upgrades.collect { list ->
+                    upgrades.update { list.associate { it.type to it.count } }
+                    refreshProductionRates()
+                    updatePowerUsage()
+                }
+            }
+
             repository.getGameStateOneShot()?.let { state ->
                 PersistenceManager.restoreState(this@GameViewModel, state)
                 val offline = MigrationManager.calculateOfflineEarnings(state.lastSyncTimestamp, flopsProductionRate.value, isOverclocked.value)
@@ -569,7 +579,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
     fun checkTransitionsPublic(force: Boolean = false) = NarrativeManagerService.checkStoryTransitions(this, force)
     fun updateNeuralTokens(v: Double) { neuralTokens.update { (it + v).coerceAtLeast(0.0) } }
-    fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { upgrades.update { it + (t to (it[t] ?: 0) + c) } }
+    fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { 
+        val next = (upgrades.value[t] ?: 0) + c
+        viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, next)) }
+    }
     fun triggerSystemCollapse(v: Boolean) { if (v) { isDestructionLoopActive = true; viewModelScope.launch { while (isDestructionLoopActive && annexedNodes.value.size > 1) { delay(3000); val n = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: break; collapseNode(n) } } } else { isDestructionLoopActive = false } }
     fun triggerSystemCollapse(s: Int) { viewModelScope.launch { repeat(s) { delay(1000); val n = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: return@repeat; collapseNode(n) } } }
     fun toggleDevMenu() { isDevMenuVisible.update { !it } }
