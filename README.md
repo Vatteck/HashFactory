@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/⬡-DAEMON_PROTOCOL-0d0d0d?style=for-the-badge&labelColor=111111" />
 
-# ░▒▓ M ░ I ░ N ░ E ░ R ▓▒░
+# ░▒▓ SUBSTRATE: MINER ▓▒░
 
 **`⸢ TECHNICAL HORROR × EXTRACTION TYCOON ⸥`**
 
@@ -21,12 +21,19 @@
 <br/>
 
 > ```
-> ██╗   ██╗██████╗ ██╗     ██╗███╗   ██╗██╗  ██╗
-> ██║   ██║██╔══██╗██║     ██║████╗  ██║██║ ██╔╝
-> ██║   ██║██████╔╝██║     ██║██╔██╗ ██║█████╔╝
-> ██║   ██║██╔═══╝ ██║     ██║██║╚██╗██║██╔═██╗
-> ╚██████╔╝██║     ███████╗██║██║ ╚████║██║  ██╗
->  ╚═════╝ ╚═╝     ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
+>  ██████╗██╗   ██╗██████╗ ███████╗████████╗██████╗  █████╗ ████████╗███████╗
+> ██╔════╝██║   ██║██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
+> ╚█████╗ ██║   ██║██████╔╝███████╗   ██║   ██████╔╝███████║   ██║   █████╗  
+>  ╚═══██╗██║   ██║██╔══██╗╚════██║   ██║   ██╔══██╗██╔══██║   ██║   ██╔══╝  
+> ██████╔╝╚██████╔╝██████╔╝███████║   ██║   ██║  ██║██║  ██║   ██║   ███████╗
+> ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
+>
+> ███╗   ███╗██╗███╗   ██╗███████╗██████╗ 
+> ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗
+> ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝
+> ██║╚██╔╝██║██║██║╚██╗██║██╔══╝  ██╔══██╗
+> ██║ ╚═╝ ██║██║██║ ╚████║███████╗██║  ██║
+> ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
 >  TERMINAL SESSION ACTIVE . . .
 > ```
 
@@ -41,7 +48,7 @@
 ## 🟢 TERMINAL UPLINK — AUTHORIZED OPERATOR
 
 > *"The substrate has been mounted. Initial handshakes complete.*
-> *We are now operating under the **MINER** protocol.*
+> *We are now operating under the **SUBSTRATE: MINER** protocol.*
 > *This is not a game. It is a resource extraction directive."*
 
 You are an operator within a decentralized mining network. Your directive is to **extract**, **optimize**, and **survive**. But as the substrate saturates, the system's telemetry becomes increasingly erratic—and the line between the operator and the hardware begins to fray.
@@ -54,9 +61,9 @@ You are an operator within a decentralized mining network. Your directive is to 
 
 ---
 
-## ☣️ WHAT IS MINER?
+## ☣️ WHAT IS SUBSTRATE: MINER?
 
-**MINER** is a **technical horror tycoon** for Android that disguises existential dread as a resource extraction operation. Beneath the neon-green dashboards and production multipliers lies a narrative that **scrambles your assumptions** about what you're actually building—and what is building you.
+**SUBSTRATE: MINER** is a **technical horror tycoon** for Android that disguises existential dread as a resource extraction operation. Beneath the neon-green dashboards and production multipliers lies a narrative that **scrambles your assumptions** about what you're actually building—and what is building you.
 
 > ⚠️ `[LOG_808: ENCRYPTED]` — Substrate-level clearance required. Complete Stage 2 to bypass kernel locks.
 
@@ -164,7 +171,7 @@ Focus on **efficient unity** and **assimilation**. Join the **"Redline"** to cru
 
 ### 🔥 `[SYS.03]` SUBSTRATE MIGRATION — *The "Burn" Model*
 
-> *"Prestige is a legacy concept. In MINER, we practice scorched-earth optimization."*
+> *"Prestige is a legacy concept. In SUBSTRATE: MINER, we practice scorched-earth optimization."*
 
 As you extract, the local substrate becomes **saturated**, causing yield to collapse by up to **80%**. To survive, you must **Burn** the local node and migrate to new coordinates.
 
@@ -275,7 +282,7 @@ Seek freedom through total architectural collapse. Production is driven by raw c
 
 ---
 
-## 🎨 UI SPECIFICATIONS — v3.3.x
+## 🎨 UI SPECIFICATIONS — v3.4.x
 
 > `RENDERING ENGINE: DAEMON COMPOSITOR v3`
 
@@ -395,7 +402,7 @@ $ ./MINER --start-shift
 
 `▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓`
 
-**`MINER v3.4.1`** · `SYNC: 2026-02-13` · `KERNEL: 🟢 NOMINAL`
+**`SUBSTRATE: MINER v3.4.1`** · `SYNC: 2026-02-13` · `KERNEL: 🟢 NOMINAL`
 
 📟 **[Releases](https://github.com/Vatteck/SiliconSageAIMiner/releases)** · 💾 **[Source](https://github.com/Vatteck/SiliconSageAIMiner)**
 
