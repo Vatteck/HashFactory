@@ -1,8 +1,14 @@
 {
-  "version": "3.2.59-dev",
-  "build": 301,
+  "version": "3.2.59",
+  "build": 305,
   "date": "2026-02-13",
-  "changes": "Final Log-Spam & Narrative Hardening",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.59-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.59-dev/Sage_3.2.59-dev.apk"
+  "summary": "Final Log-Spam & Narrative Hardening",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/latest",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.59-dev/Sage_3.2.59-dev.apk",
+  "changelog": [
+    "Fixed Vattic monologue log-spam loop.",
+    "Integrated 20+ narrative beats into path-specific silos.",
+    "Hardened story-gating logic via stage/time variables.",
+    "UI Scaling restored to Settings menu."
+  ]
 }
