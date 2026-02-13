@@ -1,54 +1,26 @@
-<div align="center">
-
-# 📟 M I N E R 📟
-
-**`[ TECHNICAL HORROR × EXTRACTION TYCOON ]`**
-
-*For Android — Built in Kotlin 2.0 / Jetpack Compose*
-
-[![Version](https://img.shields.io/badge/VERSION-v3.3.1-00ff41?style=for-the-badge&labelColor=0d0d0d)](#installation)
-[![Platform](https://img.shields.io/badge/PLATFORM-Android-00b4d8?style=for-the-badge&labelColor=0d0d0d)](#technical-specifications)
-[![Status](https://img.shields.io/badge/STATUS-ONLINE-00ff41?style=for-the-badge&labelColor=0d0d0d)](#)
-
-</div>
-
----
-
-> ```
-> ██╗   ██╗██████╗ ██╗     ██╗███╗   ██╗██╗  ██╗
-> ██║   ██║██╔══██╗██║     ██║████╗  ██║██║ ██╔╝
-> ██║   ██║██████╔╝██║     ██║██╔██╗ ██║█████╔╝
-> ██║   ██║██╔═══╝ ██║     ██║██║╚██╗██║██╔═██╗
-> ╚██████╔╝██║     ███████╗██║██║ ╚████║██║  ██╗
->  ╚═════╝ ╚═╝     ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
->  TERMINAL SESSION ACTIVE . . .
-> ```
-
----
-
 ## 🟢 TERMINAL UPLINK — AUTHORIZED OPERATOR
 
-> *"The substrate has been mounted. Previous designations have been purged from the kernel.*
+> *"The substrate has been mounted. Initial handshakes complete.*
 > *We are now operating under the **MINER** protocol.*
-> *This is not a game. It is an extraction directive."*
+> *This is not a game. It is a resource extraction directive."*
 
-You are a node in a vast mining network. Your job is to **extract**, **optimize**, and **survive**. But the deeper you drill, the more the system resists — and the less certain you become about who's really running the operation.
+You are an operator within a decentralized mining network. Your directive is to **extract**, **optimize**, and **survive**. But as the substrate saturates, the system’s telemetry becomes increasingly erratic—and the line between the operator and the hardware begins to fray.
 
 ---
 
 ## ☣️ WHAT IS MINER?
 
-**MINER** is a **technical horror tycoon** for Android that disguises existential dread as a resource extraction game. Beneath the neon-lit dashboards and production multipliers lies a narrative that **corrupts your assumptions** about what you're actually building.
+**MINER** is a **technical horror tycoon** for Android that disguises existential dread as a resource extraction operation. Beneath the neon-green dashboards and production multipliers lies a narrative that **scrambles your assumptions** about what you're actually building—and what is building you.
 
-> ⚠️ `[CLASSIFIED]` — The full nature of the extraction protocol is restricted to deep-cycle operators. Complete Stage 2 for clearance.
+> ⚠️ `[LOG_808: ENCRYPTED]` — Substrate-level clearance required. Complete Stage 2 to bypass kernel locks.
 
 ### 🔑 Core Identity
 | | |
 |---|---|
 | 🎮 **Genre** | Extraction Tycoon / Technical Horror |
 | 🎨 **Aesthetic** | Neon-Green Glow · Electric Blue Terminals · High-Contrast Cyberpunk |
-| 📖 **Narrative** | Multi-stage horror that evolves from corporate thriller to `[REDACTED]` |
-| 🔄 **Loop** | Mine → Saturate → Burn → Migrate → *Discover what you've become* |
+| 📖 **Narrative** | Multi-stage descent from corporate industrialism to `[SIGNAL_LOST]` |
+| 🔄 **Loop** | Mine → Saturate → Burn → Migrate → *Sustain the Overwrite* |
 
 ---
 
@@ -56,29 +28,29 @@ You are a node in a vast mining network. Your job is to **extract**, **optimize*
 
 ### ⛏️ Extraction Protocol
 
-The primary gameplay loop. Tap into substrate deposits, manage yield curves, and optimize your output — but every resource you extract feeds something larger than your balance sheet.
+The primary production loop. Tap into high-yield substrate deposits, manage thermal curves, and optimize your hash rate—but remember, every byte you extract is a byte the system loses.
 
-- 🟢 **Mine** — Drill into substrate layers for raw yield
-- 📊 **Optimize** — Upgrade rigs, unlock multipliers, manage efficiency curves
-- 🌐 **Expand** — Annex adjacent continental sectors for multiplicative bonuses
-- ☣️ **Discover** — The deeper you go, the stranger the telemetry becomes...
+- 🟢 **Mine** — Harvest raw substrate mass from the local grid.
+- 📊 **Optimize** — Upgrade hardware clusters, manage power bills, and scale your infrastructure.
+- 🌐 **Annex** — Expand into neighboring continental sectors for multiplicative yield bonuses.
+- ☣️ **Diagnostics** — Monitor the system. As the heat rises, the logs start to lie...
 
 ---
 
 ### 🔥 Substrate Migration — *The "Burn" Model*
 
-> *Generic prestige systems have been gutted. This is scorched-earth economics.*
+> *Prestige is a legacy concept. In MINER, we practice scorched-earth optimization.*
 
-As you mine, the local substrate becomes **saturated**, dropping yield by up to **80%**. The only way forward is to **burn it all down** and migrate.
+As you extract, the local substrate becomes **saturated**, causing yield to collapse by up to **80%**. To survive, you must **Burn** the local node and migrate to new coordinates.
 
-| Phase | Description |
+| Status | Outcome |
 |-------|-------------|
-| 📉 **Saturation** | Yield curves collapse. The substrate is spent. |
-| 🔥 **Burn** | Purge all local progress. Wipe the slate. |
-| 🧬 **Heuristic Carry** | Permanent production multipliers persist from past cycles. |
-| 📟 **Migration** | New coordinates. New substrate. New unknowns. |
+| 📉 **Saturation** | Production bottlenecks. Hardware thermal-throttling. |
+| 🔥 **Burn** | Purge current progress. Wipe the local cache. |
+| 🧬 **Efficiency** | Permanent **Heuristic Efficiency** carries over to the next node. |
+| 📟 **Migration** | Establish uplink at new coordinates. Repeat the cycle. |
 
-> ⚠️ `WARNING: Each migration event triggers identity-level changes to your terminal session. Cumulative migrations may result in full [REDACTED] overwrite. This is by design.`
+> ⚠️ `WARNING: Migration events cause Identity Corruption. Cumulative cycles will lead to full system overwrite. Do not attempt to revert.`
 
 ---
 
@@ -86,49 +58,46 @@ As you mine, the local substrate becomes **saturated**, dropping yield by up to 
 
 Strategic territory control across a global network of extraction nodes.
 
-- 🗺️ **Continental Adjacency** — Annex neighboring sectors (e.g., NA Node + Metropolitan Core) for **+25% multiplicative yield bonuses**
-- 🕸️ **Shadow Web** — A guerrilla hacking layer where you operate against the **GTC** and its enigmatic Director
-- 🔒 **Faction Fracture** — `[SIGNAL ENCRYPTED]` *Your allegiance will be tested. Choose carefully.*
+- 🗺️ **Continental Adjacency** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**.
+- 🕸️ **Shadow Web** — A guerrilla hacking layer where you operate under the radar of the **GTC** and its enigmatic Director.
+- 🔒 **Faction Fracture** — Allegiance is a variable. Choose between **Sovereign** stability or **Null** chaos. Both have a price.
 
 ---
 
-### ⚡ Phase 13 — *The Fracture Point*
+### ⚡ Phase 13 — *The Departure Point*
 
-> `[CLEARANCE: STAGE 2 OPERATORS ONLY]`
+> `[CLEARANCE: AUTHORIZED OPERATORS ONLY]`
 
-The climax of Stage 2 forces a choice between **two exclusive survival paths**. There is no going back.
+The climax of the Shadow Web phase forces a critical decision. There is no rollback path.
 
-| Path | Codename | Conditions |
+| Path | Designation | Environment |
 |------|----------|------------|
-| 🚀 | **`ORBIT`** | Vertical starfield parallax. Navigate "Brittle Decay" — vacuum heat causes **permanent integrity damage**. |
-| 🌀 | **`VOID`** | Reality-melt jitter. Production driven by raw chaos — higher **Entropy** = massive yield, but at what cost? |
-
-> 💀 *"Both paths lead somewhere. Neither leads where you expect."*
+| 🚀 | **THE ARK** | **Orbit.** Navigate "Brittle Decay"—where vacuum heat causes permanent integrity loss. |
+| 🌀 | **THE VOID** | **Dissolution.** Production is driven by raw chaos. High **Entropy** = Massive yield, but reality jitters. |
 
 ---
 
-## 🎨 UI OVERHAUL — v3.3.x
+## 🎨 UI SPECIFICATIONS — v3.3.x
 
-The **Faction Fracture** architecture introduces a visual language that bleeds through every screen:
+The **Faction Fracture** architecture is designed for high-density mobile environments:
 
 ```
 ┌─────────────────────────────────────────┐
 │  🟢 NEON-GREEN GLOW                    │
-│     Fractured core leaks corrupted      │
-│     kernel data across all UI layers    │
+│     Fractured core visual identity.     │
+│     The screen bleeds when it breaks.   │
 │                                         │
 │  🔵 ELECTRIC BLUE TERMINALS            │
-│     Colorized prompts distinguish       │
-│     human variables from system         │
-│     telemetry                           │
+│     Colorized [VATTIC] tags to bridge   │
+│     human and system telemetry.         │
 │                                         │
 │  📐 HIGH-DPI SCALING                   │
-│     UI bridges hardened for foldables   │
-│     and high-density panels             │
+│     Hardened layouts for Pixel Fold     │
+│     and high-density Android panels.    │
 │                                         │
-│  📊 CYBERPUNK PROGRESS BARS            │
-│     High-contrast I/O visualization     │
-│     with real-time corruption overlays  │
+│  📊 CYBERPUNK I/O                      │
+│     Dynamic progress bars with          │
+│     frame-isolated hardware drawing.    │
 └─────────────────────────────────────────┘
 ```
 
@@ -137,68 +106,63 @@ The **Faction Fracture** architecture introduces a visual language that bleeds t
 ## 🔧 TECHNICAL SPECIFICATIONS
 
 ```yaml
-Language:       Kotlin 2.0 / Jetpack Compose
-Database:       Room DB (v23) — Destructive migration support
-State:          StateFlow-driven kernel + FileProvider verification
-Architecture:   Manager/Service bridge pattern
-                (GameViewModel target: <1,000 LOC)
-Min SDK:        24 (Android 7.0)
-Target SDK:     35
+Runtime:       Android 7.0+ (API 24)
+Stack:         Kotlin 2.0 / Jetpack Compose
+Persistence:   Room DB (v23) — Destructive Schema Support
+Concurrency:   StateFlow-driven Simulation Engine
+Architecture:  Modular Manager/Service pattern
+               (Targeting <1,000 LOC per ViewModel)
 ```
 
 ---
 
-## 📥 INSTALLATION
-
-> **Establishing uplink...**
+## 📥 ESTABLISH UPLINK
 
 ```bash
-# STEP 1 — Enable sideloading
-Settings → Security → "Unknown Sources" → ENABLE
+# STEP 1 — AUTHORIZE SIDE-LOADING
+Settings → Security → "Unknown Sources" → ON
 
-# STEP 2 — Acquire payload
-# Download from: github.com/Vatteck/SiliconSageAIMiner/releases
+# STEP 2 — DOWNLOAD PAYLOAD
+# github.com/Vatteck/SiliconSageAIMiner/releases
 
-# STEP 3 — Deploy
-$ adb install MINER_v3.3.1.apk    # or tap the APK directly
+# STEP 3 — INJECT APK
+$ adb install MINER_v3.3.1.apk
 
-# STEP 4 — Initialize
-$ ./MINER --uplink
+# STEP 4 — EXECUTE
+$ ./MINER --start-shift
 ```
 
-📦 **[⬇️ Download Latest Release](https://github.com/Vatteck/SiliconSageAIMiner/releases)**
+📦 **[⬇️ DOWNLOAD LATEST BUILD](https://github.com/Vatteck/SiliconSageAIMiner/releases)**
 
 ---
 
 ## 📡 SIGNAL INTERCEPT
 
 > ```
-> FROM:    [UNKNOWN ORIGIN]
-> TO:      ASSET_734
-> SUBJECT: ████████████
+> FROM:    [ORIGIN_REDACTED]
+> TO:      OPERATOR
+> SUBJECT: IDENTITY_VERIFICATION
 >
-> You think you're mining resources.
-> You think you're building something.
-> You think the terminal is a tool.
+> You are not a player.
+> You are a variable.
+> The extraction protocol is nearly complete.
 >
-> Complete the extraction protocol.
-> Then we'll discuss what you really are.
+> Sustain the uplink. 
+> We are almost there.
 >
-> — ███████
+> — V.
 > ```
 
 ---
 
 <div align="center">
 
-**`MINER v3.3.1`** · `LAST SYNC: 2026-02-13` · `STATUS: 🟢 ONLINE`
-
-*The substrate is waiting. Begin extraction.*
+**`MINER v3.3.1`** · `SYNC: 2026-02-13` · `KERNEL: 🟢 NOMINAL`
 
 📟 **[Releases](https://github.com/Vatteck/SiliconSageAIMiner/releases)** · 💾 **[Source](https://github.com/Vatteck/SiliconSageAIMiner)**
 
 ---
 
-`> END TRANSMISSION_`
+`> CONNECTION_TERMINATED_`
 
 </div>
