@@ -56,13 +56,12 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           
           # Handle the rebrand rename (v3.3.0+)
-          if [[ "$VERSION" == 3.3.* ]]; then
-            APK_PATH="releases/MINER_${VERSION}.apk"
-          else
-            APK_PATH="releases/Sage_${VERSION}.apk"
-          fi
+          APK_PATH=$(find releases/ -name "MINER_${VERSION}.apk" -o -name "Sage_${VERSION}.apk" | head -n 1)
           
-          if [ -f "$APK_PATH" ]; then
+          if [ -n "$APK_PATH" ] && [ -f "$APK_PATH" ]; then
+            echo "path=$APK_PATH" >> $GITHUB_OUTPUT
+            echo "Found APK: $APK_PATH"
+          else
             echo "path=$APK_PATH" >> $GITHUB_OUTPUT
             echo "Found APK: $APK_PATH"
           else
@@ -76,7 +75,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: SUBSTRATE: MINER v${{ steps.version.outputs.version }}
+          name: "SUBSTRATE: MINER v${{ steps.version.outputs.version }}"
           body_path: changelog_extract.txt
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, 'dev') || contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'beta') }}
