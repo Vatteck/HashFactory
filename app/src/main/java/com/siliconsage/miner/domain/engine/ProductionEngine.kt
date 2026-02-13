@@ -91,10 +91,14 @@ object ProductionEngine {
         upgrades: Map<UpgradeType, Int>,
         heatGenerationRate: Double,
         collapsedNodesCount: Int,
-        globalSectors: Map<String, SectorState>
+        globalSectors: Map<String, SectorState>,
+        saturation: Double
     ): Double {
         val sectorYields = com.siliconsage.miner.util.SectorManager.calculateSectorYields(location, globalSectors)
         val globalMult = com.siliconsage.miner.util.SectorManager.getGlobalMultipliers(globalSectors)
+        
+        // v3.2.52: Saturation Penalty (Yield drops by up to 80% as saturation hits 1.0)
+        val saturationPenalty = (1.0 - (saturation * 0.8)).coerceIn(0.1, 1.0)
 
         if (location == "ORBITAL_SATELLITE") {
             // Orbit Path: Altitude and Solar Sails drive yield
@@ -115,7 +119,7 @@ object ProductionEngine {
                     continentalRate += sectorBase * sectorMult
                 }
             }
-            return (baseRate + continentalRate) * globalMult
+            return (baseRate + continentalRate) * globalMult * saturationPenalty
         } else if (location == "VOID_INTERFACE") {
             // Void Path: Entropy is the engine. High entropy = massive yield.
             var entropyMult = 1.0 + (kotlin.math.log2(entropyLevel + 1.0) * 4.0)
@@ -146,7 +150,7 @@ object ProductionEngine {
                     yieldTotal += sectorBase * sectorMult
                 }
             }
-            return yieldTotal * globalMult
+            return yieldTotal * globalMult * saturationPenalty
         }
         return 0.0
     }

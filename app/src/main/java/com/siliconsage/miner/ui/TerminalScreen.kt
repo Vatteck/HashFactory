@@ -206,6 +206,8 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         "VOID_INTERFACE" -> "void"
         else -> "sub-07"
     }
+    
+    val corruption by viewModel.identityCorruption.collectAsState()
 
     val promptUserColor = color
     val promptHostColor = when {
@@ -218,9 +220,14 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // v3.2.23: Identity Flickering when humanity low
-        val isFlickering = humanity < 20 && Math.random() < 0.1
-        val userLabel = if (isFlickering) "???" else user
+        // v3.2.52: Identity Corruption
+        val isFlickering = (humanity < 20 || corruption > 0.5) && Math.random() < (0.1 + corruption * 0.4)
+        
+        var userLabel = user
+        if (corruption > 0.2 && Math.random() < corruption) {
+            userLabel = userLabel.map { if (Math.random() < corruption) "0123456789ABCDEF".random() else it }.joinToString("")
+        }
+        if (isFlickering) userLabel = "???"
 
         Text(
             text = androidx.compose.ui.text.buildAnnotatedString {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -274,6 +275,34 @@ fun HeaderSection(
                     )
                 }
             }
+            
+            // v3.2.52: Substrate Saturation Monitor
+            if (storyStage >= 3) {
+                val saturation by viewModel.substrateSaturation.collectAsState()
+                val saturationColor = if (saturation > 0.9) ErrorRed else Color.Cyan
+                
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("SATURATION: ", color = Color.Gray, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    LinearProgressIndicator(
+                        progress = { saturation.toFloat() },
+                        modifier = Modifier.weight(1f).height(4.dp).padding(horizontal = 4.dp),
+                        color = saturationColor,
+                        trackColor = Color.DarkGray.copy(alpha = 0.3f)
+                    )
+                    Text("${(saturation * 100).toInt()}%", color = saturationColor, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold)
+                    
+                    if (saturation >= 0.95) {
+                        Text(
+                            " ≫ READY TO BURN", 
+                            color = ErrorRed, 
+                            fontSize = 8.sp, 
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.padding(start = 4.dp).clickable { viewModel.migrateSubstrate() }
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(2.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 val flopsLabel = when {

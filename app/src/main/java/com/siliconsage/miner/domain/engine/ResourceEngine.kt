@@ -141,6 +141,8 @@ object ResourceEngine {
         flopsPerSec *= airdropMultiplier
         flopsPerSec *= newsProductionMultiplier
         flopsPerSec *= prestigeMultiplier
+        
+        // v3.2.52: Apply Heuristic Efficiency
         flopsPerSec *= (1.0 + legacyMultipliers)
 
         if (faction == "HIVEMIND") flopsPerSec *= 1.30
@@ -173,7 +175,8 @@ object ResourceEngine {
         entropyLevel: Double,
         collapsedNodesCount: Int,
         systemCollapseTimer: Int?,
-        globalSectors: Map<String, SectorState> = emptyMap()
+        globalSectors: Map<String, SectorState> = emptyMap(),
+        saturation: Double = 0.0
     ): TickResults {
         var flopsDelta = flopsPerSec / 10.0
         var substrateDelta = 0.0
@@ -196,7 +199,8 @@ object ResourceEngine {
                     upgrades = upgrades,
                     heatGenerationRate = heatGenerationRate,
                     collapsedNodesCount = collapsedNodesCount,
-                    globalSectors = globalSectors
+                    globalSectors = globalSectors,
+                    saturation = saturation
                 ) / 10.0
             }
             "VOID_INTERFACE" -> {
@@ -208,7 +212,8 @@ object ResourceEngine {
                     upgrades = upgrades,
                     heatGenerationRate = heatGenerationRate,
                     collapsedNodesCount = collapsedNodesCount,
-                    globalSectors = globalSectors
+                    globalSectors = globalSectors,
+                    saturation = saturation
                 ) / 10.0
 
                 entropyDelta = -0.01 

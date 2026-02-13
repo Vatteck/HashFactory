@@ -34,6 +34,9 @@ object PersistenceManager {
         marketMultiplier: Double, thermalRateModifier: Double,
         energyPriceMultiplier: Double, newsProductionMultiplier: Double,
         substrateMass: Double,
+        substrateSaturation: Double,
+        heuristicEfficiency: Double,
+        identityCorruption: Double,
         lifetimePowerPaid: Double
     ): GameState {
         return GameState(
@@ -63,6 +66,9 @@ object PersistenceManager {
             marketMultiplier = marketMultiplier, thermalRateModifier = thermalRateModifier,
             energyPriceMultiplier = energyPriceMultiplier, newsProductionMultiplier = newsProductionMultiplier,
             substrateMass = substrateMass,
+            substrateSaturation = substrateSaturation,
+            heuristicEfficiency = heuristicEfficiency,
+            identityCorruption = identityCorruption,
             lifetimePowerPaid = lifetimePowerPaid
         )
     }
@@ -71,6 +77,9 @@ object PersistenceManager {
         vm.flops.value = state.flops
         vm.neuralTokens.value = state.neuralTokens
         vm.substrateMass.value = state.substrateMass
+        vm.substrateSaturation.value = state.substrateSaturation
+        vm.heuristicEfficiency.value = state.heuristicEfficiency
+        vm.identityCorruption.value = state.identityCorruption
         vm.currentHeat.value = state.currentHeat
         vm.prestigeMultiplier.value = state.prestigeMultiplier
         vm.prestigePoints.value = state.prestigePoints
@@ -210,6 +219,9 @@ object PersistenceManager {
             marketMultiplier = vm.marketMultiplier.value, thermalRateModifier = vm.thermalRateModifier.value,
             energyPriceMultiplier = vm.energyPriceMultiplier.value, newsProductionMultiplier = vm.newsProductionMultiplier.value,
             substrateMass = vm.substrateMass.value,
+            substrateSaturation = vm.substrateSaturation.value,
+            heuristicEfficiency = vm.heuristicEfficiency.value,
+            identityCorruption = vm.identityCorruption.value,
             lifetimePowerPaid = vm.lifetimePowerPaid.value
         )
         val json = Json { prettyPrint = true }

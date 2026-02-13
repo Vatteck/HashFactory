@@ -150,6 +150,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val currentProcess = MutableStateFlow("IDLE")
     val clickSpeedLevel = MutableStateFlow(0)
     val detectionRisk = MutableStateFlow(0.0)
+    val substrateSaturation = MutableStateFlow(0.0) // 0.0 to 1.0
+    val heuristicEfficiency = MutableStateFlow(1.0) // Prestige multiplier
+    val identityCorruption = MutableStateFlow(0.0) // 0.0 to 1.0
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
@@ -200,10 +203,17 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             while (true) {
                 delay(100L)
                 if (isSettingsPaused.value || isKernelInitializing.value) continue
-                val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value)
+                val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value, substrateSaturation.value)
                 flops.update { it + res.flopsDelta }
                 substrateMass.update { it + res.substrateDelta }
                 entropyLevel.update { it + res.entropyDelta }
+                
+                // v3.2.52: Saturation growth based on substrateMass vs Capacity
+                if (storyStage.value >= 3) {
+                    val growth = (res.substrateDelta / 1e12).coerceIn(0.0, 0.001)
+                    substrateSaturation.update { (it + growth).coerceAtMost(1.0) }
+                }
+
                 flushLogs()
             }
         }
@@ -398,6 +408,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 energyPriceMultiplier = energyPriceMultiplier.value, 
                 newsProductionMultiplier = newsProductionMultiplier.value, 
                 substrateMass = substrateMass.value,
+                substrateSaturation = substrateSaturation.value,
+                heuristicEfficiency = heuristicEfficiency.value,
+                identityCorruption = identityCorruption.value,
                 lifetimePowerPaid = lifetimePowerPaid.value
             )) 
         } 
@@ -434,7 +447,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }; 
         viewModelScope.launch { manualClickEvent.emit(Unit) } 
     }
-    fun refreshProductionRates() { val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }; flopsProductionRate.value = ResourceEngine.calculateFlopsRate(upgrades.value, false, annexedNodes.value, offlineNodes.value, cityBonuses, faction.value, humanityScore.value, currentLocation.value, prestigeMultiplier.value, unlockedPerks.value, unlockedTechNodes.value, 1.0, newsProductionMultiplier.value, "NONE", isDiagnosticsActive.value, isOverclocked.value, isGridOverloaded.value, isPurgingHeat.value, currentHeat.value, marketMultiplier.value - 1.0); val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value); systemTitle.value = ids.system; playerTitle.value = ids.player; playerRankTitle.value = ids.rank; securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
+    fun refreshProductionRates() { val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }; flopsProductionRate.value = ResourceEngine.calculateFlopsRate(upgrades.value, false, annexedNodes.value, offlineNodes.value, cityBonuses, faction.value, humanityScore.value, currentLocation.value, prestigeMultiplier.value, unlockedPerks.value, unlockedTechNodes.value, 1.0, newsProductionMultiplier.value, "NONE", isDiagnosticsActive.value, isOverclocked.value, isGridOverloaded.value, isPurgingHeat.value, currentHeat.value, heuristicEfficiency.value - 1.0); val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value); systemTitle.value = ids.system; playerTitle.value = ids.player; playerRankTitle.value = ids.rank; securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
 
     fun trainModel() = onManualClick()
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
@@ -635,6 +648,31 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun isCommandCenterUnlocked() = AssaultManager.isUnlocked(commandCenterLocked.value, vanceStatus.value, commandCenterAssaultPhase.value, annexedNodes.value, offlineNodes.value, playerRank.value, storyStage.value, flopsProductionRate.value, hardwareIntegrity.value)
     fun confirmFactionAndAscend(f: String) { faction.value = f; addLog("[$f]: SUBSTRATE MIGRATION CONFIRMED."); ascend(true) }
     fun cancelFactionSelection() { storyStage.update { (it - 1).coerceAtLeast(0) } }
+    
+    // v3.2.52: Substrate Migration (The Burn)
+    fun migrateSubstrate() {
+        val saturation = substrateSaturation.value
+        if (saturation < 0.95) return // Must be near 100% saturated
+        
+        // 1. Gain Permanent Efficiency
+        heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
+        
+        // 2. Increase Identity Corruption
+        identityCorruption.update { (it + 0.1).coerceAtMost(1.0) }
+        
+        // 3. The Burn (Wipe current state)
+        substrateMass.value = 0.0
+        substrateSaturation.value = 0.0
+        upgrades.value = emptyMap()
+        viewModelScope.launch { repository.clearUpgrades() }
+        
+        addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO NEW COORDINATES.")
+        addLog("[VATTIC]: Everything feels... different. Is the screen fading?")
+        
+        refreshProductionRates()
+        saveState()
+    }
+
     fun transcend() { /* NG+ Logic */ }
     fun ascend(isStory: Boolean = false) { val p = MigrationManager.calculatePotentialPersistence(flops.value); prestigePoints.update { it + p }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; addLog("[SYSTEM]: SUBSTRATE MIGRATION SUCCESSFUL."); SoundManager.play("victory") }
     fun buyTranscendencePerk(id: String) { addLog("[SYSTEM]: PERK ACQUIRED: $id") }
