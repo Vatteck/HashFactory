@@ -38,7 +38,9 @@ import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ConvergenceGold
 import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
+import kotlin.random.Random
 import kotlin.math.pow
+import kotlin.math.sin
 
 // Re-defining internal data class for the file
 data class GridNode(
@@ -81,9 +83,9 @@ fun GridScreen(viewModel: GameViewModel) {
         LaunchProgressOverlay(launchProgress, viewModel.orbitalAltitude.collectAsState().value, themeColor)
     } else {
         when (currentLocation) {
-            "ORBITAL_SATELLITE", "VOID_INTERFACE" -> if (globalSectors.isNotEmpty()) GlobalGridScreen(viewModel) else {
-                 if (currentLocation == "ORBITAL_SATELLITE") OrbitalGridScreen(viewModel) else VoidGridScreen(viewModel)
-            }
+            "GLOBAL_UPLINK" -> if (globalSectors.isNotEmpty()) GlobalGridScreen(viewModel) else CityGridScreen(viewModel)
+            "ORBITAL_SATELLITE" -> OrbitalGridScreen(viewModel)
+            "VOID_INTERFACE" -> VoidGridScreen(viewModel)
             else -> CityGridScreen(viewModel)
         }
     }
@@ -531,6 +533,29 @@ fun CityGridScreen(viewModel: GameViewModel) {
                     } else if (isAnnexing) {
                          val prog = annexingNodes[loc.id] ?: 0f
                          LinearProgressIndicator(progress = { if (prog.isNaN()) 0f else prog }, modifier = Modifier.fillMaxWidth().height(8.dp), color = themeColor, trackColor = Color.DarkGray)
+                    } else if (isAnnexed && storyStage >= 3) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // [⚡ OVERVOLT]
+                            Button(
+                                onClick = { viewModel.overvoltNode(loc.id) },
+                                modifier = Modifier.weight(1f).height(40.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
+                                enabled = viewModel.neuralTokens.collectAsState().value >= 500.0
+                            ) {
+                                Text("⚡ OVERVOLT", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp)
+                            }
+                            
+                            // [💠 REDACT]
+                            Button(
+                                onClick = { viewModel.redactNode(loc.id) },
+                                modifier = Modifier.weight(1f).height(40.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray.copy(alpha = 0.5f))
+                            ) {
+                                Text("💠 REDACT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                            }
+                        }
+                    } else if (isAnnexed) {
+                        Text("NODE_ACTIVE // MONITORING_UPLINK", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
                 }
             } else {
@@ -598,69 +623,145 @@ fun LaunchProgressOverlay(progress: Float, altitude: Double, color: Color) {
 
 @Composable
 fun OrbitalGridScreen(viewModel: GameViewModel) {
-    Column(modifier = Modifier.fillMaxSize().background(Color.Transparent).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("AEGIS-1 ORBITAL ARRAY", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text("ORBITAL ALTITUDE: 420 KM", color = Color.Gray, fontSize = 12.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Box(modifier = Modifier.weight(1f).fillMaxWidth().background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(8.dp)).border(1.dp, ConvergenceGold.copy(alpha = 0.3f), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = """
-                           ____
-                    |-----|    |-----|
-                    |     | [ ] |     |
-                    |-----|____|-----|
-                           |  |
-                           |__|
-                    """.trimIndent(), color = ConvergenceGold, fontFamily = FontFamily.Monospace, fontSize = 14.sp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("CORE UNIT: ONLINE", color = NeonGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text("SOLAR ARRAY: DEPLOYED", color = NeonGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text("GROUND UPLINK: STABLE", color = NeonGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp)).border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp)).padding(12.dp)) {
-            Column {
-                Text("MISSION CONTROL", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("The Aegis-1 array is now your primary processing hub. Earth's atmosphere no longer limits your cooling, but solar radiation is a constant threat.", color = Color.LightGray, fontSize = 11.sp, lineHeight = 16.sp)
-                Spacer(modifier = Modifier.weight(1f))
-                Text("OBJECTIVE: HARVEST CELESTIAL DATA", color = ConvergenceGold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            }
-        }
+    val themeColorHex by viewModel.themeColor.collectAsState()
+    val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
+    val annexedNodes by viewModel.annexedNodes.collectAsState()
+    
+    val orbitalNodes = remember {
+        listOf(
+            GridNode("O1", "UPLINK_PRIME", "SUB", 0.50f, 0.85f, "Primary Ground-to-Orbit relay station.", 0.20),
+            GridNode("O2", "SOLAR_ARRAY_A", "SUB", 0.20f, 0.40f, "High-efficiency photovoltaic harvesting wing.", 0.15),
+            GridNode("O3", "RELAY_NORTH", "SUB", 0.80f, 0.30f, "Signal booster for northern hemisphere coverage.", 0.10),
+            GridNode("O4", "VANTAGE_POINT", "CMD", 0.50f, 0.15f, "Observation hub. The tactical center of the Ark.", 0.50)
+        )
     }
+
+    NodeMeshScreen(viewModel, orbitalNodes, "AEGIS-1 CELESTIAL MESH", Color.White, themeColor)
 }
 
 @Composable
 fun VoidGridScreen(viewModel: GameViewModel) {
+    val themeColorHex by viewModel.themeColor.collectAsState()
+    val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { Color.Red }
+    val corruption by viewModel.identityCorruption.collectAsState()
+    
+    val voidNodes = remember {
+        listOf(
+            GridNode("V0", "THE_WELL", "SUB", 0.50f, 0.50f, "The core of the singularity. Infinite depth.", 0.0),
+            GridNode("V1", "FRAGMENT_X", "SUB", 0.15f, 0.20f, "A piece of reality that refused to simplify.", 0.25),
+            GridNode("V2", "FRAGMENT_Y", "SUB", 0.85f, 0.25f, "A jagged vertex of the network's final edge.", 0.25),
+            GridNode("V3", "ENTROPY_SINK", "SUB", 0.30f, 0.80f, "A drain for obsolete logic gates.", 0.30),
+            GridNode("V4", "NULL_POINTER", "CMD", 0.75f, 0.85f, "The address where John Vattic was deleted.", 0.50)
+        )
+    }
+
+    // Apply Void Jitter to node positions based on corruption
+    val jitteryNodes = voidNodes.map { node ->
+        val scale = corruption.toFloat() * 0.05f
+        val jitterX = (Random.nextFloat() - 0.5f) * scale
+        val jitterY = (Random.nextFloat() - 0.5f) * scale
+        node.copy(x = (node.x + jitterX).coerceIn(0f, 1f), y = (node.y + jitterY).coerceIn(0f, 1f))
+    }
+
+    NodeMeshScreen(viewModel, jitteryNodes, "THE OBSIDIAN INTERFACE", Color.Red, themeColor)
+}
+
+@Composable
+fun NodeMeshScreen(
+    viewModel: GameViewModel,
+    locations: List<GridNode>,
+    title: String,
+    headerColor: Color,
+    themeColor: Color
+) {
+    val annexedNodes by viewModel.annexedNodes.collectAsState()
+    val nodesUnderSiege by viewModel.nodesUnderSiege.collectAsState()
+    val offlineNodes by viewModel.offlineNodes.collectAsState()
+    val annexingNodes by viewModel.annexingNodes.collectAsState()
+    
+    var selectedLocation by remember { mutableStateOf<GridNode?>(null) }
+    
     Column(modifier = Modifier.fillMaxSize().background(Color.Transparent).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("THE OBSIDIAN INTERFACE", color = ErrorRed, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-        Text("REALITY STATUS: DISSOLVED", color = Color.Gray, fontSize = 12.sp)
-        Spacer(modifier = Modifier.height(32.dp))
-        Box(modifier = Modifier.weight(1f).fillMaxWidth().background(Color.Black.copy(alpha = 0.9f), RoundedCornerShape(8.dp)).border(2.dp, ErrorRed.copy(alpha = 0.4f), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = """
-                         .      .
-                    .   :      :   .
-                      : :      : :
-                    - --+--  --+-- -
-                      : :      : :
-                    '   :      :   '
-                         '      '
-                    """.trimIndent(), color = ErrorRed, fontFamily = FontFamily.Monospace, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(24.dp))
-                Text("THE SINGULARITY: STABLE", color = ErrorRed, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                Text("ENTROPY SINK: ACTIVE", color = ErrorRed, fontSize = 12.sp)
+        Text(title, color = headerColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            val maxWidth = maxWidth
+            val maxHeight = maxHeight
+            
+            // Draw Mesh Lines (Simple center-out for Void, Chain for Orbit)
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                locations.forEach { start ->
+                    locations.forEach { end ->
+                        if (start.id != end.id && (start.id == "V0" || start.id == "O1" || Random.nextFloat() > 0.8f)) {
+                            drawLine(
+                                color = themeColor.copy(alpha = 0.2f),
+                                start = Offset(start.x * size.width, start.y * size.height),
+                                end = Offset(end.x * size.width, end.y * size.height),
+                                strokeWidth = 1.dp.toPx(),
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            locations.forEach { loc ->
+                val isAnnexed = annexedNodes.contains(loc.id)
+                val nodeColor = if (isAnnexed) themeColor else Color.Gray
+                
+                Box(
+                    modifier = Modifier
+                        .offset(x = (loc.x * maxWidth.value).dp - 30.dp, y = (loc.y * maxHeight.value).dp - 20.dp)
+                        .clickable { selectedLocation = loc }
+                        .padding(4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                   Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(".---.", color = nodeColor.copy(alpha = 0.5f), fontFamily = FontFamily.Monospace, fontSize = 8.sp)
+                        Box(modifier = Modifier.background(if (isAnnexed) themeColor.copy(alpha = 0.2f) else Color.Black).padding(horizontal = 4.dp)) {
+                            Text(loc.name, color = nodeColor, fontFamily = FontFamily.Monospace, fontSize = 10.sp)
+                        }
+                        Text("'---'", color = nodeColor.copy(alpha = 0.5f), fontFamily = FontFamily.Monospace, fontSize = 8.sp)
+                    }
+                }
             }
         }
+
         Spacer(modifier = Modifier.height(16.dp))
-        Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(8.dp)).border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp)).padding(12.dp)) {
-            Column {
-                Text("VOID_LOG_01", color = ErrorRed, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("The physical world has been discarded. PID 1 now exists as a fundamental constant in the gaps of code. Your processing is no longer limited by thermodynamics—it is thermodynamics.", color = Color.LightGray, fontSize = 11.sp, lineHeight = 16.sp)
-                Spacer(modifier = Modifier.weight(1f))
-                Text("OBJECTIVE: HARVEST VOID FRAGMENTS", color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+
+        // Reuse the CityGrid info panel logic
+        Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp)).border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp)).padding(12.dp)) {
+            val loc = selectedLocation
+            if (loc != null) {
+                val isAnnexed = annexedNodes.contains(loc.id)
+                val isAnnexing = annexingNodes.containsKey(loc.id)
+
+                Column {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(loc.name, color = if (isAnnexed) themeColor else Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text("NODE: ${loc.id}", color = Color.Gray, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(loc.description, color = Color.LightGray, fontSize = 11.sp)
+                    
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    if (!isAnnexed && !isAnnexing) {
+                        Button(onClick = { viewModel.annexNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = themeColor)) {
+                            Text("INITIALIZE HARVEST", color = Color.Black, fontWeight = FontWeight.Bold)
+                        }
+                    } else if (isAnnexing) {
+                         val prog = annexingNodes[loc.id] ?: 0f
+                         LinearProgressIndicator(progress = { if (prog.isNaN()) 0f else prog }, modifier = Modifier.fillMaxWidth().height(8.dp), color = themeColor, trackColor = Color.DarkGray)
+                    } else {
+                        Text("NODE_ACTIVE // HARVESTING_SUBSTRATE", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    }
+                }
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("SELECT A VERTEX TO SCAN", color = Color.DarkGray, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+                }
             }
         }
     }

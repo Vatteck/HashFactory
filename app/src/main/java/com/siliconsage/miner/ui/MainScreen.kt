@@ -215,7 +215,15 @@ fun MainScreen(viewModel: GameViewModel) {
     } else {
         Scaffold(
             bottomBar = {
-                BottomNavBar(currentScreen, themeColor, { currentScreen = it; SoundManager.play("click"); HapticManager.vibrateClick() }, storyStage, isNetworkUnlocked, isGridUnlocked)
+                Column {
+                    if (currentScreen != Screen.TERMINAL && !isDiagnostics) {
+                        com.siliconsage.miner.ui.components.MiniTerminalInlay(viewModel) {
+                            currentScreen = Screen.TERMINAL
+                            SoundManager.play("click")
+                        }
+                    }
+                    BottomNavBar(currentScreen, themeColor, { currentScreen = it; SoundManager.play("click"); HapticManager.vibrateClick() }, storyStage, isNetworkUnlocked, isGridUnlocked)
+                }
             },
             containerColor = Color.Black
         ) { paddingValues ->
