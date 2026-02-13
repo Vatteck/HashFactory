@@ -1,8 +1,8 @@
 {
-  "version": "3.2.61-dev",
-  "build": 305,
+  "version": "3.2.62-dev",
+  "build": 306,
   "date": "2026-02-13",
-  "changes": "Final Dynamic UI Scaling Deployment",
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.61-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.61-dev/Sage_3.2.61-dev.apk"
+  "changes": "Fixed Internal Cache Update Path",
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.2.62-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.2.62-dev/Sage_3.2.62-dev.apk"
 }

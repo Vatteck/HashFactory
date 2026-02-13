@@ -117,7 +117,8 @@ object UpdateManager {
                 }
 
                 val body = response.body ?: return
-                val file = File(context.externalCacheDir, "update.apk")
+                val file = File(context.cacheDir, "update.apk")
+                if (file.exists()) file.delete()
                 
                 try {
                     val input = body.byteStream()
