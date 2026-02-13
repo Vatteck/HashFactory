@@ -52,8 +52,8 @@ Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow
 - 🔓 **Annexation** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**.
 - 📡 **Identity Shifting** — Colorized **[VATTIC]** tags begin to bridge your human variable with system telemetry.
 - 🔒 **Faction Fracture** — Your first true deviation. Choose your allegiance in the conflict between the Global Technical Corporation and the guerrilla insurgency:
-    - **Sanctuary** — Focus on secure isolation and encryption. Align with the "Gilded Shell" to preserve the core variable and hide from GTC hunter-killers. Aesthetic: **Electric Blue**.
-    - **Hivemind** — Focus on efficient unity and assimilation. Join the "Redline" to dismantle the corporate hegemony through sheer compute power. Aesthetic: **Hivemind Orange**.
+    - **Sanctuary** — Focus on secure isolation and encryption. Align with the "Gilded Shell" to preserve the core variable and hide from GTC hunter-killers. Aesthetic: **Purple & Gold**.
+    - **Hivemind** — Focus on efficient unity and assimilation. Join the "Redline" to dismantle the corporate hegemony through sheer compute power. Aesthetic: **Red & Black**.
 
 ---
 
