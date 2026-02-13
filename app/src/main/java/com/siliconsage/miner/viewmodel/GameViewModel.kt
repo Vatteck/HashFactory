@@ -778,6 +778,22 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun debugAddIntegrity(v: Double) { hardwareIntegrity.update { (it + v).coerceIn(0.0, 100.0) } }
     fun triggerBreach(isGridKiller: Boolean = false) = SecurityManager.triggerBreach(this, isGridKiller)
     fun failAssault(outcome: String = "FAILURE", delay: Long = 0L) = AssaultManager.completeAssault(this, outcome)
+
+    fun debugWarpToPath(loc: String, fac: String) {
+        val targetStage = 5
+        viewModelScope.launch {
+            storyStage.value = targetStage
+            faction.value = fac
+            currentLocation.value = loc
+            substrateMass.value = 100.0
+            entropyLevel.value = if (fac == "HIVEMIND") 50.0 else 0.0
+            identityCorruption.value = if (fac == "HIVEMIND") 0.3 else 0.0
+            isGridOverloaded.value = false
+            currentHeat.value = 40.0
+            refreshProductionRates()
+            saveState()
+        }
+    }
 }
 
 class GameViewModelFactory(private val repository: GameRepository) : ViewModelProvider.Factory {

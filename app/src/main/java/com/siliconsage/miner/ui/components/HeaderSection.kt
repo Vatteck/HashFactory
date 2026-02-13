@@ -284,7 +284,7 @@ fun HeaderSection(
                 Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("SATURATION: ", color = Color.Gray, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                     LinearProgressIndicator(
-                        progress = { saturation.toFloat() },
+                        progress = { if (saturation.isNaN()) 0f else saturation.toFloat() },
                         modifier = Modifier.weight(1f).height(4.dp).padding(horizontal = 4.dp),
                         color = saturationColor,
                         trackColor = Color.DarkGray.copy(alpha = 0.3f)

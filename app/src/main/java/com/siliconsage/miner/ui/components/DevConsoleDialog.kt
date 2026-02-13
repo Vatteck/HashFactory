@@ -71,7 +71,7 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    val tabs = listOf("VITALS", "RESOURCES", "STORY", "HAZARDS", "KERNEL")
+                    val tabs = listOf("VITALS", "RESOURCES", "STORY", "HAZARDS", "KERNEL", "PHASE14")
                     tabs.forEach { tab ->
                         val isSelected = selectedTab == tab
                         Box(
@@ -104,6 +104,7 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
                         "STORY" -> StoryTab(viewModel)
                         "HAZARDS" -> HazardsTab(viewModel)
                         "KERNEL" -> KernelTab(viewModel)
+                        "PHASE14" -> Phase14Tab(viewModel)
                     }
                 }
 
@@ -306,5 +307,38 @@ fun KernelStat(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, color = Color.Gray, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
         Text(value, color = Color.White, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun Phase14Tab(viewModel: GameViewModel) {
+    val entropy by viewModel.entropyLevel.collectAsState()
+    val corruption by viewModel.identityCorruption.collectAsState()
+    
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Text("PHASE 14 PREDATION TESTING", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        DevActionRow("VOID_RAID") {
+            DevButton(text = "TRIGGER", color = ErrorRed, modifier = Modifier.weight(1f)) { 
+                viewModel.triggerGridRaid("VOID_RAID") 
+            }
+            DevButton(text = "CLEAR", color = Color.Gray, modifier = Modifier.weight(1f)) { 
+                viewModel.isGridOverloaded.value = false 
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("LORE_WARP (CLEAN INITIALIZATION)", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            DevButton(modifier = Modifier.weight(1f), text = "WARP: ARK", color = Color.White) { 
+                viewModel.debugWarpToPath("ORBITAL_SATELLITE", "SANCTUARY") 
+            }
+            DevButton(modifier = Modifier.weight(1f), text = "WARP: VOID", color = ErrorRed) { 
+                viewModel.debugWarpToPath("VOID_INTERFACE", "HIVEMIND") 
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
