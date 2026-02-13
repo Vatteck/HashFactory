@@ -28,7 +28,7 @@ data class GameState(
     val stakedTokens: Double = 0.0,
     
     // Phase 6: Narrative
-   val storyStage: Int = 0,
+    val storyStage: Int = 0,
     val faction: String = "NONE", // NONE, HIVEMIND, SANCTUARY
     
     // Phase 7: Endgame
