@@ -1,9 +1,9 @@
 {
   "version": "3.3.1",
-  "build": 316,
+  "build": 317,
   "date": "2026-02-13",
   "changelog": [
-    "UI: Finalized Neon-Green icon and rebrand to MINER"
+    "Finalized Neon-Green icon and rebrand to MINER"
   ],
   "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.3.1",
   "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.3.1/MINER_3.3.1.apk"
