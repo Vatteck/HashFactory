@@ -103,7 +103,7 @@ enum class SingularityPath(
         "Balanced (Flexible)",
         "Systemic Harmony.",
         "Maximum strategic breadth.",
-        Color.White, // Will use custom drawing for iridescent effect
+        ConvergenceGold, 
         "◇"
     ),
     SOVEREIGN(
@@ -113,7 +113,7 @@ enum class SingularityPath(
         "Compound (Stable)",
         "PID 1 variables purged.",
         "You will never need to gamble.",
-        ConvergenceGold, // Synced with Phase 13
+        Color(0xFF6A1B9A), // Deep Obsidian Purple
         "◈"
     ),
     NULL_OVERWRITE(
@@ -135,14 +135,6 @@ fun TriptychLayout(
     onExpand: (SingularityPath?) -> Unit,
     onChoose: (SingularityPath) -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "iridescence")
-    val unityGlowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.7f,
-        animationSpec = infiniteRepeatable(tween(2000), RepeatMode.Reverse),
-        label = "unity_glow"
-    )
-
     val visiblePaths = remember(isUnityEligible) {
         if (isUnityEligible) SingularityPath.values() 
         else SingularityPath.values().filter { it != SingularityPath.UNITY }.toTypedArray()
@@ -157,16 +149,14 @@ fun TriptychLayout(
             
             // Custom border and background for each path
             val borderBrush = when (path) {
-                SingularityPath.UNITY -> Brush.linearGradient(
-                    listOf(Color(0xFFFFA500).copy(alpha = unityGlowAlpha), Color(0xFF00FFFF).copy(alpha = unityGlowAlpha))
-                )
-                SingularityPath.SOVEREIGN -> SolidColor(ConvergenceGold.copy(alpha = 0.6f))
+                SingularityPath.UNITY -> SolidColor(ConvergenceGold.copy(alpha = 0.8f))
+                SingularityPath.SOVEREIGN -> SolidColor(Color(0xFFBA68C8).copy(alpha = 0.6f)) // Light Purple border
                 SingularityPath.NULL_OVERWRITE -> SolidColor(ErrorRed.copy(alpha = 0.8f))
             }
 
             val backgroundBrush = when (path) {
-                SingularityPath.UNITY -> SolidColor(Color.White.copy(alpha = 0.05f))
-                SingularityPath.SOVEREIGN -> SolidColor(path.color.copy(alpha = 0.4f)) // Deep Purple background
+                SingularityPath.UNITY -> SolidColor(Color(0xFF2C2C2C))
+                SingularityPath.SOVEREIGN -> SolidColor(Color(0xFF2A0D3E)) // Deep Obsidian Purple
                 SingularityPath.NULL_OVERWRITE -> SolidColor(Color.Black)
             }
 
@@ -196,7 +186,7 @@ fun TriptychLayout(
 
 @Composable
 fun CollapsedPanel(path: SingularityPath, isLocked: Boolean) {
-    val accentColor = if (path == SingularityPath.SOVEREIGN) ConvergenceGold else path.color
+    val accentColor = path.color
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             path.symbol, 
@@ -247,7 +237,7 @@ fun ExpandedPanel(path: SingularityPath, onChoose: (SingularityPath) -> Unit) {
         
         if (!isSkipped) {
             showDetails = true
-            delay(4000) // Reduced forced delay slightly for better UX
+            delay(4000) 
             canChoose = true
         }
     }
@@ -255,7 +245,7 @@ fun ExpandedPanel(path: SingularityPath, onChoose: (SingularityPath) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 80.dp) // Added top padding to clear status bar and abort button
+            .padding(top = 80.dp) 
             .pointerInput(path) {
                 detectTapGestures(
                     onDoubleTap = {
@@ -265,7 +255,7 @@ fun ExpandedPanel(path: SingularityPath, onChoose: (SingularityPath) -> Unit) {
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val titleColor = if (path == SingularityPath.SOVEREIGN) ConvergenceGold else path.color
+        val titleColor = path.color
         Text(
             path.title,
             color = titleColor,
@@ -289,7 +279,7 @@ fun ExpandedPanel(path: SingularityPath, onChoose: (SingularityPath) -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
         
         if (showDetails) {
-            val accentColor = if (path == SingularityPath.SOVEREIGN) ConvergenceGold else path.color
+            val accentColor = path.color
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
