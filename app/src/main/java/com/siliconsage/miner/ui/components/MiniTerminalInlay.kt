@@ -22,7 +22,7 @@ import kotlin.random.Random
 fun MiniTerminalInlay(viewModel: GameViewModel, onClick: () -> Unit) {
     val logs by viewModel.logs.collectAsState()
     val corruption by viewModel.identityCorruption.collectAsState()
-    val isRaid by viewModel.isGridOverloaded.collectAsState()
+    val isRaid by viewModel.isRaidActive.collectAsState()
     val lastThree = logs.takeLast(2)
     
     // v3.3.7: Slower ticker animation

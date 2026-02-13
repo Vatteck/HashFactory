@@ -318,7 +318,7 @@ fun AirdropButton(
 fun VoidRaidOverlay(
     viewModel: GameViewModel
 ) {
-    val isRaid by viewModel.isGridOverloaded.collectAsState()
+    val isRaid by viewModel.isRaidActive.collectAsState()
     val integrity by viewModel.hardwareIntegrity.collectAsState()
     val nodesUnderSiege by viewModel.nodesUnderSiege.collectAsState()
     
@@ -389,7 +389,7 @@ fun VoidRaidOverlay(
             Spacer(modifier = Modifier.height(24.dp))
             
             Button(
-                onClick = { viewModel.isGridOverloaded.value = false }, // Temporary bypass for testing
+                onClick = { viewModel.isRaidActive.value = false }, // Temporary bypass for testing
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 shape = RectangleShape,
                 modifier = Modifier.fillMaxWidth().height(48.dp)

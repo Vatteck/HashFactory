@@ -31,7 +31,7 @@ object SecurityManager {
         val rank = vm.playerRank.value
         val detectionRisk = vm.detectionRisk.value
         val secLevel = vm.securityLevel.value
-        val isRaid = vm.isGridOverloaded.value
+        val isRaid = vm.isRaidActive.value
         
         // Stage 2+ Logic: Detection Risk vs Security Level
         if (stage >= 2 && !isRaid) { // v3.3.16: Suppress risk growth during active raid
@@ -63,7 +63,7 @@ object SecurityManager {
 
     fun triggerGridKillerBreach(vm: GameViewModel, targetId: String = "S09") {
         isBreachInProgress = true
-        vm.isGridOverloaded.value = true // v3.3.13: Enable Raid Vignette and Scrambling
+        vm.isRaidActive.value = true // v3.3.18: Use dedicated Raid state
         vm.nodesUnderSiege.update { it + targetId } // v3.3.14: Visually mark the node on the grid
         val rank = vm.playerRank.value
         val flopsFactor = (vm.flops.value.coerceAtLeast(1.0).let { log10(it) } / 10.0).coerceAtLeast(1.0)
@@ -234,7 +234,7 @@ object SecurityManager {
     }
 
     fun triggerBreach(vm: GameViewModel, isGridKiller: Boolean = false) {
-        if (vm.isGridOverloaded.value) return // v3.3.16: Suppress standard breach logic during Raids
+        if (vm.isRaidActive.value) return // v3.3.16: Suppress standard breach logic during Raids
 
         val upgrades = vm.upgrades.value
         val secLevel = (upgrades[UpgradeType.BASIC_FIREWALL] ?: 0) * 1 +

@@ -178,6 +178,7 @@ fun MainScreen(viewModel: GameViewModel) {
 
     val isBreakerTripped by viewModel.isBreakerTripped.collectAsState()
     val isGridOverloaded by viewModel.isGridOverloaded.collectAsState()
+    val isRaidActive by viewModel.isRaidActive.collectAsState()
     val isPurging by viewModel.isPurgingHeat.collectAsState()
     val isDiagnostics by viewModel.isDiagnosticsActive.collectAsState()
     val diagnosticGrid by viewModel.diagnosticGrid.collectAsState()
@@ -252,7 +253,7 @@ fun MainScreen(viewModel: GameViewModel) {
                 } else Offset.Zero
 
                 // v3.3.16: Void Raid Border - Removed blinding radial gradient
-                if (isGridOverloaded) {
+                if (isRaidActive) {
                     val raidAlpha by infiniteTransition.animateFloat(0.3f, 0.8f, infiniteRepeatable(tween(500), RepeatMode.Reverse), label = "raid_border")
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         drawRect(
@@ -312,8 +313,13 @@ fun MainScreen(viewModel: GameViewModel) {
                     com.siliconsage.miner.ui.components.DataLogDialog(pendingDataLog) { viewModel.dismissDataLog() }
                     val fileName = if (storyStage <= 1 && faction == "NONE") "ascnd.exe" else "lobot.exe"
                     com.siliconsage.miner.ui.components.AscensionUploadOverlay(isAscensionUploading, uploadProgress, fileName)
-                    SecurityBreachOverlay(isBreach && !isGridOverloaded, breachClicks) { viewModel.onDefendBreach(); SoundManager.play("click"); HapticManager.vibrateClick() }
+                if (isBreach && !isRaidActive) {
+                    SecurityBreachOverlay(isBreach && !isRaidActive, breachClicks) { viewModel.onDefendBreach(); SoundManager.play("click"); HapticManager.vibrateClick() }
+                }
+                
+                if (isRaidActive) {
                     com.siliconsage.miner.ui.components.VoidRaidOverlay(viewModel)
+                }
                     AirdropButton(isAirdrop) { viewModel.claimAirdrop(0.0); SoundManager.play("buy"); HapticManager.vibrateSuccess() }
                     AuditChallengeOverlay(isAuditActive, auditTimer, auditTargetHeat, currentHeatForAudit, auditTargetPower, currentPowerForAudit)
                     KernelHijackOverlay(isKernelHijackActive, attackTaps) { viewModel.onDefendKernelHijack() }

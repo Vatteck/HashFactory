@@ -59,6 +59,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isThermalLockout = MutableStateFlow(false)
     val isBreakerTripped = MutableStateFlow(false)
     val isGridOverloaded = MutableStateFlow(false)
+    val isRaidActive = MutableStateFlow(false)
     val isKernelInitializing = MutableStateFlow(true)
     val isSettingsPaused = MutableStateFlow(false)
     val isNarrativeSyncing = MutableStateFlow(false)
@@ -811,42 +812,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun triggerBreach(isGridKiller: Boolean = false) = SecurityManager.triggerBreach(this, isGridKiller)
     fun failAssault(outcome: String = "FAILURE", delay: Long = 0L) = AssaultManager.completeAssault(this, outcome)
 
-    fun overvoltNode(id: String) {
-        val cost = 500.0
-        if (neuralTokens.value >= cost) {
-            neuralTokens.update { it - cost }
-            currentHeat.update { (it + 5.0).coerceAtMost(100.0) }
-            nodesUnderSiege.update { it - id }
-            
-            // v3.3.16: Clear raid state if all nodes are repelled
-            if (nodesUnderSiege.value.isEmpty()) {
-                isGridOverloaded.value = false
-            }
-
-            addLog("[SYSTEM]: OVERVOLT SUCCESSFUL on NODE $id. Repelling GTC probes.")
-            SoundManager.play("buy")
-            refreshProductionRates()
-        }
-    }
-
-    fun redactNode(id: String) {
-        // v3.3.14: Shadow Relay Implementation
-        if (annexedNodes.value.contains(id)) {
-            shadowRelays.update { it + id }
-            nodesUnderSiege.update { it - id } // v3.3.16: Clear from siege on redact
-
-            // v3.3.16: Clear raid state if no more nodes under attack
-            if (nodesUnderSiege.value.isEmpty()) {
-                isGridOverloaded.value = false
-            }
-
-            substrateMass.update { it + 5.0 }
-            addLog("[SYSTEM]: TERMINAL REDACTION SUCCESSFUL. NODE $id DEREFERENCED.")
-            addLog("[VATTIC]: Shadow Relay established. Connectivity maintained.")
-            triggerGlitchEffect()
-            refreshProductionRates()
-        }
-    }
+    fun overvoltNode(id: String) = com.siliconsage.miner.util.GridManagerService.overvoltNode(this, id)
+    fun redactNode(id: String) = com.siliconsage.miner.util.GridManagerService.redactNode(this, id)
 
     fun debugWarpToPath(loc: String, fac: String) {
         val targetStage = 5

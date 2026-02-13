@@ -321,11 +321,17 @@ fun Phase14Tab(viewModel: GameViewModel) {
         
         DevActionRow("VOID_RAID") {
             DevButton(text = "TRIGGER", color = ErrorRed, modifier = Modifier.weight(1f)) { 
-                viewModel.triggerGridRaid("VOID_RAID") 
+                viewModel.triggerGridRaid("S09") 
             }
             DevButton(text = "CLEAR", color = Color.Gray, modifier = Modifier.weight(1f)) { 
-                viewModel.isGridOverloaded.value = false 
+                viewModel.isRaidActive.value = false 
+                viewModel.nodesUnderSiege.value = emptySet()
             }
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        DevButton(text = "DUMP 10K TOKENS", color = Color.Cyan, modifier = Modifier.fillMaxWidth()) {
+            viewModel.neuralTokens.update { it + 10000.0 }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

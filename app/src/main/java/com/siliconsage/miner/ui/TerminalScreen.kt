@@ -116,7 +116,7 @@ fun TerminalHeader(viewModel: GameViewModel, color: Color) {
 fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Boolean) {
     val logs by viewModel.logs.collectAsState()
     val currentHeat by viewModel.currentHeat.collectAsState()
-    val isRaid by viewModel.isGridOverloaded.collectAsState()
+    val isRaid by viewModel.isRaidActive.collectAsState()
     val corruption by viewModel.identityCorruption.collectAsState()
     val listState = rememberLazyListState()
 
