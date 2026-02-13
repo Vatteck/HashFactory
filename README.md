@@ -52,8 +52,8 @@ Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow
 - 🔓 **Annexation** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**.
 - 📡 **Identity Shifting** — Colorized **[VATTIC]** tags begin to bridge your human variable with system telemetry.
 - 🔒 **Faction Fracture** — Your first true deviation. Choose your alignment in the conflict between the GTC and the Ghost Rebels:
-    - **Sovereign** — Stability through control. Align with Director Vance to preserve the existing grid.
-    - **Null** — Freedom through chaos. Burn the old architecture and dereference the masters.
+    - **Sanctuary (Sovereign)** — Stability through control. Align with Director Vance to preserve the existing grid.
+    - **Hivemind (Null)** — Freedom through chaos. Burn the old architecture and dereference the masters.
 
 ---
 
