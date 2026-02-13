@@ -17,7 +17,7 @@ android {
         // ║  DO NOT MANUALLY EDIT VERSION BELOW                           ║
         // ║  Use ./release.sh <version> to bump versions automatically    ║
         // ╚═══════════════════════════════════════════════════════════════╝
-        versionCode = 317
+        versionCode = 318
         versionName = "3.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
