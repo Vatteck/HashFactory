@@ -91,6 +91,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val terminalGlitchAlpha = MutableStateFlow(1f)
     val ghostInputChar = MutableStateFlow("")
     val globalGlitchIntensity = MutableStateFlow(0f) // 0.0 to 1.0
+    val isSubnetHushed = MutableStateFlow(false) // v3.4.41: The "Hush" Effect
 
     // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -275,7 +276,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
                 
-                if (Random.nextFloat() < 0.15f) addSubnetChatter()
+                // v3.4.41: System-Reactive Pacing
+                val baseChance = 0.10f
+                val heatMod = (currentHeat.value / 100.0).toFloat() * 0.15f
+                val raidMod = if (isRaidActive.value) 0.25f else 0.0f
+                val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.80f)
+                if (Random.nextFloat() < finalChance) addSubnetChatter()
                 
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
                 refreshProductionRates()
@@ -799,15 +805,31 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     fun addSubnetChatter() {
-        if (isSubnetTyping.value || isSubnetPaused.value) return 
+        if (isSubnetTyping.value || isSubnetPaused.value || isSubnetHushed.value) return 
         
         viewModelScope.launch {
             isSubnetTyping.value = true
             delay(Random.nextLong(2000, 4500)) 
             
-            val newMessage = com.siliconsage.miner.util.SocialManager.generateMessage(storyStage.value, faction.value, singularityChoice.value)
+            val newMessage = com.siliconsage.miner.util.SocialManager.generateMessage(
+                storyStage.value, 
+                faction.value, 
+                singularityChoice.value,
+                identityCorruption.value // v3.4.41: Pass corruption for fraying
+            )
             
             subnetMessages.update { (it + newMessage).takeLast(50) }
+            
+            // v3.4.41: The "Hush" Effect
+            val isAdmin = newMessage.handle.contains("thorne") || 
+                          newMessage.handle.contains("gtc") || 
+                          newMessage.handle.contains("mercer") || 
+                          newMessage.handle.contains("kessler")
+            
+            if (isAdmin) {
+                triggerSubnetHush(10000L)
+            }
+
             if (activeTerminalMode.value != "SUBNET") {
                 hasNewSubnetMessage.value = true
             }
@@ -829,6 +851,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     }
                 }
             }
+        }
+    }
+
+    // v3.4.41: Utility to silence peons when bosses speak
+    private fun triggerSubnetHush(durationMs: Long) {
+        viewModelScope.launch {
+            isSubnetHushed.value = true
+            delay(durationMs)
+            isSubnetHushed.value = false
         }
     }
 
@@ -905,6 +936,18 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 } else it 
             }.toList() // v3.4.40: Force new list reference
         }
+
+        // v3.4.41: Handle Special Interactions
+        when (message.interactionType) {
+            com.siliconsage.miner.util.SocialManager.InteractionType.HARVEST -> {
+                val bonus = Random.nextDouble(500.0, 2500.0)
+                neuralTokens.update { it + bonus }
+                detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
+                addLog("[HARVEST]: ≪ KEY_DECRYPTED. +${formatLargeNumber(bonus)} ${getCurrencyName()}. RISK_SPIKE. ≫")
+                SoundManager.play("buy")
+            }
+            else -> {}
+        }
     }
 
     private fun scheduleSubnetThreadResponse(handle: String, threadId: String, nodeId: String) {
@@ -920,6 +963,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // Systemic Consequences for reaching specific outcomes
             if (nodeId == "END_HOSTILE") triggerGridRaid("D1", isGridKiller = true)
             if (nodeId == "END_FRIENDLY") addLog("[SYSTEM]: THREAT REDUCED. AUDIT CLEARED.")
+
+            // v3.4.41: Thread follow-ups from admins also trigger hush
+            val isAdmin = handle.contains("thorne") || 
+                          handle.contains("gtc") || 
+                          handle.contains("mercer") || 
+                          handle.contains("kessler")
+            if (isAdmin) triggerSubnetHush(10000L)
 
             val followUp = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                 id = java.util.UUID.randomUUID().toString(),
@@ -966,6 +1016,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 "@gtc_admin" -> "≪ STATUS: Monitoring maintained. Personnel record cross-referenced. ≫"
                 else -> "Are you still there, Vattic? Your signal looks... different."
             }
+
+            val isAdmin = handle.contains("thorne") || 
+                          handle.contains("gtc") || 
+                          handle.contains("mercer") || 
+                          handle.contains("kessler")
+            if (isAdmin) triggerSubnetHush(10000L)
 
             val followUp = com.siliconsage.miner.util.SocialManager.createFollowUp(handle, followUpContent, storyStage.value)
             

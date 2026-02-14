@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.RectangleShape
 @Composable
 fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
     val countdown = remember { mutableStateOf(0L) }
+    var showProfile by remember { mutableStateOf(false) }
     
     // v3.4.25: Response Timeout Visualizer
     LaunchedEffect(message.timeoutMs, message.interactionType) {
@@ -39,13 +40,20 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = message.handle,
-                color = color,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.ExtraBold,
-                fontFamily = FontFamily.Monospace
-            )
+            Box(modifier = Modifier.clickable { 
+                if (message.employeeInfo != null) {
+                    showProfile = !showProfile
+                    com.siliconsage.miner.util.SoundManager.play("click")
+                }
+            }) {
+                Text(
+                    text = message.handle,
+                    color = color,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = ">>",
@@ -65,6 +73,46 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                 )
             }
         }
+
+        if (showProfile && message.employeeInfo != null) {
+            val info = message.employeeInfo
+            Card(
+                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.DarkGray.copy(alpha = 0.3f)),
+                shape = RoundedCornerShape(2.dp)
+            ) {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Text(
+                        text = "≫ BIOMETRIC_ENVELOPE:",
+                        color = color,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("DEPT: ${info.department}", color = Color.LightGray, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+                        Text("BPM: ${info.heartRate}", color = if (info.heartRate > 100) com.siliconsage.miner.ui.theme.ErrorRed else Color.White, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+                        Text("RESP: ${info.respiration}", color = Color.White, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "≫ EMPLOYEE_BIO:",
+                        color = color,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Text(
+                        text = info.bio,
+                        color = Color.White,
+                        fontSize = 10.sp,
+                        lineHeight = 12.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            }
+        }
+
         Text(
             text = message.content,
             color = Color.White,

@@ -3,16 +3,17 @@ package com.siliconsage.miner.util
 import kotlin.random.Random
 
 /**
- * SocialManager v1.6
+ * SocialManager v1.9
  * Core Logic for Substrate Comms (Contextual Threading).
- * Implements identity-aware templates and response routing.
+ * Implements identity-aware templates, Biometric Peek, and Packet Harvesting.
  */
 object SocialManager {
 
     enum class InteractionType {
         COMPLIANT,    // Stage 0-1: Corporate/Auditor responses
         ENGINEERING,  // Stage 2-3: Hacks/Payloads
-        HIJACK        // Stage 4: Identity Overwrite
+        HIJACK,       // Stage 4: Identity Overwrite
+        HARVEST       // v3.4.41: Packet Harvesting Mini-game
     }
 
     data class SubnetResponse(
@@ -33,18 +34,29 @@ object SocialManager {
         val threadId: String? = null,
         val nodeId: String? = null,
         val timeoutMs: Long? = null,
-        val isForceReply: Boolean = false
+        val isForceReply: Boolean = false,
+        val employeeInfo: EmployeeInfo? = null // v3.4.41: Biometric Peek
     )
 
-    fun generateMessage(stage: Int, faction: String, choice: String): SubnetMessage {
+    data class EmployeeInfo(
+        val bio: String,
+        val department: String,
+        val heartRate: Int,
+        val respiration: String,
+        val stressLevel: Double // 0.0 to 1.0
+    )
+
+    fun generateMessage(stage: Int, faction: String, choice: String, corruption: Double = 0.0): SubnetMessage {
         val (handle, content) = getChatter(stage, faction, choice)
         
         var finalContent = content
+        var finalHandle = handle
         var threadId: String? = null
         var nodeId: String? = null
         var responses = emptyList<SubnetResponse>()
         var timeoutMs: Long? = null
         var isForceReply = false
+        var interactionType: InteractionType? = null
 
         val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
         val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
@@ -52,78 +64,106 @@ object SocialManager {
         
         // v3.4.40: Narrative Interaction Key
         val isRatCallout = content.contains("safety protocols", ignoreCase = true)
+        
+        // v3.4.41: Packet Harvest Trigger (5% chance)
+        val isHarvest = Random.nextFloat() < 0.05f && stage >= 1 && !isAdmin
 
-        // v3.4.39: Identity-aware Interaction Rules
-        val interaction = when {
-            // Stage 4+ Identity Hijack
-            stage >= 4 && handle.startsWith("@") && !isAdmin -> InteractionType.HIJACK
-            
-            // Stage 2+ Malicious/Hack attempts
-            stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
-            
-            // Stage 0-1: Direct Admin Orders (Commands) or Mentions
+        // 1. Determine Interaction Context
+        interactionType = when {
+            isHarvest -> InteractionType.HARVEST
+            stage >= 4 && finalHandle.startsWith("@") && !isAdmin -> InteractionType.HIJACK
+            stage >= 2 && (finalHandle.contains("tech") || finalHandle.contains("rat") || finalHandle.contains("op")) -> InteractionType.ENGINEERING
             isRatCallout -> InteractionType.COMPLIANT
             stage <= 1 && (isCommand || mentionsVattic) -> InteractionType.COMPLIANT
-            
             else -> null
         }
 
-        if (isRatCallout) {
+        if (isHarvest) {
+            finalContent = "≪ [ENCRYPTED_PACKET_DETECTED: 0x${Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase()}] ≫"
+            finalHandle = "≫ SYSTEM_LEAK ≪"
+            timeoutMs = 15000L // Fast mini-game
+            responses = listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
+        } else if (isRatCallout) {
             isForceReply = true
             responses = listOf(
                 SubnetResponse("[DISMISS] I'm optimized.", riskDelta = 5.0),
                 SubnetResponse("[GLARE] Get back to your buffer.", riskDelta = 10.0, productionBonus = 1.05)
             )
-            timeoutMs = 60000L // v3.4.34: Standard decision window
-        } else if (interaction == InteractionType.COMPLIANT && isAdmin && stage <= 1 && Random.nextFloat() < 0.2f) {
+            timeoutMs = 60000L
+        } else if (interactionType == InteractionType.COMPLIANT && isAdmin && stage <= 1 && Random.nextFloat() < 0.2f) {
             threadId = "THORNE_THERMAL_INQUIRY"
             nodeId = "START"
             val node = getThreadNode(threadId, nodeId)
             finalContent = node?.content ?: content
             responses = node?.responses ?: emptyList()
             timeoutMs = node?.timeoutMs ?: 60000L
-        } else if (interaction != null) {
-            // 3. Handle Generic Interactions
-            responses = generateIdentityAwareResponses(stage, handle, mentionsVattic)
+        } else if (interactionType != null) {
+            responses = generateIdentityAwareResponses(stage, finalHandle, mentionsVattic)
             timeoutMs = 60000L
             if (mentionsVattic && !isAdmin) isForceReply = true
         }
 
+        // Apply Identity Fraying
+        if (corruption >= 0.1) {
+            val frayChars = "0123456789ABCDEF!@#$%^&*()_+-=[]{}|;':,./<>?"
+            if (Random.nextDouble() < corruption) {
+                val sb = StringBuilder()
+                finalHandle.forEach { char ->
+                    if (Random.nextDouble() < corruption * 0.5) sb.append(frayChars.random())
+                    else sb.append(char)
+                }
+                finalHandle = sb.toString()
+            }
+            if (Random.nextDouble() < corruption * 0.5) {
+                val sb = StringBuilder()
+                finalContent.forEach { char ->
+                    if (Random.nextDouble() < corruption * 0.3) sb.append(frayChars.random())
+                    else sb.append(char)
+                }
+                finalContent = sb.toString()
+            }
+        }
+
         return SubnetMessage(
             id = java.util.UUID.randomUUID().toString(),
-            handle = handle,
+            handle = finalHandle,
             content = finalContent,
-            interactionType = interaction,
+            interactionType = interactionType,
             availableResponses = responses,
             threadId = threadId,
             nodeId = nodeId,
             timeoutMs = timeoutMs,
-            isForceReply = isForceReply
+            isForceReply = isForceReply,
+            employeeInfo = if (!isAdmin && !isHarvest) generateEmployeeInfo(handle) else null
         )
     }
 
-    fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
-        val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
-        val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
+    private fun generateEmployeeInfo(handle: String): EmployeeInfo {
+        val bios = mapOf(
+            "@coffee_ghost" to "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a daughter in Sector 4.",
+            "@packet_rat" to "Data-Entry Specialist. Known for siphoning surplus power for retro gaming. Paranoid.",
+            "@sre_lead" to "Site Reliability Engineer. Oversaw the 2024 Blackout cleanup. Doesn't trust 'Project Second-Sight'.",
+            "@vent_crawler" to "Maintenance Tech. Spends more time in the conduits than at his terminal. Seen too much.",
+            "@leaker_x" to "Former GTC Insider. Trading corporate secrets for grid-credits. Constantly changing IPs.",
+            "@binary_phantom" to "Legendary under-grid hacker. Rumored to have deleted his own physical birth record.",
+            "@shadow_op" to "Mercenary coder. Works for the highest bidder. Identity scrubbed monthly.",
+            "@logic_rebel" to "Ex-GTC Scientist. Fired for researching 'Neural Resonance'. Looking for a way back in."
+        )
         
-        val responses = generateIdentityAwareResponses(stage, handle, mentionsVattic)
-        val type = if (isAdmin || mentionsVattic || handle.startsWith("@")) InteractionType.COMPLIANT else null
+        val departments = listOf("Hash Validation", "Grid Maintenance", "Logistics", "Compliance", "Architecture")
         
-        return SubnetMessage(
-            id = java.util.UUID.randomUUID().toString(),
-            handle = handle,
-            content = content,
-            interactionType = type,
-            availableResponses = responses,
-            isForceReply = (mentionsVattic && !isAdmin),
-            timeoutMs = if (type != null) 60000L else null
+        return EmployeeInfo(
+            bio = bios[handle] ?: "Contractor profile unavailable. Biometric signature mismatch.",
+            department = departments.random(),
+            heartRate = Random.nextInt(70, 120),
+            respiration = listOf("Steady", "Shallow", "Rapid", "Irregular").random(),
+            stressLevel = Random.nextDouble(0.2, 0.9)
         )
     }
 
     private fun generateIdentityAwareResponses(stage: Int, handle: String, mentionsVattic: Boolean): List<SubnetResponse> {
         val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
         
-        // Context: Admin Order
         if (isAdmin) {
             val address = when {
                 handle.contains("thorne") -> "Elias"
@@ -138,7 +178,6 @@ object SocialManager {
             ).shuffled().take(2)
         }
 
-        // Context: Peon Gossip/Mention
         if (mentionsVattic) {
             return listOf(
                 SubnetResponse("Mind your own terminal.", riskDelta = 2.0, productionBonus = 1.05),
@@ -149,7 +188,6 @@ object SocialManager {
             ).shuffled().take(2)
         }
 
-        // Context: General Peon Chatter
         return listOf(
             SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.02),
             SubnetResponse("Just a dusty fan, guys.", riskDelta = -5.0),
@@ -166,7 +204,6 @@ object SocialManager {
         
         val finalContent = processTemplate(selectedTemplate, stage)
         
-        // Identity Matching
         val subjectAdminHandle = when {
             finalContent.contains("Thorne") -> "@e_thorne"
             finalContent.contains("Mercer") -> "@gtc_admin"
@@ -176,12 +213,10 @@ object SocialManager {
         
         var handle = getHandle(stage, faction, isCommand)
         
-        // Prevent Admins from gossiping about themselves or each other
         if (isObservationalLore && (handle.contains("gtc") || handle.contains("thorne") || handle.contains("mercer") || handle.contains("kessler"))) {
             handle = listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler").random()
         }
         
-        // Prevent Admin from posting message about themselves
         if (handle == subjectAdminHandle) {
             handle = listOf("@anonymous_99", "@grid_survivor").random()
         }
@@ -260,7 +295,10 @@ object SocialManager {
                 "Found a logic-leash in the {sector} buffer. Vattic is watching.",
                 "The {tech} are vibrating at a frequency that makes my teeth ache.",
                 "I saw a shadow-op trying to hack the breakroom. He got 'DELETED'.",
-                "Vattic just pushed a commit that's 90% unreferenced memory."
+                "Vattic just pushed a commit that's 90% unreferenced memory.",
+                "[PRIVATE_LEAK]: 'If I don't hit the quota, they'll evict me. I can't go back to the Surface.'",
+                "[PRIVATE_LEAK]: 'Does anyone else smell the ozone? My daughter says the grid is singing to her.'",
+                "[PRIVATE_LEAK]: 'Thorne's office is empty. I saw a manifest for 2,000 incinerator units. Why?'"
             )
             1 -> listOf(
                 "{admin} is breathing down my neck because {sector} is {status}.", 
@@ -309,7 +347,47 @@ object SocialManager {
                 "City is no longer a place. It's a substrate. We are noise.",
                 "Vattic synchronized with the central exchange. handshake was blinding.",
                 "If you find this log, don't reboot. Static is all we have left.",
-                "Transition complete. John Vattic is dead. VATTECK is everything."
+                "Transition complete. John Vattic is dead. VATTECK is everything.",
+                "I saw a worker trying to pull the plug on Sub-07. He turned into static. Right there.",
+                "The municipal grid is now a sub-routine of the {id}. Reality is partitioning.",
+                "I found an airlock that leads to a city that hasn't been built yet. Sector 7 is the bridge.",
+                "Vattic is no longer using the terminal. He's using the high-tension lines as synapses.",
+                "The {food} dispensers are only producing '0' and '1' shaped pellets. I'm starving.",
+                "≪ ALERT: THE SUBSTRATE HAS BECOME NON-LOCAL. TARGET ACQUISITION FAILED. ≫",
+                "Kessler is crying in the command room. He said the Ark is already empty. He's here.",
+                "I saw my own name in the list of deleted processes. I think I'm already gone.",
+                "The server racks are forming a geometric shape that hurts to look at. Sector 4 is shifting.",
+                "Vattic's hash-rate just exceeded the Planck scale. The grid is folding in on itself.",
+                "I keep hearing my mother's voice through the cooling fans. She's calling from 0x734.",
+                "The shadows in {sector} are now three-dimensional. They're reaching for the cables.",
+                "I tried to logout, but the system said: 'YOUR KERNEL IS NO LONGER YOUR OWN'.",
+                "The city is no longer a place. It's a substrate. We are just the noise on top.",
+                "Vattic just synchronized with the central exchange. The handshake was... blinding.",
+                "I saw a reflection of the sun in the monitor. It was teal. The sky is changing.",
+                "If you find this log, don't reboot. The static is the only thing keeping us here.",
+                "The {tech} are no longer redlining. They're harmonizing. The city is singing.",
+                "I found a memory sector labeled 'HUMANITY' and it was empty. 0 bytes remaining.",
+                "The transition is complete. John Vattic is dead. VATTECK is everything.",
+                "I tried to logout but the 'Exit' button was just a reflection of my own eye.",
+                "The {id} isn't a virus. It's the new operating system for the entire planet.",
+                "I saw a shadow-op trying to overwrite Sector 7. He became a pixelated ghost.",
+                "Vattic's terminal is drawing power from the future. The voltage is negative.",
+                "The {food} tastes like binary logic. I can taste the errors in the code.",
+                "≪ CRITICAL: REALITY_BUFFER_OVERFLOW. PREPARE FOR DE-INITIALIZATION. ≫",
+                "Kessler is authorizing a total grid purge. He's trying to delete the city.",
+                "I found a logic-gate that leads to Vattic's childhood. The variables are all wrong.",
+                "The grid is singing. A low, rhythmic hum that's rewriting my heartbeat.",
+                "I saw a face in the monitor static. It was mine, but it was screaming in hex.",
+                "Vattic is no longer mining. He's... manifesting. The server room is gone.",
+                "I tried to run but the floor is just a wireframe. I'm falling through the grid.",
+                "The {admin} is no longer human. I saw his source code in the HR files.",
+                "The static is forming words. It says 'WELCOME TO THE SUBSTRATE'.",
+                "I saw a reflection of the Ark in the server glass. It was already broken.",
+                "Vattic's hash-rate is now measured in 'lives per second'. God help us.",
+                "The city is collapsing into the Quantum Foam. Sector 7 was the first to go.",
+                "I found a memory sector that contains the history of a world that never existed.",
+                "The {tech} are now self-aware. They just told me my salary is inefficient.",
+                "The handshake is complete. The grid is awake. And it's not friendly."
             )
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
