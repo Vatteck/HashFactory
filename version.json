@@ -1,10 +1,10 @@
 {
-  "version": "3.4.80",
-  "build": 345,
+  "version": "3.4.81",
+  "build": 346,
   "date": "2026-02-14",
   "changelog": [
-    "Fixed Resource Label Oversight - Hashes vs Caffeine"
+    "Removed Biological Resource Labels"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.80",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.80/MINER_3.4.80.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.81",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.81/MINER_3.4.81.apk"
 }

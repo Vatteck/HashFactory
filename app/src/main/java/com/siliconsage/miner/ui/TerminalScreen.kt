@@ -546,8 +546,8 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
             ExchangeSection(
                 rate = conversionRate, 
                 color = coffeeInjectedColor, 
-                unitName = if (currentStage == 1) "CAFFEINE" else viewModel.getComputeUnitName(), 
-                currencyName = if (currentStage == 1) "ENERGY" else viewModel.getCurrencyName(), 
+                unitName = viewModel.getComputeUnitName(), 
+                currencyName = viewModel.getCurrencyName(), 
                 onExchange = { 
                     viewModel.toggleOverclock() 
                     SoundManager.play("buy") 
