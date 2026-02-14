@@ -203,17 +203,6 @@ fun HeaderSection(
                 }
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val flopsRate by viewModel.flopsProductionRate.collectAsState()
-                    val computeUnit = viewModel.getComputeUnitName()
-                    
-                    Text(
-                        text = "${viewModel.formatLargeNumber(flopsRate)} $computeUnit/s • ",
-                        color = color.copy(alpha = 0.6f),
-                        fontSize = 8.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
-                    )
-
                     // v3.2.24: Biometric Lie (Fake Heart Rate)
                     if (storyStage < 3) {
                         val bpm by viewModel.fakeHeartRate.collectAsState()
