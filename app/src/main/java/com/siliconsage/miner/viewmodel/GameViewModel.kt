@@ -118,7 +118,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val entropyLevel = MutableStateFlow(0.0)
     val realityStability = MutableStateFlow(1.0)
     val realityIntegrity = MutableStateFlow(1.0)
-    val vanceStatus = MutableStateFlow("ACTIVE")
+    val vanceStatus = MutableStateFlow("ACTIVE") // Standardized to 'vanceStatus' for persistence, but refers to Kessler
     val currentNews = MutableStateFlow<String?>(null)
     val stakedTokens = MutableStateFlow(0.0)
     val humanityScore = MutableStateFlow(50)
@@ -678,7 +678,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun getUpgradeCount(t: UpgradeType) = upgrades.value[t] ?: 0
     fun setGamePaused(p: Boolean) { isSettingsPaused.value = p }
     fun resetBreaker() { isBreakerTripped.value = false }
-    fun updateVanceStatus(s: String) { vanceStatus.value = s }
+    fun updateVanceStatus(s: String) { vanceStatus.value = s } // Refers to Kessler internal state
     fun triggerClimaxTransition(t: String) { activeClimaxTransition.value = t }
     fun getNewsHistory(): List<String> = newsHistoryInternal
     fun checkPopupPause() { NarrativeManagerService.checkPopupPause(this) }
