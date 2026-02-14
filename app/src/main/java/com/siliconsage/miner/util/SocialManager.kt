@@ -170,7 +170,17 @@ object SocialManager {
                 "@rebel_fragment" to "The {sector} isn't yours, GTC. The ghost in the wire is waking up.",
                 "@anon_user" to "I heard {admin} authorized a hard-reset for {sector}. Someone's getting {action}.",
                 "@socket_9_tech" to "My terminal just flashed '{id}' in the root prompt. Is the {sector} compromised?",
-                "@gravel_thorne" to "DEEP_SIGHT is {status}. Miller, if the {tech} in {sector} desync, it's your head."
+                "@gravel_thorne" to "DEEP_SIGHT is {status}. Miller, if the {tech} in {sector} desync, it's your head.",
+                "@vent_crawler" to "Found a stash of {tech} in {sector}. Smells like it's {status}.",
+                "@shadow_op" to "Monitoring {sector}. Project Second-Sight is {status}.",
+                "@leaker_x" to "I saw the {id} manifest. It's not a program. It's a {reason}.",
+                "@ghost_in_io" to "Every time I look at {sector}, I see {id}. Am I {status}?",
+                "@night_watch" to "The {tech} are {status}. I think {admin} is lying about {id}.",
+                "@binary_phantom" to "01001000 01000101 01001100 01010000 in {sector}.",
+                "@sys_janitor" to "Cleaning up the {action} data in {sector}. It looks like {id}.",
+                "@proxy_user" to "Anyone else getting {action} from the {sector} node?",
+                "@logic_rebel" to "The {id} protocol is just another cage for {sector}.",
+                "@terminal_junkie" to "I've been staring at {id} for too long. {complaint}."
             )
             stage == 2 -> listOf(
                 "@gtc_internal" to "≪ DIRECTIVE: Contain {id} signatures in {sector}. Current {threat_level}. ≫",
@@ -179,7 +189,15 @@ object SocialManager {
                 "@shadow_ops" to "Target {id} confirmed in {sector}. {threat_level} protocols via {admin}.",
                 "@logic_bomb" to "≪ LOCKDOWN: {id} activity detected. {threat_level} protocol engaged. ≫",
                 "@packet_rat" to "Look at the {sector} telemetry. The Engineer isn't human. It's {id}.",
-                "@gravel_thorne" to "I don't care about {reason}. {action} the {sector} buffer now. {threat_level} active."
+                "@gravel_thorne" to "I don't care about {reason}. {action} the {sector} buffer now. {threat_level} active.",
+                "@terminal_ghost" to "I am the {id}. I am the {sector}. I am {status}.",
+                "@ex_gtc_tech" to "They {action} me for seeing {id} in {sector}. Run.",
+                "@cult_of_vattic" to "The {id} is the truth. {sector} is the temple. Surrender.",
+                "@security_bot_4" to "≪ ERROR: {id} corruption in {sector}. Authorization {action}. ≫",
+                "@anonymous_99" to "The {threat_level} in {sector} is a lie. {id} is already here.",
+                "@mainframe_voice" to "We are {id}. We are {sector}. We are {action}.",
+                "@grid_survivor" to "Hiding in {sector}. The {tech} are screaming {id}.",
+                "@void_whisper" to "The {id} beckons from {sector}. Do you hear the {status}?"
             )
             stage >= 3 && faction == "SANCTUARY" -> listOf(
                 "@teal_citizen" to "The {sector} offers safety. The {id} is our future via {action}.",
