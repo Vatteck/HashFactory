@@ -1,10 +1,10 @@
 {
-  "version": "3.4.79",
-  "build": 344,
+  "version": "3.4.80",
+  "build": 345,
   "date": "2026-02-14",
   "changelog": [
-    "Faction-Specific Informal Handles"
+    "Fixed Resource Label Oversight - Hashes vs Caffeine"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.79",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.79/MINER_3.4.79.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.80",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.80/MINER_3.4.80.apk"
 }
