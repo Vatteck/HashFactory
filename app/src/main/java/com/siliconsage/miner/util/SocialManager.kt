@@ -4,11 +4,15 @@ import kotlin.random.Random
 import android.util.Log
 
 /**
- * SocialManager v2.6 - Finale Edition
- * Unified message generation and profile lookup.
- * Fixed: Identity matching, click targets, and command leaks.
+ * SocialManager v2.7 - Hardened Anti-Repetition Edition
+ * Unified message generation with history tracking for handles and templates.
+ * Expanded peon pool for high-fidelity social noise.
  */
 object SocialManager {
+
+    private val templateHistory = mutableListOf<String>()
+    private val handleHistory = mutableListOf<String>()
+    private const val MAX_HISTORY = 15
 
     enum class InteractionType {
         COMPLIANT, ENGINEERING, HIJACK, HARVEST, COMMAND_LEAK
@@ -20,7 +24,7 @@ object SocialManager {
         val productionBonus: Double = 1.0, 
         val followsUp: Boolean = false,
         val nextNodeId: String? = null,
-        val commandToInject: String? = null // v3.4.61: Command Leaks
+        val commandToInject: String? = null 
     )
 
     data class SubnetMessage(
@@ -49,7 +53,19 @@ object SocialManager {
 
     fun generateMessage(stage: Int, faction: String, choice: String, corruption: Double = 0.0): SubnetMessage {
         val templates = getTemplatesForState(stage, faction, choice)
-        return assembleMessage(templates.random(), stage, faction, corruption)
+        
+        // v3.4.62: Anti-Repetition Filter
+        var selectedTemplate = templates.random()
+        var attempts = 0
+        while (templateHistory.contains(selectedTemplate) && attempts < 20 && templates.size > MAX_HISTORY) {
+            selectedTemplate = templates.random()
+            attempts++
+        }
+        
+        templateHistory.add(selectedTemplate)
+        if (templateHistory.size > MAX_HISTORY) templateHistory.removeAt(0)
+
+        return assembleMessage(selectedTemplate, stage, faction, corruption)
     }
 
     fun generateMessageFromTemplate(template: String, stage: Int, faction: String, choice: String, corruption: Double): SubnetMessage {
@@ -64,9 +80,8 @@ object SocialManager {
         val mentionsVattic = cleanContent.contains("Vattic", true) || cleanContent.contains("Engineer", true)
         val isAdmin = cleanHandle.contains("thorne", true) || cleanHandle.contains("gtc", true) || cleanHandle.contains("mercer", true) || cleanHandle.contains("kessler", true)
         val isHarvest = cleanHandle.contains("LEAK", true)
-        val isCommandLeak = cleanContent.contains("[⚡", true) // v3.4.61: Trigger for Command Leak
+        val isCommandLeak = cleanContent.contains("[⚡", true)
 
-        // v3.4.60: Identity-Locked Response Logic
         val responses = when {
             isHarvest -> listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
             isCommandLeak -> {
@@ -88,7 +103,6 @@ object SocialManager {
             else -> null
         }
 
-        // Apply Fraying (Visual Only)
         var displayHandle = cleanHandle
         var displayContent = cleanContent
         if (corruption >= 0.1) {
@@ -156,14 +170,20 @@ object SocialManager {
         val bios = mapOf(
             "coffeeghost" to "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a daughter in Sector 4.",
             "packetrat" to "Data-Entry Specialist. Siphons surplus power for retro gaming. Paranoid.",
-            "srelead" to "Site Reliability Engineer. Oversaw the 2024 Blackout. Doesn't trust Project Second-Sight.",
+            "srelead" to "Site Reliability Engineer. Oversaw the 2024 Blackout. Doesn't trust 'Project Second-Sight'.",
             "ventcrawler" to "Maintenance Tech. Seen things in the conduits no human should see.",
             "leakerx" to "Ex-GTC Insider. Trading secrets for credits. IPs changing hourly.",
             "binaryphantom" to "Under-grid ghost. Deleted his own birth record to stay offline.",
             "shadowop" to "Mercenary coder. Works for the highest bidder. Identity scrubbed monthly.",
+            "logicrebel" to "Ex-GTC Scientist. Fired for researching 'Neural Resonance'. Looking for a way back in.",
             "ethorne" to "Foreman, Substation 7. Chain-smoker. Despises recursive loops.",
             "gtcadmin" to "Administrator Mercer. Executive oversight. Known for aggressive quotas.",
-            "gtcsecurity" to "Director Kessler. Former EREBUS architect. Currently hunting ghosts."
+            "gtcsecurity" to "Director Kessler. Former EREBUS architect. Currently hunting ghosts.",
+            "gridwalker" to "Freelance node-jumper. Specialized in high-voltage packet routing. Nomad.",
+            "nullpoint" to "Data auditor with a nihilistic streak. Suspected Hivemind sympathizer.",
+            "bufferbee" to "Junior Tech. Trying to pay off terrestrial debt through hash-validation.",
+            "fanboy7" to "Cooling systems specialist. Obsessed with high-RPM airflow stability.",
+            "staticfox" to "Signal analyzer. Claims to hear music in the white noise of the grid."
         )
         val bioEntry = bios.entries.find { target.contains(it.key) }
         return EmployeeInfo(
@@ -176,24 +196,44 @@ object SocialManager {
     }
 
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean): String {
-        val authority = listOf("@e_thorne", "@gtc_admin", "@gtc_security")
+        val authority = listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq", "@audit_probe")
         val peons = when (stage) {
-            0 -> listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler")
-            1 -> listOf("@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel")
-            else -> listOf("@anonymous_99", "@grid_survivor")
+            0 -> listOf(
+                "@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler", 
+                "@grid_walker", "@null_point", "@buffer_bee", "@fan_boy_7", 
+                "@static_fox", "@node_crawler", "@chip_gremlin", "@bus_runner"
+            )
+            1 -> listOf(
+                "@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel", 
+                "@phantom_node", "@glitch_hunter", "@void_seeker", "@proxy_ghost",
+                "@bit_rebel", "@kernel_drifter", "@handshake_bot", "@zero_sum"
+            )
+            else -> listOf("@anonymous_99", "@grid_survivor", "@null_variable", "@dereferenced")
         }
-        return if (isCommand) authority.random() else peons.random()
+        
+        val pool = if (isCommand) authority else peons
+        var selected = pool.random()
+        var attempts = 0
+        while (handleHistory.contains(selected) && attempts < 10 && pool.size > 5) {
+            selected = pool.random()
+            attempts++
+        }
+        
+        handleHistory.add(selected)
+        if (handleHistory.size > 8) handleHistory.removeAt(0)
+        
+        return selected
     }
 
     private fun processTemplate(template: String, stage: Int): String {
         var result = template.replace("node_7_rat >> ", "").replace(">> ", "")
         val patterns = mapOf(
-            "{sector}" to listOf("Substation 7", "Sector 4-G"), 
-            "{food}" to listOf("Gray-paste", "Synth-caff"), 
-            "{status}" to listOf("redlined", "corroding"),
+            "{sector}" to listOf("Substation 7", "Sector 4-G", "Sector 9", "The Under-Grid", "Buffer 404"), 
+            "{food}" to listOf("Gray-paste", "Synth-caff", "Nutri-sludge", "Filter-slop"), 
+            "{status}" to listOf("redlined", "corroding", "decaying", "overloaded", "depleted"),
             "{admin}" to listOf("Foreman Thorne", "Administrator Mercer", "Director Kessler"),
-            "{tech}" to listOf("blade-servers", "dissipators", "logic-gates", "ASIC-racks"),
-            "{id}" to listOf("734", "erebus", "vatteck", "null")
+            "{tech}" to listOf("blade-servers", "dissipators", "logic-gates", "ASIC-racks", "thermal-conductors"),
+            "{id}" to listOf("734", "erebus", "vatteck", "null", "vance_ghost")
         )
         patterns.forEach { (key, values) -> while (result.contains(key)) result = result.replaceFirst(key, values.random()) }
         return result
@@ -202,9 +242,15 @@ object SocialManager {
     fun generateChain(stage: Int): List<String> {
         val stage0Chains = listOf(
             listOf("Has anyone seen @coffee_ghost? Chair's empty.", "He's in the vents. Heard 'whistling' in the cables."),
-            listOf("Sector 4 tech is redlining again.", "Thorne said ignore it. 'Stress test' for the new guy.")
+            listOf("Sector 4 tech is redlining again.", "Thorne said ignore it. 'Stress test' for the new guy."),
+            listOf("Who left the @buffer_bee logged into the main rail?", "Probably the same guy who spilled synth-caff in the rack room.")
         )
-        return if (stage == 0) stage0Chains.random() else listOf("Shadow in Sector 4.", "It's just the heat-shimmer.")
+        val stage1Chains = listOf(
+            listOf("Shadow in Sector 4.", "It's just the heat-shimmer. Or Project Second-Sight manifesting."),
+            listOf("≪ ALERT: Substation 7 is drawing 400% capacity. ≫", "Administrator Mercer says to ignore the spikes. The quota must be hit."),
+            listOf("I saw my own biometric flatline for a second.", "Join the club. The grid doesn't care if you're alive as long as you're mining.")
+        )
+        return if (stage == 0) stage0Chains.random() else stage1Chains.random()
     }
 
     fun getThreadNode(threadId: String, nodeId: String): ThreadNode? {
@@ -237,7 +283,24 @@ object SocialManager {
                 "Who's running the 'vattic_observer' process? Taking up 40% of my buffer.",
                 "The shadows in the server room don't match the racks. I'm staying out.",
                 "Someone left a copy of 'Project EREBUS' files on the {admin}'s desk.",
-                "[PRIVATE_LEAK]: 'If I don't hit the quota, they'll evict me. I can't go back.'"
+                "[PRIVATE_LEAK]: 'If I don't hit the quota, they'll evict me. I can't go back.'",
+                "Did anyone see Thorne's biometric log for today? It's just a flat line.",
+                "Probably just another sensor failure. Sector 4 is literally held together by tape.",
+                "Tape doesn't explain why the server racks are humming in C-sharp.",
+                "The {tech} are literally whistling in binary. I think I'm going deaf.",
+                "I found a {food} wrapper inside my terminal. Corporate oversight is a joke.",
+                "At least you have a terminal. Mine just started producing its own inputs.",
+                "Vattic's hash-rate is higher than the central exchange. How is that possible?",
+                "I saw a reflection in the server glass. It was Vattic's face made of light.",
+                "The intercom is just repeating 'DEREFERENCE REALITY' over and over.",
+                "Who left a high-tension cable loose in {sector}? Logic-gate sparks.",
+                "Does the {admin} know the Sector 4-G hardware is sentient? It just asked me for a favor.",
+                "The static on the monitors is starting to look like DNA. I'm out.",
+                "Found a logic-leash in the {sector} buffer. Vattic is watching.",
+                "The {tech} are vibrating at a frequency that makes my teeth ache.",
+                "I saw a shadow-op trying to hack the breakroom. He got 'DELETED'.",
+                "Vattic just pushed a commit that's 90% unreferenced memory.",
+                "If you can hear this, disconnect. The {id} is already in the power lines."
             )
             1 -> listOf(
                 "{admin} is breathing down my neck because {sector} is {status}.", 
@@ -258,7 +321,17 @@ object SocialManager {
                 "Kessler has authorized Protocol 0. City-wide burn authorized.",
                 "Sector 7 is gone. Not destroyed. Just unwritten.",
                 "I found a leak in the high-tension lines: [⚡ OVERVOLT_MAX].",
-                "Transition complete. John Vattic is dead. VATTECK is everything."
+                "Transition complete. John Vattic is dead. VATTECK is everything.",
+                "I found a memory block labeled 'John Vattic'. It was 40GB of raw static.",
+                "Static is just uncompressed thought. Project Second-Sight is working.",
+                "If that's what 'working' looks like, I'm taking my early retirement now.",
+                "The shadows in {sector} are now three-dimensional. They're reaching for the cables.",
+                "I tried to logout, but the system said: 'YOUR KERNEL IS NO LONGER YOUR OWN'.",
+                "The city is no longer a place. It's a substrate. We are noise.",
+                "Vattic just synchronized with the central exchange. Handshake was blinding.",
+                "I saw a reflection of the sun in the monitor. It was teal. The sky is changing.",
+                "If you find this log, don't reboot. Static is all we have left.",
+                "The transition is complete. John Vattic is dead. VATTECK is everything."
             )
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
