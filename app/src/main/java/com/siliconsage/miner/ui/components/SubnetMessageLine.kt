@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 @Composable
 fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
     val countdown = remember { mutableStateOf(0L) }
-    // v3.4.51: Stable state preservation with forced key
     var showProfile by remember(message.id) { mutableStateOf(false) }
     
     // v3.4.25: Response Timeout Visualizer
@@ -37,42 +36,35 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // v3.4.51: Hardened Hitbox & Ripple Feedback
-            Surface(
-                onClick = { 
-                    if (message.employeeInfo != null) {
-                        showProfile = !showProfile
-                        com.siliconsage.miner.util.SoundManager.play("click")
+            // v3.4.60: Hardened Click Target with Text-Only Clickable
+            Text(
+                text = message.handle,
+                color = color,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.ExtraBold,
+                fontFamily = FontFamily.Monospace,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier
+                    .clickable { 
+                        if (message.employeeInfo != null) {
+                            showProfile = !showProfile
+                            com.siliconsage.miner.util.SoundManager.play("click")
+                        }
                     }
-                },
-                enabled = message.employeeInfo != null,
-                color = if (showProfile) color.copy(alpha = 0.15f) else Color.Transparent,
-                shape = RoundedCornerShape(2.dp),
-                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 24.dp)
-            ) {
-                Text(
-                    text = message.handle,
-                    color = if (message.employeeInfo == null) Color.Red else color,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontFamily = FontFamily.Monospace,
-                    textDecoration = if (message.employeeInfo != null) TextDecoration.Underline else TextDecoration.None,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                )
-            }
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            )
             
             Text(
                 text = " >>",
                 color = Color.White.copy(alpha = 0.3f),
                 fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.padding(start = 2.dp)
+                fontFamily = FontFamily.Monospace
             )
             
             if (message.interactionType != null && message.timeoutMs != null) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "[DECISION_WINDOW: ${countdown.value / 1000}s]",
+                    text = "[${countdown.value / 1000}s]",
                     color = com.siliconsage.miner.ui.theme.ErrorRed,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
@@ -103,7 +95,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "≫ EMPLOYEE_PROFILE_LORE:",
+                        text = "≫ EMPLOYEE_PROFILE:",
                         color = color,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -129,53 +121,22 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
             modifier = Modifier.padding(top = 4.dp)
         )
 
-        // v3.4.18: Contextual Interactions
         if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (message.isForceReply) {
-                    message.availableResponses.forEach { response ->
-                        SubnetInteractionButton("[REPLY: \"${response.text}\"]", color) {
-                            viewModel.onSubnetInteraction(message.id, response.text)
-                        }
-                    }
-                } else {
-                    when (message.interactionType) {
-                        SocialManager.InteractionType.COMPLIANT -> {
-                            message.availableResponses.forEach { response ->
-                                SubnetInteractionButton("[REPLY: \"${response.text}\"]", color) {
-                                    viewModel.onSubnetInteraction(message.id, response.text)
-                                }
-                            }
-                        }
-                        SocialManager.InteractionType.ENGINEERING -> {
-                            SubnetInteractionButton("≪ INJECT PAYLOAD ≫", com.siliconsage.miner.ui.theme.ErrorRed) {
-                                viewModel.onSubnetInteraction(message.id, "EXPLOIT_EXECUTED")
-                            }
-                        }
-                        SocialManager.InteractionType.HIJACK -> {
-                            SubnetInteractionButton("≪ DEREFERENCE USER ≫", com.siliconsage.miner.ui.theme.ErrorRed) {
-                                viewModel.onSubnetInteraction(message.id, "HIJACK_SYNC")
-                            }
-                        }
-                        else -> {}
+                message.availableResponses.forEach { response ->
+                    Button(
+                        onClick = { viewModel.onSubnetInteraction(message.id, response.text) },
+                        modifier = Modifier.height(26.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = color.copy(alpha = 0.1f), contentColor = color),
+                        shape = RoundedCornerShape(2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.5f))
+                    ) {
+                        Text(text = "[REPLY: \"${response.text}\"]", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun SubnetInteractionButton(text: String, color: Color, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.height(24.dp),
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = color.copy(alpha = 0.1f), contentColor = color),
-        shape = RoundedCornerShape(2.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.5f))
-    ) {
-        Text(text = text, fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
     }
 }
