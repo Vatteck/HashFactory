@@ -131,6 +131,8 @@ object SocialManager {
         if (mentionsVattic) {
             return listOf(
                 SubnetResponse("Mind your own terminal.", riskDelta = 2.0, productionBonus = 1.05),
+                SubnetResponse("Just doing my shift.", riskDelta = -2.0),
+                SubnetResponse("Trying to hit the quota.", riskDelta = -5.0),
                 SubnetResponse("Who's asking?", riskDelta = 5.0, followsUp = true),
                 SubnetResponse("[STARE BACK]", riskDelta = 1.0)
             ).shuffled().take(2)
