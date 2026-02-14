@@ -216,9 +216,28 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
 
             // UI Scaling Options
             val currentScale by viewModel.uiScale.collectAsState()
+            val customScaleFactor by viewModel.customUiScaleFactor.collectAsState()
             SettingsGroup("DISPLAY") {
                 Text("UI SCALING", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
+                
+                // v3.4.11: Fine-grained slider control
+                Slider(
+                    value = customScaleFactor,
+                    onValueChange = { viewModel.setCustomUIScale(it) },
+                    valueRange = 0.5f..1.5f,
+                    steps = 20,
+                    colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
+                )
+                
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("0.5x", color = Color.Gray, fontSize = 8.sp)
+                    Text("${String.format("%.2f", customScaleFactor)}x", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                    Text("1.5x", color = Color.Gray, fontSize = 8.sp)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                     com.siliconsage.miner.data.UIScale.values().forEach { scale ->
                         Button(

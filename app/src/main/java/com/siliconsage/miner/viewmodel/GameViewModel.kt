@@ -163,6 +163,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val identityCorruption = MutableStateFlow(0.0) // 0.0 to 1.0
     val migrationCount = MutableStateFlow(0)
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
+    val customUiScaleFactor = MutableStateFlow(1.0f)
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
@@ -667,6 +668,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     fun setUIScale(scale: com.siliconsage.miner.data.UIScale) {
         uiScale.value = scale
+        customUiScaleFactor.value = scale.scaleFactor
+        saveState()
+    }
+
+    fun setCustomUIScale(factor: Float) {
+        customUiScaleFactor.value = factor
+        uiScale.value = com.siliconsage.miner.data.UIScale.fromScaleFactor(factor)
         saveState()
     }
     fun acknowledgeVictory() { victoryAchieved.value = false }

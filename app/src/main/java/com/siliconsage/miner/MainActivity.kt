@@ -79,12 +79,13 @@ class MainActivity : ComponentActivity() {
             ) {
                 val location by viewModel.currentLocation.collectAsState()
                 val uiScale by viewModel.uiScale.collectAsState()
+                val customScaleFactor by viewModel.customUiScaleFactor.collectAsState()
                 
-                // v3.4.10: Proper density-based scaling instead of pixel-zooming
+                // v3.4.11: Proper density-based scaling instead of pixel-zooming
                 val currentDensity = LocalDensity.current
                 val customDensity = Density(
-                    density = currentDensity.density * uiScale.scaleFactor,
-                    fontScale = currentDensity.fontScale * uiScale.scaleFactor
+                    density = currentDensity.density * customScaleFactor,
+                    fontScale = currentDensity.fontScale * customScaleFactor
                 )
                 
                 CompositionLocalProvider(LocalDensity provides customDensity) {
