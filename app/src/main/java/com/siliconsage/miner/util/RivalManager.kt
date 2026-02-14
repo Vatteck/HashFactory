@@ -5,7 +5,7 @@ import com.siliconsage.miner.data.RivalSource
 import com.siliconsage.miner.viewmodel.GameViewModel
 
 /**
- * Manages rival character messages (Director Vance and Unit 734)
+ * Manages rival character messages (Director Vance and THREAT: ABYSSAL)
  * v6.0.0: Stage-aware messaging (Vance shifts from ISP Admin to AI Containment Director)
  */
 object RivalManager {

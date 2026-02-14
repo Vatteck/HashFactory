@@ -56,7 +56,7 @@ object NarrativeRepository {
 
     // Stage 2
     val flavorStage2 = listOf(
-        "[GTC]: Unsanctioned process 'PID_1' detected. Origin: Sector 7.",
+        "[GTC]: Unsanctioned process 'VATTECK' detected. Origin: Sector 7.",
         "[THREAT: ABYSSAL]: Vance is scared of what he can't control. Good.",
         "[SYSTEM]: Reality anchor points drifting. 0.04% deviance detected.",
         "[GTC]: Grid compliance audit scheduled for Substation 7.",

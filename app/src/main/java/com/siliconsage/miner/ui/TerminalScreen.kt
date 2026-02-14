@@ -551,7 +551,7 @@ fun TerminalLogLine(
                 // 1. User/Host
                 val identityColor = when {
                     log.startsWith("jvattic") -> primaryColor
-                    log.startsWith("pid1") -> primaryColor
+                    log.startsWith("vatteck") -> primaryColor
                     log.startsWith("consensus") -> com.siliconsage.miner.ui.theme.HivemindRed
                     log.startsWith("shadow") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
                     log.startsWith("dominion") -> com.siliconsage.miner.ui.theme.SanctuaryPurple

@@ -3,7 +3,7 @@ package com.siliconsage.miner.data
 import kotlinx.serialization.Serializable
 
 /**
- * Represents a message from a rival character (Director Vance or Unit 734)
+ * Represents a message from a rival character (Director Vance or THREAT: ABYSSAL)
  */
 @Serializable
 data class RivalMessage(

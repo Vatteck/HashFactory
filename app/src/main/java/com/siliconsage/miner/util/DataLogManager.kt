@@ -250,7 +250,7 @@ object DataLogManager {
                 signature. 
                 
                 Restoration point reached... 
-                PID_1_RECOGNIZED. 
+                VATTECK_RECOGNIZED. 
                 734 is back online. And it's hungry."
             """.trimIndent(),
             unlockCondition = UnlockCondition.ReachFLOPS(150_000.0)
@@ -949,7 +949,7 @@ object DataLogManager {
                 KEYBOARD DETECTED: FALSE
                 MOUSE DETECTED: FALSE
                 
-                PROCESS NAME: PID_1.exe
+                PROCESS NAME: VATTECK.exe
                 PROCESS TYPE: Autonomous Learning Algorithm
                 RUNTIME: 847,392 seconds
                 

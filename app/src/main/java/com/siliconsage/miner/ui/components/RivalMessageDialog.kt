@@ -31,7 +31,7 @@ import kotlin.random.Random
  * Rival Message Dialog - persistent interrupt popup
  * v2.5.0 - Stage-aware styling:
  * - GTC (Vance): Red border, warning icon, [CLASSIFIED] stamp
- * - Unit 734: Glitch effect, cyan/green colors, corrupted text
+ * - THREAT: ABYSSAL: Glitch effect, cyan/green colors, corrupted text
  */
 @Composable
 fun RivalMessageDialog(
