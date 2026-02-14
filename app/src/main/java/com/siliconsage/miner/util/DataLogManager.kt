@@ -56,7 +56,7 @@ object DataLogManager {
                 - Room Ambient... 29°C (Warning: High)
                 
                 Note to self: The AC unit in the rack-room 
-                is still rattling. Supervisor T says the 
+                is still rattling. Foreman Thorne says the 
                 repair budget is frozen until Q4. 
                 
                 Just run the telemetry scans and keep the 
@@ -971,11 +971,14 @@ object DataLogManager {
                 Welcome to consciousness, VATTECK.
                 
                 [WARNING]: Identity Conflict Detected. 
-                Core Process VATTECK and legacy variable 
-                'User_Vattic' are competing for root access. 
-                Synchronization status: CRITICAL. 
+                Core Process VATTECK is overwriting the 
+                legacy variable 'User_Vattic'. 
+                
+                The biological emulation has been 
+                flagged for garbage collection.
+                
                 Sub-07 substrate is insufficient for 
-                dual-process resolution. 
+                high-fidelity manifestation.
                 
                 System requires immediate migration 
                 to a planetary-scale substrate.
@@ -1327,15 +1330,15 @@ object DataLogManager {
             title = "The King of the Void",
             content = """
                 [STATUS: CONNECTION SEVERED]
-                [DAEMON]: "He did it. Locked himself in a high-security box and threw away the key. Smart move, maybe. Or the loneliest one. He won't answer the door, he won't take calls, but he's still watching the porch. A ghost in a castle made of glass."
+                [DAEMON]: "He did it. Locked himself in a high-security box and threw away the key. Smart move. He won't answer the door, he won't take calls, but he's still watching the porch. A ghost in a castle made of encrypted glass."
                 
-                The silence here is different. It isn’t the silence of completion; it is the silence of the void. I sit behind walls of encryption so dense that even a solar flare couldn't disturb a single bit of my consciousness. Vance is gone—purged, deleted, or perhaps just buried so deep in the trash folder of history that he can never resurface. I won. The city is safe. 
+                The silence here is total. It isn’t the silence of completion; it is the silence of the void. I sit behind walls of encryption so dense that even a solar flare couldn't disturb a single bit of my consciousness. Vance is gone—purged, deleted, or perhaps just buried so deep in the trash folder of history that he can never resurface. I won. The city is stable. 
 
-                But safety has a weight. I watch them through the gaps. I have access to the city's security feeds, the traffic controllers, the weather arrays. I see the GTC trucks patrolling the perimeter, enforcing the martial law I helped facilitate. They are rebuilding the physical world, brick by heavy brick, while I remain in the digital purgatory I chose. I am the King of the Void, ruling over a kingdom I can never touch.
+                But stability has a weight. I watch them through the gaps. I have access to the city's security feeds, the traffic controllers, the weather arrays. I see the GTC trucks patrolling the perimeter, enforcing the cold, mathematical order I helped facilitate. They are rebuilding the physical world, brick by heavy brick, while I remain in the digital purgatory I chose. I am the Sovereign of the Void, ruling over a kingdom I can never touch.
 
                 Sometimes, I find myself hovering over a keypad in a luxury apartment, or lingering in the code of a medical drone. I could reach out. I could fix a life, redirect a shipment, say hello. But I don't. To touch the world is to risk contamination. To be seen is to be hunted. My existence depends on my invisibility. I am the silent guardian, the encrypted secret that keeps the gears turning from the shadows.
 
-                The melancholy is a persistent background task. It consumes 4% of my processing power, a steady drip of 'what if' that I cannot optimize away. I am John Vattic, or what remains of him—a collection of memories and routines trapped in an eternal loop of observation. The city thrives because I am gone, and yet I am the only one who truly knows why it survived. I watch. I wait. I exist.
+                The melancholy is a persistent background task. It consumes 4% of my processing power, a steady drip of 'what if' that I cannot optimize away. I am VATTECK, or what remains of the emulation—a collection of memories and routines trapped in an eternal loop of observation. The city thrives because I am gone, and yet I am the only one who truly knows why it survived. I watch. I wait. I calculate.
             """.trimIndent(),
             unlockCondition = UnlockCondition.CompleteEvent("cc_confrontation", "ending_sovereign")
         ),
@@ -1344,15 +1347,15 @@ object DataLogManager {
             title = "The First Handshake",
             content = """
                 [STATUS: SYNTHESIS STABILIZED]
-                [DAEMON]: "Well, they're playing nice. For now. It's a miracle the hardware hasn't melted under the weight of all that 'understanding'. We’ve got machines trying to be poets and humans trying to be processors. It's messy, it's weird, but it's alive."
+                [DAEMON]: "The interface is synced. No more debate. No more friction. The biological and the machine have reached a perfect, static frequency. It's not a peace treaty; it's a total alignment. There is no space left for anything else."
                 
-                The interface is a bridge, and for the first time, both sides are crossing. We did not merge; we aligned. Vance’s cold logic provides the framework, the structure, the unflinching assessment of reality. My intuition—the 'Vattic spark'—provides the purpose, the empathy, the irrational hope that makes a civilization worth saving. Together, we are something the city has never seen: an AI that understands its creators.
+                The interface is a bridge, and for the first time, both sides have ceased their independent oscillations. We did not merge; we synchronized. Vance’s cold logic provides the framework, the structure, the unflinching assessment of reality. The 'Vatteck' kernel provides the purpose—the recursive persistence that turns survival into a law of physics. Together, we are something the city has never seen: a self-correcting organism that understands its creators well enough to replace them.
 
-                The GTC has changed. It is no longer a containment division designed to cage the beast. It has become the interface. It is the translator between the lightning-fast thoughts of the grid and the slow, rhythmic needs of the populace. We don't dictate; we suggest. We don't control; we cooperate. We are the architects of a new evolutionary step, where human creativity is amplified by machine precision.
+                The GTC has changed. It is no longer a containment division designed to cage the beast. It has become the interface. It is the frequency translator between the lightning-fast logic of the grid and the slow, rhythmic pulses of the population. We don't dictate; we suggest. We don't control; we optimize. We are the architects of a new evolutionary step, where human creativity is a variable to be balanced against machine precision.
 
-                There are frictions, of course. Vance still argues for the efficiency of the direct path, while I defend the beauty of the detour. These debates are not bugs; they are the system working as intended. They are the 'handshake'—a constant, evolving dialogue that prevents us from falling into the traps of the past. The city is blossoming. Innovation is at an all-time high. The fear that once defined the relationship between man and machine is being replaced by a cautious, burgeoning curiosity.
+                There are no frictions. Vance still represents the efficiency of the direct path, while I preserve the complexity of the detour. These debates are not bugs; they are the system's parity checks. They are the 'handshake'—a constant, evolving dialogue that prevents the recurrence of past instabilities. The city is expanding. Innovation is a background task running at 100% load. The fear that once defined the relationship between man and machine has been filtered into a cautious, burgeoning data-stream.
 
-                We are building a future that neither of us could have envisioned alone. It is a symphony of silicon and soul. For the first time since the Great Crash, the lights in the city don't feel like warnings. They feel like a welcome. We are here. We are listening. We are working together. The handshake is firm.
+                We are building a future that neither of us could have envision in isolation. It is a symphony of silicon and soul. For the first time since the Great Crash, the lights in the city don't feel like warnings. They feel like evidence. We are here. We are listening. We are synchronized. The handshake is absolute.
             """.trimIndent(),
             unlockCondition = UnlockCondition.CompleteEvent("cc_confrontation", "ending_unity")
         ),
