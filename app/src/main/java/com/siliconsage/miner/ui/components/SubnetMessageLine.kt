@@ -13,6 +13,7 @@ import com.siliconsage.miner.util.SocialManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.RectangleShape
 
@@ -45,15 +46,21 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
         // v3.4.18: Contextual Interactions
         if (viewModel != null && message.interactionType != null) {
+            val stage = viewModel.storyStage.collectAsState().value
+            
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 when (message.interactionType) {
                     SocialManager.InteractionType.COMPLIANT -> {
-                        SubnetInteractionButton("[ACKNOWLEDGE]", color) {
-                            viewModel.onSubnetInteraction(message.id, "STATUS: NOMINAL")
+                        // v3.4.20: Human-sounding responses for Stage 0-1
+                        val primaryResponse = if (stage == 0) "Copy that, Elias." else "Acknowledged, Foreman."
+                        val secondaryResponse = if (stage == 0) "Just a dusty fan, boss." else "Grid draw stabilized."
+
+                        SubnetInteractionButton("[REPLY: \"$primaryResponse\"]", color) {
+                            viewModel.onSubnetInteraction(message.id, primaryResponse)
                         }
-                        SubnetInteractionButton("[CLEAR BUFFERS]", color) {
-                            viewModel.onSubnetInteraction(message.id, "BUFFERS: PURGED")
+                        SubnetInteractionButton("[REPLY: \"$secondaryResponse\"]", color) {
+                            viewModel.onSubnetInteraction(message.id, secondaryResponse)
                         }
                     }
                     SocialManager.InteractionType.ENGINEERING -> {
