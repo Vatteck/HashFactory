@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.util.SocialManager
@@ -55,7 +56,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace,
-                    textDecoration = if (message.employeeInfo != null) androidx.compose.ui.text.style.TextDecoration.Underline else null
+                    textDecoration = if (message.employeeInfo != null) TextDecoration.Underline else TextDecoration.None
                 )
             }
             Text(

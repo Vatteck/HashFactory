@@ -136,7 +136,7 @@ object SocialManager {
             nodeId = nodeId,
             timeoutMs = timeoutMs,
             isForceReply = isForceReply,
-            employeeInfo = if (!isAdmin && !isHarvest) generateEmployeeInfo(handle) else null
+            employeeInfo = if (!isHarvest) generateEmployeeInfo(handle) else null
         )
     }
 
@@ -149,17 +149,25 @@ object SocialManager {
             "@leaker_x" to "Former GTC Insider. Trading corporate secrets for grid-credits. Constantly changing IPs.",
             "@binary_phantom" to "Legendary under-grid hacker. Rumored to have deleted his own physical birth record.",
             "@shadow_op" to "Mercenary coder. Works for the highest bidder. Identity scrubbed monthly.",
-            "@logic_rebel" to "Ex-GTC Scientist. Fired for researching 'Neural Resonance'. Looking for a way back in."
+            "@logic_rebel" to "Ex-GTC Scientist. Fired for researching 'Neural Resonance'. Looking for a way back in.",
+            "@e_thorne" to "Foreman, Substation 7. 28 years of service. Chain-smoker. Despises 'recursive optimization'.",
+            "@gtc_admin" to "Administrator Mercer. Oversight lead for Sector 4. Known for 'aggressive restructuring'.",
+            "@gtc_security" to "Director Kessler. Former architect of Project EREBUS. Currently hunting ghosts."
         )
         
-        val departments = listOf("Hash Validation", "Grid Maintenance", "Logistics", "Compliance", "Architecture")
+        val departments = when {
+            handle.contains("thorne") -> "Site Management"
+            handle.contains("mercer") || handle.contains("admin") -> "Executive Oversight"
+            handle.contains("kessler") || handle.contains("security") -> "Containment & Security"
+            else -> listOf("Hash Validation", "Grid Maintenance", "Logistics", "Architecture").random()
+        }
         
         return EmployeeInfo(
             bio = bios[handle] ?: "Contractor profile unavailable. Biometric signature mismatch.",
-            department = departments.random(),
-            heartRate = Random.nextInt(70, 120),
-            respiration = listOf("Steady", "Shallow", "Rapid", "Irregular").random(),
-            stressLevel = Random.nextDouble(0.2, 0.9)
+            department = departments,
+            heartRate = if (handle.contains("gtc")) Random.nextInt(60, 85) else Random.nextInt(85, 130),
+            respiration = if (handle.contains("gtc")) "Steady" else listOf("Shallow", "Rapid", "Irregular").random(),
+            stressLevel = if (handle.contains("gtc")) Random.nextDouble(0.1, 0.4) else Random.nextDouble(0.5, 0.9)
         )
     }
 
