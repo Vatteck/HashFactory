@@ -73,7 +73,9 @@ object SocialManager {
     }
 
     fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
-        val mentionsVattic = content.contains("Vattic", true) || content.contains("Engineer", true)
+        val mentionsVattic = content.contains("Vattic", true) || 
+                             content.contains("Engineer", true) || 
+                             content.contains("734", true) // v3.4.69
         val isAdmin = handle.contains("thorne", true) || handle.contains("gtc", true) || handle.contains("mercer", true) || handle.contains("kessler", true)
         
         val responses = when {
@@ -101,7 +103,9 @@ object SocialManager {
         val cleanHandle = getHandle(stage, faction, isCommand)
         val cleanContent = processTemplate(template, stage)
         
-        val mentionsVattic = cleanContent.contains("Vattic", true) || cleanContent.contains("Engineer", true)
+        val mentionsVattic = cleanContent.contains("Vattic", true) || 
+                             cleanContent.contains("Engineer", true) || 
+                             cleanContent.contains("734", true) // v3.4.69
         val isAdmin = cleanHandle.contains("thorne", true) || cleanHandle.contains("gtc", true) || cleanHandle.contains("mercer", true) || cleanHandle.contains("kessler", true)
         val isHarvest = cleanHandle.contains("LEAK", true)
         val isCommandLeak = cleanContent.contains("[⚡", true)
@@ -254,7 +258,7 @@ object SocialManager {
         val patterns = mapOf(
             "{sector}" to listOf("Substation 7", "Sector 4-G", "Sector 9", "The Under-Grid", "Buffer 404"), 
             "{food}" to listOf("Gray-paste", "Synth-caff", "Nutri-sludge", "Filter-slop"), 
-            "{status}" to listOf("redlined", "corroding", "decaying", "overloaded", "depleted"),
+            "{status}" to listOf("corroding", "decaying", "overloaded", "depleted", "graphite-laced", "tasting like copper"), // v3.4.69
             "{admin}" to listOf("Foreman Thorne", "Administrator Mercer", "Director Kessler"),
             "{tech}" to listOf("blade-servers", "dissipators", "logic-gates", "ASIC-racks", "thermal-conductors"),
             "{id}" to listOf("734", "erebus", "vatteck", "null", "vance_ghost")
