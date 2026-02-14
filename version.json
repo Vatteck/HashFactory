@@ -1,10 +1,10 @@
 {
-  "version": "3.4.75",
-  "build": 340,
+  "version": "3.4.76",
+  "build": 341,
   "date": "2026-02-14",
   "changelog": [
-    "Fixed Log Identity Colors"
+    "Unified Identity Coloring for Stage 0 and 1"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.75",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.75/MINER_3.4.75.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.76",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.76/MINER_3.4.76.apk"
 }

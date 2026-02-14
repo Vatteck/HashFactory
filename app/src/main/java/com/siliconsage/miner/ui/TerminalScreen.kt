@@ -593,11 +593,13 @@ fun TerminalLogLine(
                 val identityColor = when {
                     log.startsWith("jvattic") -> primaryColor
                     log.startsWith("vatteck") -> primaryColor
+                    log.startsWith("[VATTIC]") -> primaryColor
+                    log.contains(" VATTIC:", false) -> primaryColor // Special catch for [TIME] VATTIC:
                     log.startsWith("consensus") -> com.siliconsage.miner.ui.theme.HivemindRed
                     log.startsWith("shadow") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
                     log.startsWith("dominion") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
                     log.startsWith("null") -> ErrorRed
-                    log.startsWith("ASSET_734") -> ErrorRed
+                    log.startsWith("ASSET_734") -> primaryColor
                     else -> primaryColor
                 }
 
