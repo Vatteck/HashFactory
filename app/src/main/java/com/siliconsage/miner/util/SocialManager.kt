@@ -101,7 +101,23 @@ object SocialManager {
             "{complaint}" to listOf(
                 "my chair is stuck in 'ergonomic torture' mode", "the lights keep humming in B-flat",
                 "I haven't seen a real window in three weeks", "the air tastes like ozone and dust",
-                "my keyboard keeps echoing my thoughts", "I found a literal bug in the circuits"
+                "my keyboard keeps echoing my thoughts", "I found a literal bug in the circuits",
+                "the vending machine ate my last credit", "my terminal is bleeding blue light",
+                "the silence in the server room is too loud", "I'm pretty sure my mouse is breathing"
+            ),
+            "{rumor}" to listOf(
+                "the management is actually an LLM", "Sector 4 is being decommissioned",
+                "Vattic found a backdoor in the firmware", "the coffee is just repurposed coolant",
+                "Thorne has a secret stash of real sugar", "we're all just training a replacement",
+                "the grid is alive and it's hungry", "Project Second-Sight is already finished",
+                "there's a ghost in the ventilation shafts", "the hash-rates are fake"
+            ),
+            "{activity}" to listOf(
+                "re-soldering the relays", "running a deep-scan on the core",
+                "cleaning the carbon off the fans", "bypassing the safety protocols",
+                "writing a script to automate my job", "staring at the binary rain",
+                "listening to the capacitors scream", "deleting my search history",
+                "trying to remember my own name", "re-balancing the power load"
             )
         )
 
@@ -137,7 +153,15 @@ object SocialManager {
                 "@protocol_bot" to "Reminder: {distraction} is strictly prohibited by {admin}.",
                 "@echo_chamber" to "Does anyone else feel like {sector} is watching us?",
                 "@grit_engineer" to "Fixing the {tech} in {sector} with duct tape and {reason}.",
-                "@caffeine_fiend" to "I've had four {food}s and I can hear colors in {sector}."
+                "@caffeine_fiend" to "I've had four {food}s and I can hear colors in {sector}.",
+                "@rumor_mill" to "I heard {rumor}. Don't tell {admin}.",
+                "@deep_tech" to "Currently {activity} in {sector}. {complaint}.",
+                "@paranoid_op" to "I'm {activity} because I'm 90% sure {rumor}.",
+                "@lazy_contractor" to "Can't be bothered {activity}. I'm just gonna eat some {food}.",
+                "@vattic_observer" to "Vattic is {activity} again. Thorne is {status} about it.",
+                "@maintenance_unit" to "Requesting permission for {activity} in {sector}. Error: {reason}.",
+                "@the_outsider" to "This place is {status}. Even the {tech} seems {status}.",
+                "@data_junkie" to "I've been {activity} for 12 hours. {rumor}."
             )
             stage == 1 -> listOf(
                 "@coffee_ghost" to "Thorne's breathing down my neck because the {tech} in {sector} are {status}. I need a new job.",
