@@ -125,7 +125,19 @@ object SocialManager {
                 "@gravel_thorne" to "If I see one more noodle-cup in {sector}, I'm locking the oxygen scrubbers.",
                 "@bored_op" to "Is it just me, or does {sector} smell like {food} today?",
                 "@ghost_in_io" to "I keep seeing {id} on my screen. Probably just {reason}.",
-                "@newbie_tech" to "Help, {complaint} and I can't find the exit for {sector}."
+                "@newbie_tech" to "Help, {complaint} and I can't find the exit for {sector}.",
+                "@night_shift" to "The {tech} in {sector} are making a whistling sound. {status}.",
+                "@salty_admin" to "Who changed the root password for {sector}? Was it {admin}?",
+                "@vattic_fan" to "I saw Vattic chugging {food} at 3 AM. Legend.",
+                "@thermal_guy" to "Heat in {sector} is {status}. Don't tell {admin}.",
+                "@lo_fi_tech" to "Anyone have a spare set of {tech}? Mine just {action}.",
+                "@snack_thief" to "Stole a {food} from the breakroom in {sector}. No regrets.",
+                "@hardware_hacker" to "Trying to overclock my {tech} with {food}. Will report back.",
+                "@security_leak" to "I found a {distraction} hidden behind the server racks in {sector}.",
+                "@protocol_bot" to "Reminder: {distraction} is strictly prohibited by {admin}.",
+                "@echo_chamber" to "Does anyone else feel like {sector} is watching us?",
+                "@grit_engineer" to "Fixing the {tech} in {sector} with duct tape and {reason}.",
+                "@caffeine_fiend" to "I've had four {food}s and I can hear colors in {sector}."
             )
             stage == 1 -> listOf(
                 "@coffee_ghost" to "Thorne's breathing down my neck because the {tech} in {sector} are {status}. I need a new job.",
