@@ -882,12 +882,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // v3.4.34: Monitor timeout for non-thread messages
             if (message.threadId == null && message.timeoutMs != null) {
                 viewModelScope.launch {
-                    delay(message.timeoutMs)
-                    val currentMessages = subnetMessages.value
-                    val messageStillActive = currentMessages.find { it.id == message.id }?.interactionType != null
-                    if (messageStillActive) {
-                        onSubnetInteraction(message.id, "TIMEOUT_EXPIRED")
+                    // v3.4.54: Pause-aware Timeout Loop
+                    var remaining = message.timeoutMs
+                    while (remaining > 0) {
+                        if (!isSettingsPaused.value) {
+                            remaining -= 1000L
+                        }
+                        delay(1000L)
+                        
+                        // Check if message was already handled
+                        val stillActive = subnetMessages.value.find { it.id == message.id }?.interactionType != null
+                        if (!stillActive) return@launch
                     }
+
+                    onSubnetInteraction(message.id, "TIMEOUT_EXPIRED")
                 }
             }
         }
@@ -1038,13 +1046,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
             // v3.4.25: Timeout Logic
             if (node.timeoutMs != null && node.timeoutNodeId != null && node.responses.isNotEmpty()) {
-                delay(node.timeoutMs)
-                val currentMessages = subnetMessages.value
-                val messageStillActive = currentMessages.find { it.id == followUp.id }?.interactionType != null
-                if (messageStillActive) {
-                    onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
-                    scheduleSubnetThreadResponse(handle, threadId, node.timeoutNodeId)
+                // v3.4.54: Pause-aware Timeout Loop
+                var remaining = node.timeoutMs
+                while (remaining > 0) {
+                    if (!isSettingsPaused.value) {
+                        remaining -= 1000L
+                    }
+                    delay(1000L)
+                    
+                    val stillActive = subnetMessages.value.find { it.id == followUp.id }?.interactionType != null
+                    if (!stillActive) return@launch
                 }
+
+                onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
+                scheduleSubnetThreadResponse(handle, threadId, node.timeoutNodeId)
             }
         }
     }
@@ -1080,12 +1095,19 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 // v3.4.34: Monitor timeout for follow-ups
                 if (followUp.timeoutMs != null) {
                     viewModelScope.launch {
-                        delay(followUp.timeoutMs)
-                        val currentMessages = subnetMessages.value
-                        val messageStillActive = currentMessages.find { it.id == followUp.id }?.interactionType != null
-                        if (messageStillActive) {
-                            onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
+                        // v3.4.54: Pause-aware Timeout Loop
+                        var remaining = followUp.timeoutMs
+                        while (remaining > 0) {
+                            if (!isSettingsPaused.value) {
+                                remaining -= 1000L
+                            }
+                            delay(1000L)
+                            
+                            val stillActive = subnetMessages.value.find { it.id == followUp.id }?.interactionType != null
+                            if (!stillActive) return@launch
                         }
+
+                        onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
                     }
                 }
             } else {
