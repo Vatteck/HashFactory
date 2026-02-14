@@ -232,7 +232,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                     }
                 } else {
                     itemsIndexed(items = subnetMessages, key = { _, message -> message.id }) { _, message ->
-                        com.siliconsage.miner.ui.components.SubnetMessageLine(message, primaryColor)
+                        com.siliconsage.miner.ui.components.SubnetMessageLine(message, primaryColor, viewModel)
                     }
                     if (viewModel.isSubnetTyping.value) {
                         item {

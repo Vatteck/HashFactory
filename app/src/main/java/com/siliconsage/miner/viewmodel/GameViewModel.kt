@@ -759,23 +759,47 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     fun addSubnetChatter() {
-        if (isSubnetTyping.value) return // Prevent overlapping typing indicators
+        if (isSubnetTyping.value) return 
         
         viewModelScope.launch {
             isSubnetTyping.value = true
-            delay(Random.nextLong(2000, 4500)) // Fake "typing" time (Doubled)
+            delay(Random.nextLong(2000, 4500)) 
             
-            val pool = com.siliconsage.miner.util.SocialManager.getChatter(storyStage.value, faction.value, singularityChoice.value)
-            val newMessage = com.siliconsage.miner.util.SocialManager.SubnetMessage(
-                id = java.util.UUID.randomUUID().toString(),
-                handle = pool.first,
-                content = pool.second
-            )
+            val newMessage = com.siliconsage.miner.util.SocialManager.generateMessage(storyStage.value, faction.value, singularityChoice.value)
+            
             subnetMessages.update { (it + newMessage).takeLast(50) }
             if (activeTerminalMode.value != "SUBNET") {
                 hasNewSubnetMessage.value = true
             }
             isSubnetTyping.value = false
+        }
+    }
+
+    /**
+     * Handle Interaction with Subnet Packets
+     */
+    fun onSubnetInteraction(messageId: String, response: String) {
+        val message = subnetMessages.value.find { it.id == messageId } ?: return
+        
+        when (message.interactionType) {
+            com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
+                detectionRisk.update { (it - 5.0).coerceAtLeast(0.0) }
+                addLog("[REPLY]: $response")
+            }
+            com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING -> {
+                flopsProductionRate.update { it * 1.05 }
+                detectionRisk.update { (it + 8.0).coerceAtMost(100.0) }
+                addLog("[EXPLOIT]: INJECTED PAYLOAD. HASH RATE +5%.")
+            }
+            com.siliconsage.miner.util.SocialManager.InteractionType.HIJACK -> {
+                identityCorruption.update { (it + 0.05).coerceAtMost(1.0) }
+                addLog("[HIJACK]: ≪ IDENTITY_DEREFERENCED: ${message.handle} ≫")
+            }
+            else -> {}
+        }
+        
+        subnetMessages.update { list ->
+            list.map { if (it.id == messageId) it.copy(interactionType = null) else it }
         }
     }
 

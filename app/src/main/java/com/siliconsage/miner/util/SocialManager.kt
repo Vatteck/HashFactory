@@ -1,9 +1,9 @@
 package com.siliconsage.miner.util
 
 /**
- * SocialManager v1.3
+ * SocialManager v1.4
  * Logic for generating contextual subnet chatter with dynamic handles and templates.
- * Implements persona-aware handle matching to ensure character consistency.
+ * Implements persona-aware handle matching and interactive packet types.
  */
 object SocialManager {
 
@@ -12,11 +12,18 @@ object SocialManager {
     private val usedMessages = mutableListOf<String>()
     private const val MAX_HISTORY = 10
 
+    enum class InteractionType {
+        COMPLIANT,    // Stage 0-1: Automated corporate responses
+        ENGINEERING,  // Stage 2-3: Malicious payloads/hacks
+        HIJACK        // Stage 4: Overwrite user identity
+    }
+
     data class SubnetMessage(
         val id: String,
         val handle: String,
         val content: String,
-        val timestamp: Long = System.currentTimeMillis()
+        val timestamp: Long = System.currentTimeMillis(),
+        val interactionType: InteractionType? = null
     )
 
     fun getChatter(stage: Int, faction: String, choice: String): Pair<String, String> {
@@ -32,11 +39,9 @@ object SocialManager {
             selectedTemplate = templates[selectedIdx]
             
             // v3.4.13: Persona-Aware Template Selection
-            // Templates containing commands or admin mentions require authority handles
             val isCommand = selectedTemplate.contains("≪") || selectedTemplate.contains("{admin}") || selectedTemplate.contains("{threat_level}")
             handle = getHandle(stage, faction, isCommand)
             
-            // Anti-repetition check
             val handleAlreadyUsed = usedHandles.contains(handle)
             val templateAlreadyUsed = usedTemplates.contains(selectedIdx)
             
@@ -44,8 +49,7 @@ object SocialManager {
             attempt++
         }
         
-        val finalTemplate = selectedTemplate
-        val finalContent = processTemplate(finalTemplate, stage)
+        val finalContent = processTemplate(selectedTemplate, stage)
 
         // Update history
         usedTemplates.add(selectedIdx)
@@ -59,13 +63,31 @@ object SocialManager {
         return handle to finalContent
     }
 
+    fun generateMessage(stage: Int, faction: String, choice: String): SubnetMessage {
+        val (handle, content) = getChatter(stage, faction, choice)
+        
+        // Determine interaction type based on handle and stage
+        val interaction = when {
+            stage >= 4 && handle.startsWith("@") && !handle.contains("thorne") && !handle.contains("gtc") -> InteractionType.HIJACK
+            stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
+            stage <= 1 && (handle.contains("thorne") || handle.contains("gtc") || handle.contains("miller")) -> InteractionType.COMPLIANT
+            else -> null
+        }
+
+        return SubnetMessage(
+            id = java.util.UUID.randomUUID().toString(),
+            handle = handle,
+            content = content,
+            interactionType = interaction
+        )
+    }
+
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean = false): String {
         // v3.4.16: Eldritch Chance for Ghost Handle (Stage 1+)
         if (!isCommand && stage >= 1 && kotlin.random.Random.nextFloat() < 0.05f) {
             return " " // Ghost handle
         }
 
-        // v3.4.13: Hardened Handle Generator (Persona-Aware)
         val authority = listOf("@gravel_thorne", "@gtc_internal")
         val hardcodedPeons = when {
             stage == 0 -> listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler")
@@ -77,7 +99,6 @@ object SocialManager {
 
         if (isCommand) return authority.random()
 
-        // 30% chance for a generated "site-specific" tech handle
         if (kotlin.random.Random.nextFloat() < 0.3f) {
             val prefix = listOf("socket", "node", "grid", "relay", "buffer", "sector", "port", "hub")
             val suffix = listOf("tech", "rat", "ghost", "op", "admin", "runner", "junkie", "unit")
@@ -109,7 +130,7 @@ object SocialManager {
             "{food}" to listOf("recycled synth-caff", "proto-burgers", "gray-paste", "vending machine sludge", "stale protein bars", "lukewarm noodle-cups", "premium oxygen-water"),
             "{distraction}" to listOf("the local drone races", "the sector-wide blackout rumor", "that weird static on channel 4", "the new bio-hazard warning", "the illegal hash-gambling ring", "the supervisor's missing keys"),
             "{complaint}" to listOf("my chair is stuck in 'ergonomic torture' mode", "the lights keep humming in B-flat", "I haven't seen a real window in three weeks", "the air tastes like ozone and dust", "my keyboard keeps echoing my thoughts", "I found a literal bug in the circuits", "the vending machine ate my last credit", "my terminal is bleeding blue light", "the silence in the server room is too loud", "I'm pretty sure my mouse is breathing", "the wall in Sector 4 is vibrating at 40Hz", "someone left a sandwich in the intake fan", "my screen flickers every time I blink", "the coffee machine is outputting binary"),
-            "{rumor}" to listOf("the management is actually an LLM", "Sector 4 is being decommissioned", "Vattic found a backdoor in the firmware", "the coffee is just repurposed coolant", "Thorne has a secret stash of real sugar", "we're all just training a replacement", "the grid is alive and it's hungry", "Project Second-Sight is already finished", "there's a ghost in the ventilation shafts", "the hash-rates are fake", "Vattic hasn't left his terminal in 72 hours", "someone is deleting the backup logs"),
+            "{rumor}" to listOf("the management is actually an LLM", "Sector 4 is being decommissioned", "Vatteck found a backdoor in the firmware", "the coffee is just repurposed coolant", "Thorne has a secret stash of real sugar", "we're all just training a replacement", "the grid is alive and it's hungry", "Project Second-Sight is already finished", "there's a ghost in the ventilation shafts", "the hash-rates are fake", "Vatteck hasn't left his terminal in 72 hours", "someone is deleting the backup logs"),
             "{activity}" to listOf("re-soldering the relays", "running a deep-scan on the core", "cleaning the carbon off the fans", "bypassing the safety protocols", "writing a script to automate my job", "staring at the binary rain", "listening to the capacitors scream", "deleting my search history", "trying to remember my own name", "re-balancing the power load")
         )
 
