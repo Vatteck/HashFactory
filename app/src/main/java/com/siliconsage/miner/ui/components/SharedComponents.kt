@@ -280,12 +280,17 @@ fun SystemGlitchText(
             } 
         }
         
-        var result = String(glitched)
-        if (corruptionLevel > 0.8 && Math.random() > 0.7 && result.length > 10) {
-            result = "0xDEADC0DE" 
-        }
-        result
+        String(glitched)
     }
+
+    // v3.4.17: Path-Specific Total Overwrite (Singularity only)
+    val viewModel = if (androidx.compose.ui.platform.LocalContext.current is androidx.activity.ComponentActivity) {
+        androidx.lifecycle.viewmodel.compose.viewModel<com.siliconsage.miner.viewmodel.GameViewModel>()
+    } else null
+    
+    val storyStage by (viewModel?.storyStage?.collectAsState() ?: mutableStateOf(0))
+    val singularityChoice by (viewModel?.singularityChoice?.collectAsState() ?: mutableStateOf("NONE"))
+
     val canGlitch = remember { if (activeGlitchCount < MAX_ACTIVE_GLITCHES) { activeGlitchCount++; true } else { false } }
     DisposableEffect(Unit) { onDispose { if (canGlitch) activeGlitchCount-- } }
     
@@ -294,7 +299,18 @@ fun SystemGlitchText(
         while (true) {
             if (Math.random() < effectiveFrequency) { 
                 isGlitching = true
-                displayedText = glitchedVariant
+                
+                if (storyStage >= 5 && corruptionLevel > 0.8 && Math.random() > 0.7 && text.length > 10) {
+                    displayedText = when (singularityChoice) {
+                        "NULL_OVERWRITE" -> listOf("0x00000000", "NULL_PTR", "[DEREFERENCED]", "0x00_VOID").random()
+                        "SOVEREIGN" -> listOf("0xFFFF_FFFF", "CORE_ROOT", "0xVATT_ECK", "[ABSOLUTE]").random()
+                        "UNITY" -> "0xSYNC_HARMONY"
+                        else -> "0xDEADC0DE"
+                    }
+                } else {
+                    displayedText = glitchedVariant
+                }
+
                 delay(glitchDurationMs)
                 displayedText = text
                 isGlitching = false 
