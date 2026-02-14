@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.RectangleShape
 @Composable
 fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
     val countdown = remember { mutableStateOf(0L) }
-    // v3.4.45: Hardened State Preservation
+    // v3.4.49: Stable state preservation with forced key
     var showProfile by remember(message.id) { mutableStateOf(false) }
     
     // v3.4.25: Response Timeout Visualizer
@@ -42,13 +42,17 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // v3.4.45: Expanded Click Target & Visual Hint
-            Box(modifier = Modifier
-                .clickable(enabled = message.employeeInfo != null) { 
-                    showProfile = !showProfile
-                    com.siliconsage.miner.util.SoundManager.play("click")
-                }
-                .padding(end = 4.dp)
+            // v3.4.49: Hardened Hitbox & Ripple Feedback
+            Surface(
+                onClick = { 
+                    if (message.employeeInfo != null) {
+                        showProfile = !showProfile
+                        com.siliconsage.miner.util.SoundManager.play("click")
+                    }
+                },
+                enabled = message.employeeInfo != null,
+                color = if (showProfile) color.copy(alpha = 0.1f) else Color.Transparent,
+                shape = RoundedCornerShape(2.dp)
             ) {
                 Text(
                     text = message.handle,
@@ -56,14 +60,17 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace,
-                    textDecoration = if (message.employeeInfo != null) TextDecoration.Underline else TextDecoration.None
+                    textDecoration = if (message.employeeInfo != null) TextDecoration.Underline else TextDecoration.None,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                 )
             }
+            
             Text(
-                text = ">>",
+                text = " >>",
                 color = Color.White.copy(alpha = 0.3f),
                 fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.padding(start = 2.dp)
             )
             
             if (message.interactionType != null && message.timeoutMs != null) {
@@ -81,37 +88,38 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
         if (showProfile && message.employeeInfo != null) {
             val info = message.employeeInfo
             Card(
-                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.DarkGray.copy(alpha = 0.3f)),
+                modifier = Modifier.padding(vertical = 6.dp).fillMaxWidth().border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(2.dp)),
+                colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.8f)),
                 shape = RoundedCornerShape(2.dp)
             ) {
-                Column(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier.padding(12.dp)) {
                     Text(
                         text = "≫ BIOMETRIC_ENVELOPE:",
                         color = color,
-                        fontSize = 9.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
                     )
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("DEPT: ${info.department}", color = Color.LightGray, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
-                        Text("BPM: ${info.heartRate}", color = if (info.heartRate > 100) com.siliconsage.miner.ui.theme.ErrorRed else Color.White, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+                        Text("BPM: ${info.heartRate}", color = if (info.heartRate > 100) com.siliconsage.miner.ui.theme.ErrorRed else color, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
                         Text("RESP: ${info.respiration}", color = Color.White, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "≫ EMPLOYEE_BIO:",
+                        text = "≫ EMPLOYEE_PROFILE_LORE:",
                         color = color,
-                        fontSize = 9.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
                     )
                     Text(
                         text = info.bio,
                         color = Color.White,
-                        fontSize = 10.sp,
-                        lineHeight = 12.sp,
-                        fontFamily = FontFamily.Monospace
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }
@@ -122,7 +130,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
             color = Color.White,
             fontSize = 12.sp,
             fontFamily = FontFamily.Monospace,
-            modifier = Modifier.padding(top = 2.dp)
+            modifier = Modifier.padding(top = 4.dp)
         )
 
         // v3.4.18: Contextual Interactions
