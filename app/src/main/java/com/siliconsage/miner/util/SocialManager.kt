@@ -36,7 +36,8 @@ object SocialManager {
         val availableResponses: List<SubnetResponse> = emptyList(),
         val threadId: String? = null,
         val nodeId: String? = null,
-        val timeoutMs: Long? = null // v3.4.25: Decision Window
+        val timeoutMs: Long? = null, // v3.4.25: Decision Window
+        val isForceReply: Boolean = false // v3.4.26: Logic-Lock for critical events
     )
 
     // NPC Attitudes: Influences Raid frequency and difficulty
@@ -51,8 +52,13 @@ object SocialManager {
         var nodeId: String? = null
         var responses = emptyList<SubnetResponse>()
         var timeoutMs: Long? = null
+        var isForceReply = false
 
         val interaction = when {
+            content.contains("node_7_rat") -> {
+                isForceReply = true
+                InteractionType.COMPLIANT
+            }
             stage >= 4 && handle.startsWith("@") && !handle.contains("thorne") && !handle.contains("gtc") -> InteractionType.HIJACK
             stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
             stage <= 1 && (handle.contains("thorne") || handle.contains("gtc") || handle.contains("miller")) -> InteractionType.COMPLIANT
@@ -61,7 +67,12 @@ object SocialManager {
             else -> null
         }
 
-        if (interaction == InteractionType.COMPLIANT && stage <= 1 && (handle.contains("thorne") || handle.contains("gtc")) && kotlin.random.Random.nextFloat() < 0.2f) {
+        if (content.contains("node_7_rat")) {
+            responses = listOf(
+                SubnetResponse("[DISMISS] I'm optimized.", riskDelta = 5.0),
+                SubnetResponse("[GLARE] Get back to your buffer.", riskDelta = 10.0, productionBonus = 1.05)
+            )
+        } else if (interaction == InteractionType.COMPLIANT && stage <= 1 && (handle.contains("thorne") || handle.contains("gtc")) && kotlin.random.Random.nextFloat() < 0.2f) {
             threadId = "THORNE_THERMAL_INQUIRY"
             nodeId = "START"
             val node = getThreadNode(threadId, nodeId)
@@ -80,7 +91,8 @@ object SocialManager {
             availableResponses = responses,
             threadId = threadId,
             nodeId = nodeId,
-            timeoutMs = timeoutMs
+            timeoutMs = timeoutMs,
+            isForceReply = isForceReply
         )
     }
 
@@ -208,7 +220,8 @@ object SocialManager {
                 "Who's responsible for the {tech} in Sector 4? They're whistling in binary.",
                 "I found a {food} wrapper inside my {tech}. Corporate oversight at its finest.",
                 "Hey Vattic, Thorne's looking for the Sector 7 logs. You 'optimized' them again?",
-                "Sector 4 smells like ozone and bad decisions today."
+                "Sector 4 smells like ozone and bad decisions today.",
+                "node_7_rat >> Vattic is bypassing the safety protocols again. He hasn't looked up in hours."
             )
             1 -> listOf(
                 "Thorne is breathing down my neck because {sector} is {status}.", 

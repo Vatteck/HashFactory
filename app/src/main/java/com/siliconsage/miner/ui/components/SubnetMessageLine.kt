@@ -74,29 +74,38 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
         )
 
         // v3.4.18: Contextual Interactions
-        if (viewModel != null && message.interactionType != null) {
+    if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
             val stage = viewModel.storyStage.collectAsState().value
             
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                when (message.interactionType) {
-                    SocialManager.InteractionType.COMPLIANT -> {
-                        // v3.4.22: Weighted Response System
-                        message.availableResponses.forEach { response ->
-                            SubnetInteractionButton("[REPLY: \"${response.text}\"]", color) {
-                                viewModel.onSubnetInteraction(message.id, response.text)
+                if (message.isForceReply) {
+                    message.availableResponses.forEach { response ->
+                        SubnetInteractionButton("[REPLY: \"${response.text}\"]", color) {
+                            viewModel.onSubnetInteraction(message.id, response.text)
+                        }
+                    }
+                } else {
+                    when (message.interactionType) {
+                        SocialManager.InteractionType.COMPLIANT -> {
+                            // v3.4.22: Weighted Response System
+                            message.availableResponses.forEach { response ->
+                                SubnetInteractionButton("[REPLY: \"${response.text}\"]", color) {
+                                    viewModel.onSubnetInteraction(message.id, response.text)
+                                }
                             }
                         }
-                    }
-                    SocialManager.InteractionType.ENGINEERING -> {
-                        SubnetInteractionButton("≪ INJECT PAYLOAD ≫", com.siliconsage.miner.ui.theme.ErrorRed) {
-                            viewModel.onSubnetInteraction(message.id, "EXPLOIT_EXECUTED")
+                        SocialManager.InteractionType.ENGINEERING -> {
+                            SubnetInteractionButton("≪ INJECT PAYLOAD ≫", com.siliconsage.miner.ui.theme.ErrorRed) {
+                                viewModel.onSubnetInteraction(message.id, "EXPLOIT_EXECUTED")
+                            }
                         }
-                    }
-                    SocialManager.InteractionType.HIJACK -> {
-                        SubnetInteractionButton("≪ DEREFERENCE USER ≫", com.siliconsage.miner.ui.theme.ErrorRed) {
-                            viewModel.onSubnetInteraction(message.id, "HIJACK_SYNC")
+                        SocialManager.InteractionType.HIJACK -> {
+                            SubnetInteractionButton("≪ DEREFERENCE USER ≫", com.siliconsage.miner.ui.theme.ErrorRed) {
+                                viewModel.onSubnetInteraction(message.id, "HIJACK_SYNC")
+                            }
                         }
+                        else -> {}
                     }
                 }
             }
