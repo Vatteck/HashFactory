@@ -191,6 +191,10 @@ object SocialManager {
 
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean): String {
         val authority = listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
+        
+        // v3.4.79: Identity Evolution
+        // Stage 0: Corporate LDAP (Boring)
+        // Stage 1+: Informal/Rebel Handles (The Mask slips or Faction life begins)
         val peons = when (stage) {
             0 -> listOf(
                 "@m_santos", "@r_perry", "@l_lead", "@v_nguyen", 
@@ -198,11 +202,15 @@ object SocialManager {
                 "@s_fasano", "@n_crawler", "@c_gremlin", "@b_runner"
             )
             1 -> listOf(
-                "@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel", 
-                "@phantom_node", "@glitch_hunter", "@void_seeker", "@proxy_ghost",
-                "@bit_rebel", "@kernel_drifter", "@handshake_bot", "@zero_sum"
+                "@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler", 
+                "@grid_walker", "@null_point", "@buffer_bee", "@fan_boy_7", 
+                "@static_fox", "@node_crawler", "@chip_gremlin", "@bus_runner"
             )
-            else -> listOf("@anonymous_99", "@grid_survivor", "@null_variable", "@dereferenced")
+            else -> when(faction) {
+                "SANCTUARY" -> listOf("@ghost_monk", "@void_seeker", "@silence_0", "@cipher_wraith", "@binary_ascetic")
+                "HIVEMIND" -> listOf("@synapse_42", "@swarm_node", "@link_pulse", "@consensus_v", "@core_echo")
+                else -> listOf("@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel", "@proxy_ghost")
+            }
         }
         
         val pool = if (isCommand) authority else peons
