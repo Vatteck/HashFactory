@@ -65,7 +65,7 @@ object SocialManager {
             stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
             stage <= 1 && (handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer")) -> InteractionType.COMPLIANT
             // Case: Peon mentions Vattic/Engineer
-            mentionsVattic && !handle.contains("thorne") -> {
+            mentionsVattic && !handle.contains("thorne") && !handle.contains("gtc") -> {
                 isForceReply = true // v3.4.29: Pause for direct callouts
                 InteractionType.COMPLIANT
             }
@@ -89,7 +89,7 @@ object SocialManager {
             timeoutMs = node?.timeoutMs ?: 60000L
         } else if (interaction != null) {
             if (interaction == InteractionType.COMPLIANT) {
-                responses = generateGenericResponses(stage, mentionsVattic)
+                responses = generateGenericResponses(stage, handle, mentionsVattic)
             }
             // v3.4.34: All active interactions get 60s
             timeoutMs = 60000L 
@@ -113,8 +113,8 @@ object SocialManager {
      */
     fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
         val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
-        val isForceReply = mentionsVattic && !handle.contains("thorne")
-        val responses = generateGenericResponses(stage, mentionsVattic)
+        val isForceReply = mentionsVattic && !handle.contains("thorne") && !handle.contains("gtc")
+        val responses = generateGenericResponses(stage, handle, mentionsVattic)
         val interactionType = if (mentionsVattic || handle.startsWith("@")) InteractionType.COMPLIANT else null
         
         return SubnetMessage(
@@ -183,7 +183,15 @@ object SocialManager {
         val timeoutNodeId: String? = null
     )
 
-    private fun generateGenericResponses(stage: Int, mentionsVattic: Boolean = false): List<SubnetResponse> {
+    private fun generateGenericResponses(stage: Int, handle: String, mentionsVattic: Boolean = false): List<SubnetResponse> {
+        // v3.4.35: Identity-aware Response Labels
+        val addressName = when {
+            handle.contains("thorne") -> "Elias"
+            handle.contains("mercer") || handle.contains("gtc_admin") -> "Administrator"
+            handle.contains("kessler") || handle.contains("gtc_security") -> "Director"
+            else -> " "
+        }
+
         if (mentionsVattic) {
             return listOf(
                 SubnetResponse("I'm right here. Focus on your own terminal.", riskDelta = 2.0, productionBonus = 1.02),
@@ -193,14 +201,14 @@ object SocialManager {
         }
         val pool = when (stage) {
             0 -> listOf(
-                SubnetResponse("Copy that, Elias.", riskDelta = -10.0),
+                SubnetResponse("Copy that${if (addressName != " ") ", $addressName" else ""}.", riskDelta = -10.0),
                 SubnetResponse("Just a dusty fan, boss.", riskDelta = -5.0, followsUp = true),
                 SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.05),
                 SubnetResponse("On it. Calibrating now.", riskDelta = -5.0),
                 SubnetResponse("PARITY_NOMINAL", riskDelta = 15.0, productionBonus = 1.2)
             )
             1 -> listOf(
-                SubnetResponse("Acknowledged, Foreman.", riskDelta = -10.0),
+                SubnetResponse("Acknowledged${if (addressName != " ") ", $addressName" else ""}.", riskDelta = -10.0),
                 SubnetResponse("Grid draw stabilized.", riskDelta = -5.0, followsUp = true),
                 SubnetResponse("Purging thermal cache.", riskDelta = -2.0, productionBonus = 1.1),
                 SubnetResponse("System within spec.", riskDelta = -5.0),
@@ -216,14 +224,18 @@ object SocialManager {
         var selectedIdx = (0 until templates.size).random()
         var selectedTemplate = templates[selectedIdx]
         
-        // v3.4.32: Refined Command Logic (Admins don't gossip about themselves)
+        // v3.4.31: Identity-aware Template Processing
         val isCommand = selectedTemplate.contains("≪")
+        val isObservationalLore = selectedTemplate.contains("{admin}") || 
+                                 selectedTemplate.contains("Thorne") || 
+                                 selectedTemplate.contains("Mercer") || 
+                                 selectedTemplate.contains("Kessler")
         
-        // Process template first to know which names were chosen
+        // Process template first to know which admin name was chosen
         val finalContent = processTemplate(selectedTemplate, stage)
         
         // Identify who is being talked about
-        val subjectAdmin = when {
+        val subjectAdminHandle = when {
             finalContent.contains("Thorne") -> "@e_thorne"
             finalContent.contains("Mercer") -> "@gtc_admin"
             finalContent.contains("Kessler") -> "@gtc_security"
@@ -233,11 +245,10 @@ object SocialManager {
         var handle = getHandle(stage, faction, isCommand)
         
         // Logic-Check: If the handle is an admin, ensure they aren't the subject 
-        // AND ensure admin handles aren't used for observational lore (which uses {admin})
-        val isObservationalLore = selectedTemplate.contains("{admin}")
-        if ((handle == subjectAdmin) || (isObservationalLore && (handle == "@e_thorne" || handle == "@gtc_admin" || handle == "@gtc_security"))) {
+        // AND ensure admin handles aren't used for observational lore
+        if ((handle == subjectAdminHandle) || (isObservationalLore && (handle == "@e_thorne" || handle == "@gtc_admin" || handle == "@gtc_security"))) {
             handle = if (isCommand) {
-                listOf("@e_thorne", "@gtc_admin", "@gtc_security").filter { it != subjectAdmin }.random()
+                listOf("@e_thorne", "@gtc_admin", "@gtc_security").filter { it != subjectAdminHandle }.random()
             } else {
                 listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler").random()
             }
@@ -289,12 +300,12 @@ object SocialManager {
                 "Caught {admin} staring at the server racks in {sector} for 20 minutes. Just staring.",
                 "Who's responsible for the {tech} in Sector 4? They're whistling in binary.",
                 "I found a {food} wrapper inside my {tech}. Corporate oversight at its finest.",
-                "Hey Vattic, Thorne's looking for the Sector 7 logs. You 'optimized' them again?",
+                "Hey Vattic, {admin} is looking for the Sector 7 logs. You 'optimized' them again?",
                 "Sector 4 smells like ozone and bad decisions today.",
                 "node_7_rat >> Vattic is bypassing the safety protocols again. He hasn't looked up in hours."
             )
             1 -> listOf(
-                "Thorne is breathing down my neck because {sector} is {status}.", 
+                "{admin} is breathing down my neck because {sector} is {status}.", 
                 "Project Second-Sight is {status}.",
                 "I saw Vattic's terminal. There was no OS, just... ghosts.",
                 "Anyone seen the Engineer? He hasn't left Sector 4 in weeks.",
