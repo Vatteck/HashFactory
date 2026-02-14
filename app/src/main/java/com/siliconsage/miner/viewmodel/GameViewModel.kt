@@ -885,7 +885,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     // v3.4.54: Pause-aware Timeout Loop
                     var remaining = message.timeoutMs
                     while (remaining > 0) {
-                        if (!isSettingsPaused.value) {
+                        if (!isSettingsPaused.value && activeTerminalMode.value == "SUBNET") { // v3.4.63: Tab-aware timeout
                             remaining -= 1000L
                         }
                         delay(1000L)
@@ -1065,7 +1065,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 // v3.4.54: Pause-aware Timeout Loop
                 var remaining = node.timeoutMs
                 while (remaining > 0) {
-                    if (!isSettingsPaused.value) {
+                    if (!isSettingsPaused.value && activeTerminalMode.value == "SUBNET") { // v3.4.63
                         remaining -= 1000L
                     }
                     delay(1000L)
@@ -1114,7 +1114,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                         // v3.4.54: Pause-aware Timeout Loop
                         var remaining = followUp.timeoutMs
                         while (remaining > 0) {
-                            if (!isSettingsPaused.value) {
+                            if (!isSettingsPaused.value && activeTerminalMode.value == "SUBNET") { // v3.4.63
                                 remaining -= 1000L
                             }
                             delay(1000L)

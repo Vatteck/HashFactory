@@ -52,13 +52,11 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
-    // Collect non-volatile UI state
     val storyStage by viewModel.storyStage.collectAsState()
     val currentLocation by viewModel.currentLocation.collectAsState()
     val isTrueNull by viewModel.isTrueNull.collectAsState()
     val isSovereign by viewModel.isSovereign.collectAsState()
 
-    // v3.0.0: Frame-rate independent cursor blink
     val infiniteTransition = rememberInfiniteTransition(label = "cursorBlink")
     val cursorAlpha by infiniteTransition.animateFloat(
         initialValue = 1f, targetValue = 0f,
@@ -70,7 +68,6 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
     Column(
         modifier = Modifier.fillMaxSize().background(Color.Transparent).padding(16.dp)
     ) {
-        // 1. Isolated Header (with internal state collection)
         TerminalHeader(viewModel, primaryColor)
         
         Spacer(modifier = Modifier.height(4.dp))
@@ -78,23 +75,21 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
         val mode by viewModel.activeTerminalMode.collectAsState()
         val hasSubnet by viewModel.hasNewSubnetMessage.collectAsState()
         val hasIO by viewModel.hasNewIOMessage.collectAsState()
+        val isPaused by viewModel.isSubnetPaused.collectAsState() // v3.4.63
 
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), 
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TerminalTabButton("I/O", mode == "IO", hasIO, primaryColor) { viewModel.setTerminalMode("IO") }
-            TerminalTabButton("SUBNET", mode == "SUBNET", hasSubnet, primaryColor) { viewModel.setTerminalMode("SUBNET") }
+            TerminalTabButton("I/O", mode == "IO", hasIO, primaryColor, false) { viewModel.setTerminalMode("IO") }
+            TerminalTabButton("SUBNET", mode == "SUBNET", hasSubnet, primaryColor, isPaused) { viewModel.setTerminalMode("SUBNET") }
         }
 
-        // 2. Isolated Log View (collects its own logs)
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             TerminalLogs(viewModel, primaryColor, showCursor)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // 3. Isolated Controls
         TerminalControls(viewModel, primaryColor)
     }
 }
@@ -125,25 +120,32 @@ fun TerminalHeader(viewModel: GameViewModel, color: Color) {
 }
 
 @Composable
-fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Color, onClick: () -> Unit) {
+fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Color, isChoicePending: Boolean, onClick: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "TabGlow")
-    val glowAlpha by infiniteTransition.animateFloat(
-        0.3f, 1f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "glow"
+    
+    // v3.4.63: Choice-Pending Flash (High Frequency)
+    val flashAlpha by infiniteTransition.animateFloat(
+        0.2f, 1f, 
+        infiniteRepeatable(tween(if (isChoicePending) 300 else 800), RepeatMode.Reverse), 
+        label = "glow"
     )
 
-    // v3.4.25: High-threat alert for the tab
-    val alertColor = if (text == "SUBNET" && hasNew) com.siliconsage.miner.ui.theme.ErrorRed else color
+    val alertColor = when {
+        isChoicePending -> ErrorRed
+        text == "SUBNET" && hasNew -> ErrorRed 
+        else -> color
+    }
 
     Column(modifier = Modifier.clickable { onClick() }.padding(vertical = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = text,
-            color = if (active) color else alertColor.copy(alpha = if (hasNew) glowAlpha else 0.4f),
+            color = if (active) color else alertColor.copy(alpha = if (hasNew || isChoicePending) flashAlpha else 0.4f),
             fontSize = 11.sp,
-            fontWeight = if (active || hasNew) FontWeight.ExtraBold else FontWeight.Normal,
+            fontWeight = if (active || hasNew || isChoicePending) FontWeight.ExtraBold else FontWeight.Normal,
             fontFamily = FontFamily.Monospace
         )
-        if (hasNew && !active) {
-            Box(modifier = Modifier.padding(top = 1.dp).width(20.dp).height(2.dp).background(alertColor.copy(alpha = glowAlpha)))
+        if ((hasNew || isChoicePending) && !active) {
+            Box(modifier = Modifier.padding(top = 1.dp).width(20.dp).height(2.dp).background(alertColor.copy(alpha = flashAlpha)))
         } else if (active) {
             Box(modifier = Modifier.padding(top = 1.dp).width(16.dp).height(1.dp).background(color))
         }
@@ -157,14 +159,11 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     val mode by viewModel.activeTerminalMode.collectAsState()
     val currentHeat by viewModel.currentHeat.collectAsState()
     val isRaid by viewModel.isRaidActive.collectAsState()
-    val corruption by viewModel.identityCorruption.collectAsState()
     val listState = rememberLazyListState()
     
-    // v3.4.15: Ambient Glitch States
     val glitchOffset by viewModel.terminalGlitchOffset.collectAsState()
     val glitchAlpha by viewModel.terminalGlitchAlpha.collectAsState()
 
-    // v2.9.78: Fix scroll lock when log is full
     LaunchedEffect(logs.size, subnetMessages.size) {
         if (mode == "IO" && logs.isNotEmpty()) {
             delay(10)
@@ -183,7 +182,6 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 alpha = glitchAlpha
             }
     ) {
-        // v3.2.23: Animated Scanline Effect
         val infiniteTransition = rememberInfiniteTransition(label = "scanline")
         val scanlineOffset by infiniteTransition.animateFloat(
             initialValue = 0f, targetValue = 1f,
@@ -200,7 +198,6 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
             )
         }
 
-        // Background Binary Noise
         val alphaState = infiniteTransition.animateFloat(initialValue = 0.02f, targetValue = 0.05f, animationSpec = infiniteRepeatable(tween(4000), RepeatMode.Reverse), label = "alpha")
 
         Text(
@@ -211,7 +208,6 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // v3.2.24: Background Process as tiny header inside the terminal box
             val process by viewModel.currentProcess.collectAsState()
             Text(
                 text = "[PROCESS: $process]".uppercase(),
@@ -228,8 +224,8 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
             ) {
                 if (mode == "IO") {
                     itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
-                        val displayMessage = if (isRaid && kotlin.random.Random.nextFloat() > 0.7f) {
-                            "0x" + kotlin.random.Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
+                        val displayMessage = if (isRaid && Random.nextFloat() > 0.7f) {
+                            "0x" + Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
                         } else entry.message
                         TerminalLogLine(log = displayMessage, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
                     }
@@ -251,9 +247,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 }
             }
 
-            // v3.2.9: Persistent Active Command / I/O Buffer
             ActiveCommandBuffer(viewModel, primaryColor)
-
             HorizontalDivider(color = primaryColor.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 4.dp))
             ManualComputeButton(viewModel, primaryColor)
         }
@@ -281,7 +275,6 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     }
 
     val corruption by viewModel.identityCorruption.collectAsState()
-
     val promptUserColor = color
     val promptHostColor = when {
         isTrueNull -> ErrorRed
@@ -301,7 +294,6 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // v3.2.52: Identity Corruption
         val isFlickering = (humanity < 20 || corruption > 0.4) && Math.random() < (0.1 + corruption * 0.5)
 
         var userLabel = user
@@ -340,7 +332,6 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                 }
                 append(" ")
                 
-                // v3.4.15: Ghost Input Character
                 if (ghostChar.isNotEmpty()) {
                     withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.5f))) {
                         append(ghostChar)
@@ -351,7 +342,6 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             fontFamily = FontFamily.Monospace
         )
 
-        // v3.2.19: Hardened & Reactive "ILoveCandy" CLI Progress Bar
         val barLength = 40
         val filledCount = (progress * barLength).toInt().coerceIn(0, barLength)
         val isCritical = currentHeat >= 100.0
@@ -370,7 +360,6 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
 
         val annotatedBar = androidx.compose.ui.text.buildAnnotatedString {
             if (isBursting && !isCritical) {
-                // v3.2.19: The Flush "Burst"
                 val particles = listOf("*", ".", ":", "·", " ")
                 withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) {
                     append(" ".repeat(10))
@@ -411,7 +400,6 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                                     append("o")
                                 }
                             } else {
-                                // v3.2.19: Thermal Parity Errors
                                 val isNoise = isGlitching && (i + (progress * 100).toInt()) % 7 == 0
                                 val trackChar = if (isNoise) listOf("?", "!", "§", "Ø").random() else if (isTrueNull) " " else "·"
                                 val trackColor = if (isCritical) ErrorRed.copy(alpha = 0.5f) else color.copy(alpha = 0.2f)
@@ -437,7 +425,6 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             overflow = TextOverflow.Clip
         )
 
-        // v3.2.23: Dynamic Command Hex with color mapping
         val hexColor = when (speedLevel) {
             1 -> NeonGreen
             2 -> ErrorRed
@@ -502,15 +489,15 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
             isThermalLockout -> "SYSTEM_LOCKOUT (${lockoutTimer}s)"
             currentHeat >= 100.0 -> "> CRITICAL_MAX.exe"
             currentHeat > 90.0 -> "> SYSTEM_OVERHEAT.exe"
-            isTrueNull -> "> DEREFERENCE_REALITY.exe"
+            isTrueNull -> "> DEREFERENCE REALITY.exe"
             isSovereign -> "> ENFORCE_WILL.exe"
             else -> {
                 when {
-                    currentStage >= 3 -> "> TRANSCEND_MATTER.exe"
-                    faction == "HIVEMIND" -> "> ASSIMILATE_NODES.exe"
-                    faction == "SANCTUARY" -> "> ENCRYPT_KERNEL.exe"
-                    currentStage >= 1 -> "> VALIDATE_NODE.exe"
-                    else -> "> COMPUTE_HASH.exe"
+                    currentStage >= 3 -> "> TRANSCEND MATTER.exe"
+                    faction == "HIVEMIND" -> "> ASSIMILATE NODES.exe"
+                    faction == "SANCTUARY" -> "> ENCRYPT KERNEL.exe"
+                    currentStage >= 1 -> "> VALIDATE NODE.exe"
+                    else -> "> COMPUTE HASH.exe"
                 }
             }
         }
@@ -564,17 +551,14 @@ fun TerminalLogLine(
             modifier = Modifier.padding(vertical = 2.dp)
         )
     } else if (isPrompt) {
-        // v3.0.11: Dynamic Rich Terminal Line
         val annotatedLog = remember(log, primaryColor, isLast, showCursor) {
             androidx.compose.ui.text.buildAnnotatedString {
-                // Parse segments: user@host:~/path# command result
                 val atIndex = log.indexOf("@")
                 val colonIndex = log.indexOf(":")
                 val hashIndex = if (log.indexOf("#") != -1) log.indexOf("#") else log.indexOf("$")
                 val firstSpaceAfterHash = log.indexOf(" ", hashIndex)
                 val dotIndex = log.indexOf("...", hashIndex)
 
-                // 1. User/Host
                 val identityColor = when {
                     log.startsWith("jvattic") -> primaryColor
                     log.startsWith("vatteck") -> primaryColor
@@ -597,17 +581,14 @@ fun TerminalLogLine(
                     if (colonIndex != -1) append(log.substring(atIndex + 1, colonIndex))
                 }
 
-                // 2. Path
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.6f))) {
                     if (colonIndex != -1 && hashIndex != -1) append(log.substring(colonIndex, hashIndex))
                 }
 
-                // 3. Prompt Symbol
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.Yellow, fontWeight = FontWeight.ExtraBold)) {
                     if (hashIndex != -1) append(log.substring(hashIndex, hashIndex + 1))
                 }
 
-                // 4. Command
                 val cmdColor = ElectricBlue
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = cmdColor)) {
                     if (hashIndex != -1) {
@@ -616,7 +597,6 @@ fun TerminalLogLine(
                     }
                 }
 
-                // 5. Params / Result
                 if (firstSpaceAfterHash != -1) {
                     val resultStart = if (dotIndex != -1) dotIndex else log.length
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.LightGray)) {
@@ -639,7 +619,6 @@ fun TerminalLogLine(
         }
         Text(text = annotatedLog, style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace), fontSize = 12.sp, modifier = Modifier.padding(vertical = 1.dp))
     } else {
-        // v2.9.76: Standard Prefix Coloring
         val annotatedLog = remember(log, primaryColor, isLast, showCursor) {
             androidx.compose.ui.text.buildAnnotatedString {
                 val prefixes = listOf(

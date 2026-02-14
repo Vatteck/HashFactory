@@ -137,8 +137,12 @@ fun BottomNavBar(
     onScreenSelected: (Screen) -> Unit,
     storyStage: Int,
     isNetworkUnlocked: Boolean,
-    isGridUnlocked: Boolean
+    isGridUnlocked: Boolean,
+    viewModel: GameViewModel // v3.4.63
 ) {
+    val hasSubnetPending by viewModel.isSubnetPaused.collectAsState()
+    val isRaidActive by viewModel.isRaidActive.collectAsState()
+
     val items = remember(storyStage, isNetworkUnlocked, isGridUnlocked) {
         val list = mutableListOf(Screen.TERMINAL, Screen.UPGRADES)
         if (storyStage >= 3 || isGridUnlocked) list.add(Screen.GRID)
@@ -148,8 +152,22 @@ fun BottomNavBar(
     }
     NavigationBar(containerColor = Color.Black, contentColor = primaryColor) {
         items.forEach { screen ->
+            val hasAlert = when (screen) {
+                Screen.TERMINAL -> hasSubnetPending
+                Screen.GRID -> isRaidActive
+                else -> false
+            }
+
             NavigationBarItem(
-                icon = { Icon(screen.icon, contentDescription = screen.title) },
+                icon = { 
+                    BadgedBox(badge = { 
+                        if (hasAlert) {
+                            Badge(containerColor = ErrorRed, modifier = Modifier.size(6.dp)) 
+                        }
+                    }) {
+                        Icon(screen.icon, contentDescription = screen.title) 
+                    }
+                },
                 label = { Text(screen.title, fontSize = 10.sp, fontWeight = FontWeight.Bold) },
                 selected = currentScreen == screen,
                 onClick = { onScreenSelected(screen) },
@@ -223,7 +241,7 @@ fun MainScreen(viewModel: GameViewModel) {
                             SoundManager.play("click")
                         }
                     }
-                    BottomNavBar(currentScreen, themeColor, { currentScreen = it; SoundManager.play("click"); HapticManager.vibrateClick() }, storyStage, isNetworkUnlocked, isGridUnlocked)
+                    BottomNavBar(currentScreen, themeColor, { currentScreen = it; SoundManager.play("click"); HapticManager.vibrateClick() }, storyStage, isNetworkUnlocked, isGridUnlocked, viewModel)
                 }
             },
             containerColor = Color.Black
@@ -252,7 +270,6 @@ fun MainScreen(viewModel: GameViewModel) {
                     Offset((kotlin.random.Random.nextFloat() - 0.5f) * intensitySize, (kotlin.random.Random.nextFloat() - 0.5f) * intensitySize)
                 } else Offset.Zero
 
-                // v3.3.16: Void Raid Border - Removed blinding radial gradient
                 if (isRaidActive) {
                     val raidAlpha by infiniteTransition.animateFloat(0.3f, 0.8f, infiniteRepeatable(tween(500), RepeatMode.Reverse), label = "raid_border")
                     Canvas(modifier = Modifier.fillMaxSize()) {
@@ -267,7 +284,6 @@ fun MainScreen(viewModel: GameViewModel) {
                     var showNewsHistory by remember { mutableStateOf(false) }
                     Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                         Box(modifier = Modifier.weight(1f).fillMaxHeight()) { 
-                            // NewsTicker has its own internal update logic
                             val currentNews by viewModel.currentNews.collectAsState()
                             NewsTicker(currentNews ?: "") 
                         }
