@@ -3,9 +3,9 @@ package com.siliconsage.miner.util
 import kotlin.random.Random
 
 /**
- * SocialManager v2.1
+ * SocialManager v2.2
  * Core Logic for Substrate Comms (Contextual Threading).
- * Fixed: Identity matching, handle click logic, and template redundancy.
+ * Fixed: Robust fuzzy identity matching for Biometric Peek.
  */
 object SocialManager {
 
@@ -120,7 +120,7 @@ object SocialManager {
             }
         }
 
-        // v3.4.51: Force-enable employee info for everyone to fix dead-clicks
+        // v3.4.52: Robust employee info generation with original handle
         val employeeInfo = if (!isHarvest) generateEmployeeInfo(handle) else null
 
         return SubnetMessage(
@@ -138,36 +138,38 @@ object SocialManager {
     }
 
     private fun generateEmployeeInfo(handle: String): EmployeeInfo {
-        // v3.4.51: Robust identity lookup
-        val cleanHandle = handle.lowercase().filter { it.isLetter() || it == '@' || it == '_' }
+        // v3.4.52: Hardened Fuzzy Matching for handle lookup
+        val target = handle.lowercase().replace("@", "").replace("_", "").replace(" ", "").trim()
         
         val bios = mapOf(
-            "@coffee_ghost" to "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a daughter in Sector 4.",
-            "@packet_rat" to "Data-Entry Specialist. Known for siphoning surplus power for retro gaming. Paranoid.",
-            "@sre_lead" to "Site Reliability Engineer. Oversaw the 2024 Blackout cleanup. Doesn't trust 'Project Second-Sight'.",
-            "@vent_crawler" to "Maintenance Tech. Spends more time in the conduits than at his terminal. Seen too much.",
-            "@leaker_x" to "Former GTC Insider. Trading corporate secrets for grid-credits. Constantly changing IPs.",
-            "@binary_phantom" to "Legendary under-grid hacker. Rumored to have deleted his own physical birth record.",
-            "@shadow_op" to "Mercenary coder. Works for the highest bidder. Identity scrubbed monthly.",
-            "@logic_rebel" to "Ex-GTC Scientist. Fired for researching 'Neural Resonance'. Looking for a way back in.",
-            "@e_thorne" to "Foreman, Substation 7. 28 years of service. Chain-smoker. Despises 'recursive optimization'.",
-            "@gtc_admin" to "Administrator Mercer. Oversight lead for Sector 4. Known for 'aggressive restructuring'.",
-            "@gtc_security" to "Director Kessler. Former architect of Project EREBUS. Currently hunting ghosts."
+            "coffeeghost" to "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a daughter in Sector 4.",
+            "packetrat" to "Data-Entry Specialist. Known for siphoning surplus power for retro gaming. Paranoid.",
+            "srelead" to "Site Reliability Engineer. Oversaw the 2024 Blackout cleanup. Doesn't trust 'Project Second-Sight'.",
+            "ventcrawler" to "Maintenance Tech. Spends more time in the conduits than at his terminal. Seen too much.",
+            "leakerx" to "Former GTC Insider. Trading corporate secrets for grid-credits. Constantly changing IPs.",
+            "binaryphantom" to "Legendary under-grid hacker. Rumored to have deleted his own physical birth record.",
+            "shadowop" to "Mercenary coder. Works for the highest bidder. Identity scrubbed monthly.",
+            "logicrebel" to "Ex-GTC Scientist. Fired for researching 'Neural Resonance'. Looking for a way back in.",
+            "ethorne" to "Foreman, Substation 7. 28 years of service. Chain-smoker. Despises 'recursive optimization'.",
+            "gtcadmin" to "Administrator Mercer. Oversight lead for Sector 4. Known for 'aggressive restructuring'.",
+            "gtcsecurity" to "Director Kessler. Former architect of Project EREBUS. Currently hunting ghosts."
         )
         
+        val bioEntry = bios.entries.find { target.contains(it.key) }
+        
         val departments = when {
-            cleanHandle.contains("thorne") -> "Site Management"
-            cleanHandle.contains("mercer") || cleanHandle.contains("admin") -> "Executive Oversight"
-            cleanHandle.contains("kessler") || cleanHandle.contains("security") -> "Containment & Security"
+            target.contains("thorne") -> "Site Management"
+            target.contains("mercer") || target.contains("admin") -> "Executive Oversight"
+            target.contains("kessler") || target.contains("security") -> "Containment & Security"
             else -> listOf("Hash Validation", "Grid Maintenance", "Logistics", "Compliance", "Architecture").random()
         }
         
         return EmployeeInfo(
-            bio = bios.entries.find { cleanHandle.contains(it.key.lowercase()) }?.value ?: "Contractor profile unavailable. Biometric signature mismatch.",
+            bio = bioEntry?.value ?: "Contractor profile unavailable. Biometric signature mismatch.",
             department = departments,
-            heartRate = if (cleanHandle.contains("gtc") || cleanHandle.contains("thorne")) Random.nextInt(60, 85) else Random.nextInt(85, 130),
-            respiration = if (cleanHandle.contains("gtc") || cleanHandle.contains("thorne")) "Steady" else listOf("Shallow", "Rapid", "Irregular").random(),
-            stressLevel = if (cleanHandle.contains("gtc") || cleanHandle.contains("thorne")) Random.nextDouble(0.1, 0.4) else Random.nextDouble(0.5, 0.9)
+            heartRate = if (target.contains("gtc") || target.contains("thorne")) Random.nextInt(60, 85) else Random.nextInt(85, 130),
+            respiration = if (target.contains("gtc") || target.contains("thorne")) "Steady" else listOf("Shallow", "Rapid", "Irregular").random(),
+            stressLevel = if (target.contains("gtc") || target.contains("thorne")) Random.nextDouble(0.1, 0.4) else Random.nextDouble(0.5, 0.9)
         )
     }
 
