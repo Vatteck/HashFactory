@@ -147,7 +147,7 @@ object SocialManager {
                 "@newbie_tech" to "Help, {complaint} and I can't find the exit for {sector}.",
                 "@night_shift" to "The {tech} in {sector} are making a whistling sound. {status}.",
                 "@salty_admin" to "Who changed the root password for {sector}? Was it {admin}?",
-                "@vattic_observer" to "Vattic is {activity} again. He hasn't looked up in hours.",
+                "@socket_9_tech" to "Vattic is {activity} again. He hasn't looked up in hours.",
                 "@thermal_guy" to "Heat in {sector} is {status}. Don't tell {admin}.",
                 "@lo_fi_tech" to "Anyone have a spare set of {tech}? Mine just {action}.",
                 "@snack_thief" to "Stole a {food} from the breakroom in {sector}. No regrets.",
@@ -161,7 +161,7 @@ object SocialManager {
                 "@deep_tech" to "Currently {activity} in {sector}. {complaint}.",
                 "@paranoid_op" to "I'm {activity} because I'm 90% sure {rumor}.",
                 "@lazy_contractor" to "Can't be bothered {activity}. I'm just gonna eat some {food}.",
-                "@vattic_observer" to "Vattic is {activity} again. Thorne is {status} about it.",
+                "@socket_rat" to "Vattic is {activity} again. Thorne is {status} about it.",
                 "@maintenance_unit" to "Requesting permission for {activity} in {sector}. Error: {reason}.",
                 "@the_outsider" to "This place is {status}. Even the {tech} seems {status}.",
                 "@data_junkie" to "I've been {activity} for 12 hours. {rumor}."
