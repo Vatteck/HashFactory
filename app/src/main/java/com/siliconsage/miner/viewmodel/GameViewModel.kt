@@ -913,20 +913,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
 
-    private fun scheduleSubnetFollowUp(originalHandle: String) {
+    private fun scheduleSubnetFollowUp(handle: String) {
         viewModelScope.launch {
             delay(Random.nextLong(10000, 20000))
             if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
             
-            val followUpContent = when (originalHandle) {
-                "@gravel_thorne" -> "It better be. If I see a voltage spike on your rail, I'm docking your credits."
-                "@gtc_internal" -> "≪ STATUS: Monitoring maintained. Personnel record cross-referenced. ≫"
+            val followUpContent = when (handle) {
+                "@e_thorne" -> "It better be. If I see a voltage spike on your rail, I'm docking your credits."
+                "@gtc_admin" -> "≪ STATUS: Monitoring maintained. Personnel record cross-referenced. ≫"
                 else -> "Are you still there, Vattic? Your signal looks... different."
             }
 
             val followUp = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                 id = java.util.UUID.randomUUID().toString(),
-                handle = originalHandle,
+                handle = handle,
                 content = followUpContent,
                 interactionType = null
             )

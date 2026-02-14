@@ -94,7 +94,7 @@ object SocialManager {
                         SubnetResponse("[HONEST] Hardware stress test.", riskDelta = 5.0, nextNodeId = "PATH_HONEST")
                     ),
                     timeoutMs = 15000L,
-                    timeoutNodeId = "PATH_DECEIVE" // Silence is suspicious
+                    timeoutNodeId = "PATH_DECEIVE"
                 )
                 "PATH_DECEIVE" -> ThreadNode(
                     content = "Optimization results in efficiency, not heat-bleed. Your logs look... scrubbed. I am deploying a remote probe.",
@@ -175,7 +175,7 @@ object SocialManager {
 
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean = false): String {
         if (!isCommand && stage >= 1 && kotlin.random.Random.nextFloat() < 0.05f) return " "
-        val authority = listOf("@gravel_thorne", "@gtc_internal")
+        val authority = listOf("@e_thorne", "@gtc_admin")
         val hardcodedPeons = when (stage) {
             0 -> listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler")
             1 -> listOf("@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel")
@@ -187,7 +187,12 @@ object SocialManager {
 
     private fun processTemplate(template: String, stage: Int): String {
         var result = template
-        val patterns = mapOf("{sector}" to listOf("Substation 7", "Sector 4-G"), "{food}" to listOf("Gray-paste", "Synth-caff"), "{status}" to listOf("redlined", "corroding"))
+        val patterns = mapOf(
+            "{sector}" to listOf("Substation 7", "Sector 4-G"), 
+            "{food}" to listOf("Gray-paste", "Synth-caff"), 
+            "{status}" to listOf("redlined", "corroding"),
+            "{admin}" to listOf("Foreman Thorne", "Administrator Miller", "Lead Tech Miller", "Director Vance")
+        )
         patterns.forEach { (key, values) -> while (result.contains(key)) result = result.replaceFirst(key, values.random()) }
         return result
     }
