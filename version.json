@@ -1,10 +1,10 @@
 {
-  "version": "3.4.9",
-  "build": 324,
+  "version": "3.4.10",
+  "build": 325,
   "date": "2026-02-13",
   "changelog": [
-    "Identity Finalization: Purged all legacy PID 1/Asset 734 references. Finalized VATTECK internal identity and THREAT: ABYSSAL designation. Synced narrative logs for Unity path."
+    "UI Scaling Hardening: Switched from pixel-zooming to proper density-based scaling."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.9",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.9/MINER_3.4.9.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.10",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.10/MINER_3.4.10.apk"
 }
