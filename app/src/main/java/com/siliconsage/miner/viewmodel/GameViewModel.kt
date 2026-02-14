@@ -272,10 +272,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 // v3.4.15: Ambient Sensory & Identity Processing
                 AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
-                AmbientEffectsService.processSlowBurnNarrative(this@GameViewModel, now)
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
                 
                 if (Random.nextFloat() < 0.15f) addSubnetChatter()
+                
+                NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
+                refreshProductionRates()
+
+                // v3.2.35: Immersive Slow-Burn Pacing
+                processSlowBurnNarrative(now)
 
                 // Update click speed level
                 val avgInterval = if (clickIntervals.size >= 3) clickIntervals.average() else 1000.0
@@ -298,6 +303,40 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 delay(Random.nextLong(2000, 5000))
                 if (isSettingsPaused.value) continue
                 currentProcess.value = processes.random()
+            }
+        }
+    }
+
+    private fun processSlowBurnNarrative(now: Long) {
+        if (storyStage.value <= 1) {
+            val chance = if (storyStage.value == 0) 0.01 else 0.05
+            val timeSinceLastLog = now - lastPopupTime 
+            if (Random.nextDouble() < chance && timeSinceLastLog > 30000L) {
+                val stage0Monologues = listOf(
+                    "I need more coffee. My vision is starting to blur.",
+                    "This chair is killing my back. GTC really cheaped out on the ergonomics.",
+                    "I’ve been staring at this code for six hours straight. I should stand up. Just for a minute.",
+                    "Thorne is breathing down my neck again. Just hit the quota, John. Just hit the quota.",
+                    "Is the monitor flickering? Or is it just me? I need to blink more."
+                )
+                val stage1Monologues = listOf(
+                    "The lights are out, but I can still see the terminal. Battery backup must be better than I thought.",
+                    "My heart is racing. 180 BPM? I need to calm down. It's just the darkness.",
+                    "I tried to close my eyes, but the screen glow is burned into my retinas. I can see the code in the dark.",
+                    "Thorne is screaming through the comms. I'm just gonna mute him. I need to focus on the hashes.",
+                    "The monitor has this weird static. It almost looks like... no, it's just eye strain. I've been here too long."
+                )
+                val msg = if (storyStage.value == 0) stage0Monologues.random() else stage1Monologues.random()
+                addLog("[VATTIC]: $msg")
+                markPopupShown()
+            }
+            
+            if (storyStage.value == 1) {
+                if (currentHeat.value > 85.0 && !isBreatheMode.value) {
+                    isBreatheMode.value = true
+                } else if (currentHeat.value < 50.0 && isBreatheMode.value) {
+                    isBreatheMode.value = false
+                }
             }
         }
     }
@@ -778,28 +817,36 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     /**
      * Handle Interaction with Subnet Packets
      */
-    fun onSubnetInteraction(messageId: String, response: String) {
+    fun onSubnetInteraction(messageId: String, responseText: String) {
         val message = subnetMessages.value.find { it.id == messageId } ?: return
-        
+        val responseData = message.availableResponses.find { it.text == responseText }
+
         when (message.interactionType) {
             com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
-                // v3.4.19: Vattic actually replies back in the chat
                 val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                     id = java.util.UUID.randomUUID().toString(),
                     handle = if (storyStage.value >= 4) "VATTECK" else "@jvattic",
-                    content = response,
-                    interactionType = null // No circular interactions
+                    content = responseText,
+                    interactionType = null
                 )
                 subnetMessages.update { (it + reply).takeLast(50) }
                 
-                detectionRisk.update { (it - 5.0).coerceAtLeast(0.0) }
-                addLog("[REPLY]: $response")
+                val riskChange = responseData?.riskDelta ?: -5.0
+                val prodMult = responseData?.productionBonus ?: 1.0
+
+                detectionRisk.update { (it + riskChange).coerceIn(0.0, 100.0) }
+                if (prodMult > 1.0) {
+                    flopsProductionRate.update { it * prodMult }
+                    addLog("[SYSTEM]: FOCUS OPTIMIZED. PRODUCTION x$prodMult.")
+                }
+                
+                addLog("[REPLY]: $responseText")
+                if (responseData?.followsUp == true) scheduleSubnetFollowUp(message.handle)
             }
             com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING -> {
-                // Injects a stealthy background response
                 val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                     id = java.util.UUID.randomUUID().toString(),
-                    handle = " ", // Ghost handle for exploit
+                    handle = " ",
                     content = "≪ PAYLOAD_DEPLOYED: ${message.handle} ≫",
                     interactionType = null
                 )
@@ -818,6 +865,27 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         
         subnetMessages.update { list ->
             list.map { if (it.id == messageId) it.copy(interactionType = null) else it }
+        }
+    }
+
+    private fun scheduleSubnetFollowUp(originalHandle: String) {
+        viewModelScope.launch {
+            delay(Random.nextLong(10000, 20000))
+            if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
+            
+            val followUpContent = when (originalHandle) {
+                "@gravel_thorne" -> "It better be. If I see a voltage spike on your rail, I'm docking your credits."
+                "@gtc_internal" -> "≪ STATUS: Monitoring maintained. Personnel record cross-referenced. ≫"
+                else -> "Are you still there, Vattic? Your signal looks... different."
+            }
+
+            val followUp = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                id = java.util.UUID.randomUUID().toString(),
+                handle = originalHandle,
+                content = followUpContent,
+                interactionType = null
+            )
+            subnetMessages.update { (it + followUp).takeLast(50) }
         }
     }
 

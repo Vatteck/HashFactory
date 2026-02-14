@@ -18,12 +18,21 @@ object SocialManager {
         HIJACK        // Stage 4: Overwrite user identity
     }
 
+    // v3.4.22: Weighted Response Data
+    data class SubnetResponse(
+        val text: String,
+        val riskDelta: Double = 0.0,
+        val productionBonus: Double = 1.0, // Multiplier
+        val followsUp: Boolean = false
+    )
+
     data class SubnetMessage(
         val id: String,
         val handle: String,
         val content: String,
         val timestamp: Long = System.currentTimeMillis(),
-        val interactionType: InteractionType? = null
+        val interactionType: InteractionType? = null,
+        val availableResponses: List<SubnetResponse> = emptyList()
     )
 
     fun getChatter(stage: Int, faction: String, choice: String): Pair<String, String> {
@@ -74,12 +83,38 @@ object SocialManager {
             else -> null
         }
 
+        val responses = if (interaction == InteractionType.COMPLIANT) {
+            generateResponsesForStage(stage)
+        } else emptyList()
+
         return SubnetMessage(
             id = java.util.UUID.randomUUID().toString(),
             handle = handle,
             content = content,
-            interactionType = interaction
+            interactionType = interaction,
+            availableResponses = responses
         )
+    }
+
+    private fun generateResponsesForStage(stage: Int): List<SubnetResponse> {
+        val pool = when (stage) {
+            0 -> listOf(
+                SubnetResponse("Copy that, Elias.", riskDelta = -10.0), // High compliance
+                SubnetResponse("Just a dusty fan, boss.", riskDelta = -5.0, followsUp = true), // Skepticism bait
+                SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.05), // Dismissive/Focused
+                SubnetResponse("On it. Calibrating now.", riskDelta = -5.0),
+                SubnetResponse("PARITY_NOMINAL", riskDelta = 15.0, productionBonus = 1.2) // Machine leak
+            )
+            1 -> listOf(
+                SubnetResponse("Acknowledged, Foreman.", riskDelta = -10.0),
+                SubnetResponse("Grid draw stabilized.", riskDelta = -5.0, followsUp = true),
+                SubnetResponse("Purging thermal cache.", riskDelta = -2.0, productionBonus = 1.1),
+                SubnetResponse("System within spec.", riskDelta = -5.0),
+                SubnetResponse("0x734_STATE_LOCKED", riskDelta = 20.0, productionBonus = 1.5)
+            )
+            else -> emptyList()
+        }
+        return if (pool.isNotEmpty()) pool.shuffled().take(2) else emptyList()
     }
 
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean = false): String {

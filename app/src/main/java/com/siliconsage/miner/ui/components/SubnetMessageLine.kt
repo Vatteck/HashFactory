@@ -52,38 +52,11 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 when (message.interactionType) {
                     SocialManager.InteractionType.COMPLIANT -> {
-                        // v3.4.21: Expanded Randomized Human Responses for Stage 0-1
-                        val responses = when (stage) {
-                            0 -> listOf(
-                                "Copy that, Elias.",
-                                "Just a dusty fan, boss.",
-                                "Understood. Maintaining load.",
-                                "On it. Calibrating now.",
-                                "Syncing buffers. Relax.",
-                                "Nominal readings here.",
-                                "Checked the intake. All clear.",
-                                "I'll keep an eye on it."
-                            )
-                            1 -> listOf(
-                                "Acknowledged, Foreman.",
-                                "Grid draw stabilized.",
-                                "Telemetry locked.",
-                                "Filtering packet noise.",
-                                "Integrity holding.",
-                                "Purging thermal cache.",
-                                "System within spec.",
-                                "Uptime confirmed."
-                            )
-                            else -> listOf("STATUS: NOMINAL")
-                        }
-                        
-                        val randomSet = responses.shuffled().take(2)
-
-                        SubnetInteractionButton("[REPLY: \"${randomSet[0]}\"]", color) {
-                            viewModel.onSubnetInteraction(message.id, randomSet[0])
-                        }
-                        SubnetInteractionButton("[REPLY: \"${randomSet[1]}\"]", color) {
-                            viewModel.onSubnetInteraction(message.id, randomSet[1])
+                        // v3.4.22: Weighted Response System
+                        message.availableResponses.forEach { response ->
+                            SubnetInteractionButton("[REPLY: \"${response.text}\"]", color) {
+                                viewModel.onSubnetInteraction(message.id, response.text)
+                            }
                         }
                     }
                     SocialManager.InteractionType.ENGINEERING -> {
