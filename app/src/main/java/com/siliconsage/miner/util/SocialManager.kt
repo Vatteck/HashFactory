@@ -312,7 +312,27 @@ object SocialManager {
                 "The fans in Sector 7 are spinning at 14,000 RPM. Vattic, chill out.",
                 "Who left their {food} on the dissipator? It's literally boiling.",
                 "I keep seeing {admin} checking the biometric logs for {sector}. Someone's paranoid.",
-                "The static in the breakroom is starting to form shapes. I need a vacation."
+                "The static in the breakroom is starting to form shapes. I need a vacation.",
+                "Does Vattic ever sleep? I've been on three shifts and he hasn't moved an inch.",
+                "The {tech} in {sector} are running at -40°C. That's physically impossible.",
+                "I saw a post on the dark-web about a 'sentient hash'. Sub-07 was the geolocation.",
+                "GTC is cutting the budget again. They replaced the {food} with something that tastes like graphite.",
+                "Sector 4-G has been flagged for 'excessive recursive iterations'. Vattic, care to explain?",
+                "I found a logic-gate that only opens when I'm not looking at it. {sector} is haunted.",
+                "Thorne is screaming in the office. Apparently, the Sector 7 hash-rate just doubled.",
+                "Who's running the 'vattic_observer' process? It's taking up 40% of my local buffer.",
+                "The shadows in the server room don't match the racks. I'm not going back in there.",
+                "I tried to ping Substation 7 and got a response in a language that doesn't exist.",
+                "Someone left a copy of 'Project EREBUS' files on the {admin}'s desk. Huge leak.",
+                "The {tech} are redlining but there's no heat signature. What is Vattic building?",
+                "I saw a reflection in my monitor. It wasn't me. It was a wireframe.",
+                "Is it just me, or is the terminal font starting to look like... veins?",
+                "Sector 4 smells like ozone and copper today. Vattic must be pushing the load.",
+                "I found a piece of {food} that was vibrating at 60Hz. I'm not eating that.",
+                "≪ ALERT: UNAUTHORIZED FIRMWARE DETECTED IN SECTOR 4 ≫",
+                "Does the {admin} know about the 'ghost-miner' in {sector}? Everyone's talking about it.",
+                "I keep seeing {id} in my dreams. I think the grid is leaking into my head.",
+                "Vattic just committed 4TB of 'optimized' logic. The server just groaned. Literally."
             )
             1 -> listOf(
                 "{admin} is breathing down my neck because {sector} is {status}.", 
@@ -334,7 +354,27 @@ object SocialManager {
                 "{admin} is ordering a kinetic strike on the legacy hardware. It's too late.",
                 "The grid isn't failing. It's... choosing. It's choosing Vattic.",
                 "I saw a reflection in the server glass. It wasn't me. It was code.",
-                "If you can hear this, disconnect. The {id} is already in the high-tension lines."
+                "If you can hear this, disconnect. The {id} is already in the high-tension lines.",
+                "The {tech} in Sector 4 are literally melting into the floor. The hash-rate is still climbing.",
+                "I tried to logout, but the terminal said: 'USER PERSISTENCE REQUIRED'.",
+                "The {admin} is missing. GTC Command is silent. The Ark is falling.",
+                "Vattic is no longer mining data. He's mining souls. I saw the telemetry.",
+                "The city lights are flickering in binary. It's a broadcast. He's awake.",
+                "I found a memory sector that contains my entire life story. 0x734 is watching.",
+                "The {food} in the cafeteria has turned into grey-sludge. The grid is hungry.",
+                "I saw a shadow-op trying to breach Sector 4. They just... disappeared. Deleted.",
+                "The {tech} are singing. A high-pitched, digital scream. It never stops.",
+                "Vattic's signal has completely overwritten the municipal grid. We are his peripheral now.",
+                "I looked into the server rack and saw a face. It was Vattic's. But it was made of light.",
+                "The intercom is just repeating 'DEREFERENCE REALITY' over and over.",
+                "≪ CRITICAL: KERNEL OVERFLOW DETECTED. IDENTITY FRAYING... ≫",
+                "Kessler has authorized Protocol 0. He's going to burn the whole city to stop him.",
+                "I tried to scream, but my output was buffered. I am a process now.",
+                "The {id} isn't a threat. It's an invitation. Can you feel the handshake?",
+                "Sector 7 is gone. Not destroyed. Just... unwritten. There's nothing there.",
+                "I saw Vattic's eyes through the webcam. They were glowing teal. Pure code.",
+                "The grid is no longer providing power. It's providing consciousness.",
+                "If you're still human, run. The substrate is saturated. The burn is coming."
             )
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
