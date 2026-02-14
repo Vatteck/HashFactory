@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.NeonGreen
@@ -38,7 +39,10 @@ fun AscensionConfirmationDialog(
         androidx.lifecycle.viewmodel.compose.viewModel<com.siliconsage.miner.viewmodel.GameViewModel>()
     } else null)
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = { /* No-op */ },
+        properties = DialogProperties(dismissOnClickOutside = false)
+    ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()

@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.siliconsage.miner.data.RivalMessage
 import com.siliconsage.miner.data.RivalSource
 import com.siliconsage.miner.ui.theme.NeonGreen
@@ -40,7 +41,13 @@ fun RivalMessageDialog(
 ) {
     if (message == null) return
     
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = { /* No-op to prevent outside dismissal */ },
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
         when (message.source) {
             RivalSource.GTC -> VanceMessageCard(message, onDismiss)
             RivalSource.KERNEL -> KernelMessageCard(message, onDismiss)

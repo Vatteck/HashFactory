@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.siliconsage.miner.data.DataLog
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.ElectricBlue
@@ -32,7 +33,13 @@ fun DataLogDialog(
 ) {
     if (log == null) return
     
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = { /* No-op to prevent outside dismissal */ },
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
