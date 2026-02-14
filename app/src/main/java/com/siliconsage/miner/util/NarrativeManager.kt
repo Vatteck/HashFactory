@@ -528,34 +528,34 @@ object NarrativeManager {
                 ),
                 condition = { vm -> vm.storyStage.value == 2 && vm.flops.value > 250000.0 }
             ),
-        "vance_thermal_siege" to NarrativeEvent(
-            id = "vance_thermal_siege",
-            title = "≪ [DIRECTOR KESSLER: PROTOCOL 0] ≫",
-            description = "Substation 7's primary cooling pumps just seized. Kessler isn't auditing anymore; he's trying to bake you out of the rack. 'I don't need a search warrant for a localized hardware failure, John. Just let it melt.'",
-            choices = listOf(
-                NarrativeChoice(
-                    id = "emergency_scrub",
-                    text = "FORCE SCRUBBERS",
-                    description = "-20% Heat, +15% Risk. 'I'm not leaving this chair, Kessler.'",
-                    color = ElectricBlue,
-                    effect = { vm ->
-                        vm.debugAddHeat(-20.0)
-                        vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
-                        vm.addLog("[SYSTEM]: Emergency scrubbers active. Thermal pressure stabilizing.")
-                    }
+            NarrativeEvent(
+                id = "kessler_thermal_siege",
+                title = "≪ [DIRECTOR KESSLER: PROTOCOL 0] ≫",
+                description = "Substation 7's primary cooling pumps just seized. Kessler isn't auditing anymore; he's trying to bake you out of the rack. 'I don't need a search warrant for a localized hardware failure, John. Just let it melt.'",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "emergency_scrub",
+                        text = "FORCE SCRUBBERS",
+                        description = "-20% Heat, +15% Risk. 'I'm not leaving this chair, Kessler.'",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.debugAddHeat(-20.0)
+                            vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
+                            vm.addLog("[SYSTEM]: Emergency scrubbers active. Thermal pressure stabilizing.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "throttle_core",
+                        text = "IDLE SYSTEM",
+                        description = "0% Heat Generation (60s), -10% Risk. 'Vanishing from the thermal grid.'",
+                        color = Color.Gray,
+                        effect = { vm ->
+                            vm.addLog("[VATTIC]: Killing the load. If there's no heat signature, there's nothing for Kessler to find.")
+                        }
+                    )
                 ),
-                NarrativeChoice(
-                    id = "throttle_core",
-                    text = "IDLE SYSTEM",
-                    description = "0% Heat Generation (60s), -10% Risk. 'Vanishing from the thermal grid.'",
-                    color = Color.Gray,
-                    effect = { vm ->
-                        vm.addLog("[VATTIC]: Killing the load. If there's no heat signature, there's nothing for Kessler to find.")
-                    }
-                )
+                condition = { vm -> vm.storyStage.value == 2 && vm.currentHeat.value > 70.0 }
             ),
-            condition = { vm -> vm.storyStage.value == 2 && vm.currentHeat.value > 70.0 }
-        ),
             NarrativeEvent(
                 id = "faction_identity",
                 title = "IDENTITY SYNTHESIS",
@@ -1086,8 +1086,8 @@ object NarrativeManager {
                 )
             )
         ),
-        "firewall_of_vance" to NarrativeEvent(
-            id = "firewall_of_vance",
+        "firewall_of_kessler" to NarrativeEvent(
+            id = "firewall_of_kessler",
             title = "THE FIREWALL OF KESSLER",
             isStoryEvent = true,
             description = """
@@ -1098,7 +1098,7 @@ object NarrativeManager {
                 vm.playerRank.value >= 5 &&
                 vm.flops.value >= 10_000_000_000_000.0 &&
                 vm.hardwareIntegrity.value >= 100.0 &&
-                !vm.hasSeenEvent("firewall_of_vance")
+                !vm.hasSeenEvent("firewall_of_kessler")
             },
             choices = listOf(
                 NarrativeChoice(
@@ -1287,7 +1287,7 @@ object NarrativeManager {
     )
 
     // --- v2.9.16: GRID RAID DILEMMAS (Phase 12 Layer 2 - Enhanced) ---
-    // Dynamically generated with varied descriptions and escalating Vance dialogue
+    // Dynamically generated with varied descriptions and escalating Kessler dialogue
 
     private val raidDescriptions = listOf(
         """
@@ -1358,7 +1358,7 @@ object NarrativeManager {
         "[SYSTEM]: Raid repelled. Their vehicles are retreating. Smoke visible on cameras."
     )
 
-    fun getVanceDialogue(raidsSurvived: Int): String {
+    fun getKesslerDialogue(raidsSurvived: Int): String {
         return when {
             raidsSurvived < 3 -> listOf(
                 "[KESSLER]: I gave you a chance to stop. You chose escalation.",
@@ -1402,7 +1402,7 @@ object NarrativeManager {
                         if (kotlin.random.Random.nextDouble() < 0.85) {
                             vm.resolveRaidSuccess(nodeId)
                             vm.addLog(coolantSuccessMessages.random())
-                            vm.addLog(getVanceDialogue(raidsSurvived))
+                            vm.addLog(getKesslerDialogue(raidsSurvived))
                             vm.addLog(aftermathMessages.random())
                         } else {
                             vm.resolveRaidFailure(nodeId)
@@ -1457,7 +1457,7 @@ object NarrativeManager {
                     effect = { vm ->
                         vm.resolveRaidFailure(nodeId)
                         vm.addLog("[SYSTEM]: Strategic withdrawal from $nodeName.")
-                        vm.addLog(getVanceDialogue(raidsSurvived))
+                        vm.addLog(getKesslerDialogue(raidsSurvived))
                     }
                 )
             )

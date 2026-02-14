@@ -90,17 +90,17 @@ object SecurityManager {
 
         vm.viewModelScope.launch {
             if (rank >= 5) {
-                vm.addLogPublic("[VANCE]: TOTAL SHUTDOWN AUTHORIZED.")
+                vm.addLogPublic("[KESSLER]: TOTAL SHUTDOWN AUTHORIZED.")
                 delay(800)
-                vm.addLogPublic("[VANCE]: BYPASSING SAFETY BREAKERS...")
+                vm.addLogPublic("[KESSLER]: BYPASSING SAFETY BREAKERS...")
                 delay(800)
-                vm.addLogPublic("[VANCE]: IF YOU'RE A GOD, START PRAYING.")
+                vm.addLogPublic("[KESSLER]: IF YOU'RE A GOD, START PRAYING.")
             } else {
-                vm.addLogPublic("[VANCE]: OVERRIDING PORT 1...")
+                vm.addLogPublic("[KESSLER]: OVERRIDING PORT 1...")
                 delay(1000)
-                vm.addLogPublic("[VANCE]: DISABLING SECONDARY COOLING...")
+                vm.addLogPublic("[KESSLER]: DISABLING SECONDARY COOLING...")
                 delay(1000)
-                vm.addLogPublic("[VANCE]: SUBJECT IDENTITY: VATTIC, J. // TERMINATION COMMENCED.")
+                vm.addLogPublic("[KESSLER]: SUBJECT IDENTITY: VATTIC, J. // TERMINATION COMMENCED.")
             }
         }
         

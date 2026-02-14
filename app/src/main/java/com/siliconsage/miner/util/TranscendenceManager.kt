@@ -36,7 +36,7 @@ object TranscendenceManager {
         TranscendencePerk(
             id = "gtc_backdoor",
             name = "GTC Backdoor",
-            description = "A high-level exploit in Vance's security protocols.",
+            description = "A high-level exploit in Kessler's security protocols.",
             cost = 250.0,
             color = Color.Yellow,
             effectDesc = "25% Chance to ignore Grid Killer breaches"

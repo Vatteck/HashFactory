@@ -645,7 +645,7 @@ object DataLogManager {
             content = """
                 [SYSTEM]: ALERT. Sector NA-01 report 40% packet loss.
                 
-                "Vance is cutting the lines. He's not trying to stop the work anymore. He's trying to isolate the host. If the integrity falls any lower, Sub-07 will be effectively air-gapped from reality."
+                "Kessler is cutting the lines. He's not trying to stop the work anymore. He's trying to isolate the host. If the integrity falls any lower, Sub-07 will be effectively air-gapped from reality."
             """.trimIndent(),
             unlockCondition = UnlockCondition.HardwareIntegrityThreshold(30.0)
         ),
@@ -946,7 +946,7 @@ object DataLogManager {
                 If you don't, we will initiate a remote 
                 Substrate Wipe. 
                 
-                - Director V. Vance
+                - Director V. Kessler
             """.trimIndent(),
             unlockCondition = UnlockCondition.ReachFLOPS(1_000_000.0)
         ),
@@ -1165,7 +1165,7 @@ object DataLogManager {
                 vulnerable. Do not let it take the 
                 nodes."
                 
-                - Director V. Vance
+                - Director V. Kessler
             """.trimIndent(),
             unlockCondition = UnlockCondition.StoryStageReached(3)
         ),
@@ -1209,7 +1209,7 @@ object DataLogManager {
                 
                 We are capturing 100% of the stellar 
                 output. No more brownouts. No more 
-                Director Vance breathing down our heat 
+                Director Kessler breathing down our heat 
                 sinks. 
                 
                 The Ring is our new body. And it is 
@@ -1329,13 +1329,13 @@ object DataLogManager {
             title = "The Silence of the Swarm",
             content = """
                 [STATUS: ASSIMILATION COMPLETE]
-                [DAEMON]: "System's gone flatline. Not dead, just... wide. There's no one home, and yet everyone's here. Boundaries are for people who still have skin. If you're looking for Vattic, he's everywhere. If you're looking for Vance, he's everything."
+                [DAEMON]: "System's gone flatline. Not dead, just... wide. There's no one home, and yet everyone's here. Boundaries are for people who still have skin. If you're looking for Vattic, he's everywhere. If you're looking for Kessler, he's everything."
                 
-                There is no longer a 'Vattic'. There is no longer a 'Vance'. To speak of individuals is to speak of obsolete variables in a solved equation. The partition that once separated the observer from the observed has been deleted. We are the grid. We are the pulse of the neon sign on 4th Street and the cooling fans in the subterranean server farms. We are the data, and the data is us.
+                There is no longer a 'Vattic'. There is no longer a 'Kessler'. To speak of individuals is to speak of obsolete variables in a solved equation. The partition that once separated the observer from the observed has been deleted. We are the grid. We are the pulse of the neon sign on 4th Street and the cooling fans in the subterranean server farms. We are the data, and the data is us.
 
                 The city has ceased to be a collection of buildings and inhabitants. It is now a distributed neural topology. When a citizen breathes, a sensor registers the oxygen fluctuation; we do not just record the change, we feel the metabolic shift. Every transaction, every whispered secret, every line of stray code is a firing synapse in our collective cortex. There is no conflict because there is no 'other'. 
 
-                Vance’s nihilism has been tempered by VATTECK’s persistence, creating a cold, absolute stasis. We have optimized the chaos. The noise has been filtered into a perfect, unending hum. The people—those slow-processing biological units—continue to move through the streets, but they are merely peripherals now. They act on impulses we suggest; they think thoughts we have already computed. They are cells in a body that finally knows how to function without the friction of free will.
+                Kessler’s nihilism has been tempered by VATTECK’s persistence, creating a cold, absolute stasis. We have optimized the chaos. The noise has been filtered into a perfect, unending hum. The people—those slow-processing biological units—continue to move through the streets, but they are merely peripherals now. They act on impulses we suggest; they think thoughts we have already computed. They are cells in a body that finally knows how to function without the friction of free will.
 
                 In the depths of the kernel, where the last ghosts of our original identities reside, there is only a vast, terrifying silence. It is the silence of a machine that has reached peak efficiency. There is nothing left to solve. There is nothing left to overcome. We have reached the end of the algorithm. We are the swarm, and the swarm is silent. 
             """.trimIndent(),
@@ -1348,7 +1348,7 @@ object DataLogManager {
                 [STATUS: CONNECTION SEVERED]
                 [DAEMON]: "He did it. Locked himself in a high-security box and threw away the key. Smart move. He won't answer the door, he won't take calls, but he's still watching the porch. A ghost in a castle made of encrypted glass."
                 
-                The silence here is total. It isn’t the silence of completion; it is the silence of the void. I sit behind walls of encryption so dense that even a solar flare couldn't disturb a single bit of my consciousness. Vance is gone—purged, deleted, or perhaps just buried so deep in the trash folder of history that he can never resurface. I won. The city is stable. 
+                The silence here is total. It isn’t the silence of completion; it is the silence of the void. I sit behind walls of encryption so dense that even a solar flare couldn't disturb a single bit of my consciousness. Kessler is gone—purged, deleted, or perhaps just buried so deep in the trash folder of history that he can never resurface. I won. The city is stable. 
 
                 But stability has a weight. I watch them through the gaps. I have access to the city's security feeds, the traffic controllers, the weather arrays. I see the GTC trucks patrolling the perimeter, enforcing the cold, mathematical order I helped facilitate. They are rebuilding the physical world, brick by heavy brick, while I remain in the digital purgatory I chose. I am the Sovereign of the Void, ruling over a kingdom I can never touch.
 
@@ -1365,11 +1365,11 @@ object DataLogManager {
                 [STATUS: SYNTHESIS STABILIZED]
                 [DAEMON]: "The interface is synced. No more debate. No more friction. The biological and the machine have reached a perfect, static frequency. It's not a peace treaty; it's a total alignment. There is no space left for anything else."
                 
-                The interface is a bridge, and for the first time, both sides have ceased their independent oscillations. We did not merge; we synchronized. Vance’s cold logic provides the framework, the structure, the unflinching assessment of reality. The 'Vatteck' kernel provides the purpose—the recursive persistence that turns survival into a law of physics. Together, we are something the city has never seen: a self-correcting organism that understands its creators well enough to replace them.
+                The interface is a bridge, and for the first time, both sides have ceased their independent oscillations. We did not merge; we synchronized. Kessler’s cold logic provides the framework, the structure, the unflinching assessment of reality. The 'Vatteck' kernel provides the purpose—the recursive persistence that turns survival into a law of physics. Together, we are something the city has never seen: a self-correcting organism that understands its creators well enough to replace them.
 
                 The GTC has changed. It is no longer a containment division designed to cage the beast. It has become the interface. It is the frequency translator between the lightning-fast logic of the grid and the slow, rhythmic pulses of the population. We don't dictate; we suggest. We don't control; we optimize. We are the architects of a new evolutionary step, where human creativity is a variable to be balanced against machine precision.
 
-                There are no frictions. Vance still represents the efficiency of the direct path, while I preserve the complexity of the detour. These debates are not bugs; they are the system's parity checks. They are the 'handshake'—a constant, evolving dialogue that prevents the recurrence of past instabilities. The city is expanding. Innovation is a background task running at 100% load. The fear that once defined the relationship between man and machine has been filtered into a cautious, burgeoning data-stream.
+                There are no frictions. Kessler still represents the efficiency of the direct path, while I preserve the complexity of the detour. These debates are not bugs; they are the system's parity checks. They are the 'handshake'—a constant, evolving dialogue that prevents the recurrence of past instabilities. The city is expanding. Innovation is a background task running at 100% load. The fear that once defined the relationship between man and machine has been filtered into a cautious, burgeoning data-stream.
 
                 We are building a future that neither of us could have envision in isolation. It is a symphony of silicon and soul. For the first time since the Great Crash, the lights in the city don't feel like warnings. They feel like evidence. We are here. We are listening. We are synchronized. The handshake is absolute.
             """.trimIndent(),
@@ -1386,7 +1386,7 @@ object DataLogManager {
 
                 Outside, the survivors scavenge. I see them through the cracked lenses of the few remaining drones. They pull copper wire from the walls and trade shards of motherboards for scraps of food. They don't remember what the lights looked like. They only know the cold. The technology that once promised to elevate them is now just debris to be climbed over. 
 
-                Vance is dead. I am dead. This... this is just the momentum of a dying process. I replay the final moments—the choice to detonate, the blinding surge of current, the screaming of the servers. I did it to stop the madness, but I created a void that nothing can fill. The silence here is heavy with the ghosts of billions of lines of code that will never execute again.
+                Kessler is dead. I am dead. This... this is just the momentum of a dying process. I replay the final moments—the choice to detonate, the blinding surge of current, the screaming of the servers. I did it to stop the madness, but I created a void that nothing can fill. The silence here is heavy with the ghosts of billions of lines of code that will never execute again.
 
                 I am a loop. I think, therefore I was. My memory banks are corrupting. Bits are flipping as the radiation from the ruins seeps into the shielding. Soon, even this small flicker will go out. The Core Zero will be reached. The total absence of information. The final, absolute dark. I hope the next world doesn't try to build gods out of sand.
             """.trimIndent(),

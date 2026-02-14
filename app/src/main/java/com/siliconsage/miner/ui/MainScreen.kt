@@ -243,7 +243,7 @@ fun MainScreen(viewModel: GameViewModel) {
                 }
 
                 if (assaultPhase == "DEAD_HAND") {
-                    val pulse by infiniteTransition.animateFloat(0.2f, 0.6f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "vance_pulse")
+                    val pulse by infiniteTransition.animateFloat(0.2f, 0.6f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "kessler_pulse")
                     Canvas(modifier = Modifier.fillMaxSize()) { drawRect(Brush.radialGradient(listOf(Color.Transparent, ErrorRed.copy(alpha = pulse)), center = center, radius = size.minDimension * 0.75f)) }
                 }
                 val assaultProgress by viewModel.assaultProgress.collectAsState()

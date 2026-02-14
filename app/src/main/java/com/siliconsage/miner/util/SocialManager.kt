@@ -54,6 +54,8 @@ object SocialManager {
         var timeoutMs: Long? = null
         var isForceReply = false
 
+        val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
+
         val interaction = when {
             content.contains("node_7_rat") -> {
                 isForceReply = true
@@ -63,7 +65,12 @@ object SocialManager {
             stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
             stage <= 1 && (handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer")) -> InteractionType.COMPLIANT
             // Case: Peon mentions Vattic/Engineer
-            (content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)) && !handle.contains("thorne") -> InteractionType.COMPLIANT
+            mentionsVattic && !handle.contains("thorne") -> {
+                isForceReply = true // v3.4.29: Pause for direct callouts
+                InteractionType.COMPLIANT
+            }
+            // v3.4.29: 30% chance for interaction with any peon in Stage 0-1
+            stage <= 1 && handle.startsWith("@") && kotlin.random.Random.nextFloat() < 0.3f -> InteractionType.COMPLIANT
             else -> null
         }
 
@@ -80,7 +87,7 @@ object SocialManager {
             responses = node?.responses ?: emptyList()
             timeoutMs = node?.timeoutMs
         } else if (interaction == InteractionType.COMPLIANT) {
-            responses = generateGenericResponses(stage, content.contains("Vattic", ignoreCase = true))
+            responses = generateGenericResponses(stage, mentionsVattic)
         }
 
         return SubnetMessage(
@@ -92,6 +99,23 @@ object SocialManager {
             threadId = threadId,
             nodeId = nodeId,
             timeoutMs = timeoutMs,
+            isForceReply = isForceReply
+        )
+    }
+
+    /**
+     * v3.4.29: Helper to create follow-up messages that respect interaction rules
+     */
+    fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
+        val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
+        val isForceReply = mentionsVattic && !handle.contains("thorne")
+        
+        return SubnetMessage(
+            id = java.util.UUID.randomUUID().toString(),
+            handle = handle,
+            content = content,
+            interactionType = if (mentionsVattic || handle.startsWith("@")) InteractionType.COMPLIANT else null,
+            availableResponses = generateGenericResponses(stage, mentionsVattic),
             isForceReply = isForceReply
         )
     }
@@ -204,7 +228,8 @@ object SocialManager {
             "{food}" to listOf("Gray-paste", "Synth-caff"), 
             "{status}" to listOf("redlined", "corroding"),
             "{admin}" to listOf("Foreman Thorne", "Administrator Mercer", "Lead Tech Mercer", "Director Kessler"),
-            "{tech}" to listOf("blade-servers", "dissipators", "logic-gates", "ASIC-racks")
+            "{tech}" to listOf("blade-servers", "dissipators", "logic-gates", "ASIC-racks"),
+            "{id}" to listOf("734", "erebus", "vatteck", "null", "consensus")
         )
         patterns.forEach { (key, values) -> while (result.contains(key)) result = result.replaceFirst(key, values.random()) }
         return result

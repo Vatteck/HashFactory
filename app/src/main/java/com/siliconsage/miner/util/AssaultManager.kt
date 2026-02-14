@@ -153,7 +153,7 @@ object AssaultManager {
         
         vm.addLog("[SYSTEM]: ═══════════════════════════════════════")
         vm.addLog("[SYSTEM]: COMMAND CENTER SECURED")
-        vm.addLog("[SYSTEM]: VANCE STATUS: $outcome")
+        vm.addLog("[SYSTEM]: KESSLER STATUS: $outcome")
         vm.addLog("[SYSTEM]: ═══════════════════════════════════════")
         
         // v3.2.44: Trigger Departure instead of static Victory

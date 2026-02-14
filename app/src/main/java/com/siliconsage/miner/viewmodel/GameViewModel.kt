@@ -933,13 +933,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 else -> "Are you still there, Vattic? Your signal looks... different."
             }
 
-            val followUp = com.siliconsage.miner.util.SocialManager.SubnetMessage(
-                id = java.util.UUID.randomUUID().toString(),
-                handle = handle,
-                content = followUpContent,
-                interactionType = null
-            )
+            val followUp = com.siliconsage.miner.util.SocialManager.createFollowUp(handle, followUpContent, storyStage.value)
+            
             subnetMessages.update { (it + followUp).takeLast(50) }
+            
+            // v3.4.29: Trigger pause if follow-up is interactive
+            if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
+                isSubnetPaused.value = true
+            }
         }
     }
 
