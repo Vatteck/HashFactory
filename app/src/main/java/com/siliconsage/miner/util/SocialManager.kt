@@ -48,8 +48,9 @@ object SocialManager {
 
         val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
         val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
+        val isCommand = content.contains("≪")
 
-        // 1. Determine Interaction Context
+        // v3.4.39: Identity-aware Interaction Rules
         val interaction = when {
             // Stage 4+ Identity Hijack
             stage >= 4 && handle.startsWith("@") && !isAdmin -> InteractionType.HIJACK
@@ -57,8 +58,8 @@ object SocialManager {
             // Stage 2+ Malicious/Hack attempts
             stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
             
-            // Stage 0-1: Direct Admin Orders or Mentions
-            stage <= 1 && (isAdmin || mentionsVattic) -> InteractionType.COMPLIANT
+            // Stage 0-1: Direct Admin Orders (Commands) or Mentions
+            stage <= 1 && (isCommand || mentionsVattic) -> InteractionType.COMPLIANT
             
             else -> null
         }
@@ -72,7 +73,7 @@ object SocialManager {
             responses = node?.responses ?: emptyList()
             timeoutMs = node?.timeoutMs ?: 60000L
         } else if (interaction != null) {
-            // 3. Handle Generic Interactions (Gossip vs Orders)
+            // 3. Handle Generic Interactions
             responses = generateIdentityAwareResponses(stage, handle, mentionsVattic)
             timeoutMs = 60000L
             if (mentionsVattic && !isAdmin) isForceReply = true

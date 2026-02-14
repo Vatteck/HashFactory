@@ -897,8 +897,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             else -> {}
         }
         
+        // v3.4.39: Hard-clear both interaction flags to prevent button ghosting
         subnetMessages.update { list ->
-            list.map { if (it.id == messageId) it.copy(interactionType = null) else it }
+            list.map { if (it.id == messageId) it.copy(interactionType = null, isForceReply = false) else it }
         }
     }
 
