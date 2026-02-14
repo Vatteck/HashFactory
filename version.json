@@ -1,10 +1,10 @@
 {
-  "version": "3.4.4",
-  "build": 322,
+  "version": "3.4.7",
+  "build": 323,
   "date": "2026-02-13",
   "changelog": [
-    "Social Subnet Hardening: Anti-repetition sliding window, increased chatter frequency, and doubled handshake duration."
+    "Lore: Finalized VATTIC.SYS identity, THREAT: ABYSSAL designation, and Stage 0 'Watercooler' chatter."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.4",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.4/MINER_3.4.4.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.7",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.7/MINER_3.4.7.apk"
 }
