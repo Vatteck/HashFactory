@@ -1,10 +1,10 @@
 {
-  "version": "3.4.71-dev",
-  "build": 336,
+  "version": "3.4.72",
+  "build": 337,
   "date": "2026-02-14",
   "changelog": [
-    "Phase 13: Stage 0 Button Fix (COMPUTE HASH)"
+    "Phase 13: The Awakening - Canonical Master Release"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.71-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.71-dev/MINER_3.4.71-dev.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.72",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.72/MINER_3.4.72.apk"
 }
