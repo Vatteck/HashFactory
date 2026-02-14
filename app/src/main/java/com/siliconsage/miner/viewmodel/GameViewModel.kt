@@ -829,8 +829,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         val threadId = message.threadId
         val nextNodeId = responseData?.nextNodeId
 
-        // Resume chatter after interaction
-        isSubnetPaused.value = false
+        // v3.4.33: Persistent Pause logic
+        // Only clear pause if we aren't waiting for a follow-up
+        val hasFollowUp = (threadId != null && nextNodeId != null) || (responseData?.followsUp == true)
+        if (!hasFollowUp) {
+            isSubnetPaused.value = false
+        }
 
         when (message.interactionType) {
             com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
@@ -888,7 +892,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     private fun scheduleSubnetThreadResponse(handle: String, threadId: String, nodeId: String) {
         viewModelScope.launch {
+            isSubnetTyping.value = true // v3.4.33: Indicator for follow-up
             delay(Random.nextLong(3000, 6000)) // Faster response for active threads
+            isSubnetTyping.value = false
+            
             if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
             
             val node = com.siliconsage.miner.util.SocialManager.getThreadNode(threadId, nodeId) ?: return@launch
@@ -912,6 +919,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // v3.4.30: Multi-turn Choice-Pause
             if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
                 isSubnetPaused.value = true
+            } else {
+                isSubnetPaused.value = false // v3.4.33: Clear pause on terminal nodes
             }
 
             // v3.4.25: Timeout Logic
@@ -929,7 +938,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     private fun scheduleSubnetFollowUp(handle: String) {
         viewModelScope.launch {
+            isSubnetTyping.value = true
             delay(Random.nextLong(10000, 20000))
+            isSubnetTyping.value = false
+            
             if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
             
             val followUpContent = when (handle) {
@@ -945,6 +957,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // v3.4.29: Trigger pause if follow-up is interactive
             if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
                 isSubnetPaused.value = true
+            } else {
+                isSubnetPaused.value = false // v3.4.33: Clear pause
             }
         }
     }

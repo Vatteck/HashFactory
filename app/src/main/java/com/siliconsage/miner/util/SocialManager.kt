@@ -137,14 +137,18 @@ object SocialManager {
                     responses = listOf(
                         SubnetResponse("[BLOCK] Jam Probe", riskDelta = 40.0, nextNodeId = "END_HOSTILE"),
                         SubnetResponse("[SUBMIT] Allow Scan", riskDelta = 5.0, productionBonus = 0.8, nextNodeId = "END_SKEPTICAL")
-                    )
+                    ),
+                    timeoutMs = 60000L,
+                    timeoutNodeId = "END_HOSTILE"
                 )
                 "PATH_HONEST" -> ThreadNode(
                     content = "Stress testing without a permit is a breach of Protocol 7. However, the throughput is impressive. Share the data?",
                     responses = listOf(
                         SubnetResponse("[SHARE] Send telemetry packet.", riskDelta = -5.0, nextNodeId = "END_FRIENDLY"),
                         SubnetResponse("[REFUSE] Proprietary information.", riskDelta = 20.0, nextNodeId = "END_SKEPTICAL")
-                    )
+                    ),
+                    timeoutMs = 60000L,
+                    timeoutNodeId = "END_SKEPTICAL"
                 )
                 "END_HOSTILE" -> ThreadNode(
                     content = "Interfering with GTC oversight is a terminal offense. Expect an extraction team. [RAID_TRIGGERED]",
