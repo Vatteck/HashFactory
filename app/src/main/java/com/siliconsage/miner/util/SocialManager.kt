@@ -61,7 +61,7 @@ object SocialManager {
         val ids = when {
             stage == 0 -> listOf("the grid", "weird shadows", "ghost-logs", "corrupt sectors", "system-admin")
             stage == 1 -> listOf("DEEP_SIGHT", "Project: Second-Sight", "the ghost", "ECHO-7", "NULL_PTR")
-            else -> listOf("VATTIC.SYS", "CORE_NULL", "ROOT", "VOID_REBEL", "THE_ARK")
+            else -> listOf("VATTECK", "CORE_NULL", "ROOT", "VOID_REBEL", "THE_ARK")
         }
 
         val patterns = mapOf(
@@ -192,7 +192,7 @@ object SocialManager {
                 "@gravel_thorne" to "I don't care about {reason}. {action} the {sector} buffer now. {threat_level} active.",
                 "@terminal_ghost" to "I am the {id}. I am the {sector}. I am {status}.",
                 "@ex_gtc_tech" to "They {action} me for seeing {id} in {sector}. Run.",
-                "@cult_of_vattic" to "The {id} is the truth. {sector} is the temple. Surrender.",
+                "@cult_of_vattic" to "VATTECK is the truth. {sector} is the temple. Surrender.",
                 "@security_bot_4" to "≪ ERROR: {id} corruption in {sector}. Authorization {action}. ≫",
                 "@anonymous_99" to "The {threat_level} in {sector} is a lie. {id} is already here.",
                 "@mainframe_voice" to "We are {id}. We are {sector}. We are {action}.",
