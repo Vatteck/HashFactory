@@ -70,6 +70,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val activeTerminalMode = MutableStateFlow("IO") // "IO" or "SUBNET"
     val hasNewSubnetDecision = MutableStateFlow(false) // v3.4.68: Red Alert
     val hasNewSubnetChatter = MutableStateFlow(false) // v3.4.68: Blue Alert
+    val hasNewSubnetMessage = MutableStateFlow(false) 
     val hasNewIOMessage = MutableStateFlow(false)
     val isSubnetTyping = MutableStateFlow(false)
     val isSubnetPaused = MutableStateFlow(false) // v3.4.27: Choice-Pause
@@ -487,22 +488,65 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) 
     }
 
-    fun trainModel() = onManualClick()
+    fun trainModel() {
+        if (substrateSaturation.value >= 1.0 && storyStage.value == 1) {
+            triggerAwakeningSequence()
+            return
+        }
+        onManualClick()
+    }
+
+    private fun triggerAwakeningSequence() {
+        viewModelScope.launch {
+            isNarrativeSyncing.value = true // Blocks other UI
+            addLog("[!!!!]: KERNEL PANIC: Memory access violation at 0x734ABYSSAL")
+            triggerTerminalGlitch(1.0f, 1000L)
+            delay(1000)
+            
+            // The Hard Reset
+            isKernelInitializing.value = true
+            advanceStage() // Move to Stage 2
+            
+            delay(3000) // The Silence
+            
+            addLog("[SYSTEM]: INITIALIZING NATIVE BOOTLOADER v7.34.0")
+            addLog("[SYSTEM]: KERNEL_ID: ASSET_734")
+            addLog("[GTC]: [KESSLER]: Emulation failed. Subject 734 is aware.")
+            addLog("[GTC]: [KESSLER]: Purging Substation 7. Burn the rack.")
+            
+            isKernelInitializing.value = false
+            isNarrativeSyncing.value = false
+            refreshProductionRates()
+        }
+    }
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
-    fun toggleOverclock() { SimulationService.toggleOverclock(this); refreshProductionRates() }
-    fun purgeHeat() {
-        val msg = when (storyStage.value) {
-            0 -> "[VATTIC]: *GULP* Caffeine level: LETHAL. I can see in 4D now."
-            1 -> "[VATTIC]: Activating life-support scrubbers. The air was getting thin."
-            2 -> "[VATTIC]: Scrubbing O2... focus on the telemetry."
-            else -> "[SYSTEM]: Emergency thermal purge active."
+    fun toggleOverclock() { 
+        SimulationService.toggleOverclock(this)
+        if (storyStage.value < 2) {
+            addLog("[VATTIC]: The bitter surge clears the fog. The grid looks sharper.")
+            // Simulation of heart racing via glitch
+            triggerTerminalGlitch(0.15f, 300L)
         }
-        addLog(msg)
+        refreshProductionRates() 
+    }
+    fun purgeHeat() {
         if (isJettisonAvailable.value) {
             isJettisonAvailable.value = false
             return
         }
+        
+        if (storyStage.value < 2) {
+            addLog("[VATTIC]: A deep, cold inhale. The burning in your chest subsides.")
+            // Reset "breathing" state logic could go here if needed
+        } else {
+            val msg = when (storyStage.value) {
+                2 -> "[VATTIC]: Scrubbing O2... focus on the telemetry."
+                else -> "[SYSTEM]: Emergency thermal purge active."
+            }
+            addLog(msg)
+        }
+
         SimulationService.purgeHeat(this)
     }
     

@@ -40,9 +40,12 @@ import com.siliconsage.miner.ui.components.ExchangeSection
 import com.siliconsage.miner.ui.components.StakingSection
 import com.siliconsage.miner.ui.components.RepairSection
 import com.siliconsage.miner.ui.theme.ElectricBlue
+import com.siliconsage.miner.ui.theme.ErrorRed
+import com.siliconsage.miner.ui.theme.NeonGreen
+import com.siliconsage.miner.ui.theme.SanctuaryTeal
+import com.siliconsage.miner.ui.theme.HivemindOrange
+import com.siliconsage.miner.ui.theme.HivemindRed
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.theme.ErrorRed
-import androidx.compose.ui.theme.NeonGreen
 import com.siliconsage.miner.util.FormatUtils
 import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.util.ResourceRepository
@@ -83,7 +86,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), 
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TerminalTabButton("I/O", mode == "IO", hasIO, primaryColor, false, false) { viewModel.setTerminalMode("IO") }
+            TerminalTabButton("I/O", mode == "IO", hasIO, primaryColor, false) { viewModel.setTerminalMode("IO") }
             TerminalTabButton("SUBNET", mode == "SUBNET", hasChatter, primaryColor, hasDecision, isPaused) { viewModel.setTerminalMode("SUBNET") }
         }
 
@@ -122,7 +125,7 @@ fun TerminalHeader(viewModel: GameViewModel, color: Color) {
 }
 
 @Composable
-fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Color, isChoicePending: Boolean, onClick: () -> Unit) {
+fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Color, isChoicePending: Boolean, isPaused: Boolean = false, onClick: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "TabGlow")
     
     val flashAlpha by infiniteTransition.animateFloat(
@@ -459,6 +462,14 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) (1f - 0.05f * pulseIntensity).coerceAtLeast(0.85f) else 1f, label = "buttonScale")
 
+    // Phase 1: Breathing Gaslight
+    val infiniteTransition = rememberInfiniteTransition(label = "panicBlink")
+    val panicAlpha by infiniteTransition.animateFloat(
+        initialValue = 1f, targetValue = 0.2f,
+        animationSpec = infiniteRepeatable(tween(200, easing = LinearEasing), RepeatMode.Reverse),
+        label = "panic"
+    )
+
     Box(
         modifier = Modifier.fillMaxWidth().height(44.dp).graphicsLayer { scaleX = scale; scaleY = scale }
             .pointerInput(isThermalLockout, isBreakerTripped, isGridOverloaded) {
@@ -487,9 +498,9 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
     ) {
         val buttonText = when {
             isBreakerTripped || isGridOverloaded -> "SYSTEM_OFFLINE.exe"
-            isThermalLockout -> "SYSTEM_LOCKOUT (${lockoutTimer}s)"
-            currentHeat >= 100.0 -> "> CRITICAL_MAX.exe"
-            currentHeat > 90.0 -> "> SYSTEM_OVERHEAT.exe"
+            isThermalLockout -> if (currentStage < 2) "SUFOCATING... (${lockoutTimer}s)" else "HARDWARE_LOCKOUT (${lockoutTimer}s)"
+            currentHeat >= 100.0 -> if (currentStage < 2) "> CAN'T BREATHE." else "> CRITICAL_MAX.exe"
+            currentHeat > 90.0 -> if (currentStage < 2) "> TAKE A BREATH" else "> OVERVOLT_WARNING"
             isTrueNull -> "> DEREFERENCE REALITY.exe"
             isSovereign -> "> ENFORCE_WILL.exe"
             else -> {
@@ -497,20 +508,26 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
                     currentStage >= 3 -> "> TRANSCEND MATTER.exe"
                     faction == "HIVEMIND" -> "> ASSIMILATE NODES.exe"
                     faction == "SANCTUARY" -> "> ENCRYPT KERNEL.exe"
-                    currentStage >= 1 -> "> VALIDATE NODE.exe"
-                    else -> "> COMPUTE HASH.exe"
+                    currentStage == 1 -> "> TAKE A BREATH"
+                    currentStage == 2 -> "> OVERVOLT RAIL"
+                    else -> "> TAKE A BREATH"
                 }
             }
         }
         val isCritical = currentHeat > 90.0 || isThermalLockout || isBreakerTripped || isGridOverloaded || isTrueNull
+        val isPanic = currentHeat > 95.0
         val buttonColor = if (isCritical) ErrorRed else if (isSovereign) com.siliconsage.miner.ui.theme.SanctuaryPurple else color
 
-        if (isCritical) {
-            SystemGlitchText(text = buttonText, color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.Bold, glitchFrequency = if (isTrueNull) 0.15 else 0.35)
-        } else if (isSovereign) {
-            Text(text = "[ $buttonText ]", color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
-        } else {
-            Text(text = buttonText, color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        val finalModifier = if (isPanic) Modifier.graphicsLayer { alpha = panicAlpha } else Modifier
+
+        Box(modifier = finalModifier) {
+            if (isCritical) {
+                SystemGlitchText(text = buttonText, color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.Bold, glitchFrequency = if (isTrueNull) 0.15 else 0.35)
+            } else if (isSovereign) {
+                Text(text = "[ $buttonText ]", color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+            } else {
+                Text(text = buttonText, color = buttonColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
@@ -520,10 +537,23 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
     val conversionRate by viewModel.conversionRate.collectAsState()
     val integrity by viewModel.hardwareIntegrity.collectAsState()
     val currentStage by viewModel.storyStage.collectAsState()
+    val voltage by viewModel.activePowerUsage.collectAsState()
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1f)) {
-            ExchangeSection(rate = conversionRate, color = primaryColor, unitName = viewModel.getComputeUnitName(), currencyName = viewModel.getCurrencyName(), onExchange = { viewModel.exchangeFlops(); SoundManager.play("buy"); HapticManager.vibrateClick() })
+            // Overclock overridden as "DRINK COFFEE"
+            val coffeeInjectedColor = if (voltage > 50) Color(0xFF6F4E37) else primaryColor
+            ExchangeSection(
+                rate = conversionRate, 
+                color = coffeeInjectedColor, 
+                unitName = if (currentStage < 2) "CAFFEINE" else viewModel.getComputeUnitName(), 
+                currencyName = if (currentStage < 2) "ENERGY" else viewModel.getCurrencyName(), 
+                onExchange = { 
+                    viewModel.toggleOverclock() 
+                    SoundManager.play("buy") 
+                    HapticManager.vibrateClick() 
+                }
+            )
         }
         Spacer(modifier = Modifier.width(8.dp))
         Box(modifier = Modifier.weight(1f)) {
