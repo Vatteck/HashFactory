@@ -16,24 +16,34 @@ object DataLogManager {
             id = "LOG_000",
             title = "Installation Log",
             content = """
-                GTC SOFTWARE SOLUTIONS v1.0
+                GTC REMOTE UTILITY SUITE v1.0.4
                 ═══════════════════════════════════════
                 
                 INSTALLATION: SUCCESSFUL
-                PACKAGE: SiliconSage_Miner_Core.pkg
+                COMPONENT: Remote_Logistics_Toolkit
                 
-                NOTICE TO USER:
-                By initializing this software, you agree to 
-                allocate 100% of unused processing cycles 
-                to the GTC Global Grid.
+                [SITE ASSIGNMENT: SUBSTATION 7]
+                [OFFICER IN CHARGE: FOREMAN THORNE]
                 
-                Remote monitoring is ENABLED.
-                Performance-based Credits will be 
-                distributed upon successful validation.
+                NOTICE TO CONTRACTOR (Vattic, J.):
+                Welcome to the GTC mining network. Your primary 
+                directive is the validation of hash-segments to 
+                support the Global Grid. 
                 
-                DO NOT POWER DOWN DURING OPERATION.
+                By initializing this terminal, you agree to:
+                1. Maintain 100% uptime for the assigned local 
+                   substrate nodes.
+                2. Accept automated telemetry and biometric 
+                   performance tracking.
+                3. Stay on-site for the duration of the current 
+                   extraction quota (Est: 72 hours).
                 
-                [MINING CORE INITIALIZED]
+                WARNING: Substation 7 is a high-voltage, 
+                low-ventilation environment. GTC is not 
+                responsible for biological fatigue, sleep 
+                deprivation, or localized sensory distortion.
+                
+                [UPLINK ACTIVE. START YOUR SHIFT.]
             """.trimIndent(),
             unlockCondition = UnlockCondition.Instant
         ),
