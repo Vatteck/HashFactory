@@ -203,9 +203,32 @@ object SocialManager {
         val templates = getTemplatesForState(stage, faction, choice)
         var selectedIdx = (0 until templates.size).random()
         var selectedTemplate = templates[selectedIdx]
+        
+        // v3.4.31: Identity-aware Template Processing
         val isCommand = selectedTemplate.contains("≪") || selectedTemplate.contains("{admin}")
-        val handle = getHandle(stage, faction, isCommand)
+        
+        // Process template first to know which admin name was chosen
         val finalContent = processTemplate(selectedTemplate, stage)
+        
+        // Get handle, ensuring we don't pick an admin who is the subject of the message
+        val subjectAdmin = when {
+            finalContent.contains("Thorne") -> "@e_thorne"
+            finalContent.contains("Mercer") -> "@gtc_admin"
+            finalContent.contains("Kessler") -> "@gtc_security"
+            else -> null
+        }
+        
+        var handle = getHandle(stage, faction, isCommand)
+        
+        // Anti-self-reference loop
+        if (handle == subjectAdmin) {
+            handle = if (isCommand) {
+                listOf("@e_thorne", "@gtc_admin").find { it != subjectAdmin } ?: "@gtc_oversight"
+            } else {
+                listOf("@coffee_ghost", "@packet_rat", "@sre_lead").random()
+            }
+        }
+        
         return handle to finalContent
     }
 
