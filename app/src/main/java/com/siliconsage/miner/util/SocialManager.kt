@@ -146,7 +146,7 @@ object SocialManager {
         return listOf(
             SubnetResponse("Just hitting the quota.", riskDelta = -2.0),
             SubnetResponse("The coffee is cold. Back to work.", riskDelta = -5.0),
-            SubnetResponse("Relax Thorne, I'm right here.", riskDelta = 1.0),
+            SubnetResponse("Acknowledged.", riskDelta = 1.0),
             SubnetResponse("Who's asking?", riskDelta = 5.0, followsUp = true),
             SubnetResponse("[KEEP TYPING]", riskDelta = 1.0)
         )
@@ -190,11 +190,9 @@ object SocialManager {
     }
 
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean): String {
-        val authority = listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
+        val authority = if (stage == 0) listOf("@e_thorne", "@m_mercer", "@d_kessler") else listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
         
-        // v3.4.79: Identity Evolution
-        // Stage 0: Corporate LDAP (Boring)
-        // Stage 1+: Informal/Rebel Handles (The Mask slips or Faction life begins)
+        // v3.4.84: Fix handle leaks
         val peons = when (stage) {
             0 -> listOf(
                 "@m_santos", "@r_perry", "@l_lead", "@v_nguyen", 

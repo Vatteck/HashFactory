@@ -1,10 +1,10 @@
 {
-  "version": "3.4.83",
-  "build": 348,
+  "version": "3.4.84",
+  "build": 349,
   "date": "2026-02-14",
   "changelog": [
-    "Fixed Log Spam & Cross-Tab Contamination"
+    "Social Subnet Hardening - Fixed Handle Leaks & Dialogue Drift"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.83",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.83/MINER_3.4.83.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.84",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.84/MINER_3.4.84.apk"
 }
