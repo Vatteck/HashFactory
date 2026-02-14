@@ -156,6 +156,10 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     val isRaid by viewModel.isRaidActive.collectAsState()
     val corruption by viewModel.identityCorruption.collectAsState()
     val listState = rememberLazyListState()
+    
+    // v3.4.15: Ambient Glitch States
+    val glitchOffset by viewModel.terminalGlitchOffset.collectAsState()
+    val glitchAlpha by viewModel.terminalGlitchAlpha.collectAsState()
 
     // v2.9.78: Fix scroll lock when log is full
     LaunchedEffect(logs.size, subnetMessages.size) {
@@ -171,6 +175,10 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     Box(
         modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
             .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor), RoundedCornerShape(4.dp))
+            .graphicsLayer {
+                translationX = glitchOffset
+                alpha = glitchAlpha
+            }
     ) {
         // v3.2.23: Animated Scanline Effect
         val infiniteTransition = rememberInfiniteTransition(label = "scanline")
@@ -277,6 +285,8 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         isSovereign -> com.siliconsage.miner.ui.theme.ConvergenceGold
         else -> ElectricBlue
     }
+    
+    val ghostChar by viewModel.ghostInputChar.collectAsState()
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
@@ -320,6 +330,13 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                     append("$")
                 }
                 append(" ")
+                
+                // v3.4.15: Ghost Input Character
+                if (ghostChar.isNotEmpty()) {
+                    withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.5f))) {
+                        append(ghostChar)
+                    }
+                }
             },
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace

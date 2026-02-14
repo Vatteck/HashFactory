@@ -86,6 +86,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isJettisonAvailable = MutableStateFlow(false)
     val nodesCollapsedCount = MutableStateFlow(0)
     val launchVelocity = MutableStateFlow(1.0f)
+    val terminalGlitchOffset = MutableStateFlow(0f)
+    val terminalGlitchAlpha = MutableStateFlow(1f)
+    val ghostInputChar = MutableStateFlow("")
 
     // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -294,21 +297,21 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                         markPopupShown() // Reuse popup timer to throttle monologues
                     }
                     
-                    // Biometric Panic (Gaslighting)
-                    if (Random.nextDouble() < 0.1) {
-                        // Stage 0: Normal BPM. Stage 1: Panic BPM (180). Stage 2: Occasional NULL flicker
-                        val isPanic = storyStage.value == 1 && Random.nextDouble() < 0.2 && (now - lastPopupTime > 60000L)
-                        val isGlitch = storyStage.value == 2 && Random.nextDouble() < 0.05
-                        val isFlatline = storyStage.value >= 3
-                        
-                        fakeHeartRate.value = when {
-                            isFlatline -> "0"
-                            isGlitch -> "NULL"
-                            isPanic -> "184"
-                            else -> (Random.nextInt(68, 85)).toString()
-                        }
-                        
-                        if (isPanic) {
+                // Biometric Panic (Gaslighting)
+                if (Random.nextDouble() < 0.1) {
+                    // Stage 0: Normal BPM. Stage 1: Panic BPM (180). Stage 2: Occasional FLATLINE/NULL
+                    val isPanic = storyStage.value == 1 && Random.nextDouble() < 0.2 && (now - lastPopupTime > 60000L)
+                    val isGlitch = storyStage.value == 2 && Random.nextDouble() < 0.05
+                    val isFlatline = (storyStage.value == 2 && Random.nextDouble() < 0.1) || storyStage.value >= 3
+                    
+                    fakeHeartRate.value = when {
+                        isFlatline -> "0"
+                        isGlitch -> "NULL"
+                        isPanic -> "184"
+                        else -> (Random.nextInt(68, 85)).toString()
+                    }
+                    
+                    if (isPanic) {
                             markPopupShown() // LOCK the loop immediately
                             viewModelScope.launch {
                                 delay(3000)
@@ -356,6 +359,36 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 clickIntervals.clear()
             }
         }
+        
+        // v3.4.15: Ambient Sensory Polish Loop (Flicker & Drift)
+        viewModelScope.launch {
+            while (true) {
+                delay(Random.nextLong(100, 3000))
+                if (isSettingsPaused.value) continue
+                
+                val heat = currentHeat.value
+                val integrity = hardwareIntegrity.value
+                
+                // 1. Passive Screen Flicker
+                val flickerChance = (100.0 - integrity) / 500.0 + (heat / 1000.0)
+                if (Random.nextDouble() < flickerChance) {
+                    terminalGlitchOffset.value = Random.nextFloat() * 2f - 1f
+                    terminalGlitchAlpha.value = 0.7f + Random.nextFloat() * 0.3f
+                    delay(50)
+                    terminalGlitchOffset.value = 0f
+                    terminalGlitchAlpha.value = 1f
+                }
+                
+                // 2. Terminal Drift (Ghost Input)
+                if (storyStage.value >= 1 && Random.nextDouble() < 0.05) {
+                    val chars = "0123456789ABCDEF!@#$%^&*?"
+                    ghostInputChar.value = chars.random().toString()
+                    delay(Random.nextLong(200, 600))
+                    ghostInputChar.value = ""
+                }
+            }
+        }
+
         viewModelScope.launch {
             val processes = listOf(
                 "IDLE", "gtc_proxy.sh", "kernel_sync.exe", "log_aggregator", "thermal_monitor",

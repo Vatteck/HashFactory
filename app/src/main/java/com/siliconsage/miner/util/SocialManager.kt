@@ -148,7 +148,9 @@ object SocialManager {
                 "Vatteck is {activity} again. Thorne is {status} about it.",
                 "Requesting permission for {activity} in {sector}. Error: {reason}.",
                 "This place is {status}. Even the {tech} seems {status}.",
-                "I've been {activity} for 12 hours. {rumor}."
+                "I've been {activity} for 12 hours. {rumor}.",
+                "Who left a {food} in the intake fan of {sector}? It's redlined.",
+                "Thorne, that wasn't a noodle-cup in {sector}. It's a bio-sensor. We don't have it on the manifest."
             )
             stage == 1 -> listOf(
                 "Thorne's breathing down my neck because the {tech} in {sector} are {status}. I need a new job.",
