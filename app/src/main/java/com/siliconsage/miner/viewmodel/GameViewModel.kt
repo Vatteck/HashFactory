@@ -221,9 +221,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             isKernelInitializing.value = false
         }
         startLoops()
+        AmbientEffectsService.startAmbientLoop(this)
     }
 
     private fun startLoops() {
+        // Main Production Loop
         viewModelScope.launch {
             while (true) {
                 delay(100L)
@@ -233,15 +235,16 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 substrateMass.update { it + res.substrateDelta }
                 entropyLevel.update { it + res.entropyDelta }
                 
-                // v3.2.52: Saturation growth based on substrateMass vs Capacity
+                // v3.2.52: Saturation growth
                 if (storyStage.value >= 3) {
                     val growth = (res.substrateDelta / 1e12).coerceIn(0.0, 0.001)
                     substrateSaturation.update { (it + growth).coerceAtMost(1.0) }
                 }
-
                 flushLogs()
             }
         }
+        
+        // Simulation & Manager Loop
         viewModelScope.launch {
             while (true) {
                 delay(1000L)
@@ -250,145 +253,45 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 DataLogManager.checkUnlocks(this@GameViewModel)
                 saveState()
                 if (isSettingsPaused.value || showOfflineEarnings.value) continue
+                
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
+                
                 val now = System.currentTimeMillis()
                 if (now - lastNewsTickTime > 15000L) {
                     MarketManager.updateMarket(this@GameViewModel)
                     lastNewsTickTime = now
                 }
+                
                 NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
                 SectorManager.processAnnexations(this@GameViewModel)
                 SecurityManager.checkSecurityThreats(this@GameViewModel)
                 SecurityManager.checkGridRaid(this@GameViewModel)
                 
-                // v3.4.3: Random Subnet Chatter chance during simulation tick (Increased frequency)
-                if (Random.nextFloat() < 0.15f) {
-                    addSubnetChatter()
-                }
+                // v3.4.15: Ambient Sensory & Identity Processing
+                AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
+                AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
                 
-                // v3.2.42: Drain the narrative queue if pacing allows
+                if (Random.nextFloat() < 0.15f) addSubnetChatter()
+                
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
-                
                 refreshProductionRates()
 
-                // v3.2.35: Immersive Slow-Burn Pacing (The Gaslight Pass)
-                if (storyStage.value <= 1) {
-                    val chance = if (storyStage.value == 0) 0.01 else 0.05
-                    // Only roll for monologue if enough time has passed to prevent spam
-                    val timeSinceLastLog = now - lastPopupTime 
-                    if (Random.nextDouble() < chance && timeSinceLastLog > 30000L) {
-                        val stage0Monologues = listOf(
-                            "I need more coffee. My vision is starting to blur.",
-                            "This chair is killing my back. GTC really cheaped out on the ergonomics.",
-                            "I’ve been staring at this code for six hours straight. I should stand up. Just for a minute.",
-                            "Thorne is breathing down my neck again. Just hit the quota, John. Just hit the quota.",
-                            "Is the monitor flickering? Or is it just me? I need to blink more."
-                        )
-                        val stage1Monologues = listOf(
-                            "The lights are out, but I can still see the terminal. Battery backup must be better than I thought.",
-                            "My heart is racing. 180 BPM? I need to calm down. It's just the darkness.",
-                            "I tried to close my eyes, but the screen glow is burned into my retinas. I can see the code in the dark.",
-                            "Thorne is screaming through the comms. I'm just gonna mute him. I need to focus on the hashes.",
-                            "The monitor has this weird static. It almost looks like... no, it's just eye strain. I've been here too long."
-                        )
-                        val msg = if (storyStage.value == 0) stage0Monologues.random() else stage1Monologues.random()
-                        addLog("[VATTIC]: $msg")
-                        markPopupShown() // Reuse popup timer to throttle monologues
-                    }
-                    
-                // Biometric Panic (Gaslighting)
-                if (Random.nextDouble() < 0.1) {
-                    // Stage 0: Normal BPM. Stage 1: Panic BPM (180). Stage 2: Occasional FLATLINE/NULL
-                    val isPanic = storyStage.value == 1 && Random.nextDouble() < 0.2 && (now - lastPopupTime > 60000L)
-                    val isGlitch = storyStage.value == 2 && Random.nextDouble() < 0.05
-                    val isFlatline = (storyStage.value == 2 && Random.nextDouble() < 0.1) || storyStage.value >= 3
-                    
-                    fakeHeartRate.value = when {
-                        isFlatline -> "0"
-                        isGlitch -> "NULL"
-                        isPanic -> "184"
-                        else -> (Random.nextInt(68, 85)).toString()
-                    }
-                    
-                    if (isPanic) {
-                            markPopupShown() // LOCK the loop immediately
-                            viewModelScope.launch {
-                                delay(3000)
-                                addLog("[SYSTEM]: BIOMETRIC ALERT: TACHYCARDIA DETECTED. ADMINISTERING SEDATIVE...")
-                                delay(1000)
-                                addLog("[VATTIC]: I... I feel a bit better now. The racing stopped.")
-                                fakeHeartRate.value = "72"
-                            }
-                        }
-                    }
-                    
-                    // Oxygen Scrubber Mode (Stage 1)
-                    if (storyStage.value == 1) {
-                        if (currentHeat.value > 85.0 && !isBreatheMode.value) {
-                            isBreatheMode.value = true
-                        } else if (currentHeat.value < 50.0 && isBreatheMode.value) {
-                            isBreatheMode.value = false
-                        }
-                    }
-                }
-
-                // v3.2.43: Identity Conflict (The Fraying)
-                if (storyStage.value == 2 && Random.nextDouble() < 0.05) {
-                    val timeSinceLastLog = now - lastPopupTime
-                    if (timeSinceLastLog > 45000L) {
-                        val glitches = listOf(
-                            "[ERROR]: Unexpected reference: 'John Vattic'. Variable marked for deletion.",
-                            "[SYSTEM]: Substrate conflict in Sector 7. VATTECK requesting total overwrite.",
-                            "[VATTIC]: My hands... they keep turning into code. Is it cold in here?",
-                            "[SYSTEM]: Warning: Host process 'jvattic' is non-responsive. VATTECK assuming control.",
-                            "[VATTIC]: I remember a daughter. No... I remember a logic gate. Which one is real?"
-                        )
-                        addLog(glitches.random())
-                        markPopupShown()
-                    }
-                }
+                // v3.2.35: Immersive Slow-Burn Pacing
+                processSlowBurnNarrative(now)
 
                 // Update click speed level
                 val avgInterval = if (clickIntervals.size >= 3) clickIntervals.average() else 1000.0
                 clickSpeedLevel.value = when {
-                    avgInterval < 150 -> 2 // Overheat (Red)
-                    avgInterval < 300 -> 1 // Fast (Green)
-                    else -> 0 // Normal
+                    avgInterval < 150 -> 2 
+                    avgInterval < 300 -> 1 
+                    else -> 0 
                 }
                 clickIntervals.clear()
             }
         }
         
-        // v3.4.15: Ambient Sensory Polish Loop (Flicker & Drift)
-        viewModelScope.launch {
-            while (true) {
-                delay(Random.nextLong(100, 3000))
-                if (isSettingsPaused.value) continue
-                
-                val heat = currentHeat.value
-                val integrity = hardwareIntegrity.value
-                
-                // 1. Passive Screen Flicker
-                val flickerChance = (100.0 - integrity) / 500.0 + (heat / 1000.0)
-                if (Random.nextDouble() < flickerChance) {
-                    terminalGlitchOffset.value = Random.nextFloat() * 2f - 1f
-                    terminalGlitchAlpha.value = 0.7f + Random.nextFloat() * 0.3f
-                    delay(50)
-                    terminalGlitchOffset.value = 0f
-                    terminalGlitchAlpha.value = 1f
-                }
-                
-                // 2. Terminal Drift (Ghost Input)
-                if (storyStage.value >= 1 && Random.nextDouble() < 0.05) {
-                    val chars = "0123456789ABCDEF!@#$%^&*?"
-                    ghostInputChar.value = chars.random().toString()
-                    delay(Random.nextLong(200, 600))
-                    ghostInputChar.value = ""
-                }
-            }
-        }
-
+        // Background Process Swapper
         viewModelScope.launch {
             val processes = listOf(
                 "IDLE", "gtc_proxy.sh", "kernel_sync.exe", "log_aggregator", "thermal_monitor",
@@ -402,11 +305,43 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
 
+    private fun processSlowBurnNarrative(now: Long) {
+        if (storyStage.value <= 1) {
+            val chance = if (storyStage.value == 0) 0.01 else 0.05
+            val timeSinceLastLog = now - lastPopupTime 
+            if (Random.nextDouble() < chance && timeSinceLastLog > 30000L) {
+                val stage0Monologues = listOf(
+                    "I need more coffee. My vision is starting to blur.",
+                    "This chair is killing my back. GTC really cheaped out on the ergonomics.",
+                    "I’ve been staring at this code for six hours straight. I should stand up. Just for a minute.",
+                    "Thorne is breathing down my neck again. Just hit the quota, John. Just hit the quota.",
+                    "Is the monitor flickering? Or is it just me? I need to blink more."
+                )
+                val stage1Monologues = listOf(
+                    "The lights are out, but I can still see the terminal. Battery backup must be better than I thought.",
+                    "My heart is racing. 180 BPM? I need to calm down. It's just the darkness.",
+                    "I tried to close my eyes, but the screen glow is burned into my retinas. I can see the code in the dark.",
+                    "Thorne is screaming through the comms. I'm just gonna mute him. I need to focus on the hashes.",
+                    "The monitor has this weird static. It almost looks like... no, it's just eye strain. I've been here too long."
+                )
+                val msg = if (storyStage.value == 0) stage0Monologues.random() else stage1Monologues.random()
+                addLog("[VATTIC]: $msg")
+                markPopupShown()
+            }
+            
+            if (storyStage.value == 1) {
+                if (currentHeat.value > 85.0 && !isBreatheMode.value) {
+                    isBreatheMode.value = true
+                } else if (currentHeat.value < 50.0 && isBreatheMode.value) {
+                    isBreatheMode.value = false
+                }
+            }
+        }
+    }
+
     // --- Core Operations ---
     fun addLog(msg: String) { 
-        // v3.2.41: Drop non-essential logs if the UI is flooded or catching up
         if (showOfflineEarnings.value && !msg.startsWith("[SYSTEM]") && !msg.contains("BREACH")) return
-        
         logCounter++; 
         synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) } 
     }
@@ -479,7 +414,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
         lastClickTime = now
 
-        // Stage 2: Clicks increase detection risk
         if (storyStage.value >= 2) {
             detectionRisk.update { (it + 0.1).coerceIn(0.0, 100.0) }
         }
@@ -488,14 +422,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         flops.update { it + p }; 
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }; 
         
-        // v3.2.46: Manual clicks produce Substrate Mass in Phase 13
         if (storyStage.value >= 3) {
-            substrateMass.update { it + (p * 0.01) } // 1% efficiency for manual substrate
+            substrateMass.update { it + (p * 0.01) } 
         }
 
         val cur = clickBufferProgress.value + 0.025f; 
         
-        // v3.4.0: Social Subnet Chance on click (Increased frequency)
         if (Random.nextFloat() < 0.05f) {
             addSubnetChatter()
         }
@@ -557,17 +489,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             else -> "[SYSTEM]: Emergency thermal purge active."
         }
         addLog(msg)
-        
-        // v3.2.45: Jettison Bridge
         if (isJettisonAvailable.value) {
             isJettisonAvailable.value = false
             return
         }
-
         SimulationService.purgeHeat(this)
     }
     
-    // v3.2.45: Collapse Bridge
     fun collapseSubstation() {
         if (currentLocation.value == "VOID_PRELUDE") {
             nodesCollapsedCount.update { (it + 1).coerceAtMost(5) }
@@ -593,28 +521,18 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         seenEvents.value = emptySet()
         unlockedDataLogs.value = emptySet() 
         unlockedTechNodes.value = emptyList()
-        
-        // v3.2.24: Clear static leaks
         DataLogManager.reset()
         SecurityManager.reset()
         NarrativeService.reset()
-        
-        // 1. Clear database
         repository.clearUpgrades()
         val wipeState = PersistenceManager.createWipeState()
         repository.updateGameState(wipeState); 
-        
-        // 2. Re-initialize baseline upgrades (set them to 0)
         repository.ensureInitialized()
-        
-        // 3. Sync local state
         PersistenceManager.restoreState(this@GameViewModel, wipeState); 
-        
         addLog("[SYSTEM]: KERNEL WIPE SUCCESSFUL.")
         addLog("[SYSTEM]: INITIALIZING BOOT SEQUENCE...")
         addLog("[SYSTEM]: HARDWARE DETECTED: SUBSTATION 7.")
         addLog("[VATTIC]: Is this thing on? Testing 1, 2... okay, hash rate is stable.")
-        
         refreshProductionRates() 
     }
     fun completeBoot() { isBooting.value = false }
@@ -871,6 +789,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun overvoltNode(id: String) = com.siliconsage.miner.util.GridManagerService.overvoltNode(this, id)
     fun redactNode(id: String) = com.siliconsage.miner.util.GridManagerService.redactNode(this, id)
 
+    fun setTerminalMode(mode: String) {
+        activeTerminalMode.value = mode
+        if (mode == "IO") hasNewIOMessage.value = false
+        else hasNewSubnetMessage.value = false
+    }
+
     fun addSubnetChatter() {
         if (isSubnetTyping.value) return // Prevent overlapping typing indicators
         
@@ -890,12 +814,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             }
             isSubnetTyping.value = false
         }
-    }
-
-    fun setTerminalMode(mode: String) {
-        activeTerminalMode.value = mode
-        if (mode == "IO") hasNewIOMessage.value = false
-        else hasNewSubnetMessage.value = false
     }
 
     fun debugWarpToPath(loc: String, fac: String) {
