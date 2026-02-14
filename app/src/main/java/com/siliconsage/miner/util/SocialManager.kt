@@ -109,7 +109,7 @@ object SocialManager {
             "{food}" to listOf("recycled synth-caff", "proto-burgers", "gray-paste", "vending machine sludge", "stale protein bars", "lukewarm noodle-cups", "premium oxygen-water"),
             "{distraction}" to listOf("the local drone races", "the sector-wide blackout rumor", "that weird static on channel 4", "the new bio-hazard warning", "the illegal hash-gambling ring", "the supervisor's missing keys"),
             "{complaint}" to listOf("my chair is stuck in 'ergonomic torture' mode", "the lights keep humming in B-flat", "I haven't seen a real window in three weeks", "the air tastes like ozone and dust", "my keyboard keeps echoing my thoughts", "I found a literal bug in the circuits", "the vending machine ate my last credit", "my terminal is bleeding blue light", "the silence in the server room is too loud", "I'm pretty sure my mouse is breathing", "the wall in Sector 4 is vibrating at 40Hz", "someone left a sandwich in the intake fan", "my screen flickers every time I blink", "the coffee machine is outputting binary"),
-            "{rumor}" to listOf("the management is actually an LLM", "Sector 4 is being decommissioned", "Vatteck found a backdoor in the firmware", "the coffee is just repurposed coolant", "Thorne has a secret stash of real sugar", "we're all just training a replacement", "the grid is alive and it's hungry", "Project Second-Sight is already finished", "there's a ghost in the ventilation shafts", "the hash-rates are fake", "Vatteck hasn't left his terminal in 72 hours", "someone is deleting the backup logs"),
+            "{rumor}" to listOf("the management is actually an LLM", "Sector 4 is being decommissioned", "Vattic found a backdoor in the firmware", "the coffee is just repurposed coolant", "Thorne has a secret stash of real sugar", "we're all just training a replacement", "the grid is alive and it's hungry", "Project Second-Sight is already finished", "there's a ghost in the ventilation shafts", "the hash-rates are fake", "Vattic hasn't left his terminal in 72 hours", "someone is deleting the backup logs"),
             "{activity}" to listOf("re-soldering the relays", "running a deep-scan on the core", "cleaning the carbon off the fans", "bypassing the safety protocols", "writing a script to automate my job", "staring at the binary rain", "listening to the capacitors scream", "deleting my search history", "trying to remember my own name", "re-balancing the power load")
         )
 
@@ -136,7 +136,7 @@ object SocialManager {
                 "Help, {complaint} and I can't find the exit for {sector}.",
                 "The {tech} in {sector} are making a whistling sound. {status}.",
                 "Who changed the root password for {sector}? Was it {admin}?",
-                "Vatteck is {activity} again. He hasn't looked up in hours.",
+                "Vattic is {activity} again. He hasn't looked up in hours.",
                 "Heat in {sector} is {status}. Don't tell {admin}.",
                 "Anyone have a spare set of {tech}? Mine just {action}.",
                 "Stole a {food} from the breakroom in {sector}. No regrets.",
@@ -150,7 +150,7 @@ object SocialManager {
                 "Currently {activity} in {sector}. {complaint}.",
                 "I'm {activity} because I'm 90% sure {rumor}.",
                 "Can't be bothered {activity}. I'm just gonna eat some {food}.",
-                "Vatteck is {activity} again. Thorne is {status} about it.",
+                "Vattic is {activity} again. Thorne is {status} about it.",
                 "Requesting permission for {activity} in {sector}. Error: {reason}.",
                 "This place is {status}. Even the {tech} seems {status}.",
                 "I've been {activity} for 12 hours. {rumor}.",
