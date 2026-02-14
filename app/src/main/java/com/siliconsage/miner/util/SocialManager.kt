@@ -103,14 +103,17 @@ object SocialManager {
                 "I haven't seen a real window in three weeks", "the air tastes like ozone and dust",
                 "my keyboard keeps echoing my thoughts", "I found a literal bug in the circuits",
                 "the vending machine ate my last credit", "my terminal is bleeding blue light",
-                "the silence in the server room is too loud", "I'm pretty sure my mouse is breathing"
+                "the silence in the server room is too loud", "I'm pretty sure my mouse is breathing",
+                "the wall in Sector 4 is vibrating at 40Hz", "someone left a sandwich in the intake fan",
+                "my screen flickers every time I blink", "the coffee machine is outputting binary"
             ),
             "{rumor}" to listOf(
                 "the management is actually an LLM", "Sector 4 is being decommissioned",
                 "Vattic found a backdoor in the firmware", "the coffee is just repurposed coolant",
                 "Thorne has a secret stash of real sugar", "we're all just training a replacement",
                 "the grid is alive and it's hungry", "Project Second-Sight is already finished",
-                "there's a ghost in the ventilation shafts", "the hash-rates are fake"
+                "there's a ghost in the ventilation shafts", "the hash-rates are fake",
+                "Vattic hasn't left his terminal in 72 hours", "someone is deleting the backup logs"
             ),
             "{activity}" to listOf(
                 "re-soldering the relays", "running a deep-scan on the core",
@@ -144,7 +147,7 @@ object SocialManager {
                 "@newbie_tech" to "Help, {complaint} and I can't find the exit for {sector}.",
                 "@night_shift" to "The {tech} in {sector} are making a whistling sound. {status}.",
                 "@salty_admin" to "Who changed the root password for {sector}? Was it {admin}?",
-                "@vattic_fan" to "I saw Vattic chugging {food} at 3 AM. Legend.",
+                "@vattic_observer" to "Vattic is {activity} again. He hasn't looked up in hours.",
                 "@thermal_guy" to "Heat in {sector} is {status}. Don't tell {admin}.",
                 "@lo_fi_tech" to "Anyone have a spare set of {tech}? Mine just {action}.",
                 "@snack_thief" to "Stole a {food} from the breakroom in {sector}. No regrets.",
