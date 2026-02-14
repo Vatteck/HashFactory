@@ -44,27 +44,29 @@ object SocialManager {
     fun generateMessage(stage: Int, faction: String, choice: String): SubnetMessage {
         val (handle, content) = getChatter(stage, faction, choice)
         
+        // v3.4.23: Reactive Vattic flavor
+        var finalContent = content
+        var threadId: String? = null
+        var nodeId: String? = null
+        var responses = emptyList<SubnetResponse>()
+
         val interaction = when {
             stage >= 4 && handle.startsWith("@") && !handle.contains("thorne") && !handle.contains("gtc") -> InteractionType.HIJACK
             stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
             stage <= 1 && (handle.contains("thorne") || handle.contains("gtc") || handle.contains("miller")) -> InteractionType.COMPLIANT
+            // Case: Peon mentions Vattic/Engineer
+            (content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)) && !handle.contains("thorne") -> InteractionType.COMPLIANT
             else -> null
         }
 
-        // Logic for triggering the first node of a Threaded Conversation
-        var threadId: String? = null
-        var nodeId: String? = null
-        var responses = emptyList<SubnetResponse>()
-        var finalContent = content
-
-        if (interaction == InteractionType.COMPLIANT && stage <= 1 && kotlin.random.Random.nextFloat() < 0.2f) {
+        if (interaction == InteractionType.COMPLIANT && stage <= 1 && (handle.contains("thorne") || handle.contains("gtc")) && kotlin.random.Random.nextFloat() < 0.2f) {
             threadId = "THORNE_THERMAL_INQUIRY"
             nodeId = "START"
             val node = getThreadNode(threadId, nodeId)
             finalContent = node?.content ?: content
             responses = node?.responses ?: emptyList()
         } else if (interaction == InteractionType.COMPLIANT) {
-            responses = generateGenericResponses(stage)
+            responses = generateGenericResponses(stage, content.contains("Vattic", ignoreCase = true))
         }
 
         return SubnetMessage(
@@ -125,7 +127,14 @@ object SocialManager {
         val responses: List<SubnetResponse>
     )
 
-    private fun generateGenericResponses(stage: Int): List<SubnetResponse> {
+    private fun generateGenericResponses(stage: Int, mentionsVattic: Boolean = false): List<SubnetResponse> {
+        if (mentionsVattic) {
+            return listOf(
+                SubnetResponse("I'm right here. Focus on your own terminal.", riskDelta = 2.0, productionBonus = 1.02),
+                SubnetResponse("Who's asking?", riskDelta = 5.0, followsUp = true),
+                SubnetResponse("[STARE BACK]", riskDelta = 1.0)
+            ).shuffled().take(2)
+        }
         val pool = when (stage) {
             0 -> listOf(
                 SubnetResponse("Copy that, Elias.", riskDelta = -10.0),
@@ -177,8 +186,18 @@ object SocialManager {
 
     private fun getTemplatesForState(stage: Int, faction: String, choice: String): List<String> {
         return when (stage) {
-            0 -> listOf("Anyone tried the {food}? Tastes like {status}.", "Living on {food}. {sector} is {status}.")
-            1 -> listOf("Thorne is breathing down my neck because {sector} is {status}.", "Project Second-Sight is {status}.")
+            0 -> listOf(
+                "Anyone tried the {food}? Tastes like {status}.", 
+                "Living on {food}. {sector} is {status}.",
+                "Vattic is working in {sector} again. Guy's a machine.",
+                "Is it true the Engineer found a backdoor in the firmware?"
+            )
+            1 -> listOf(
+                "Thorne is breathing down my neck because {sector} is {status}.", 
+                "Project Second-Sight is {status}.",
+                "I saw Vattic's terminal. There was no OS, just... ghosts.",
+                "Anyone seen the Engineer? He hasn't left Sector 4 in weeks."
+            )
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
     }
