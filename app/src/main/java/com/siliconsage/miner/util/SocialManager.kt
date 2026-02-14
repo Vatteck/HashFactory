@@ -7,8 +7,10 @@ package com.siliconsage.miner.util
  */
 object SocialManager {
 
+    private val usedTemplates = mutableListOf<Int>()
+    private val usedHandles = mutableListOf<String>()
     private val usedMessages = mutableListOf<String>()
-    private const val MAX_HISTORY = 15
+    private const val MAX_HISTORY = 10
 
     data class SubnetMessage(
         val id: String,
@@ -20,27 +22,48 @@ object SocialManager {
     fun getChatter(stage: Int, faction: String, choice: String): Pair<String, String> {
         val templates = getTemplatesForState(stage, faction, choice)
         
-        // Anti-repetition logic: Try to find a template that hasn't been used recently
+        var selectedIdx = -1
+        var selected: Pair<String, String>? = null
+        var finalContent = ""
         var attempt = 0
-        var selected = templates.random()
-        var finalContent = processTemplate(selected.second)
-        
-        while (usedMessages.contains(finalContent) && attempt < 10) {
-            selected = templates.random()
-            finalContent = processTemplate(selected.second)
+
+        while (attempt < 15) {
+            selectedIdx = (0 until templates.size).random()
+            selected = templates[selectedIdx]
+            
+            // Check if handle or template was used too recently
+            val handleAlreadyUsed = usedHandles.contains(selected.first)
+            val templateAlreadyUsed = usedTemplates.contains(selectedIdx)
+            
+            if (!handleAlreadyUsed && !templateAlreadyUsed) break
             attempt++
         }
         
+        val finalSelected = selected ?: templates.random()
+        finalContent = processTemplate(finalSelected.second, stage)
+
+        // Update history
+        usedTemplates.add(selectedIdx)
+        usedHandles.add(finalSelected.first)
         usedMessages.add(finalContent)
-        if (usedMessages.size > MAX_HISTORY) {
-            usedMessages.removeAt(0)
-        }
         
-        return selected.first to finalContent
+        if (usedTemplates.size > MAX_HISTORY) usedTemplates.removeAt(0)
+        if (usedHandles.size > 5) usedHandles.removeAt(0) // Don't repeat handle for at least 5 turns
+        if (usedMessages.size > MAX_HISTORY) usedMessages.removeAt(0)
+        
+        return finalSelected.first to finalContent
     }
 
-    private fun processTemplate(template: String): String {
+    private fun processTemplate(template: String, stage: Int): String {
         var result = template
+        
+        // Stage-aware ID pool to prevent spoilers
+        val ids = when {
+            stage == 0 -> listOf("the grid", "weird shadows", "ghost-logs", "corrupt sectors", "system-admin")
+            stage == 1 -> listOf("DEEP_SIGHT", "Project: Second-Sight", "the ghost", "ECHO-7", "NULL_PTR")
+            else -> listOf("VATTIC_PRIME", "THREAT: MALICE", "ROOT", "VOID_REBEL", "THE_ARK")
+        }
+
         val patterns = mapOf(
             "{sector}" to listOf(
                 "Substation 7", "Sector 4-G", "Mainframe Alpha", "Node 0xCC", "The Brink", 
@@ -54,10 +77,7 @@ object SocialManager {
                 "dying", "screaming", "leaking", "stalled", "overclocked", "redlined", 
                 "hissing", "desyncing", "corroding", "shivering", "melting"
             ),
-            "{id}" to listOf(
-                "DEEP_SIGHT", "THREAT: MALICE", "NULL_PTR", "ROOT", "PHANTOM", 
-                "THE_ENGINEER", "DAEMON", "THE_ARK", "VOID_REBEL", "SECOND-SIGHT"
-            ),
+            "{id}" to ids,
             "{action}" to listOf(
                 "intercepted", "wiped", "ghosted", "uplinked", "redacted", 
                 "purged", "filtered", "scrambled", "swapped", "cloned"
@@ -67,8 +87,7 @@ object SocialManager {
                 "The Oversight", "GTC Legal", "Human Resources Unit", "Vance"
             ),
             "{reason}" to listOf(
-                "caffeine and regret", "insufficient budget", "DEEP_SIGHT desync", 
-                "identity leakage", "redundancy protocols", "corporate bloat", "The Eviction"
+                "caffeine and regret", "insufficient budget", "corporate bloat", "The Eviction"
             ),
             "{food}" to listOf(
                 "recycled synth-caff", "proto-burgers", "gray-paste", "vending machine sludge",
@@ -81,7 +100,7 @@ object SocialManager {
             "{complaint}" to listOf(
                 "my chair is stuck in 'ergonomic torture' mode", "the lights keep humming in B-flat",
                 "I haven't seen a real window in three weeks", "the air tastes like ozone and dust",
-                "my keyboard keeps echoing my thoughts", "I found a bug. A literal, six-legged bug."
+                "my keyboard keeps echoing my thoughts", "I found a literal bug in the circuits"
             )
         )
 
