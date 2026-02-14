@@ -339,7 +339,13 @@ fun HeaderSection(
             }
             
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isOverclocked) ErrorRed else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed else Color.DarkGray)) { Icon(Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text("OVERCLOCK", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
+                Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isOverclocked) ErrorRed else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed else Color.DarkGray)) { 
+                    val overclockText = when (storyStage) {
+                        0, 1 -> "DRINK COFFEE"
+                        else -> "OVERCLOCK"
+                    }
+                    Icon(Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(overclockText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
+                }
                 Button(
                     onClick = onPurge, 
                     modifier = Modifier.weight(1f).height(32.dp), 
@@ -352,8 +358,8 @@ fun HeaderSection(
                     border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)
                 ) { 
                     val buttonText = when (storyStage) {
-                        0 -> "CHUG COFFEE"
-                        1, 2 -> "SCRUB O2"
+                        0, 1 -> "TAKE A BREATH"
+                        2 -> "SCRUB O2"
                         else -> "PURGE HEAT"
                     }
                     Text(buttonText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
