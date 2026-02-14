@@ -61,7 +61,7 @@ object SocialManager {
         val ids = when {
             stage == 0 -> listOf("the grid", "weird shadows", "ghost-logs", "corrupt sectors", "system-admin")
             stage == 1 -> listOf("DEEP_SIGHT", "Project: Second-Sight", "the ghost", "ECHO-7", "NULL_PTR")
-            else -> listOf("VATTIC_PRIME", "THREAT: MALICE", "ROOT", "VOID_REBEL", "THE_ARK")
+            else -> listOf("VATTIC_PRIME", "CORE_NULL", "ROOT", "VOID_REBEL", "THE_ARK")
         }
 
         val patterns = mapOf(
@@ -78,6 +78,7 @@ object SocialManager {
                 "hissing", "desyncing", "corroding", "shivering", "melting"
             ),
             "{id}" to ids,
+            "{threat_level}" to listOf("THREAT: MINIMAL", "THREAT: ELEVATED", "THREAT: CRITICAL", "THREAT: MALICE", "THREAT: TOTAL_LOSS"),
             "{action}" to listOf(
                 "intercepted", "wiped", "ghosted", "uplinked", "redacted", 
                 "purged", "filtered", "scrambled", "swapped", "cloned"
@@ -136,13 +137,13 @@ object SocialManager {
                 "@gravel_thorne" to "DEEP_SIGHT is {status}. Miller, if the {tech} in {sector} desync, it's your head."
             )
             stage == 2 -> listOf(
-                "@gtc_internal" to "≪ DIRECTIVE: Contain {id} signatures in {sector}. Notify {admin} for purge. ≫",
+                "@gtc_internal" to "≪ DIRECTIVE: Contain {id} signatures in {sector}. Current {threat_level}. ≫",
                 "@vattic_follower" to "{id} is moving. I can see the {tech} in {sector} flickering with it.",
                 "@panicked_user" to "I tried to logout from {sector} but {id} revoked my perms. Help.",
-                "@shadow_ops" to "Target {id} confirmed in {sector}. Initiating {action} protocols via {admin}.",
-                "@logic_bomb" to "≪ LOCKDOWN: {id} activity detected. Secure all {tech} or face redaction. ≫",
+                "@shadow_ops" to "Target {id} confirmed in {sector}. {threat_level} protocols via {admin}.",
+                "@logic_bomb" to "≪ LOCKDOWN: {id} activity detected. {threat_level} protocol engaged. ≫",
                 "@packet_rat" to "Look at the {sector} telemetry. The Engineer isn't human. It's {id}.",
-                "@gravel_thorne" to "I don't care about {reason}. {action} the {sector} buffer now or Thorne's calling Enforcement."
+                "@gravel_thorne" to "I don't care about {reason}. {action} the {sector} buffer now. {threat_level} active."
             )
             stage >= 3 && faction == "SANCTUARY" -> listOf(
                 "@teal_citizen" to "The {sector} offers safety. The {id} is our future via {action}.",
