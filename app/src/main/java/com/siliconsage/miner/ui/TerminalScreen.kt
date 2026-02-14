@@ -136,7 +136,7 @@ fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Col
 
     val alertColor = when {
         isChoicePending -> ErrorRed
-        text == "SUBNET" && hasNew -> ErrorRed 
+        text == "SUBNET" && hasNew -> ElectricBlue 
         else -> color
     }
 
