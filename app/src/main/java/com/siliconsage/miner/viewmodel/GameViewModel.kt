@@ -783,10 +783,28 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         
         when (message.interactionType) {
             com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
+                // v3.4.19: Vattic actually replies back in the chat
+                val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                    id = java.util.UUID.randomUUID().toString(),
+                    handle = if (storyStage.value >= 4) "VATTECK" else "@jvattic",
+                    content = response,
+                    interactionType = null // No circular interactions
+                )
+                subnetMessages.update { (it + reply).takeLast(50) }
+                
                 detectionRisk.update { (it - 5.0).coerceAtLeast(0.0) }
                 addLog("[REPLY]: $response")
             }
             com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING -> {
+                // Injects a stealthy background response
+                val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                    id = java.util.UUID.randomUUID().toString(),
+                    handle = " ", // Ghost handle for exploit
+                    content = "≪ PAYLOAD_DEPLOYED: ${message.handle} ≫",
+                    interactionType = null
+                )
+                subnetMessages.update { (it + reply).takeLast(50) }
+                
                 flopsProductionRate.update { it * 1.05 }
                 detectionRisk.update { (it + 8.0).coerceAtMost(100.0) }
                 addLog("[EXPLOIT]: INJECTED PAYLOAD. HASH RATE +5%.")
