@@ -1,10 +1,10 @@
 {
-  "version": "3.4.81",
-  "build": 346,
+  "version": "3.4.82",
+  "build": 347,
   "date": "2026-02-14",
   "changelog": [
-    "Removed Biological Resource Labels"
+    "Fixed Regression: 'Sell Hashes' Triggering Overclock"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.81",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.81/MINER_3.4.81.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.82",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.82/MINER_3.4.82.apk"
 }

@@ -549,7 +549,7 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
                 unitName = viewModel.getComputeUnitName(), 
                 currencyName = viewModel.getCurrencyName(), 
                 onExchange = { 
-                    viewModel.toggleOverclock() 
+                    viewModel.exchangeFlops() 
                     SoundManager.play("buy") 
                     HapticManager.vibrateClick() 
                 }
