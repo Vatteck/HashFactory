@@ -1,10 +1,10 @@
 {
-  "version": "3.4.12",
-  "build": 327,
+  "version": "3.4.13",
+  "build": 328,
   "date": "2026-02-13",
   "changelog": [
-    "Social Hardening: Dynamic Handle Generator and Template Decoupling. Purged dev-tags and improved variety."
+    "Social Hardening: Persona-Aware Handle Matching. Ensures Thorne only speaks authority templates and workers handle office humor."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.12",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.12/MINER_3.4.12.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.13",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.13/MINER_3.4.13.apk"
 }
