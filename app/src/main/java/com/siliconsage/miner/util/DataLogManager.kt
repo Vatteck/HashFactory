@@ -118,7 +118,7 @@ object DataLogManager {
                 GTC isn't just selling Data. They're 
                 using your station's surplus power for 
                 something else. Something they call 
-                'The Substrate'.
+                'Project: Second-Sight'.
                 
                 I've attached a decryption key to the next 
                 external signal you receive. 
