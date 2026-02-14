@@ -1,10 +1,10 @@
 {
-  "version": "3.4.1",
-  "build": 321,
+  "version": "3.4.4",
+  "build": 322,
   "date": "2026-02-13",
   "changelog": [
-    "Social Subnet Hardening: Templates, Handshake indicators, and Optimized Tab Layout"
+    "Social Subnet Hardening: Anti-repetition sliding window, increased chatter frequency, and doubled handshake duration."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.1",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.1/MINER_3.4.1.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.4",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.4/MINER_3.4.4.apk"
 }
