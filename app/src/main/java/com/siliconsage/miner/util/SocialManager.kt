@@ -79,6 +79,7 @@ object SocialManager {
             interactionType = if (mentionsVattic && !isAdmin) InteractionType.COMPLIANT else null,
             availableResponses = generateIdentityAwareResponses(stage, finalHandle, mentionsVattic),
             isForceReply = (mentionsVattic && !isAdmin),
+            timeoutMs = if (mentionsVattic && !isAdmin) 120000L else null, // v3.4.55
             employeeInfo = generateEmployeeInfo(finalHandle)
         )
     }
@@ -133,7 +134,7 @@ object SocialManager {
             timeoutMs = node?.timeoutMs ?: 60000L
         } else if (interactionType != null) {
             responses = generateIdentityAwareResponses(stage, finalHandle, mentionsVattic)
-            timeoutMs = 60000L
+            timeoutMs = 120000L // v3.4.55: Increased decision window
             if (mentionsVattic && !isAdmin) isForceReply = true
         }
 
@@ -490,7 +491,7 @@ object SocialManager {
             interactionType = type,
             availableResponses = responses,
             isForceReply = (mentionsVattic && !isAdmin),
-            timeoutMs = if (type != null) 60000L else null,
+            timeoutMs = if (type != null) 120000L else null, // v3.4.55
             // v3.4.48: Pass ORIGINAL handle to ensure bio lookup works
             employeeInfo = generateEmployeeInfo(handle)
         )
