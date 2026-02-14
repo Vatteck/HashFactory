@@ -41,8 +41,8 @@ import com.siliconsage.miner.ui.components.StakingSection
 import com.siliconsage.miner.ui.components.RepairSection
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import androidx.compose.ui.text.style.TextOverflow
-import com.siliconsage.miner.ui.theme.ErrorRed
-import com.siliconsage.miner.ui.theme.NeonGreen
+import androidx.compose.ui.theme.ErrorRed
+import androidx.compose.ui.theme.NeonGreen
 import com.siliconsage.miner.util.FormatUtils
 import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.util.ResourceRepository
@@ -124,7 +124,6 @@ fun TerminalHeader(viewModel: GameViewModel, color: Color) {
 fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Color, isChoicePending: Boolean, onClick: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "TabGlow")
     
-    // v3.4.63: Choice-Pending Flash (High Frequency)
     val flashAlpha by infiniteTransition.animateFloat(
         0.2f, 1f, 
         infiniteRepeatable(tween(if (isChoicePending) 300 else 800), RepeatMode.Reverse), 
