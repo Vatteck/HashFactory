@@ -49,6 +49,9 @@ object SocialManager {
         val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
         val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
         val isCommand = content.contains("≪")
+        
+        // v3.4.40: Narrative Interaction Key
+        val isRatCallout = content.contains("safety protocols", ignoreCase = true)
 
         // v3.4.39: Identity-aware Interaction Rules
         val interaction = when {
@@ -59,13 +62,20 @@ object SocialManager {
             stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
             
             // Stage 0-1: Direct Admin Orders (Commands) or Mentions
+            isRatCallout -> InteractionType.COMPLIANT
             stage <= 1 && (isCommand || mentionsVattic) -> InteractionType.COMPLIANT
             
             else -> null
         }
 
-        // 2. Handle Multi-turn Threads (Authority)
-        if (interaction == InteractionType.COMPLIANT && isAdmin && stage <= 1 && Random.nextFloat() < 0.2f) {
+        if (isRatCallout) {
+            isForceReply = true
+            responses = listOf(
+                SubnetResponse("[DISMISS] I'm optimized.", riskDelta = 5.0),
+                SubnetResponse("[GLARE] Get back to your buffer.", riskDelta = 10.0, productionBonus = 1.05)
+            )
+            timeoutMs = 60000L // v3.4.34: Standard decision window
+        } else if (interaction == InteractionType.COMPLIANT && isAdmin && stage <= 1 && Random.nextFloat() < 0.2f) {
             threadId = "THORNE_THERMAL_INQUIRY"
             nodeId = "START"
             val node = getThreadNode(threadId, nodeId)

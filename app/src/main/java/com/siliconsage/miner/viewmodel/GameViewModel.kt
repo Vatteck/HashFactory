@@ -899,7 +899,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         
         // v3.4.39: Hard-clear both interaction flags to prevent button ghosting
         subnetMessages.update { list ->
-            list.map { if (it.id == messageId) it.copy(interactionType = null, isForceReply = false) else it }
+            list.map { 
+                if (it.id == messageId) {
+                    it.copy(interactionType = null, isForceReply = false) 
+                } else it 
+            }.toList() // v3.4.40: Force new list reference
         }
     }
 

@@ -74,9 +74,13 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
         )
 
         // v3.4.18: Contextual Interactions
-    if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
+        if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
             val stage = viewModel.storyStage.collectAsState().value
             
+            // v3.4.40: Visual confirmation of interaction active state
+            LaunchedEffect(message.interactionType, message.isForceReply) {
+                 // Component re-evaluation on flag change
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (message.isForceReply) {
