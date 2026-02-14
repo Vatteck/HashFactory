@@ -1,8 +1,11 @@
 package com.siliconsage.miner.ui.components
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -12,21 +15,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.util.SocialManager
 import com.siliconsage.miner.viewmodel.GameViewModel
-import androidx.compose.material3.Button
-import androidx.compose.ui.Alignment
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.RectangleShape
 
 @Composable
 fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
     val countdown = remember { mutableStateOf(0L) }
-    // v3.4.49: Stable state preservation with forced key
+    // v3.4.51: Stable state preservation with forced key
     var showProfile by remember(message.id) { mutableStateOf(false) }
     
     // v3.4.25: Response Timeout Visualizer
@@ -42,7 +37,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // v3.4.49: Hardened Hitbox & Ripple Feedback
+            // v3.4.51: Hardened Hitbox & Ripple Feedback
             Surface(
                 onClick = { 
                     if (message.employeeInfo != null) {
@@ -51,12 +46,13 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                     }
                 },
                 enabled = message.employeeInfo != null,
-                color = if (showProfile) color.copy(alpha = 0.1f) else Color.Transparent,
-                shape = RoundedCornerShape(2.dp)
+                color = if (showProfile) color.copy(alpha = 0.15f) else Color.Transparent,
+                shape = RoundedCornerShape(2.dp),
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 24.dp)
             ) {
                 Text(
                     text = message.handle,
-                    color = color,
+                    color = if (message.employeeInfo == null) Color.Red else color,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace,
@@ -135,12 +131,6 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
         // v3.4.18: Contextual Interactions
         if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
-            val stage = viewModel.storyStage.collectAsState().value
-            
-            // v3.4.40: Visual confirmation of interaction active state
-            LaunchedEffect(message.interactionType, message.isForceReply) {
-                 // Component re-evaluation on flag change
-            }
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (message.isForceReply) {
@@ -152,7 +142,6 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                 } else {
                     when (message.interactionType) {
                         SocialManager.InteractionType.COMPLIANT -> {
-                            // v3.4.22: Weighted Response System
                             message.availableResponses.forEach { response ->
                                 SubnetInteractionButton("[REPLY: \"${response.text}\"]", color) {
                                     viewModel.onSubnetInteraction(message.id, response.text)

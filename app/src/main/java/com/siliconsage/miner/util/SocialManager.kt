@@ -1,11 +1,12 @@
 package com.siliconsage.miner.util
 
 import kotlin.random.Random
+import android.util.Log
 
 /**
  * SocialManager v2.2
  * Core Logic for Substrate Comms (Contextual Threading).
- * Fixed: Robust fuzzy identity matching for Biometric Peek.
+ * Implements identity-aware templates, Biometric Peek, and Packet Harvesting.
  */
 object SocialManager {
 
@@ -60,6 +61,7 @@ object SocialManager {
 
         val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
         val isAdmin = handle.contains("thorne", true) || handle.contains("gtc", true) || handle.contains("mercer", true) || handle.contains("kessler", true)
+        val isCommand = content.contains("≪")
         
         // v3.4.40: Narrative Interaction Key
         val isRatCallout = content.contains("safety protocols", ignoreCase = true)
@@ -120,8 +122,10 @@ object SocialManager {
             }
         }
 
-        // v3.4.52: Robust employee info generation with original handle
+        // v3.4.52: Robust employee info generation with ORIGINAL handle
         val employeeInfo = if (!isHarvest) generateEmployeeInfo(handle) else null
+        
+        Log.d("Subnet", "Message Generated: handle=$finalHandle, bio=${employeeInfo != null}, responses=${responses.size}")
 
         return SubnetMessage(
             id = java.util.UUID.randomUUID().toString(),
