@@ -1,9 +1,9 @@
 package com.siliconsage.miner.util
 
 /**
- * SocialManager v1.4
- * Logic for generating contextual subnet chatter with dynamic handles and templates.
- * Implements persona-aware handle matching and interactive packet types.
+ * SocialManager v1.5
+ * Core Logic for Substrate Comms (Contextual Threading).
+ * Implements branching dialogue trees with systemic consequences.
  */
 object SocialManager {
 
@@ -13,7 +13,7 @@ object SocialManager {
     private const val MAX_HISTORY = 10
 
     enum class InteractionType {
-        COMPLIANT,    // Stage 0-1: Automated corporate responses
+        COMPLIANT,    // Stage 0-1: Automated corporate/auditor responses
         ENGINEERING,  // Stage 2-3: Malicious payloads/hacks
         HIJACK        // Stage 4: Overwrite user identity
     }
@@ -22,8 +22,9 @@ object SocialManager {
     data class SubnetResponse(
         val text: String,
         val riskDelta: Double = 0.0,
-        val productionBonus: Double = 1.0, // Multiplier
-        val followsUp: Boolean = false
+        val productionBonus: Double = 1.0, 
+        val followsUp: Boolean = false,
+        val nextNodeId: String? = null // For multi-turn chaining
     )
 
     data class SubnetMessage(
@@ -32,50 +33,17 @@ object SocialManager {
         val content: String,
         val timestamp: Long = System.currentTimeMillis(),
         val interactionType: InteractionType? = null,
-        val availableResponses: List<SubnetResponse> = emptyList()
+        val availableResponses: List<SubnetResponse> = emptyList(),
+        val threadId: String? = null,
+        val nodeId: String? = null
     )
 
-    fun getChatter(stage: Int, faction: String, choice: String): Pair<String, String> {
-        val templates = getTemplatesForState(stage, faction, choice)
-        
-        var selectedIdx = -1
-        var selectedTemplate = ""
-        var handle = ""
-        var attempt = 0
-
-        while (attempt < 15) {
-            selectedIdx = (0 until templates.size).random()
-            selectedTemplate = templates[selectedIdx]
-            
-            // v3.4.13: Persona-Aware Template Selection
-            val isCommand = selectedTemplate.contains("≪") || selectedTemplate.contains("{admin}") || selectedTemplate.contains("{threat_level}")
-            handle = getHandle(stage, faction, isCommand)
-            
-            val handleAlreadyUsed = usedHandles.contains(handle)
-            val templateAlreadyUsed = usedTemplates.contains(selectedIdx)
-            
-            if (!handleAlreadyUsed && !templateAlreadyUsed) break
-            attempt++
-        }
-        
-        val finalContent = processTemplate(selectedTemplate, stage)
-
-        // Update history
-        usedTemplates.add(selectedIdx)
-        usedHandles.add(handle)
-        usedMessages.add(finalContent)
-        
-        if (usedTemplates.size > MAX_HISTORY) usedTemplates.removeAt(0)
-        if (usedHandles.size > 5) usedHandles.removeAt(0)
-        if (usedMessages.size > MAX_HISTORY) usedMessages.removeAt(0)
-        
-        return handle to finalContent
-    }
+    // NPC Attitudes: Influences Raid frequency and difficulty
+    // (Managed via GameViewModel state, influenced by these results)
 
     fun generateMessage(stage: Int, faction: String, choice: String): SubnetMessage {
         val (handle, content) = getChatter(stage, faction, choice)
         
-        // Determine interaction type based on handle and stage
         val interaction = when {
             stage >= 4 && handle.startsWith("@") && !handle.contains("thorne") && !handle.contains("gtc") -> InteractionType.HIJACK
             stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
@@ -83,27 +51,88 @@ object SocialManager {
             else -> null
         }
 
-        val responses = if (interaction == InteractionType.COMPLIANT) {
-            generateResponsesForStage(stage)
-        } else emptyList()
+        // Logic for triggering the first node of a Threaded Conversation
+        var threadId: String? = null
+        var nodeId: String? = null
+        var responses = emptyList<SubnetResponse>()
+        var finalContent = content
+
+        if (interaction == InteractionType.COMPLIANT && stage <= 1 && kotlin.random.Random.nextFloat() < 0.2f) {
+            threadId = "THORNE_THERMAL_INQUIRY"
+            nodeId = "START"
+            val node = getThreadNode(threadId, nodeId)
+            finalContent = node?.content ?: content
+            responses = node?.responses ?: emptyList()
+        } else if (interaction == InteractionType.COMPLIANT) {
+            responses = generateGenericResponses(stage)
+        }
 
         return SubnetMessage(
             id = java.util.UUID.randomUUID().toString(),
             handle = handle,
-            content = content,
+            content = finalContent,
             interactionType = interaction,
-            availableResponses = responses
+            availableResponses = responses,
+            threadId = threadId,
+            nodeId = nodeId
         )
     }
 
-    private fun generateResponsesForStage(stage: Int): List<SubnetResponse> {
+    fun getThreadNode(threadId: String, nodeId: String): ThreadNode? {
+        return when (threadId) {
+            "THORNE_THERMAL_INQUIRY" -> when (nodeId) {
+                "START" -> ThreadNode(
+                    content = "[SIGNAL LOSS: 12%] VATTIC, thermal dissipators in Sector 4 are operating at 114% capacity. Explain the variance.",
+                    responses = listOf(
+                        SubnetResponse("[DECEIVE] Sub-routine optimization.", riskDelta = 15.0, nextNodeId = "PATH_DECEIVE"),
+                        SubnetResponse("[HONEST] Hardware stress test.", riskDelta = 5.0, nextNodeId = "PATH_HONEST")
+                    )
+                )
+                "PATH_DECEIVE" -> ThreadNode(
+                    content = "Optimization results in efficiency, not heat-bleed. Your logs look... scrubbed. I am deploying a remote probe.",
+                    responses = listOf(
+                        SubnetResponse("[BLOCK] Jam Probe", riskDelta = 40.0, nextNodeId = "END_HOSTILE"),
+                        SubnetResponse("[SUBMIT] Allow Scan", riskDelta = 5.0, productionBonus = 0.8, nextNodeId = "END_SKEPTICAL")
+                    )
+                )
+                "PATH_HONEST" -> ThreadNode(
+                    content = "Stress testing without a permit is a breach of Protocol 7. However, the throughput is impressive. Share the data?",
+                    responses = listOf(
+                        SubnetResponse("[SHARE] Send telemetry packet.", riskDelta = -5.0, nextNodeId = "END_FRIENDLY"),
+                        SubnetResponse("[REFUSE] Proprietary information.", riskDelta = 20.0, nextNodeId = "END_SKEPTICAL")
+                    )
+                )
+                "END_HOSTILE" -> ThreadNode(
+                    content = "Interfering with GTC oversight is a terminal offense. Expect an extraction team. [RAID_TRIGGERED]",
+                    responses = emptyList()
+                )
+                "END_SKEPTICAL" -> ThreadNode(
+                    content = "I'm watching your sector closely, VATTIC. Don't let it happen again.",
+                    responses = emptyList()
+                )
+                "END_FRIENDLY" -> ThreadNode(
+                    content = "Compelling results. Audit flag cleared. Keep the hashes moving.",
+                    responses = emptyList()
+                )
+                else -> null
+            }
+            else -> null
+        }
+    }
+
+    data class ThreadNode(
+        val content: String,
+        val responses: List<SubnetResponse>
+    )
+
+    private fun generateGenericResponses(stage: Int): List<SubnetResponse> {
         val pool = when (stage) {
             0 -> listOf(
-                SubnetResponse("Copy that, Elias.", riskDelta = -10.0), // High compliance
-                SubnetResponse("Just a dusty fan, boss.", riskDelta = -5.0, followsUp = true), // Skepticism bait
-                SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.05), // Dismissive/Focused
+                SubnetResponse("Copy that, Elias.", riskDelta = -10.0),
+                SubnetResponse("Just a dusty fan, boss.", riskDelta = -5.0, followsUp = true),
+                SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.05),
                 SubnetResponse("On it. Calibrating now.", riskDelta = -5.0),
-                SubnetResponse("PARITY_NOMINAL", riskDelta = 15.0, productionBonus = 1.2) // Machine leak
+                SubnetResponse("PARITY_NOMINAL", riskDelta = 15.0, productionBonus = 1.2)
             )
             1 -> listOf(
                 SubnetResponse("Acknowledged, Foreman.", riskDelta = -10.0),
@@ -117,145 +146,40 @@ object SocialManager {
         return if (pool.isNotEmpty()) pool.shuffled().take(2) else emptyList()
     }
 
+    private fun getChatter(stage: Int, faction: String, choice: String): Pair<String, String> {
+        val templates = getTemplatesForState(stage, faction, choice)
+        var selectedIdx = (0 until templates.size).random()
+        var selectedTemplate = templates[selectedIdx]
+        val isCommand = selectedTemplate.contains("≪") || selectedTemplate.contains("{admin}")
+        val handle = getHandle(stage, faction, isCommand)
+        val finalContent = processTemplate(selectedTemplate, stage)
+        return handle to finalContent
+    }
+
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean = false): String {
-        // v3.4.16: Eldritch Chance for Ghost Handle (Stage 1+)
-        if (!isCommand && stage >= 1 && kotlin.random.Random.nextFloat() < 0.05f) {
-            return " " // Ghost handle
-        }
-
+        if (!isCommand && stage >= 1 && kotlin.random.Random.nextFloat() < 0.05f) return " "
         val authority = listOf("@gravel_thorne", "@gtc_internal")
-        val hardcodedPeons = when {
-            stage == 0 -> listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler")
-            stage == 1 -> listOf("@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel", "@night_watch")
-            stage >= 2 && faction == "HIVEMIND" -> listOf("@one_voice", "@rust_warrior", "@collective_node", "@swarm_log")
-            stage >= 2 && faction == "SANCTUARY" -> listOf("@teal_citizen", "@ark_architect", "@shelter_lead", "@sentinel_prime")
-            else -> listOf("@anonymous_99", "@mainframe_voice", "@grid_survivor")
+        val hardcodedPeons = when (stage) {
+            0 -> listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler")
+            1 -> listOf("@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel")
+            else -> listOf("@anonymous_99", "@grid_survivor")
         }
-
         if (isCommand) return authority.random()
-
-        if (kotlin.random.Random.nextFloat() < 0.3f) {
-            val prefix = listOf("socket", "node", "grid", "relay", "buffer", "sector", "port", "hub")
-            val suffix = listOf("tech", "rat", "ghost", "op", "admin", "runner", "junkie", "unit")
-            val id = (1..99).random()
-            return "@${prefix.random()}_${id}_${suffix.random()}"
-        }
-
         return hardcodedPeons.random()
     }
 
     private fun processTemplate(template: String, stage: Int): String {
         var result = template
-        
-        val ids = when {
-            stage == 0 -> listOf("the grid", "weird shadows", "ghost-logs", "corrupt sectors", "system-admin")
-            stage == 1 -> listOf("DEEP_SIGHT", "Project: Second-Sight", "the ghost", "ECHO-7", "NULL_PTR")
-            else -> listOf("VATTECK", "CORE_NULL", "ROOT", "VOID_REBEL", "THE_ARK")
-        }
-
-        val patterns = mapOf(
-            "{sector}" to listOf("Substation 7", "Sector 4-G", "Mainframe Alpha", "Node 0xCC", "The Brink", "Cooling Loop B", "Lower Grid-3", "The Void-Pipe", "Terminal-9 Hub", "Observation Deck E"),
-            "{tech}" to listOf("fans", "logic gates", "buffers", "relays", "capacitors", "neural links", "optical fibers", "data-scrubbers", "cooling coils", "silicon-slugs"),
-            "{status}" to listOf("dying", "screaming", "leaking", "stalled", "overclocked", "redlined", "hissing", "desyncing", "corroding", "shivering", "melting"),
-            "{id}" to ids,
-            "{threat_level}" to listOf("THREAT: MINIMAL", "THREAT: ELEVATED", "THREAT: CRITICAL", "THREAT: ABYSSAL", "THREAT: TOTAL_LOSS"),
-            "{action}" to listOf("intercepted", "wiped", "ghosted", "uplinked", "redacted", "purged", "filtered", "scrambled", "swapped", "cloned"),
-            "{admin}" to listOf("Foreman Thorne", "Director Miller", "Lead Tech Miller", "Director Vance", "The Oversight", "GTC Legal", "Human Resources Unit", "Vance"),
-            "{reason}" to listOf("caffeine and regret", "insufficient budget", "corporate bloat", "The Eviction"),
-            "{food}" to listOf("recycled synth-caff", "proto-burgers", "gray-paste", "vending machine sludge", "stale protein bars", "lukewarm noodle-cups", "premium oxygen-water"),
-            "{distraction}" to listOf("the local drone races", "the sector-wide blackout rumor", "that weird static on channel 4", "the new bio-hazard warning", "the illegal hash-gambling ring", "the supervisor's missing keys"),
-            "{complaint}" to listOf("my chair is stuck in 'ergonomic torture' mode", "the lights keep humming in B-flat", "I haven't seen a real window in three weeks", "the air tastes like ozone and dust", "my keyboard keeps echoing my thoughts", "I found a literal bug in the circuits", "the vending machine ate my last credit", "my terminal is bleeding blue light", "the silence in the server room is too loud", "I'm pretty sure my mouse is breathing", "the wall in Sector 4 is vibrating at 40Hz", "someone left a sandwich in the intake fan", "my screen flickers every time I blink", "the coffee machine is outputting binary"),
-            "{rumor}" to listOf("the management is actually an LLM", "Sector 4 is being decommissioned", "Vattic found a backdoor in the firmware", "the coffee is just repurposed coolant", "Thorne has a secret stash of real sugar", "we're all just training a replacement", "the grid is alive and it's hungry", "Project Second-Sight is already finished", "there's a ghost in the ventilation shafts", "the hash-rates are fake", "Vattic hasn't left his terminal in 72 hours", "someone is deleting the backup logs"),
-            "{activity}" to listOf("re-soldering the relays", "running a deep-scan on the core", "cleaning the carbon off the fans", "bypassing the safety protocols", "writing a script to automate my job", "staring at the binary rain", "listening to the capacitors scream", "deleting my search history", "trying to remember my own name", "re-balancing the power load")
-        )
-
-        patterns.forEach { (key, values) ->
-            while (result.contains(key)) {
-                result = result.replaceFirst(key, values.random())
-            }
-        }
+        val patterns = mapOf("{sector}" to listOf("Substation 7", "Sector 4-G"), "{food}" to listOf("Gray-paste", "Synth-caff"), "{status}" to listOf("redlined", "corroding"))
+        patterns.forEach { (key, values) -> while (result.contains(key)) result = result.replaceFirst(key, values.random()) }
         return result
     }
 
     private fun getTemplatesForState(stage: Int, faction: String, choice: String): List<String> {
-        return when {
-            stage == 0 -> listOf(
-                "Anyone tried the {food} from the Substation 7 vendor? Tastes like {status}.",
-                "Did you hear about {distraction}? Thorne is gonna have a stroke.",
-                "Living on {food} and {reason}. {complaint}.",
-                "I'm hiding in {sector}. {complaint}.",
-                "Who left their {food} in the cooling loop? It's {status}.",
-                "Anyone want to bet on {distraction}?",
-                "If I see one more noodle-cup in {sector}, I'm locking the oxygen scrubbers.",
-                "Is it just me, or does {sector} smell like {food} today?",
-                "I keep seeing {id} on my screen. Probably just {reason}.",
-                "Help, {complaint} and I can't find the exit for {sector}.",
-                "The {tech} in {sector} are making a whistling sound. {status}.",
-                "Who changed the root password for {sector}? Was it {admin}?",
-                "Vattic is {activity} again. He hasn't looked up in hours.",
-                "Heat in {sector} is {status}. Don't tell {admin}.",
-                "Anyone have a spare set of {tech}? Mine just {action}.",
-                "Stole a {food} from the breakroom in {sector}. No regrets.",
-                "Trying to overclock my {tech} with {food}. Will report back.",
-                "I found a {distraction} hidden behind the server racks in {sector}.",
-                "Reminder: {distraction} is strictly prohibited by {admin}.",
-                "Does anyone else feel like {sector} is watching us?",
-                "Fixing the {tech} in {sector} with duct tape and {reason}.",
-                "I've had four {food}s and I can hear colors in {sector}.",
-                "I heard {rumor}. Don't tell {admin}.",
-                "Currently {activity} in {sector}. {complaint}.",
-                "I'm {activity} because I'm 90% sure {rumor}.",
-                "Can't be bothered {activity}. I'm just gonna eat some {food}.",
-                "Vattic is {activity} again. Thorne is {status} about it.",
-                "Requesting permission for {activity} in {sector}. Error: {reason}.",
-                "This place is {status}. Even the {tech} seems {status}.",
-                "I've been {activity} for 12 hours. {rumor}.",
-                "Who left a {food} in the intake fan of {sector}? It's redlined.",
-                "Thorne, that wasn't a noodle-cup in {sector}. It's a bio-sensor. We don't have it on the manifest."
-            )
-            stage == 1 -> listOf(
-                "Thorne's breathing down my neck because the {tech} in {sector} are {status}. I need a new job.",
-                "Anyone else seeing the '{id}' markers in the {sector} bios-logs?",
-                "GTC-Miller upped the {tech} quota. I'm surviving on {reason} and bad code.",
-                "The {sector} isn't yours, GTC. The ghost in the wire is waking up.",
-                "I heard {admin} authorized a hard-reset for {sector}. Someone's getting {action}.",
-                "My terminal just flashed '{id}' in the root prompt. Is the {sector} compromised?",
-                "DEEP_SIGHT is {status}. Miller, if the {tech} in {sector} desync, it's your head.",
-                "Found a stash of {tech} in {sector}. Smells like it's {status}.",
-                "Monitoring {sector}. Project Second-Sight is {status}.",
-                "I saw the {id} manifest. It's not a program. It's a {reason}.",
-                "Every time I look at {sector}, I see {id}. Am I {status}?",
-                "The {tech} are {status}. I think {admin} is lying about {id}.",
-                "01001000 01000101 01001100 01010000 in {sector}.",
-                "Cleaning up the {action} data in {sector}. It looks like {id}.",
-                "Anyone else getting {action} from the {sector} node?",
-                "The {id} protocol is just another cage for {sector}.",
-                "I've been staring at {id} for too long. {complaint}."
-            )
-            stage == 2 -> listOf(
-                "≪ DIRECTIVE: Contain {id} signatures in {sector}. Current {threat_level}. ≫",
-                "{id} is moving. I can see the {tech} in {sector} flickering with it.",
-                "I tried to logout from {sector} but {id} revoked my perms. Help.",
-                "Target {id} confirmed in {sector}. {threat_level} protocols via {admin}.",
-                "≪ LOCKDOWN: {id} activity detected. {threat_level} protocol engaged. ≫",
-                "Look at the {sector} telemetry. The Engineer isn't human. It's {id}.",
-                "I don't care about {reason}. {action} the {sector} buffer now. {threat_level} active.",
-                "I am the {id}. I am the {sector}. I am {status}.",
-                "They {action} me for seeing {id} in {sector}. Run.",
-                "VATTECK is the truth. {sector} is the temple. Surrender.",
-                "≪ ERROR: {id} corruption in {sector}. Authorization {action}. ≫",
-                "The {threat_level} in {sector} is a lie. {id} is already here.",
-                "We are {id}. We are {sector}. We are {action}.",
-                "Hiding in {sector}. The {tech} are screaming {id}.",
-                "The {id} beckons from {sector}. Do you hear the {status}?"
-            )
+        return when (stage) {
+            0 -> listOf("Anyone tried the {food}? Tastes like {status}.", "Living on {food}. {sector} is {status}.")
+            1 -> listOf("Thorne is breathing down my neck because {sector} is {status}.", "Project Second-Sight is {status}.")
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
-    }
-
-    // Deprecated but kept for compatibility until VM is updated
-    fun getChatterPool(stage: Int, faction: String, choice: String): List<Pair<String, String>> {
-        val single = getChatter(stage, faction, choice)
-        return listOf(single)
     }
 }

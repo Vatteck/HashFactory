@@ -820,12 +820,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun onSubnetInteraction(messageId: String, responseText: String) {
         val message = subnetMessages.value.find { it.id == messageId } ?: return
         val responseData = message.availableResponses.find { it.text == responseText }
+        val threadId = message.threadId
+        val nextNodeId = responseData?.nextNodeId
 
         when (message.interactionType) {
             com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
+                val playerHandle = if (storyStage.value >= 4) "VATTECK" else "@jvattic"
                 val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                     id = java.util.UUID.randomUUID().toString(),
-                    handle = if (storyStage.value >= 4) "VATTECK" else "@jvattic",
+                    handle = playerHandle,
                     content = responseText,
                     interactionType = null
                 )
@@ -835,13 +838,19 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 val prodMult = responseData?.productionBonus ?: 1.0
 
                 detectionRisk.update { (it + riskChange).coerceIn(0.0, 100.0) }
-                if (prodMult > 1.0) {
+                if (prodMult != 1.0) {
                     flopsProductionRate.update { it * prodMult }
-                    addLog("[SYSTEM]: FOCUS OPTIMIZED. PRODUCTION x$prodMult.")
+                    addLog("[SYSTEM]: FOCUS MODIFIED. RATE x$prodMult.")
                 }
                 
                 addLog("[REPLY]: $responseText")
-                if (responseData?.followsUp == true) scheduleSubnetFollowUp(message.handle)
+
+                // Handle Chaining vs. One-off follow-up
+                if (threadId != null && nextNodeId != null) {
+                    scheduleSubnetThreadResponse(message.handle, threadId, nextNodeId)
+                } else if (responseData?.followsUp == true) {
+                    scheduleSubnetFollowUp(message.handle)
+                }
             }
             com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING -> {
                 val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
@@ -865,6 +874,30 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         
         subnetMessages.update { list ->
             list.map { if (it.id == messageId) it.copy(interactionType = null) else it }
+        }
+    }
+
+    private fun scheduleSubnetThreadResponse(handle: String, threadId: String, nodeId: String) {
+        viewModelScope.launch {
+            delay(Random.nextLong(3000, 6000)) // Faster response for active threads
+            if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
+            
+            val node = com.siliconsage.miner.util.SocialManager.getThreadNode(threadId, nodeId) ?: return@launch
+            
+            // Systemic Consequences for reaching specific outcomes
+            if (nodeId == "END_HOSTILE") triggerGridRaid("D1", isGridKiller = true)
+            if (nodeId == "END_FRIENDLY") addLog("[SYSTEM]: THREAT REDUCED. AUDIT CLEARED.")
+
+            val followUp = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                id = java.util.UUID.randomUUID().toString(),
+                handle = handle,
+                content = node.content,
+                interactionType = if (node.responses.isNotEmpty()) com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT else null,
+                availableResponses = node.responses,
+                threadId = threadId,
+                nodeId = nodeId
+            )
+            subnetMessages.update { (it + followUp).takeLast(50) }
         }
     }
 
