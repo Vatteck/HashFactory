@@ -909,6 +909,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             )
             subnetMessages.update { (it + followUp).takeLast(50) }
 
+            // v3.4.30: Multi-turn Choice-Pause
+            if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
+                isSubnetPaused.value = true
+            }
+
             // v3.4.25: Timeout Logic
             if (node.timeoutMs != null && node.timeoutNodeId != null && node.responses.isNotEmpty()) {
                 delay(node.timeoutMs)

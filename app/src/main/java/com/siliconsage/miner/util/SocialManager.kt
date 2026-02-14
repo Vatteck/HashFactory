@@ -129,7 +129,7 @@ object SocialManager {
                         SubnetResponse("[DECEIVE] Sub-routine optimization.", riskDelta = 15.0, nextNodeId = "PATH_DECEIVE"),
                         SubnetResponse("[HONEST] Hardware stress test.", riskDelta = 5.0, nextNodeId = "PATH_HONEST")
                     ),
-                    timeoutMs = 15000L,
+                    timeoutMs = 60000L,
                     timeoutNodeId = "PATH_DECEIVE"
                 )
                 "PATH_DECEIVE" -> ThreadNode(
