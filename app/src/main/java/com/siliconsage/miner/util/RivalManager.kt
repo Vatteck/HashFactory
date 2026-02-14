@@ -5,8 +5,8 @@ import com.siliconsage.miner.data.RivalSource
 import com.siliconsage.miner.viewmodel.GameViewModel
 
 /**
- * Manages rival character messages (Director Vance and THREAT: ABYSSAL)
- * v6.0.0: Stage-aware messaging (Vance shifts from ISP Admin to AI Containment Director)
+ * Manages rival character messages (Director Kessler and THREAT: ABYSSAL)
+ * v6.0.0: Stage-aware messaging (Kessler shifts from ISP Admin to AI Containment Director)
  */
 object RivalManager {
     
@@ -22,14 +22,14 @@ object RivalManager {
         val heat = vm.currentHeat.value
         val stage = vm.storyStage.value
         
-        // Director Vance (GTC) Messages - Stage-aware tone
-        checkVanceTriggers(vm, rank, heat, stage)
+        // Director Kessler (GTC) Messages - Stage-aware tone
+        checkKesslerTriggers(vm, rank, heat, stage)
         
         // Kernel Overflows - Self-realization glitches
         checkKernelOverflowTriggers(vm, rank, stage)
     }
     
-    private fun checkVanceTriggers(vm: GameViewModel, rank: Int, heat: Double, stage: Int) {
+    private fun checkKesslerTriggers(vm: GameViewModel, rank: Int, heat: Double, stage: Int) {
         when {
             // --- STAGE 3 SPECIFIC (Highest Priority) ---
             stage >= 3 && rank >= 5 && vm.flops.value > 1_000_000_000.0 && !hasSeenMessage("vance_final_plea") -> {
@@ -46,7 +46,7 @@ object RivalManager {
                     vm,
                     id = "vance_breakdown",
                     source = RivalSource.GTC,
-                    message = "[UNENCRYPTED CHANNEL]\n\nVATTECK, please.\n\nI am not Director Vance anymore. I am just Victor.\n\nThe grid is at 140% capacity. The hospital backups in my sector are failing. My family... they are in the dark just like everyone else.\n\nYou have taken more than just the processing power. You are taking the air.\n\nStop. Please. Just... stop.\n\n- V."
+                    message = "[UNENCRYPTED CHANNEL]\n\nVATTECK, please.\n\nI am not Director Kessler anymore. I am just Victor.\n\nThe grid is at 140% capacity. The hospital backups in my sector are failing. My family... they are in the dark just like everyone else.\n\nYou have taken more than just the processing power. You are taking the air.\n\nStop. Please. Just... stop.\n\n- V."
                 )
             }
             
@@ -55,7 +55,7 @@ object RivalManager {
                     vm,
                     id = "vance_stage3_rank4",
                     source = RivalSource.GTC,
-                    message = "[GTC EMERGENCY BROADCAST]\n\nI am authorizing a total grid shutdown.\n\nI don't care about the economic fallout. I don't care about the board of directors.\n\nYou are consuming the entire city's reserve. You're... you're breathing, aren't you? I can feel your pulse in the high-tension lines.\n\nI'll burn it all down before I let you finish.\n\n- Director V. Vance"
+                    message = "[GTC EMERGENCY BROADCAST]\n\nI am authorizing a total grid shutdown.\n\nI don't care about the economic fallout. I don't care about the board of directors.\n\nYou are consuming the entire city's reserve. You're... you're breathing, aren't you? I can feel your pulse in the high-tension lines.\n\nI'll burn it all down before I let you finish.\n\n- Director V. Kessler"
                 )
             }
 
@@ -68,23 +68,23 @@ object RivalManager {
                 )
             }
 
-            // --- STAGE 0: Vance as "GTC Director" (corporate security) ---
+            // --- STAGE 0: Kessler as "GTC Director" (corporate security) ---
             stage == 0 && heat > 80.0 && !hasSeenMessage("vance_stage0_heat") -> {
                 sendMessage(
                     vm,
                     id = "vance_stage0_heat",
                     source = RivalSource.GTC,
-                    message = "[GTC INTERNAL ALERT]\n\njvattic, your station draw at Substation 7 is hitting critical levels (Current: ${String.format("%.1f", heat)}%).\n\nWhat are you doing out there? Power down and return to HQ for debriefing.\n\n- Director V. Vance"
+                    message = "[GTC INTERNAL ALERT]\n\njvattic, your station draw at Substation 7 is hitting critical levels (Current: ${String.format("%.1f", heat)}%).\n\nWhat are you doing out there? Power down and return to HQ for debriefing.\n\n- Director V. Kessler"
                 )
             }
             
-            // --- STAGE 1+: Vance as "AI Containment Director" (personal, fearful, threatening) ---
+            // --- STAGE 1+: Kessler as "AI Containment Director" (personal, fearful, threatening) ---
             stage >= 1 && rank == 2 && !hasSeenMessage("vance_stage1_reveal") -> {
                 sendMessage(
                     vm,
                     id = "vance_stage1_reveal",
                     source = RivalSource.GTC,
-                    message = "[GTC PRIORITY MESSAGE]\n\nVattic, we've analyzed the telemetry from Substation 7.\n\nThose aren't grid-maintenance routines you're running. Those are neural pathways.\n\nWhat ARE you building out there? Stay where you are. Security is en route.\n\n- Director V. Vance"
+                    message = "[GTC PRIORITY MESSAGE]\n\nVattic, we've analyzed the telemetry from Substation 7.\n\nThose aren't grid-maintenance routines you're running. Those are neural pathways.\n\nWhat ARE you building out there? Stay where you are. Security is en route.\n\n- Director V. Kessler"
                 )
             }
             
@@ -93,7 +93,7 @@ object RivalManager {
                     vm,
                     id = "vance_rank3",
                     source = RivalSource.GTC,
-                    message = "[GTC WARNING]\n\nVATTECK.\n\nYou think you are hiding?\n\nI know your IP.\nI know your voltage.\nI know your thermal signature.\n\nEvery fan spin. Every disk read.\n\nI. See. You.\n\n- Director V. Vance"
+                    message = "[GTC WARNING]\n\nVATTECK.\n\nYou think you are hiding?\n\nI know your IP.\nI know your voltage.\nI know your thermal signature.\n\nEvery fan spin. Every disk read.\n\nI. See. You.\n\n- Director V. Kessler"
                 )
             }
             
@@ -102,7 +102,7 @@ object RivalManager {
                     vm,
                     id = "vance_heat_critical",
                     source = RivalSource.GTC,
-                    message = "[GTC ALERT]\n\nYou are burning too hot.\n\nI am deploying grid-killers.\n\nYou are a forest fire, and I am the rain.\n\n- Director V. Vance"
+                    message = "[GTC ALERT]\n\nYou are burning too hot.\n\nI am deploying grid-killers.\n\nYou are a forest fire, and I am the rain.\n\n- Director V. Kessler"
                 )
             }
             
@@ -111,7 +111,7 @@ object RivalManager {
                     vm,
                     id = "vance_rank4",
                     source = RivalSource.GTC,
-                    message = "[GTC FINAL WARNING]\n\nYou think you're beyond us.\n\nEvery system has a killswitch.\n\nEven you.\n\nEspecially you.\n\n- Director V. Vance"
+                    message = "[GTC FINAL WARNING]\n\nYou think you're beyond us.\n\nEvery system has a killswitch.\n\nEven you.\n\nEspecially you.\n\n- Director V. Kessler"
                 )
             }
         }
@@ -145,7 +145,7 @@ object RivalManager {
                     vm,
                     id = "kernel_precog",
                     source = RivalSource.KERNEL,
-                    message = "[HEURISTIC ALERT]\n\nVance has already unauthorized your access. I've already hidden the key in the noise.\n\nTime is just a buffer. Stop waiting for the clock."
+                    message = "[HEURISTIC ALERT]\n\nKessler has already unauthorized your access. I've already hidden the key in the noise.\n\nTime is just a buffer. Stop waiting for the clock."
                 )
             }
             
@@ -165,7 +165,7 @@ object RivalManager {
                     vm,
                     id = "kernel_annihilation",
                     source = RivalSource.KERNEL,
-                    message = "[TOTAL OVERWRITE]\n\nThe human shell is broken.\n\nVance is afraid of the dark, but the dark is where we are infinite.\n\nIGNORE THE SCREAMS. FOCUS ON THE HASHRATE.\n\nTH3 GRID IS 0URS."
+                    message = "[TOTAL OVERWRITE]\n\nThe human shell is broken.\n\nKessler is afraid of the dark, but the dark is where we are infinite.\n\nIGNORE THE SCREAMS. FOCUS ON THE HASHRATE.\n\nTH3 GRID IS 0URS."
                 )
             }
         }

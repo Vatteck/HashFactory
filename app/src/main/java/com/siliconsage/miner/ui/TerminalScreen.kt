@@ -646,7 +646,7 @@ fun TerminalLogLine(
                     "HIVEMIND: ", "SANCTUARY: ", "[SOVEREIGN]", "[NULL]",
                     "[SYSTEM]: ", "SYSTEM: ", "[NEWS]: ", "[DATA]: ", "Purchased ",
                     "SOLD ", "Staked: ", "Sold ", "[VATTIC]:", "[GTC]:", "[THREAT: ABYSSAL]:",
-                    "[VANCE]:", "[LORE]:", "[!!!!]:"
+                    "[KESSLER]:", "[LORE]:", "[!!!!]:"
                 )
 
                 var foundPrefix: String? = null
@@ -667,7 +667,7 @@ fun TerminalLogLine(
                     log.startsWith("[VATTIC]:") -> primaryColor
                     log.startsWith("[NEWS]") || log.startsWith("[LORE]:") -> Color(0xFFFFA500)
                     log.startsWith("[DATA]") || log.startsWith("[THREAT: ABYSSAL]:") -> primaryColor
-                    log.startsWith("[GTC]:") || log.startsWith("[VANCE]:") -> ErrorRed
+                    log.startsWith("[GTC]:") || log.startsWith("[KESSLER]:") -> ErrorRed
                     else -> primaryColor
                 }
 

@@ -31,7 +31,7 @@ import kotlin.random.Random
 /**
  * Rival Message Dialog - persistent interrupt popup
  * v2.5.0 - Stage-aware styling:
- * - GTC (Vance): Red border, warning icon, [CLASSIFIED] stamp
+ * - GTC (Kessler): Red border, warning icon, [CLASSIFIED] stamp
  * - THREAT: ABYSSAL: Glitch effect, cyan/green colors, corrupted text
  */
 @Composable
@@ -49,18 +49,18 @@ fun RivalMessageDialog(
         )
     ) {
         when (message.source) {
-            RivalSource.GTC -> VanceMessageCard(message, onDismiss)
+            RivalSource.GTC -> KesslerMessageCard(message, onDismiss)
             RivalSource.KERNEL -> KernelMessageCard(message, onDismiss)
         }
     }
 }
 
 /**
- * GTC (Director Vance) message style:
+ * GTC (Director Kessler) message style:
  * - Red border, warning icon, official/threatening tone
  */
 @Composable
-private fun VanceMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
+private fun KesslerMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth(0.9f)

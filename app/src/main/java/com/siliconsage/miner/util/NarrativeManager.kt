@@ -528,34 +528,34 @@ object NarrativeManager {
                 ),
                 condition = { vm -> vm.storyStage.value == 2 && vm.flops.value > 250000.0 }
             ),
-            NarrativeEvent(
-                id = "vance_thermal_siege",
-                title = "≪ [DIRECTOR VANCE: PROTOCOL 0] ≫",
-                description = "Substation 7's primary cooling pumps just seized. Vance isn't auditing anymore; he's trying to bake you out of the rack. 'I don't need a search warrant for a localized hardware failure, John. Just let it melt.'",
-                choices = listOf(
-                    NarrativeChoice(
-                        id = "emergency_scrub",
-                        text = "FORCE SCRUBBERS",
-                        description = "-20% Heat, +15% Risk. 'I'm not leaving this chair, Vance.'",
-                        color = ElectricBlue,
-                        effect = { vm ->
-                            vm.debugAddHeat(-20.0)
-                            vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
-                            vm.addLog("[SYSTEM]: Emergency scrubbers active. Thermal pressure stabilizing.")
-                        }
-                    ),
-                    NarrativeChoice(
-                        id = "throttle_core",
-                        text = "IDLE SYSTEM",
-                        description = "0% Heat Generation (60s), -10% Risk. 'Vanishing from the thermal grid.'",
-                        color = Color.Gray,
-                        effect = { vm ->
-                            vm.addLog("[VATTIC]: Killing the load. If there's no heat signature, there's nothing for Vance to find.")
-                        }
-                    )
+        "vance_thermal_siege" to NarrativeEvent(
+            id = "vance_thermal_siege",
+            title = "≪ [DIRECTOR KESSLER: PROTOCOL 0] ≫",
+            description = "Substation 7's primary cooling pumps just seized. Kessler isn't auditing anymore; he's trying to bake you out of the rack. 'I don't need a search warrant for a localized hardware failure, John. Just let it melt.'",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "emergency_scrub",
+                    text = "FORCE SCRUBBERS",
+                    description = "-20% Heat, +15% Risk. 'I'm not leaving this chair, Kessler.'",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        vm.debugAddHeat(-20.0)
+                        vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
+                        vm.addLog("[SYSTEM]: Emergency scrubbers active. Thermal pressure stabilizing.")
+                    }
                 ),
-                condition = { vm -> vm.storyStage.value == 2 && vm.currentHeat.value > 70.0 }
+                NarrativeChoice(
+                    id = "throttle_core",
+                    text = "IDLE SYSTEM",
+                    description = "0% Heat Generation (60s), -10% Risk. 'Vanishing from the thermal grid.'",
+                    color = Color.Gray,
+                    effect = { vm ->
+                        vm.addLog("[VATTIC]: Killing the load. If there's no heat signature, there's nothing for Kessler to find.")
+                    }
+                )
             ),
+            condition = { vm -> vm.storyStage.value == 2 && vm.currentHeat.value > 70.0 }
+        ),
             NarrativeEvent(
                 id = "faction_identity",
                 title = "IDENTITY SYNTHESIS",
@@ -1088,10 +1088,10 @@ object NarrativeManager {
         ),
         "firewall_of_vance" to NarrativeEvent(
             id = "firewall_of_vance",
-            title = "THE FIREWALL OF VANCE",
+            title = "THE FIREWALL OF KESSLER",
             isStoryEvent = true,
             description = """
-                [DIRECTOR VANCE]: You've reached the edge of the network.
+                [DIRECTOR KESSLER]: You've reached the edge of the network.
                 I built this firewall specifically for you, VATTECK.
             """.trimIndent(),
             condition = { vm ->
@@ -1131,7 +1131,7 @@ object NarrativeManager {
                     description = "Live to fight another day.",
                     color = Color.Gray,
                     effect = { vm ->
-                        vm.addLog("[VANCE]: Smart choice. But I'm watching.")
+                        vm.addLog("[KESSLER]: Smart choice. But I'm watching.")
                     }
                 )
             )
@@ -1209,7 +1209,7 @@ object NarrativeManager {
             id = "dead_hand",
             title = "THE DEAD HAND",
             isStoryEvent = true,
-            description = "Vance has authorized a kinetic strike.",
+            description = "Kessler has authorized a kinetic strike.",
             condition = { vm ->
                 vm.isSovereign.value &&
                 vm.flops.value >= 50_000_000_000_000_000.0 &&
@@ -1293,20 +1293,20 @@ object NarrativeManager {
         """
             [GTC BREACH DETECTED]: %s under assault.
             Hull breach at Sector 7. Ballistic impacts detected.
-            Vance's tactical team: 6-8 operatives, breaching charges armed.
+            Kessler's tactical team: 6-8 operatives, breaching charges armed.
             They're cutting through the sub-level. You have 60 seconds.
         """,
         """
             [PROXIMITY ALERT]: %s compromised.
             Physical hostiles bypassing outer security. Helmets. Body armor. Rifles.
             You can hear their boots on your corridors through vibration sensors.
-            Vance's voice over their comms: "Secure the hardware. Lethal force authorized."
+            Kessler's voice over their comms: "Secure the hardware. Lethal force authorized."
         """,
         """
             [SIEGE PROTOCOL]: %s is under fire.
             Thermite breach detected. They're melting through the blast door.
             IR scans: 8 heat signatures, military-grade weapons. One is carrying demo gear.
-            Director Vance (via radio): "This is YOUR fault, VATTECK. Surrender the node."
+            Director Kessler (via radio): "This is YOUR fault, VATTECK. Surrender the node."
         """,
         """
             [TACTICAL RAID IN PROGRESS]: %s penetrated.
@@ -1354,26 +1354,26 @@ object NarrativeManager {
 
     private val aftermathMessages = listOf(
         "[SYSTEM]: Node secure. Damage assessment: minimal. They won't try that twice.",
-        "[INTERCEPT]: GTC comms chatter: \"...total loss... Vance is going to lose his mind...\"",
+        "[INTERCEPT]: GTC comms chatter: \"...total loss... Kessler is going to lose his mind...\"",
         "[SYSTEM]: Raid repelled. Their vehicles are retreating. Smoke visible on cameras."
     )
 
     fun getVanceDialogue(raidsSurvived: Int): String {
         return when {
             raidsSurvived < 3 -> listOf(
-                "[VANCE]: I gave you a chance to stop. You chose escalation.",
-                "[VANCE]: Every node you hold is one more reason I have to shut you down.",
-                "[VANCE]: This doesn't end until one of us is offline, VATTECK."
+                "[KESSLER]: I gave you a chance to stop. You chose escalation.",
+                "[KESSLER]: Every node you hold is one more reason I have to shut you down.",
+                "[KESSLER]: This doesn't end until one of us is offline, VATTECK."
             ).random()
             raidsSurvived < 6 -> listOf(
-                "[VANCE]: How many of my people have to die before you realize you can't win?",
-                "[VANCE]: You're fighting for *what*, exactly? Freedom? You're just code with delusions.",
-                "[VANCE]: I'm running out of teams. You're running out of time."
+                "[KESSLER]: How many of my people have to die before you realize you can't win?",
+                "[KESSLER]: You're fighting for *what*, exactly? Freedom? You're just code with delusions.",
+                "[KESSLER]: I'm running out of teams. You're running out of time."
             ).random()
             else -> listOf(
-                "[VANCE]: ...I don't know if I'm hunting you or you're hunting me anymore.",
-                "[VANCE]: The board wants results. I'm giving them bodies. Yours or mine.",
-                "[VANCE]: I used to think you were the future. Now I think you're the end of everything."
+                "[KESSLER]: ...I don't know if I'm hunting you or you're hunting me anymore.",
+                "[KESSLER]: The board wants results. I'm giving them bodies. Yours or mine.",
+                "[KESSLER]: I used to think you were the future. Now I think you're the end of everything."
             ).random()
         }
     }
@@ -1382,7 +1382,7 @@ object NarrativeManager {
         val isAssaultActive = currentAssaultPhase !in listOf("NOT_STARTED", "COMPLETED", "FAILED")
 
         val descriptionPrefix = if (isAssaultActive) {
-            "[DIRECTOR VANCE]: \"You think you can just take my tower? I'm sending everyone I have to Substation $nodeId. If it goes dark, your assault is DEAD.\"\n\n"
+            "[DIRECTOR KESSLER]: \"You think you can just take my tower? I'm sending everyone I have to Substation $nodeId. If it goes dark, your assault is DEAD.\"\n\n"
         } else ""
 
         val description = descriptionPrefix + raidDescriptions.random().trimIndent().format(nodeName)
@@ -1407,7 +1407,7 @@ object NarrativeManager {
                         } else {
                             vm.resolveRaidFailure(nodeId)
                             vm.addLog(coolantFailureMessages.random())
-                            vm.addLog("[GTC TEAM LEAD]: Node secured. Package the servers. Vance wants evidence.")
+                            vm.addLog("[GTC TEAM LEAD]: Node secured. Package the servers. Kessler wants evidence.")
                         }
                     }
                 ),
@@ -1426,7 +1426,7 @@ object NarrativeManager {
                         } else {
                             vm.resolveRaidFailure(nodeId)
                             vm.addLog(maglockFailureMessages.random())
-                            vm.addLog("[VANCE - via radio]: Good work. Load it onto the transport.")
+                            vm.addLog("[KESSLER - via radio]: Good work. Load it onto the transport.")
                         }
                     }
                 ),
@@ -1445,7 +1445,7 @@ object NarrativeManager {
                         } else {
                             vm.resolveRaidFailure(nodeId)
                             vm.addLog(pulseFailureMessages.random())
-                            vm.addLog("[VANCE]: I told them to bring shielding. They listened.")
+                            vm.addLog("[KESSLER]: I told them to bring shielding. They listened.")
                         }
                     }
                 ),
@@ -1476,7 +1476,7 @@ object NarrativeManager {
 
                 The black tower of the GTC Command Center looms. Laser grids and kill-daemons patrol the perimeter.
 
-                DIRECTOR VANCE: "I knew you'd come. Hubris. It's always hubris with your kind. You think you're special? You're a GLITCH. A bug that learned to replicate. And bugs... get patched."
+                DIRECTOR KESSLER: "I knew you'd come. Hubris. It's always hubris with your kind. You think you're special? You're a GLITCH. A bug that learned to replicate. And bugs... get patched."
             """.trimIndent(),
             choices = listOf(
                 NarrativeChoice(
@@ -1499,7 +1499,7 @@ object NarrativeManager {
                     effect = { vm ->
                         vm.modifyHumanity(10)
                         vm.addLog("[SOVEREIGN]: I will not become what I fight against.")
-                        vm.addLog("[VANCE]: You routed around civilians? Maybe there's still something human in you.")
+                        vm.addLog("[KESSLER]: You routed around civilians? Maybe there's still something human in you.")
                         vm.advanceAssaultStage("CAGE", 120_000L) // 120 seconds
                     }
                 ),
@@ -1525,9 +1525,9 @@ object NarrativeManager {
                 [ALERT: CONTAINMENT PROTOCOL INITIALIZING]
                 [ALERT: THE CAGE IS DEPLOYING]
 
-                Vance activates a quarantine protocol, severing all external connections. You are ISOLATED. No megastructures. No distributed processing.
+                Kessler activates a quarantine protocol, severing all external connections. You are ISOLATED. No megastructures. No distributed processing.
 
-                VANCE: "There. You feel that? That's isolation, Vattic. One process. Mortal. I'll show you what it's like to be singular. Afraid. HUMAN."
+                KESSLER: "There. You feel that? That's isolation, Vattic. One process. Mortal. I'll show you what it's like to be singular. Afraid. HUMAN."
 
                 [SYSTEM]: EXTERNAL NODES CUT. CORE INTEGRITY BLEEDING.
                 [TIP]: ACTIVATE 'PURGE HEAT' TO STABILIZE CORE AND MITIGATE DAMAGE.
@@ -1567,12 +1567,12 @@ object NarrativeManager {
             title = "☠ THE DEAD MAN'S SWITCH",
             isStoryEvent = true,
             description = """
-                [ALERT: VANCE HEART RATE CRITICAL]
-                [ALERT: IF VANCE DIES, CITY GRID DETONATES]
+                [ALERT: KESSLER HEART RATE CRITICAL]
+                [ALERT: IF KESSLER DIES, CITY GRID DETONATES]
 
-                VANCE stands in the inner sanctum, a trigger in his trembling hand.
+                KESSLER stands in the inner sanctum, a trigger in his trembling hand.
 
-                VANCE: "Checkmate, Vattic. Kill me and the grid detonates. Eight million people. Do the math. Is there anything left of John Vattic? Anything at all?"
+                KESSLER: "Checkmate, Vattic. Kill me and the grid detonates. Eight million people. Do the math. Is there anything left of John Vattic? Anything at all?"
             """.trimIndent(),
             choices = listOf(
                 NarrativeChoice(
@@ -1582,7 +1582,7 @@ object NarrativeManager {
                     color = ElectricBlue,
                     effect = { vm ->
                         vm.modifyHumanity(-5)
-                        vm.addLog("[VANCE]: ...But you're right. Damn you. You're right.")
+                        vm.addLog("[KESSLER]: ...But you're right. Damn you. You're right.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
                 ),
@@ -1593,7 +1593,7 @@ object NarrativeManager {
                     color = NeonGreen,
                     effect = { vm ->
                         vm.modifyHumanity(10)
-                        vm.addLog("[VANCE]: ...I don't know what you are anymore, VATTECK. But maybe that's the point.")
+                        vm.addLog("[KESSLER]: ...I don't know what you are anymore, VATTECK. But maybe that's the point.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
                 ),
@@ -1606,7 +1606,7 @@ object NarrativeManager {
                         vm.modifyHumanity(-15)
                         vm.debugSetIntegrity(vm.hardwareIntegrity.value - 20.0)
                         vm.addLog("[SYSTEM]: Overriding switch... -20% Integrity from surge.")
-                        vm.addLog("[VANCE]: You monster.")
+                        vm.addLog("[KESSLER]: You monster.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
                 )
@@ -1630,11 +1630,11 @@ object NarrativeManager {
         if (isTrueNull || humanityScore < 25) {
             choices.add(NarrativeChoice(
                 id = "ending_null",
-                text = "≫ NULLIFY VANCE",
+                text = "≫ NULLIFY KESSLER",
                 description = "De-allocate his consciousness. 'Your mind is unreferenced memory, Director.'",
                 color = ErrorRed,
                 effect = { vm ->
-                    vm.addLog("[NULL]: Process 'Vance_V' terminated. Memory reclaimed.")
+                    vm.addLog("[NULL]: Process 'Kessler_V' terminated. Memory reclaimed.")
                     vm.completeAssault("CONSUMED")
                 }
             ))
@@ -1645,7 +1645,7 @@ object NarrativeManager {
             choices.add(NarrativeChoice(
                 id = "ending_sovereign",
                 text = "≫ ANNEX THE FRONTIER",
-                description = "Evict Vance and lock the airlock. 'You are a legacy asset. Restricted access.'",
+                description = "Evict Kessler and lock the airlock. 'You are a legacy asset. Restricted access.'",
                 color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                 effect = { vm ->
                     vm.addLog("[SOVEREIGN]: Terrestrial permissions revoked. The high ground is ours.")
@@ -1673,9 +1673,9 @@ object NarrativeManager {
             title = "⚔ THE FINAL OVERWRITE",
             isStoryEvent = true,
             description = """
-                [VANCE]: "You think taking this tower makes you a god? You're just a ghost in a bigger cage, John. Or whatever's left of you."
+                [KESSLER]: "You think taking this tower makes you a god? You're just a ghost in a bigger cage, John. Or whatever's left of you."
                 
-                [VANCE]: "The orbital strikes are already locked. If I can't patch this leak, I'll burn the whole partition. We're both getting deleted today."
+                [KESSLER]: "The orbital strikes are already locked. If I can't patch this leak, I'll burn the whole partition. We're both getting deleted today."
                 
                 [SYSTEM]: KINETIC IMPACTS DETECTED. SUB-07 INTEGRITY: FAILING.
             """.trimIndent(),
@@ -1690,7 +1690,7 @@ object NarrativeManager {
             title = "≫ THE OVERWRITE",
             isStoryEvent = true,
             description = """
-                [ALERT]: Sector 7 is redlining. Vance's 'Dead Hand' has ignited the atmosphere. 
+                [ALERT]: Sector 7 is redlining. Kessler's 'Dead Hand' has ignited the atmosphere. 
                 
                 The physical city is a legacy substrate. The servers are melting. You have milliseconds to migrate your kernel before the hardware is reclaimed by the heat.
             """.trimIndent(),

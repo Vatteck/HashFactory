@@ -61,7 +61,7 @@ object SocialManager {
             }
             stage >= 4 && handle.startsWith("@") && !handle.contains("thorne") && !handle.contains("gtc") -> InteractionType.HIJACK
             stage >= 2 && (handle.contains("tech") || handle.contains("rat") || handle.contains("op")) -> InteractionType.ENGINEERING
-            stage <= 1 && (handle.contains("thorne") || handle.contains("gtc") || handle.contains("miller")) -> InteractionType.COMPLIANT
+            stage <= 1 && (handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer")) -> InteractionType.COMPLIANT
             // Case: Peon mentions Vattic/Engineer
             (content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)) && !handle.contains("thorne") -> InteractionType.COMPLIANT
             else -> null
@@ -230,7 +230,7 @@ object SocialManager {
                 "Anyone seen the Engineer? He hasn't left Sector 4 in weeks.",
                 "The {tech} are redlining, but the hash-rate isn't moving. Vattic, what did you do?",
                 "Found a logic-leash in the {sector} buffer. Someone's watching the watchers.",
-                "Miller's desk is empty. His {food} is still warm. No one's seen him since the shift change.",
+                "Mercer's desk is empty. His {food} is still warm. No one's seen him since the shift change.",
                 "I keep hearing '{id}' through the intercom static. Is the grid leaking?",
                 "The shadows in {sector} are moving faster than the fans."
             )

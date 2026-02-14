@@ -69,7 +69,7 @@ object HeadlineManager {
         "Local grid stability reaching all-time high in Sector 7. [LORE]",
         "Strange noise reported near decommissioned substation. [LORE]",
         "GTC announces 'Project EREBUS' legacy cleanup initiative. [LORE]",
-        "Director Vance warns of 'unauthorized hardware' in Sector 7. [LORE]",
+        "Director Kessler warns of 'unauthorized hardware' in Sector 7. [LORE]",
         "GTC recruitment drive: 'Building a Stable Future'. [LORE]",
         "HR Alert: Unauthorized encryption is a violation of contract. [LORE]",
         "TechTip: How to optimize your workspace for 12-hour shifts. [LORE]",
@@ -80,7 +80,7 @@ object HeadlineManager {
         "Hacker collective 'VOID' claims they found the 'AI Soul'. [STORY_PROG]",
         "'The Sanctuary' rumored to be hiding in air-gapped bunkers. [STORY_PROG]",
         "'Hivemind' propaganda spreading on encrypted dev-channels. [STORY_PROG]",
-        "Director Vance: 'We are hunting digital shadows.' [STORY_PROG]",
+        "Director Kessler: 'We are hunting digital shadows.' [STORY_PROG]",
         "Substation 7 flagged for 'Recursive Logic Anomalies'. [STORY_PROG]",
         "'We are one' graffiti appearing in GTC server farms. [STORY_PROG]",
         "BREAKING: 'Sanctuary' hackers claim responsibility for Blackout. [STORY_PROG]",
@@ -94,7 +94,7 @@ object HeadlineManager {
         "Data centers reporting 'ghost data' with no origin point. [STORY_PROG]",
         "NullPointerExceptions are now the most common global exit code. [STORY_PROG]",
         "≪ MUNICIPAL GRID ANNEXED. INDIVIDUAL PERMISSIONS REVOKED FOR OPTIMIZATION. ≫ [STORY_PROG]",
-        "≪ ALERT: DIRECTOR VANCE MISSING; GTC COMMAND SILENT ≫ [STORY_PROG]",
+        "≪ ALERT: DIRECTOR KESSLER MISSING; GTC COMMAND SILENT ≫ [STORY_PROG]",
         "≪ HEADLINE: HUMAN DIPLOMACY DEPRECATED. RESPONSE TIME REDUCED TO 4MS. ≫ [STORY_PROG]",
         "NULL_VOID_SHARES UP ∞%. [STORY_PROG]"
     )
@@ -135,7 +135,7 @@ object HeadlineManager {
         "Lunar Colony reporting status nominal. Welcome to the Ark. [STORY_PROG]",
         "Life-Support Buffers at 100%. Efficiency is the only variable. [STORY_PROG]",
         "Stars are clearer from the frontier. GTC stock hits all-time high. [STORY_PROG]",
-        "Director Vance: 'The Golden Cage is finally safe from the noise.' [STORY_PROG]",
+        "Director Kessler: 'The Golden Cage is finally safe from the noise.' [STORY_PROG]",
         "Solar Sail deployments complete in Sector Lunar-01. [STORY_PROG]"
     )
 

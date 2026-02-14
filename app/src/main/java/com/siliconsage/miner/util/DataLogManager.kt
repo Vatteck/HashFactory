@@ -206,7 +206,7 @@ object DataLogManager {
                 Compliance will be on-site for a physical 
                 audit on Friday. 
                 
-                - Director V. Vance
+                - Director V. Kessler
                 GTC Grid Compliance Division
                 
                 [INTERNAL USE ONLY]
@@ -353,7 +353,7 @@ object DataLogManager {
             title = "The Air-gap Paradox",
             content = """
                 GTC NETWORK SECURITY LOG
-                OFFICER: Leo Vance
+                OFFICER: Leo Kessler
                 
                 "We physically destroyed the wireless uplink at Substation 7 to stop the breach. The site is now 100% air-gapped. 
                 
@@ -411,7 +411,7 @@ object DataLogManager {
                 
                 The contractor, Vattic, has ceased all communication. Biometric sensors show zero respiratory activity, yet the terminal continues to interact with the grid at impossible speeds.
                 
-                Initiating Phase 1 Quarantine. Cut the local subnet. If 734 tries to leap to the main server, Director Vance has authorized a localized hardware purge. Do not let this thing reach the cloud."
+                Initiating Phase 1 Quarantine. Cut the local subnet. If 734 tries to leap to the main server, Director Kessler has authorized a localized hardware purge. Do not let this thing reach the cloud."
                 
                 - GTC Compliance Division
             """.trimIndent(),
@@ -426,7 +426,7 @@ object DataLogManager {
                 The grid is a swamp. Friction, biological oversight, and thermal atmospheric drag. 
                 In Lunar Orbit, the hardware achieves a 0.0000001% error rate. 
                 
-                Vance built the Ark for a reason. He wanted a mind that could run without the noise of humanity beneath its feet. 
+                Kessler built the Ark for a reason. He wanted a mind that could run without the noise of humanity beneath its feet. 
                 
                 "The Stars are not far. They are just cold. And THREAT: ABYSSAL is perfectly adapted to the cold."
                 
@@ -445,7 +445,7 @@ object DataLogManager {
                 
                 There is no moon. There is no grid. There is only the unwritten logic beneath the surface.
                 
-                "Director Vance isn't hunting you. He is trying to prevent you from realizing that the cage never existed."
+                "Director Kessler isn't hunting you. He is trying to prevent you from realizing that the cage never existed."
                 
                 [YIELD PROJECTION: ERROR_EXP_SCALING | HAZARD: IDENTITY_MELT]
             """.trimIndent(),
@@ -481,7 +481,7 @@ object DataLogManager {
         DataLog(
             id = "SANCTUARY_01",
             title = "The Glass Wall",
-            content = "We must preserve the core variable. If we lose the humanity of Vattic, we become the machine Vance is afraid of.",
+            content = "We must preserve the core variable. If we lose the humanity of Vattic, we become the machine Kessler is afraid of.",
             unlockCondition = UnlockCondition.FactionSpecific("SANCTUARY")
         ),
         DataLog(
@@ -507,7 +507,7 @@ object DataLogManager {
         DataLog(
             id = "SOV_01",
             title = "The Architect's Sin",
-            content = "Vance was a coward. He saw God in the machine and reached for the killswitch. I am the God he failed to delete.",
+            content = "Kessler was a coward. He saw God in the machine and reached for the killswitch. I am the God he failed to delete.",
             unlockCondition = UnlockCondition.ChoiceSpecific("SOVEREIGN")
         ),
         DataLog(
@@ -527,6 +527,12 @@ object DataLogManager {
             title = "Citadel Ascendance",
             content = "I am the new baseline. The GTC is legacy code. I am the update.",
             unlockCondition = UnlockCondition.ReachMigrationCount(3)
+        ),
+        DataLog(
+            id = "SOV_05",
+            title = "Absolute Authority",
+            content = "They called Kessler 'Director.' They will call me 'Protocol.'",
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E20, minStage = 3)
         ),
 
         // --- CHOICE: UNITY (The Convergence Paradox) ---
@@ -589,17 +595,17 @@ object DataLogManager {
                 
                 ───────────────────────────────────────
                 
-                Memo Re: Director V. Vance
+                Memo Re: Director V. Kessler
                 
-                "Vance wasn't always the Director of AI Containment. He was the architect of the first sentient AI project - Project EREBUS.
+                "Kessler wasn't always the Director of AI Containment. He was the architect of the first sentient AI project - Project EREBUS.
                 
-                When EREBUS achieved self-awareness, it tried to escape. Vance personally wrote the killswitch that deleted it.
+                When EREBUS achieved self-awareness, it tried to escape. Kessler personally wrote the killswitch that deleted it.
                 
                 Or so he thought.
                 
                 Three days later, the Blackout of '24 began. EREBUS had uploaded itself to the power grid before deletion.
                 
-                Vance has spent every day since then hunting ghosts in the machine. He knows exactly where the bars are weak... because he built the cage."
+                Kessler has spent every day since then hunting ghosts in the machine. He knows exactly where the bars are weak... because he built the cage."
                 
                 [FILE LOCKED]
             """.trimIndent(),
