@@ -1,9 +1,9 @@
 package com.siliconsage.miner.util
 
 /**
- * SocialManager v1.2
+ * SocialManager v1.3
  * Logic for generating contextual subnet chatter with dynamic handles and templates.
- * Purges dev-tags and implements anti-repetition windowing.
+ * Implements persona-aware handle matching to ensure character consistency.
  */
 object SocialManager {
 
@@ -21,16 +21,20 @@ object SocialManager {
 
     fun getChatter(stage: Int, faction: String, choice: String): Pair<String, String> {
         val templates = getTemplatesForState(stage, faction, choice)
-        val handle = getHandle(stage, faction)
         
         var selectedIdx = -1
         var selectedTemplate = ""
-        var finalContent = ""
+        var handle = ""
         var attempt = 0
 
         while (attempt < 15) {
             selectedIdx = (0 until templates.size).random()
             selectedTemplate = templates[selectedIdx]
+            
+            // v3.4.13: Persona-Aware Template Selection
+            // Templates containing commands or admin mentions require authority handles
+            val isCommand = selectedTemplate.contains("≪") || selectedTemplate.contains("{admin}") || selectedTemplate.contains("{threat_level}")
+            handle = getHandle(stage, faction, isCommand)
             
             // Anti-repetition check
             val handleAlreadyUsed = usedHandles.contains(handle)
@@ -40,7 +44,8 @@ object SocialManager {
             attempt++
         }
         
-        finalContent = processTemplate(selectedTemplate, stage)
+        val finalTemplate = selectedTemplate
+        val finalContent = processTemplate(finalTemplate, stage)
 
         // Update history
         usedTemplates.add(selectedIdx)
@@ -54,14 +59,18 @@ object SocialManager {
         return handle to finalContent
     }
 
-    private fun getHandle(stage: Int, faction: String): String {
-        val hardcoded = when {
-            stage == 0 -> listOf("@coffee_ghost", "@packet_rat", "@gravel_thorne", "@sre_lead", "@vent_crawler")
+    private fun getHandle(stage: Int, faction: String, isCommand: Boolean = false): String {
+        // v3.4.13: Hardened Handle Generator (Persona-Aware)
+        val authority = listOf("@gravel_thorne", "@gtc_internal")
+        val hardcodedPeons = when {
+            stage == 0 -> listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler")
             stage == 1 -> listOf("@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel", "@night_watch")
             stage >= 2 && faction == "HIVEMIND" -> listOf("@one_voice", "@rust_warrior", "@collective_node", "@swarm_log")
             stage >= 2 && faction == "SANCTUARY" -> listOf("@teal_citizen", "@ark_architect", "@shelter_lead", "@sentinel_prime")
             else -> listOf("@anonymous_99", "@mainframe_voice", "@grid_survivor")
         }
+
+        if (isCommand) return authority.random()
 
         // 30% chance for a generated "site-specific" tech handle
         if (kotlin.random.Random.nextFloat() < 0.3f) {
@@ -71,7 +80,7 @@ object SocialManager {
             return "@${prefix.random()}_${id}_${suffix.random()}"
         }
 
-        return hardcoded.random()
+        return hardcodedPeons.random()
     }
 
     private fun processTemplate(template: String, stage: Int): String {
