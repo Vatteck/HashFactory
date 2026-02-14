@@ -3,9 +3,9 @@ package com.siliconsage.miner.util
 import kotlin.random.Random
 
 /**
- * SocialManager v1.9
+ * SocialManager v2.0
  * Core Logic for Substrate Comms (Contextual Threading).
- * Implements identity-aware templates, Biometric Peek, and Packet Harvesting.
+ * Fixed: Handle click logic, name doubling, and identity routing.
  */
 object SocialManager {
 
@@ -35,7 +35,7 @@ object SocialManager {
         val nodeId: String? = null,
         val timeoutMs: Long? = null,
         val isForceReply: Boolean = false,
-        val employeeInfo: EmployeeInfo? = null // v3.4.41: Biometric Peek
+        val employeeInfo: EmployeeInfo? = null
     )
 
     data class EmployeeInfo(
@@ -60,29 +60,24 @@ object SocialManager {
 
         val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
         val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
-        val isCommand = content.contains("≪")
         
         // v3.4.40: Narrative Interaction Key
         val isRatCallout = content.contains("safety protocols", ignoreCase = true)
-        
-        // v3.4.41: Packet Harvest Trigger (5% chance)
-        val isHarvest = Random.nextFloat() < 0.05f && stage >= 1 && !isAdmin
+        val isHarvest = !isAdmin && Random.nextFloat() < 0.05f && stage >= 1
 
         // 1. Determine Interaction Context
-        val interactionType = when {
+        interactionType = when {
             isHarvest -> InteractionType.HARVEST
             stage >= 4 && finalHandle.startsWith("@") && !isAdmin -> InteractionType.HIJACK
             stage >= 2 && (finalHandle.contains("tech") || finalHandle.contains("rat") || finalHandle.contains("op")) -> InteractionType.ENGINEERING
-            isRatCallout -> InteractionType.COMPLIANT
-            // v3.4.42: Explicitly include mentionsVattic in the Interaction Check
-            stage <= 1 && (isCommand || mentionsVattic) -> InteractionType.COMPLIANT
+            isRatCallout || mentionsVattic -> InteractionType.COMPLIANT
             else -> null
         }
 
         if (isHarvest) {
             finalContent = "≪ [ENCRYPTED_PACKET_DETECTED: 0x${Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase()}] ≫"
             finalHandle = "≫ SYSTEM_LEAK ≪"
-            timeoutMs = 15000L // Fast mini-game
+            timeoutMs = 15000L
             responses = listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
         } else if (isRatCallout) {
             isForceReply = true
@@ -99,7 +94,6 @@ object SocialManager {
             responses = node?.responses ?: emptyList()
             timeoutMs = node?.timeoutMs ?: 60000L
         } else if (interactionType != null) {
-            // v3.4.42 Audit: Ensure mentionsVattic branch is reached correctly
             responses = generateIdentityAwareResponses(stage, finalHandle, mentionsVattic)
             timeoutMs = 60000L
             if (mentionsVattic && !isAdmin) isForceReply = true
@@ -136,12 +130,12 @@ object SocialManager {
             nodeId = nodeId,
             timeoutMs = timeoutMs,
             isForceReply = isForceReply,
-            employeeInfo = if (!isHarvest) generateEmployeeInfo(finalHandle) else null
+            // v3.4.48: Pass ORIGINAL handle to ensure bio lookup works
+            employeeInfo = if (!isHarvest) generateEmployeeInfo(handle) else null
         )
     }
 
     private fun generateEmployeeInfo(handle: String): EmployeeInfo {
-        // v3.4.47: Scrub handle for lookup
         val cleanHandle = handle.filter { !it.isWhitespace() }
         
         val bios = mapOf(
@@ -177,7 +171,6 @@ object SocialManager {
     private fun generateIdentityAwareResponses(stage: Int, handle: String, mentionsVattic: Boolean): List<SubnetResponse> {
         val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
         
-        // v3.4.43: Response Routing Audit
         if (isAdmin) {
             val address = when {
                 handle.contains("thorne") -> "Elias"
@@ -193,7 +186,6 @@ object SocialManager {
         }
 
         if (mentionsVattic) {
-            // v3.4.42: variety for direct mentions (Restored passive options)
             return listOf(
                 SubnetResponse("Just doing my shift.", riskDelta = -2.0),
                 SubnetResponse("Trying to hit the quota.", riskDelta = -5.0),
@@ -205,7 +197,6 @@ object SocialManager {
             ).shuffled().take(2)
         }
 
-        // Context: General Peon Chatter
         return listOf(
             SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.02),
             SubnetResponse("Just a dusty fan, guys.", riskDelta = -5.0),
@@ -438,6 +429,26 @@ object SocialManager {
             }
             else -> null
         }
+    }
+
+    fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
+        val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
+        val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
+        
+        val responses = generateIdentityAwareResponses(stage, handle, mentionsVattic)
+        val type = if (isAdmin || mentionsVattic || handle.startsWith("@")) InteractionType.COMPLIANT else null
+        
+        return SubnetMessage(
+            id = java.util.UUID.randomUUID().toString(),
+            handle = handle,
+            content = content,
+            interactionType = type,
+            availableResponses = responses,
+            isForceReply = (mentionsVattic && !isAdmin),
+            timeoutMs = if (type != null) 60000L else null,
+            // v3.4.48: Pass ORIGINAL handle to ensure bio lookup works
+            employeeInfo = generateEmployeeInfo(handle)
+        )
     }
 
     data class ThreadNode(
