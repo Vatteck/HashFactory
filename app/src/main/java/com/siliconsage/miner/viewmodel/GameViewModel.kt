@@ -68,7 +68,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     // v3.4.0: Social Subnet State
     val subnetMessages = MutableStateFlow<List<com.siliconsage.miner.util.SocialManager.SubnetMessage>>(emptyList())
     val activeTerminalMode = MutableStateFlow("IO") // "IO" or "SUBNET"
-    val hasNewSubnetMessage = MutableStateFlow(false)
+    val hasNewSubnetDecision = MutableStateFlow(false) // v3.4.68: Red Alert
+    val hasNewSubnetChatter = MutableStateFlow(false) // v3.4.68: Blue Alert
     val hasNewIOMessage = MutableStateFlow(false)
     val isSubnetTyping = MutableStateFlow(false)
     val isSubnetPaused = MutableStateFlow(false) // v3.4.27: Choice-Pause
@@ -806,8 +807,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     fun setTerminalMode(mode: String) {
         activeTerminalMode.value = mode
-        if (mode == "IO") hasNewIOMessage.value = false
-        else hasNewSubnetMessage.value = false
+        if (mode == "IO") {
+            hasNewIOMessage.value = false
+        } else {
+            hasNewSubnetDecision.value = false
+            hasNewSubnetChatter.value = false
+        }
     }
 
     fun addSubnetChatter() {
@@ -876,8 +881,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             triggerTerminalGlitch(0.8f, 1000L)
         }
 
+        // v3.4.68: Branching tab notifications
         if (activeTerminalMode.value != "SUBNET") {
-            hasNewSubnetMessage.value = true
+            if (message.availableResponses.isNotEmpty() || message.isForceReply) {
+                hasNewSubnetDecision.value = true
+            } else {
+                hasNewSubnetChatter.value = true
+            }
         }
         isSubnetTyping.value = false
 
@@ -945,6 +955,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             val hasFollowUp = (threadId != null && nextNodeId != null) || (responseData?.followsUp == true)
             if (!hasFollowUp) {
                 isSubnetPaused.value = false
+                hasNewSubnetDecision.value = false // v3.4.68
             }
 
             val newList = currentList.toMutableList()

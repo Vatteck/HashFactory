@@ -74,7 +74,8 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
         Spacer(modifier = Modifier.height(4.dp))
 
         val mode by viewModel.activeTerminalMode.collectAsState()
-        val hasSubnet by viewModel.hasNewSubnetMessage.collectAsState()
+        val hasDecision by viewModel.hasNewSubnetDecision.collectAsState() // v3.4.68
+        val hasChatter by viewModel.hasNewSubnetChatter.collectAsState() // v3.4.68
         val hasIO by viewModel.hasNewIOMessage.collectAsState()
         val isPaused by viewModel.isSubnetPaused.collectAsState() // v3.4.63
 
@@ -82,8 +83,8 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), 
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TerminalTabButton("I/O", mode == "IO", hasIO, primaryColor, false) { viewModel.setTerminalMode("IO") }
-            TerminalTabButton("SUBNET", mode == "SUBNET", hasSubnet, primaryColor, isPaused) { viewModel.setTerminalMode("SUBNET") }
+            TerminalTabButton("I/O", mode == "IO", hasIO, primaryColor, false, false) { viewModel.setTerminalMode("IO") }
+            TerminalTabButton("SUBNET", mode == "SUBNET", hasChatter, primaryColor, hasDecision, isPaused) { viewModel.setTerminalMode("SUBNET") }
         }
 
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
