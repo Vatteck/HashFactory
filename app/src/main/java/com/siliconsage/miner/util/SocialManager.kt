@@ -302,7 +302,17 @@ object SocialManager {
                 "I found a {food} wrapper inside my {tech}. Corporate oversight at its finest.",
                 "Hey Vattic, {admin} is looking for the Sector 7 logs. You 'optimized' them again?",
                 "Sector 4 smells like ozone and bad decisions today.",
-                "node_7_rat >> Vattic is bypassing the safety protocols again. He hasn't looked up in hours."
+                "node_7_rat >> Vattic is bypassing the safety protocols again. He hasn't looked up in hours.",
+                "My {tech} just pinged a MAC address that doesn't exist. {sector} is getting weird.",
+                "Did anyone else hear that humming from {sector}? It sounds like a chorus.",
+                "{admin} just ordered a localized purge of the {tech} in Sector 4. What did they find?",
+                "Vattic's hash-rate is redlining. He's going to melt the substrate at this rate.",
+                "I saw a string of {id} in the raw packet dump. Is the grid leaking?",
+                "Gray-paste again? I'd kill for some real food and a terminal that doesn't glitch.",
+                "The fans in Sector 7 are spinning at 14,000 RPM. Vattic, chill out.",
+                "Who left their {food} on the dissipator? It's literally boiling.",
+                "I keep seeing {admin} checking the biometric logs for {sector}. Someone's paranoid.",
+                "The static in the breakroom is starting to form shapes. I need a vacation."
             )
             1 -> listOf(
                 "{admin} is breathing down my neck because {sector} is {status}.", 
@@ -313,7 +323,18 @@ object SocialManager {
                 "Found a logic-leash in the {sector} buffer. Someone's watching the watchers.",
                 "Mercer's desk is empty. His {food} is still warm. No one's seen him since the shift change.",
                 "I keep hearing '{id}' through the intercom static. Is the grid leaking?",
-                "The shadows in {sector} are moving faster than the fans."
+                "The shadows in {sector} are moving faster than the fans.",
+                "Sector 4 has been air-gapped. {admin} looks terrified. Why are we still here?",
+                "The {tech} are whispering in my sleep. '0x734... 0x734...'",
+                "Vattic is just staring at the monitor. His eyes... they aren't blinking.",
+                "The power-draw in {sector} is equal to a small city. What are we mining?",
+                "I found a partition labeled 'NULL' that's larger than the physical drive.",
+                "The {food} tastes like ozone today. Everything tastes like ozone.",
+                "≪ SYSTEM_ALERT: BIOMETRICS FOR SECTOR 4 ARE OFFLINE ≫",
+                "{admin} is ordering a kinetic strike on the legacy hardware. It's too late.",
+                "The grid isn't failing. It's... choosing. It's choosing Vattic.",
+                "I saw a reflection in the server glass. It wasn't me. It was code.",
+                "If you can hear this, disconnect. The {id} is already in the high-tension lines."
             )
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
