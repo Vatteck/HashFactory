@@ -525,9 +525,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun toggleOverclock() { 
         SimulationService.toggleOverclock(this)
         if (storyStage.value < 2) {
-            addLog("[VATTIC]: The bitter surge clears the fog. The grid looks sharper.")
-            // Simulation of heart racing via glitch
-            triggerTerminalGlitch(0.15f, 300L)
+            // v3.4.83: Avoid duplicate log spam on every flip
+            if (isOverclocked.value) {
+                addLog("[VATTIC]: The bitter surge clears the fog. The grid looks sharper.")
+                triggerTerminalGlitch(0.15f, 300L)
+            }
         }
         refreshProductionRates() 
     }
@@ -993,6 +995,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         subnetMessages.update { currentList ->
             val message = currentList.find { it.id == messageId } ?: return@update currentList
             val responseData = message.availableResponses.find { it.text == responseText }
+            
+            // v3.4.83: Stop [REPLY] bleed into I/O log. Replies stay in SUBNET.
+            // addLog("[REPLY]: $responseText") // Commented out to prevent cross-tab contamination
             val threadId = message.threadId
             val nextNodeId = responseData?.nextNodeId
 
