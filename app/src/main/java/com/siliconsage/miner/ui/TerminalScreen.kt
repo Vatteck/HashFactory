@@ -510,7 +510,7 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
                     faction == "SANCTUARY" -> "> ENCRYPT KERNEL.exe"
                     currentStage == 1 -> "> TAKE A BREATH"
                     currentStage == 2 -> "> OVERVOLT RAIL"
-                    else -> "> TAKE A BREATH"
+                    else -> "> COMPUTE HASH.exe"
                 }
             }
         }

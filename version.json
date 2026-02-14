@@ -1,10 +1,10 @@
 {
-  "version": "3.4.70-dev",
-  "build": 335,
+  "version": "3.4.71-dev",
+  "build": 336,
   "date": "2026-02-14",
   "changelog": [
-    "Phase 13: Finalizing Biological Labels in HeaderSection"
+    "Phase 13: Stage 0 Button Fix (COMPUTE HASH)"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.70-dev",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.70-dev/MINER_3.4.70-dev.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.71-dev",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.71-dev/MINER_3.4.71-dev.apk"
 }
