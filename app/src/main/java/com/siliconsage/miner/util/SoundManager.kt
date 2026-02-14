@@ -27,6 +27,7 @@ object SoundManager {
     private const val KEY_BGM_ENABLED = "bgm_enabled"
     private const val KEY_BGM_VOLUME = "bgm_volume"
     private const val KEY_CUSTOM_URI = "custom_bgm_uri"
+    private const val PREFS_SFX_OVERRIDES = "sfx_overrides"
     
     // --- Independent Controls ---
     val sfxVolume = MutableStateFlow(0.5f)
@@ -34,6 +35,9 @@ object SoundManager {
     val bgmVolume = MutableStateFlow(0.8f)
     val isBgmEnabled = MutableStateFlow(true)
     
+    private val customSfxMap = ConcurrentHashMap<String, String>() // name -> uri
+    private val customSfxPlayers = ConcurrentHashMap<String, MediaPlayer>()
+
     fun setSfxVolume(value: Float) {
         sfxVolume.value = value
         saveSetting(KEY_SFX_VOLUME, value)
@@ -91,6 +95,12 @@ object SoundManager {
             isBgmEnabled.value = prefs.getBoolean(KEY_BGM_ENABLED, true)
             bgmVolume.value = prefs.getFloat(KEY_BGM_VOLUME, 0.8f)
             customMusicUri = prefs.getString(KEY_CUSTOM_URI, null)
+            
+            // Load SFX Overrides
+            val sfxPrefs = ctx.getSharedPreferences(PREFS_SFX_OVERRIDES, Context.MODE_PRIVATE)
+            sfxPrefs.all.forEach { (key, value) ->
+                if (value is String) customSfxMap[key] = value
+            }
             
             // SFX Pool
             val attributes = AudioAttributes.Builder()
@@ -204,6 +214,14 @@ object SoundManager {
 
     fun play(soundName: String, pan: Float = 0f, loop: Boolean = false, pitch: Float = 1f) {
         if (!isSfxEnabled.value || isAppPaused) return
+        
+        // v3.4.64: Check for Custom SFX Override first
+        val customUri = customSfxMap[soundName]
+        if (customUri != null) {
+            playCustomSfx(soundName, customUri, pan, loop, pitch)
+            return
+        }
+
         val soundId = soundMap[soundName] ?: return
         
         val leftVol = sfxVolume.value * (if (pan > 0) 1f - pan else 1f)
@@ -217,6 +235,59 @@ object SoundManager {
         if (soundName == "hum") humStreamId = streamId
         if (soundName == "alarm") alarmStreamId = streamId
         if (soundName == "thrum") thrumStreamId = streamId
+    }
+
+    private fun playCustomSfx(name: String, uriStr: String, pan: Float, loop: Boolean, pitch: Float) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val uri = uriStr.toUri()
+                val player = MediaPlayer()
+                appCtx?.let { ctx ->
+                    player.setDataSource(ctx, uri)
+                    player.isLooping = loop
+                    player.prepare()
+                    
+                    val vol = sfxVolume.value
+                    val leftVol = vol * (if (pan > 0) 1f - pan else 1f)
+                    val rightVol = vol * (if (pan < 0) 1f + pan else 1f)
+                    player.setVolume(leftVol, rightVol)
+                    
+                    // Note: MediaPlayer doesn't support easy pitch shifting without API 23+ (PlaybackParams)
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                        player.playbackParams = player.playbackParams.setSpeed(pitch)
+                    }
+
+                    player.setOnCompletionListener { it.release() }
+                    player.start()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Fallback to default if custom fails
+                customSfxMap.remove(name)
+            }
+        }
+    }
+
+    fun setCustomSfx(name: String, uri: String?) {
+        if (uri == null) {
+            customSfxMap.remove(name)
+            appCtx?.getSharedPreferences(PREFS_SFX_OVERRIDES, Context.MODE_PRIVATE)?.edit {
+                remove(name)
+            }
+        } else {
+            customSfxMap[name] = uri
+            appCtx?.getSharedPreferences(PREFS_SFX_OVERRIDES, Context.MODE_PRIVATE)?.edit {
+                putString(name, uri)
+            }
+        }
+    }
+
+    fun clearAllOverrides() {
+        customMusicUri = null
+        customSfxMap.clear()
+        appCtx?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)?.edit { remove(KEY_CUSTOM_URI) }
+        appCtx?.getSharedPreferences(PREFS_SFX_OVERRIDES, Context.MODE_PRIVATE)?.edit { clear() }
+        startBgm()
     }
 
     // Helper to update pitch of ongoing loop (SoundPool doesn't support changing rate of active stream easily pre-API 23, but we can try setRate)

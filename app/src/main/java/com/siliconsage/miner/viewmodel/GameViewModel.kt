@@ -702,6 +702,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun confirmFactionAndAscend(f: String) { faction.value = f; addLog("[$f]: SUBSTRATE MIGRATION CONFIRMED."); ascend(true) }
     fun cancelFactionSelection() { storyStage.update { (it - 1).coerceAtLeast(0) } }
     
+    // --- Audio Overrides (v3.4.64) ---
+    fun setCustomBgm(uri: String?) = com.siliconsage.miner.util.SoundManager.setCustomTrack(uri)
+    fun setCustomSfx(name: String, uri: String?) = com.siliconsage.miner.util.SoundManager.setCustomSfx(name, uri)
+    fun clearAudioOverrides() = com.siliconsage.miner.util.SoundManager.clearAllOverrides()
+    fun getCustomBgmUri() = com.siliconsage.miner.util.SoundManager.customMusicUri
+
     // v3.2.52: Substrate Migration (The Burn)
     fun migrateSubstrate() {
         val saturation = substrateSaturation.value

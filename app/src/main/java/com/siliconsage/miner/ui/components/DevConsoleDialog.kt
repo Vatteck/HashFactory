@@ -1,5 +1,7 @@
 package com.siliconsage.miner.ui.components
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +27,26 @@ import kotlinx.coroutines.flow.update
 @Composable
 fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
     var selectedTab by remember { mutableStateOf("VITALS") }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var sfxTarget by remember { mutableStateOf<String?>(null) }
     
+    val audioPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            try {
+                context.contentResolver.takePersistableUriPermission(it, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (e: Exception) { e.printStackTrace() }
+            
+            val target = sfxTarget
+            if (target == "BGM") {
+                viewModel.setCustomBgm(it.toString())
+            } else if (target != null) {
+                viewModel.setCustomSfx(target, it.toString())
+            }
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -71,7 +92,7 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    val tabs = listOf("VITALS", "RESOURCES", "STORY", "HAZARDS", "KERNEL", "PHASE14")
+                    val tabs = listOf("VITALS", "RESOURCES", "STORY", "AUDIO", "KERNEL", "PHASE14")
                     tabs.forEach { tab ->
                         val isSelected = selectedTab == tab
                         Box(
@@ -102,7 +123,10 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
                         "VITALS" -> VitalsTab(viewModel)
                         "RESOURCES" -> ResourcesTab(viewModel)
                         "STORY" -> StoryTab(viewModel)
-                        "HAZARDS" -> HazardsTab(viewModel)
+                        "AUDIO" -> AudioTab(viewModel) { target ->
+                            sfxTarget = target
+                            audioPickerLauncher.launch("audio/*")
+                        }
                         "KERNEL" -> KernelTab(viewModel)
                         "PHASE14" -> Phase14Tab(viewModel)
                     }
@@ -348,3 +372,40 @@ fun Phase14Tab(viewModel: GameViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+@Composable
+fun AudioTab(viewModel: GameViewModel, onPick: (String) -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Text("BGM OVERRIDE", color = Color.Cyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+        val currentBgm = viewModel.getCustomBgmUri()
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            DevButton(text = if (currentBgm != null) "BGM: CUSTOM" else "SELECT CUSTOM BGM", modifier = Modifier.weight(1f)) {
+                onPick("BGM")
+            }
+            if (currentBgm != null) {
+                IconButton(onClick = { viewModel.setCustomBgm(null) }) {
+                    Text("↺", color = Color.Red, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("SFX OVERRIDES", color = Color.Cyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        val sfxList = listOf("click", "buy", "error", "glitch", "message_received", "market_up", "market_down")
+        sfxList.forEach { sfx ->
+            DevActionRow(sfx.uppercase()) {
+                DevButton(text = "OVERRIDE", modifier = Modifier.weight(1f)) { onPick(sfx) }
+                DevButton(text = "RESET", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.setCustomSfx(sfx, null) }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        DevButton(text = "CLEAR ALL AUDIO OVERRIDES", color = ErrorRed, modifier = Modifier.fillMaxWidth()) {
+            viewModel.clearAudioOverrides()
+        }
+    }
+}
+

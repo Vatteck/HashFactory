@@ -49,6 +49,7 @@ import com.siliconsage.miner.util.ResourceRepository
 import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 @Composable
 fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {

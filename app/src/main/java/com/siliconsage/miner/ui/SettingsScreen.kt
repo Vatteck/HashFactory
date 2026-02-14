@@ -1,5 +1,7 @@
 package com.siliconsage.miner.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -66,6 +68,18 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
             val sfxVolume by com.siliconsage.miner.util.SoundManager.sfxVolume.collectAsState()
             val bgmEnabled by com.siliconsage.miner.util.SoundManager.isBgmEnabled.collectAsState()
             val bgmVolume by com.siliconsage.miner.util.SoundManager.bgmVolume.collectAsState()
+            
+            val audioPickerLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.GetContent()
+            ) { uri ->
+                uri?.let {
+                    // Request persistent permission for this URI
+                    try {
+                        context.contentResolver.takePersistableUriPermission(it, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    } catch (e: Exception) { e.printStackTrace() }
+                    viewModel.setCustomBgm(it.toString())
+                }
+            }
 
             SettingsGroup("AUDIO") {
                 SettingsToggle("SFX ENABLED", sfxEnabled) {
@@ -90,6 +104,33 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                         onValueChange = { com.siliconsage.miner.util.SoundManager.setBgmVolume(it) },
                         colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
                     )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    val customUri = viewModel.getCustomBgmUri()
+                    Button(
+                        onClick = { audioPickerLauncher.launch("audio/*") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = if (customUri != null) themeColor.copy(alpha = 0.3f) else Color.DarkGray),
+                        shape = RoundedCornerShape(4.dp),
+                        border = BorderStroke(1.dp, if (customUri != null) themeColor else Color.Gray)
+                    ) {
+                        Text(
+                            if (customUri != null) "CUSTOM BGM ACTIVE" else "SELECT CUSTOM BGM",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (customUri != null) themeColor else Color.White
+                        )
+                    }
+                    
+                    if (customUri != null) {
+                        TextButton(
+                            onClick = { viewModel.setCustomBgm(null) },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text("RESET TO DEFAULT", color = Color.Gray, fontSize = 10.sp)
+                        }
+                    }
                 }
             }
             

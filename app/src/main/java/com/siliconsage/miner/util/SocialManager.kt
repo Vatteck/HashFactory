@@ -72,6 +72,30 @@ object SocialManager {
         return assembleMessage(template, stage, faction, corruption)
     }
 
+    fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
+        val mentionsVattic = content.contains("Vattic", true) || content.contains("Engineer", true)
+        val isAdmin = handle.contains("thorne", true) || handle.contains("gtc", true) || handle.contains("mercer", true) || handle.contains("kessler", true)
+        
+        val responses = when {
+            isAdmin -> generateAdminResponses(handle)
+            mentionsVattic -> generateMentionResponses()
+            else -> generateChatterResponses()
+        }
+
+        val type = InteractionType.COMPLIANT
+        
+        return SubnetMessage(
+            id = java.util.UUID.randomUUID().toString(),
+            handle = handle,
+            content = content,
+            interactionType = type,
+            availableResponses = responses.shuffled().take(2),
+            isForceReply = (mentionsVattic && !isAdmin),
+            timeoutMs = 120000L,
+            employeeInfo = generateEmployeeInfo(handle)
+        )
+    }
+
     private fun assembleMessage(template: String, stage: Int, faction: String, corruption: Double): SubnetMessage {
         val isCommand = template.contains("≪")
         val cleanHandle = getHandle(stage, faction, isCommand)

@@ -17,6 +17,7 @@ import com.siliconsage.miner.util.SocialManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.shape.RoundedCornerShape
+import kotlin.random.Random
 
 @Composable
 fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
