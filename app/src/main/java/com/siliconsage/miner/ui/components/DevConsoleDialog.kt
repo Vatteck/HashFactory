@@ -398,6 +398,7 @@ fun AudioTab(viewModel: GameViewModel, onPick: (String) -> Unit) {
         sfxList.forEach { sfx ->
             DevActionRow(sfx.uppercase()) {
                 DevButton(text = "OVERRIDE", modifier = Modifier.weight(1f)) { onPick(sfx) }
+                DevButton(text = "TEST", color = NeonGreen, modifier = Modifier.weight(1f)) { com.siliconsage.miner.util.SoundManager.play(sfx) }
                 DevButton(text = "RESET", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.setCustomSfx(sfx, null) }
             }
         }
