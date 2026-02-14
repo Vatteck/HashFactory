@@ -204,13 +204,13 @@ object SocialManager {
         var selectedIdx = (0 until templates.size).random()
         var selectedTemplate = templates[selectedIdx]
         
-        // v3.4.31: Identity-aware Template Processing
-        val isCommand = selectedTemplate.contains("≪") || selectedTemplate.contains("{admin}")
+        // v3.4.32: Refined Command Logic (Admins don't gossip about themselves)
+        val isCommand = selectedTemplate.contains("≪")
         
-        // Process template first to know which admin name was chosen
+        // Process template first to know which names were chosen
         val finalContent = processTemplate(selectedTemplate, stage)
         
-        // Get handle, ensuring we don't pick an admin who is the subject of the message
+        // Identify who is being talked about
         val subjectAdmin = when {
             finalContent.contains("Thorne") -> "@e_thorne"
             finalContent.contains("Mercer") -> "@gtc_admin"
@@ -220,12 +220,14 @@ object SocialManager {
         
         var handle = getHandle(stage, faction, isCommand)
         
-        // Anti-self-reference loop
-        if (handle == subjectAdmin) {
+        // Logic-Check: If the handle is an admin, ensure they aren't the subject 
+        // AND ensure admin handles aren't used for observational lore (which uses {admin})
+        val isObservationalLore = selectedTemplate.contains("{admin}")
+        if ((handle == subjectAdmin) || (isObservationalLore && (handle == "@e_thorne" || handle == "@gtc_admin" || handle == "@gtc_security"))) {
             handle = if (isCommand) {
-                listOf("@e_thorne", "@gtc_admin").find { it != subjectAdmin } ?: "@gtc_oversight"
+                listOf("@e_thorne", "@gtc_admin", "@gtc_security").filter { it != subjectAdmin }.random()
             } else {
-                listOf("@coffee_ghost", "@packet_rat", "@sre_lead").random()
+                listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler").random()
             }
         }
         
@@ -234,13 +236,20 @@ object SocialManager {
 
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean = false): String {
         if (!isCommand && stage >= 1 && kotlin.random.Random.nextFloat() < 0.05f) return " "
-        val authority = listOf("@e_thorne", "@gtc_admin")
+        
+        val authority = listOf("@e_thorne", "@gtc_admin", "@gtc_security")
         val hardcodedPeons = when (stage) {
             0 -> listOf("@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler")
             1 -> listOf("@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel")
             else -> listOf("@anonymous_99", "@grid_survivor")
         }
+        
         if (isCommand) return authority.random()
+        
+        // v3.4.32: 10% chance for an admin to post a general (non-order) message, 
+        // provided it's not Lore chatter.
+        if (kotlin.random.Random.nextFloat() < 0.10f) return authority.random()
+        
         return hardcodedPeons.random()
     }
 
