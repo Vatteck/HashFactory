@@ -54,6 +54,19 @@ object SocialManager {
             "{reason}" to listOf(
                 "caffeine and regret", "insufficient budget", "DEEP_SIGHT desync", 
                 "identity leakage", "redundancy protocols", "corporate bloat", "The Eviction"
+            ),
+            "{food}" to listOf(
+                "recycled synth-caff", "proto-burgers", "gray-paste", "vending machine sludge",
+                "stale protein bars", "lukewarm noodle-cups", "premium oxygen-water"
+            ),
+            "{distraction}" to listOf(
+                "the local drone races", "the sector-wide blackout rumor", "that weird static on channel 4",
+                "the new bio-hazard warning", "the illegal hash-gambling ring", "the supervisor's missing keys"
+            ),
+            "{complaint}" to listOf(
+                "my chair is stuck in 'ergonomic torture' mode", "the lights keep humming in B-flat",
+                "I haven't seen a real window in three weeks", "the air tastes like ozone and dust",
+                "my keyboard keeps echoing my thoughts", "I found a bug. A literal, six-legged bug."
             )
         )
 
@@ -67,7 +80,19 @@ object SocialManager {
 
     private fun getTemplatesForState(stage: Int, faction: String, choice: String): List<Pair<String, String>> {
         return when {
-            stage <= 1 -> listOf(
+            stage == 0 -> listOf(
+                "@coffee_ghost" to "Anyone tried the {food} from the Substation 7 vendor? Tastes like {status}.",
+                "@packet_rat" to "Did you hear about {distraction}? Thorne is gonna have a stroke.",
+                "@sre_lead" to "Living on {food} and {reason}. {complaint}.",
+                "@vent_crawler" to "I'm hiding in {sector}. {complaint}.",
+                "@socket_9_tech" to "Who left their {food} in the cooling loop? It's {status}.",
+                "@anon_user" to "Anyone want to bet on {distraction}?",
+                "@gravel_thorne" to "If I see one more noodle-cup in {sector}, I'm locking the oxygen scrubbers.",
+                "@bored_op" to "Is it just me, or does {sector} smell like {food} today?",
+                "@ghost_in_io" to "I keep seeing {id} on my screen. Probably just {reason}.",
+                "@newbie_tech" to "Help, {complaint} and I can't find the exit for {sector}."
+            )
+            stage == 1 -> listOf(
                 "@coffee_ghost" to "Thorne's breathing down my neck because the {tech} in {sector} are {status}. I need a new job.",
                 "@packet_rat" to "Anyone else seeing the '{id}' markers in the {sector} bios-logs?",
                 "@sre_lead" to "GTC-Miller upped the {tech} quota. I'm surviving on {reason} and bad code.",

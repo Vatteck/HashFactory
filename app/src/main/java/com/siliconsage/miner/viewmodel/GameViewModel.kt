@@ -260,6 +260,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 SecurityManager.checkSecurityThreats(this@GameViewModel)
                 SecurityManager.checkGridRaid(this@GameViewModel)
                 
+                // v3.4.3: Random Subnet Chatter chance during simulation tick (Increased frequency)
+                if (Random.nextFloat() < 0.15f) {
+                    addSubnetChatter()
+                }
+                
                 // v3.2.42: Drain the narrative queue if pacing allows
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
                 
@@ -459,8 +464,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
         val cur = clickBufferProgress.value + 0.025f; 
         
-        // v3.4.0: Social Subnet Chance on click
-        if (Random.nextFloat() < 0.01f) {
+        // v3.4.0: Social Subnet Chance on click (Increased frequency)
+        if (Random.nextFloat() < 0.05f) {
             addSubnetChatter()
         }
 
@@ -833,7 +838,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         
         viewModelScope.launch {
             isSubnetTyping.value = true
-            delay(Random.nextLong(800, 2000)) // Fake "typing" time
+            delay(Random.nextLong(2000, 4500)) // Fake "typing" time (Doubled)
             
             val pool = com.siliconsage.miner.util.SocialManager.getChatter(storyStage.value, faction.value, singularityChoice.value)
             val newMessage = com.siliconsage.miner.util.SocialManager.SubnetMessage(
