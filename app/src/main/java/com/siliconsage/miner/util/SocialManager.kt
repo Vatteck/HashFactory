@@ -203,7 +203,8 @@ object SocialManager {
             "{sector}" to listOf("Substation 7", "Sector 4-G"), 
             "{food}" to listOf("Gray-paste", "Synth-caff"), 
             "{status}" to listOf("redlined", "corroding"),
-            "{admin}" to listOf("Foreman Thorne", "Administrator Mercer", "Lead Tech Mercer", "Director Kessler")
+            "{admin}" to listOf("Foreman Thorne", "Administrator Mercer", "Lead Tech Mercer", "Director Kessler"),
+            "{tech}" to listOf("blade-servers", "dissipators", "logic-gates", "ASIC-racks")
         )
         patterns.forEach { (key, values) -> while (result.contains(key)) result = result.replaceFirst(key, values.random()) }
         return result
