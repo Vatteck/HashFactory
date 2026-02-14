@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 object PersistenceManager {
 
     fun createSaveState(
-        flops: Double, neuralTokens: Double, currentHeat: Double, powerBill: Double,
+        flops: Double, neuralTokens: Double, currentHeat: Double,
         stakedTokens: Double, prestigeMultiplier: Double, prestigePoints: Double,
         unlockedTechNodes: List<String>, storyStage: Int, faction: String,
         hasSeenVictory: Boolean, isTrueNull: Boolean, isSovereign: Boolean,
@@ -42,7 +42,7 @@ object PersistenceManager {
     ): GameState {
         return GameState(
             id = 1, flops = flops, neuralTokens = neuralTokens, currentHeat = currentHeat,
-            powerBill = powerBill, stakedTokens = stakedTokens, prestigeMultiplier = prestigeMultiplier,
+            powerBill = 0.0, stakedTokens = stakedTokens, prestigeMultiplier = prestigeMultiplier,
             prestigePoints = prestigePoints, unlockedTechNodes = unlockedTechNodes,
             storyStage = storyStage, faction = faction, hasSeenVictory = hasSeenVictory,
             isTrueNull = isTrueNull, isSovereign = isSovereign, vanceStatus = vanceStatus,
@@ -114,7 +114,6 @@ object PersistenceManager {
         vm.realityIntegrity.value = state.realityIntegrity
         vm.isNetworkUnlocked.value = state.isNetworkUnlocked
         vm.isGridUnlocked.value = state.isGridUnlocked
-        vm.powerBill.value = state.powerBill
         vm.stakedTokens.value = state.stakedTokens
         
         vm.marketMultiplier.value = state.marketMultiplier
@@ -199,7 +198,7 @@ object PersistenceManager {
     fun exportToJson(vm: GameViewModel): String {
         val state = createSaveState(
             flops = vm.flops.value, neuralTokens = vm.neuralTokens.value, currentHeat = vm.currentHeat.value,
-            powerBill = vm.powerBill.value, stakedTokens = vm.stakedTokens.value,
+            stakedTokens = vm.stakedTokens.value,
             prestigeMultiplier = vm.prestigeMultiplier.value, prestigePoints = vm.prestigePoints.value,
             unlockedTechNodes = vm.unlockedTechNodes.value, storyStage = vm.storyStage.value,
             faction = vm.faction.value, hasSeenVictory = vm.hasSeenVictory.value,

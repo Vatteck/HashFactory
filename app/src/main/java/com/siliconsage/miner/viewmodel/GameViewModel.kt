@@ -116,7 +116,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val realityIntegrity = MutableStateFlow(1.0)
     val vanceStatus = MutableStateFlow("ACTIVE")
     val currentNews = MutableStateFlow<String?>(null)
-    val powerBill = MutableStateFlow(0.0)
     val stakedTokens = MutableStateFlow(0.0)
     val humanityScore = MutableStateFlow(50)
     val uploadProgress = MutableStateFlow(0f)
@@ -249,7 +248,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 if (isSettingsPaused.value || showOfflineEarnings.value) continue
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
-                SimulationService.payPowerBill(this@GameViewModel)
                 val now = System.currentTimeMillis()
                 if (now - lastNewsTickTime > 15000L) {
                     MarketManager.updateMarket(this@GameViewModel)
@@ -385,7 +383,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 flops = flops.value, 
                 neuralTokens = neuralTokens.value, 
                 currentHeat = currentHeat.value, 
-                powerBill = powerBill.value, 
                 stakedTokens = stakedTokens.value, 
                 prestigeMultiplier = prestigeMultiplier.value, 
                 prestigePoints = prestigePoints.value, 

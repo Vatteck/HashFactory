@@ -80,24 +80,6 @@ object SimulationService {
         if (powerOverload || !vm.isGridOverloaded.value) {
             vm.isGridOverloaded.value = powerOverload
         }
-        
-        vm.powerBill.update { it + (gridUsage * vm.getEnergyPriceMultiplierPublic()) }
-    }
-
-    fun payPowerBill(vm: GameViewModel) {
-        val bill = vm.powerBill.value
-        val tokens = vm.neuralTokens.value
-        
-        // v3.2.27: Threshold payment to prevent terminal spam
-        val threshold = if (tokens > 100000) 1000.0 else 50.0
-        
-        if (bill >= threshold && tokens >= bill) {
-            vm.neuralTokens.update { it - bill }
-            vm.lifetimePowerPaid.update { it + bill }
-            vm.addLog("[UTILITY]: BILL PROCESSED. COST: ${vm.formatLargeNumber(bill)} \$N. TOTAL PAID: ${vm.formatLargeNumber(vm.lifetimePowerPaid.value)} \$N.")
-            vm.powerBill.value = 0.0
-            SoundManager.play("buy")
-        }
     }
 
     fun calculateHeat(vm: GameViewModel) {
