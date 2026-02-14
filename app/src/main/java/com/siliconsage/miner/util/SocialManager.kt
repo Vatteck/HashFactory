@@ -35,7 +35,8 @@ object SocialManager {
         val interactionType: InteractionType? = null,
         val availableResponses: List<SubnetResponse> = emptyList(),
         val threadId: String? = null,
-        val nodeId: String? = null
+        val nodeId: String? = null,
+        val timeoutMs: Long? = null // v3.4.25: Decision Window
     )
 
     // NPC Attitudes: Influences Raid frequency and difficulty
@@ -49,6 +50,7 @@ object SocialManager {
         var threadId: String? = null
         var nodeId: String? = null
         var responses = emptyList<SubnetResponse>()
+        var timeoutMs: Long? = null
 
         val interaction = when {
             stage >= 4 && handle.startsWith("@") && !handle.contains("thorne") && !handle.contains("gtc") -> InteractionType.HIJACK
@@ -65,6 +67,7 @@ object SocialManager {
             val node = getThreadNode(threadId, nodeId)
             finalContent = node?.content ?: content
             responses = node?.responses ?: emptyList()
+            timeoutMs = node?.timeoutMs
         } else if (interaction == InteractionType.COMPLIANT) {
             responses = generateGenericResponses(stage, content.contains("Vattic", ignoreCase = true))
         }
@@ -76,7 +79,8 @@ object SocialManager {
             interactionType = interaction,
             availableResponses = responses,
             threadId = threadId,
-            nodeId = nodeId
+            nodeId = nodeId,
+            timeoutMs = timeoutMs
         )
     }
 
@@ -88,7 +92,9 @@ object SocialManager {
                     responses = listOf(
                         SubnetResponse("[DECEIVE] Sub-routine optimization.", riskDelta = 15.0, nextNodeId = "PATH_DECEIVE"),
                         SubnetResponse("[HONEST] Hardware stress test.", riskDelta = 5.0, nextNodeId = "PATH_HONEST")
-                    )
+                    ),
+                    timeoutMs = 15000L,
+                    timeoutNodeId = "PATH_DECEIVE" // Silence is suspicious
                 )
                 "PATH_DECEIVE" -> ThreadNode(
                     content = "Optimization results in efficiency, not heat-bleed. Your logs look... scrubbed. I am deploying a remote probe.",
@@ -124,7 +130,9 @@ object SocialManager {
 
     data class ThreadNode(
         val content: String,
-        val responses: List<SubnetResponse>
+        val responses: List<SubnetResponse>,
+        val timeoutMs: Long? = null,
+        val timeoutNodeId: String? = null
     )
 
     private fun generateGenericResponses(stage: Int, mentionsVattic: Boolean = false): List<SubnetResponse> {

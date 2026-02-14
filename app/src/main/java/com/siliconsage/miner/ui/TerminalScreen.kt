@@ -131,16 +131,19 @@ fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Col
         0.3f, 1f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "glow"
     )
 
+    // v3.4.25: High-threat alert for the tab
+    val alertColor = if (text == "SUBNET" && hasNew) com.siliconsage.miner.ui.theme.ErrorRed else color
+
     Column(modifier = Modifier.clickable { onClick() }.padding(vertical = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = text,
-            color = if (active) color else color.copy(alpha = 0.4f),
+            color = if (active) color else alertColor.copy(alpha = if (hasNew) glowAlpha else 0.4f),
             fontSize = 11.sp,
-            fontWeight = if (active) FontWeight.ExtraBold else FontWeight.Normal,
+            fontWeight = if (active || hasNew) FontWeight.ExtraBold else FontWeight.Normal,
             fontFamily = FontFamily.Monospace
         )
         if (hasNew && !active) {
-            Box(modifier = Modifier.padding(top = 1.dp).size(3.dp).background(Color.Red.copy(alpha = glowAlpha), androidx.compose.foundation.shape.CircleShape))
+            Box(modifier = Modifier.padding(top = 1.dp).width(20.dp).height(2.dp).background(alertColor.copy(alpha = glowAlpha)))
         } else if (active) {
             Box(modifier = Modifier.padding(top = 1.dp).width(16.dp).height(1.dp).background(color))
         }

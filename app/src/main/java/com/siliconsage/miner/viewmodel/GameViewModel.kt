@@ -895,9 +895,21 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 interactionType = if (node.responses.isNotEmpty()) com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT else null,
                 availableResponses = node.responses,
                 threadId = threadId,
-                nodeId = nodeId
+                nodeId = nodeId,
+                timeoutMs = node.timeoutMs
             )
             subnetMessages.update { (it + followUp).takeLast(50) }
+
+            // v3.4.25: Timeout Logic
+            if (node.timeoutMs != null && node.timeoutNodeId != null && node.responses.isNotEmpty()) {
+                delay(node.timeoutMs)
+                val currentMessages = subnetMessages.value
+                val messageStillActive = currentMessages.find { it.id == followUp.id }?.interactionType != null
+                if (messageStillActive) {
+                    onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
+                    scheduleSubnetThreadResponse(handle, threadId, node.timeoutNodeId)
+                }
+            }
         }
     }
 

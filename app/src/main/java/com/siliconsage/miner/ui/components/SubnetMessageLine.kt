@@ -12,6 +12,11 @@ import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.util.SocialManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import androidx.compose.material3.Button
+import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,8 +24,21 @@ import androidx.compose.ui.graphics.RectangleShape
 
 @Composable
 fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
+    val countdown = remember { mutableStateOf(0L) }
+    
+    // v3.4.25: Response Timeout Visualizer
+    LaunchedEffect(message.timeoutMs, message.interactionType) {
+        if (message.timeoutMs != null && message.interactionType != null) {
+            val start = System.currentTimeMillis()
+            while (System.currentTimeMillis() - start < message.timeoutMs) {
+                countdown.value = message.timeoutMs - (System.currentTimeMillis() - start)
+                delay(100)
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = message.handle,
                 color = color,
@@ -35,6 +53,17 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             )
+            
+            if (message.interactionType != null && message.timeoutMs != null) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "[DECISION_WINDOW: ${countdown.value / 1000}s]",
+                    color = com.siliconsage.miner.ui.theme.ErrorRed,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
         }
         Text(
             text = message.content,
