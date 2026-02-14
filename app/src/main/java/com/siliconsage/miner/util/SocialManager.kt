@@ -193,7 +193,7 @@ object SocialManager {
         }
 
         if (mentionsVattic) {
-            // Context: Peon calling out Vattic
+            // v3.4.42: variety for direct mentions (Restored passive options)
             return listOf(
                 SubnetResponse("Just doing my shift.", riskDelta = -2.0),
                 SubnetResponse("Trying to hit the quota.", riskDelta = -5.0),
