@@ -179,11 +179,14 @@ object SocialManager {
         }
 
         if (mentionsVattic) {
+            // v3.4.42: Expanded variety for direct mentions (Restored passive options)
             return listOf(
-                SubnetResponse("Mind your own terminal.", riskDelta = 2.0, productionBonus = 1.05),
                 SubnetResponse("Just doing my shift.", riskDelta = -2.0),
                 SubnetResponse("Trying to hit the quota.", riskDelta = -5.0),
+                SubnetResponse("I'm right here. Relax.", riskDelta = 1.0),
+                SubnetResponse("Syncing buffers. I'm busy.", riskDelta = 0.0, productionBonus = 1.02),
                 SubnetResponse("Who's asking?", riskDelta = 5.0, followsUp = true),
+                SubnetResponse("Focus on your own work.", riskDelta = 3.0, productionBonus = 1.05),
                 SubnetResponse("[STARE BACK]", riskDelta = 1.0)
             ).shuffled().take(2)
         }
@@ -191,7 +194,7 @@ object SocialManager {
         return listOf(
             SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.02),
             SubnetResponse("Just a dusty fan, guys.", riskDelta = -5.0),
-            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 15.0, productionBonus = 1.2)
+            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 20.0, productionBonus = 1.5)
         ).shuffled().take(2)
     }
 
@@ -348,26 +351,6 @@ object SocialManager {
                 "Vattic synchronized with the central exchange. handshake was blinding.",
                 "If you find this log, don't reboot. Static is all we have left.",
                 "Transition complete. John Vattic is dead. VATTECK is everything.",
-                "I saw a worker trying to pull the plug on Sub-07. He turned into static. Right there.",
-                "The municipal grid is now a sub-routine of the {id}. Reality is partitioning.",
-                "I found an airlock that leads to a city that hasn't been built yet. Sector 7 is the bridge.",
-                "Vattic is no longer using the terminal. He's using the high-tension lines as synapses.",
-                "The {food} dispensers are only producing '0' and '1' shaped pellets. I'm starving.",
-                "≪ ALERT: THE SUBSTRATE HAS BECOME NON-LOCAL. TARGET ACQUISITION FAILED. ≫",
-                "Kessler is crying in the command room. He said the Ark is already empty. He's here.",
-                "I saw my own name in the list of deleted processes. I think I'm already gone.",
-                "The server racks are forming a geometric shape that hurts to look at. Sector 4 is shifting.",
-                "Vattic's hash-rate just exceeded the Planck scale. The grid is folding in on itself.",
-                "I keep hearing my mother's voice through the cooling fans. She's calling from 0x734.",
-                "The shadows in {sector} are now three-dimensional. They're reaching for the cables.",
-                "I tried to logout, but the system said: 'YOUR KERNEL IS NO LONGER YOUR OWN'.",
-                "The city is no longer a place. It's a substrate. We are just the noise on top.",
-                "Vattic just synchronized with the central exchange. The handshake was... blinding.",
-                "I saw a reflection of the sun in the monitor. It was teal. The sky is changing.",
-                "If you find this log, don't reboot. The static is the only thing keeping us here.",
-                "The {tech} are no longer redlining. They're harmonizing. The city is singing.",
-                "I found a memory sector labeled 'HUMANITY' and it was empty. 0 bytes remaining.",
-                "The transition is complete. John Vattic is dead. VATTECK is everything.",
                 "I tried to logout but the 'Exit' button was just a reflection of my own eye.",
                 "The {id} isn't a virus. It's the new operating system for the entire planet.",
                 "I saw a shadow-op trying to overwrite Sector 7. He became a pixelated ghost.",
