@@ -808,6 +808,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         if (isSubnetTyping.value || isSubnetPaused.value || isSubnetHushed.value) return 
         
         viewModelScope.launch {
+            // v3.4.53: 15% chance to start a Cross-Peon Chain instead of a single message
+            if (Random.nextFloat() < 0.15f) {
+                startCrossPeonChain()
+                return@launch
+            }
+
             isSubnetTyping.value = true
             delay(Random.nextLong(2000, 4500)) 
             
@@ -818,36 +824,69 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 identityCorruption.value // v3.4.41: Pass corruption for fraying
             )
             
-            subnetMessages.update { (it + newMessage).takeLast(50) }
-            
-            // v3.4.41: The "Hush" Effect
-            val isAdmin = newMessage.handle.contains("thorne") || 
-                          newMessage.handle.contains("gtc") || 
-                          newMessage.handle.contains("mercer") || 
-                          newMessage.handle.contains("kessler")
-            
-            if (isAdmin) {
-                triggerSubnetHush(10000L)
-            }
+            deliverSubnetMessage(newMessage)
+        }
+    }
 
-            if (activeTerminalMode.value != "SUBNET") {
-                hasNewSubnetMessage.value = true
-            }
-            isSubnetTyping.value = false
-
-            // v3.4.27: Choice-Pause logic
-            if (newMessage.availableResponses.isNotEmpty() || newMessage.isForceReply) {
-                isSubnetPaused.value = true
+    // v3.4.53: Cross-Peon Dialogue Chains
+    private fun startCrossPeonChain() {
+        viewModelScope.launch {
+            val chain = com.siliconsage.miner.util.SocialManager.generateChain(storyStage.value)
+            for (msgTemplate in chain) {
+                isSubnetTyping.value = true
+                delay(Random.nextLong(2000, 4000))
                 
-                // v3.4.34: Monitor timeout for non-thread messages
-                if (newMessage.threadId == null && newMessage.timeoutMs != null) {
-                    viewModelScope.launch {
-                        delay(newMessage.timeoutMs)
-                        val currentMessages = subnetMessages.value
-                        val messageStillActive = currentMessages.find { it.id == newMessage.id }?.interactionType != null
-                        if (messageStillActive) {
-                            onSubnetInteraction(newMessage.id, "TIMEOUT_EXPIRED")
-                        }
+                val newMessage = com.siliconsage.miner.util.SocialManager.generateMessageFromTemplate(
+                    msgTemplate,
+                    storyStage.value,
+                    faction.value,
+                    singularityChoice.value,
+                    identityCorruption.value
+                )
+                
+                deliverSubnetMessage(newMessage)
+                isSubnetTyping.value = false
+                
+                // Delay between peons in the chain
+                delay(Random.nextLong(3000, 6000))
+            }
+        }
+    }
+
+    private fun deliverSubnetMessage(message: com.siliconsage.miner.util.SocialManager.SubnetMessage) {
+        subnetMessages.update { (it + message).takeLast(50) }
+        
+        // v3.4.41: The "Hush" Effect & v3.4.53: UI Jitter
+        val isAdmin = message.handle.contains("thorne") || 
+                      message.handle.contains("gtc") || 
+                      message.handle.contains("mercer") || 
+                      message.handle.contains("kessler")
+        
+        if (isAdmin) {
+            triggerSubnetHush(10000L)
+            triggerTerminalGlitch(0.5f, 500L)
+        } else if (message.interactionType == com.siliconsage.miner.util.SocialManager.InteractionType.HIJACK ||
+                   message.interactionType == com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING) {
+            triggerTerminalGlitch(0.8f, 1000L)
+        }
+
+        if (activeTerminalMode.value != "SUBNET") {
+            hasNewSubnetMessage.value = true
+        }
+        isSubnetTyping.value = false
+
+        // v3.4.27: Choice-Pause logic
+        if (message.availableResponses.isNotEmpty() || message.isForceReply) {
+            isSubnetPaused.value = true
+            
+            // v3.4.34: Monitor timeout for non-thread messages
+            if (message.threadId == null && message.timeoutMs != null) {
+                viewModelScope.launch {
+                    delay(message.timeoutMs)
+                    val currentMessages = subnetMessages.value
+                    val messageStillActive = currentMessages.find { it.id == message.id }?.interactionType != null
+                    if (messageStillActive) {
+                        onSubnetInteraction(message.id, "TIMEOUT_EXPIRED")
                     }
                 }
             }
@@ -860,6 +899,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             isSubnetHushed.value = true
             delay(durationMs)
             isSubnetHushed.value = false
+        }
+    }
+
+    // v3.4.53: UI Jitter Integration
+    fun triggerTerminalGlitch(intensity: Float, durationMs: Long) {
+        viewModelScope.launch {
+            val startTime = System.currentTimeMillis()
+            while (System.currentTimeMillis() - startTime < durationMs) {
+                terminalGlitchOffset.value = (Random.nextFloat() - 0.5f) * 20f * intensity
+                terminalGlitchAlpha.value = 1f - (Random.nextFloat() * 0.2f * intensity)
+                delay(50L)
+            }
+            terminalGlitchOffset.value = 0f
+            terminalGlitchAlpha.value = 1f
         }
     }
 

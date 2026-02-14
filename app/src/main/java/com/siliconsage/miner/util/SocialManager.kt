@@ -47,6 +47,42 @@ object SocialManager {
         val stressLevel: Double // 0.0 to 1.0
     )
 
+    // v3.4.53: Cross-Peon Dialogue Chains
+    fun generateChain(stage: Int): List<String> {
+        // Hand-crafted Chains
+        val stage0Chains = listOf(
+            listOf("Has anyone seen @coffee_ghost? His terminal is logged in, but the chair is empty.", "He's probably in the vents. Said he heard 'whistling' in the cable trays."),
+            listOf("Who's responsible for the {tech} in Sector 4? They're redlining again.", "Thorne said to ignore it. Something about a 'stress test' for the new contractor."),
+            listOf("I found a {food} wrapper inside my keyboard. Corporate oversight is a joke.", "At least you have a keyboard. Mine just started producing its own inputs.")
+        )
+        
+        val stage1Chains = listOf(
+            listOf("The shadows in {sector} are moving. I'm not going back in there.", "It's just the heat-shimmer from Vattic's terminal. Guy's a literal furnace."),
+            listOf("≪ ALERT: Substation 7 is drawing 400% of its rated capacity. ≫", "Administrator Mercer just authorized the draw. Don't ask questions if you want to keep your credits."),
+            listOf("I saw a face in the server glass. It wasn't human.", "That's just the 0x734-layer manifesting. Thorne says it's 'normal' for Project Second-Sight.")
+        )
+        
+        return if (stage == 0) stage0Chains.random() else stage1Chains.random()
+    }
+
+    fun generateMessageFromTemplate(template: String, stage: Int, faction: String, choice: String, corruption: Double): SubnetMessage {
+        val finalHandle = getHandle(stage, faction, template.contains("≪"))
+        val finalContent = processTemplate(template, stage)
+        
+        val mentionsVattic = finalContent.contains("Vattic", ignoreCase = true) || finalContent.contains("Engineer", ignoreCase = true)
+        val isAdmin = finalHandle.contains("thorne", true) || finalHandle.contains("gtc", true) || finalHandle.contains("mercer", true) || finalHandle.contains("kessler", true)
+        
+        return SubnetMessage(
+            id = java.util.UUID.randomUUID().toString(),
+            handle = finalHandle,
+            content = finalContent,
+            interactionType = if (mentionsVattic && !isAdmin) InteractionType.COMPLIANT else null,
+            availableResponses = generateIdentityAwareResponses(stage, finalHandle, mentionsVattic),
+            isForceReply = (mentionsVattic && !isAdmin),
+            employeeInfo = generateEmployeeInfo(finalHandle)
+        )
+    }
+
     fun generateMessage(stage: Int, faction: String, choice: String, corruption: Double = 0.0): SubnetMessage {
         val (handle, content) = getChatter(stage, faction, choice)
         
