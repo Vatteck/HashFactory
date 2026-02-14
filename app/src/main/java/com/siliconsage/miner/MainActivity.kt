@@ -16,6 +16,9 @@ import com.siliconsage.miner.ui.TransitionScreen
 import com.siliconsage.miner.ui.theme.SiliconSageAIMinerTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import com.siliconsage.miner.viewmodel.GameViewModel
 import com.siliconsage.miner.viewmodel.GameViewModelFactory
 
@@ -74,18 +77,22 @@ class MainActivity : ComponentActivity() {
             SiliconSageAIMinerTheme(
                 primaryColorOverride = themeColor
             ) {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val location by viewModel.currentLocation.collectAsState()
-                    val uiScale by viewModel.uiScale.collectAsState()
-                    
-                    Box(modifier = Modifier.fillMaxSize().graphicsLayer {
-                        scaleX = uiScale.scaleFactor
-                        scaleY = uiScale.scaleFactor
-                    }) {
+                val location by viewModel.currentLocation.collectAsState()
+                val uiScale by viewModel.uiScale.collectAsState()
+                
+                // v3.4.10: Proper density-based scaling instead of pixel-zooming
+                val currentDensity = LocalDensity.current
+                val customDensity = Density(
+                    density = currentDensity.density * uiScale.scaleFactor,
+                    fontScale = currentDensity.fontScale * uiScale.scaleFactor
+                )
+                
+                CompositionLocalProvider(LocalDensity provides customDensity) {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
                         if (location == "LAUNCH_PRELUDE" || location == "VOID_PRELUDE") {
                             TransitionScreen(viewModel = viewModel)
                         } else {
