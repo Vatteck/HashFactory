@@ -69,11 +69,12 @@ object SocialManager {
         val isHarvest = Random.nextFloat() < 0.05f && stage >= 1 && !isAdmin
 
         // 1. Determine Interaction Context
-        interactionType = when {
+        val interactionType = when {
             isHarvest -> InteractionType.HARVEST
             stage >= 4 && finalHandle.startsWith("@") && !isAdmin -> InteractionType.HIJACK
             stage >= 2 && (finalHandle.contains("tech") || finalHandle.contains("rat") || finalHandle.contains("op")) -> InteractionType.ENGINEERING
             isRatCallout -> InteractionType.COMPLIANT
+            // v3.4.42: Explicitly include mentionsVattic in the Interaction Check
             stage <= 1 && (isCommand || mentionsVattic) -> InteractionType.COMPLIANT
             else -> null
         }
@@ -98,6 +99,7 @@ object SocialManager {
             responses = node?.responses ?: emptyList()
             timeoutMs = node?.timeoutMs ?: 60000L
         } else if (interactionType != null) {
+            // v3.4.42 Audit: Ensure mentionsVattic branch is reached correctly
             responses = generateIdentityAwareResponses(stage, finalHandle, mentionsVattic)
             timeoutMs = 60000L
             if (mentionsVattic && !isAdmin) isForceReply = true
@@ -164,6 +166,7 @@ object SocialManager {
     private fun generateIdentityAwareResponses(stage: Int, handle: String, mentionsVattic: Boolean): List<SubnetResponse> {
         val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
         
+        // v3.4.42 Identity Audit
         if (isAdmin) {
             val address = when {
                 handle.contains("thorne") -> "Elias"
@@ -179,7 +182,7 @@ object SocialManager {
         }
 
         if (mentionsVattic) {
-            // v3.4.42: Expanded variety for direct mentions (Restored passive options)
+            // v3.4.42: variety for direct mentions (Restored passive options)
             return listOf(
                 SubnetResponse("Just doing my shift.", riskDelta = -2.0),
                 SubnetResponse("Trying to hit the quota.", riskDelta = -5.0),
@@ -191,6 +194,7 @@ object SocialManager {
             ).shuffled().take(2)
         }
 
+        // Default: General Peon Chatter
         return listOf(
             SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.02),
             SubnetResponse("Just a dusty fan, guys.", riskDelta = -5.0),
