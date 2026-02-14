@@ -7,7 +7,8 @@ package com.siliconsage.miner.util
  */
 object SocialManager {
 
-    private val usedMessageIds = mutableSetOf<String>()
+    private val usedMessages = mutableListOf<String>()
+    private const val MAX_HISTORY = 15
 
     data class SubnetMessage(
         val id: String,
@@ -18,10 +19,24 @@ object SocialManager {
 
     fun getChatter(stage: Int, faction: String, choice: String): Pair<String, String> {
         val templates = getTemplatesForState(stage, faction, choice)
-        val selected = templates.random()
         
-        // If it's a unique message, we could track it here, but for now let's focus on the generator
-        return selected.first to processTemplate(selected.second)
+        // Anti-repetition logic: Try to find a template that hasn't been used recently
+        var attempt = 0
+        var selected = templates.random()
+        var finalContent = processTemplate(selected.second)
+        
+        while (usedMessages.contains(finalContent) && attempt < 10) {
+            selected = templates.random()
+            finalContent = processTemplate(selected.second)
+            attempt++
+        }
+        
+        usedMessages.add(finalContent)
+        if (usedMessages.size > MAX_HISTORY) {
+            usedMessages.removeAt(0)
+        }
+        
+        return selected.first to finalContent
     }
 
     private fun processTemplate(template: String): String {
