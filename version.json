@@ -1,10 +1,10 @@
 {
-  "version": "3.4.77",
-  "build": 342,
+  "version": "3.4.78",
+  "build": 343,
   "date": "2026-02-14",
   "changelog": [
-    "Employee Handle Standardization for Stage 0"
+    "Full Boring Corporate Name Standardization"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.77",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.77/MINER_3.4.77.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.78",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.78/MINER_3.4.78.apk"
 }

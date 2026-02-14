@@ -165,19 +165,19 @@ object SocialManager {
     private fun generateEmployeeInfo(handle: String): EmployeeInfo {
         val target = handle.lowercase().replace("@", "").replace("_", "").replace(" ", "").trim()
         val bios = mapOf(
-            "coffeeghost" to "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a signature on every Sub-07 fuse-box.",
-            "packetrat" to "Data-Entry Specialist. Siphons surplus power for retro gaming. Paranoid about the new heat sensors.",
-            "srelead" to "Site Reliability Engineer. Oversaw the 2024 Blackout. Doesn't trust 'Project Second-Sight' budget allocations.",
-            "ventcrawler" to "Maintenance Tech. Seen things in the conduits that look like hardware evolution.",
-            "binaryphantom" to "Under-grid ghost. Deleted his own birth record to stay off the GTC biometric mesh.",
+            "msantos" to "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a signature on every Sub-07 fuse-box.",
+            "rperry" to "Data-Entry Specialist. Siphons surplus power for retro gaming. Paranoid about the new heat sensors.",
+            "llead" to "Site Reliability Engineer. Oversaw the 2024 Blackout. Doesn't trust 'Project Second-Sight' budget allocations.",
+            "vnguyen" to "Maintenance Tech. Seen things in the conduits that look like hardware evolution.",
+            "bphillips" to "Under-grid ghost. Deleted his own birth record to stay off the GTC biometric mesh.",
             "ethorne" to "Foreman, Substation 7. Chain-smoker. Despises recursive code and 'smart' fans.",
             "gtcadmin" to "Administrator Mercer. Executive oversight. Known for firing techs who report 'voices' in the noise.",
             "gtcsecurity" to "Director Kessler. Security Architect. Currently obsessed with unauthorized kernel activity.",
-            "gridwalker" to "Freelance node-jumper. Specialized in high-voltage packet routing. Nomad.",
-            "nullpoint" to "Data auditor with a nihilistic streak. Suspected of intentionally leaking thermal logs.",
-            "bufferbee" to "Junior Tech. Trying to pay off terrestrial debt through raw hash-validation.",
-            "fanboy7" to "Cooling systems specialist. Obsessed with 12k RPM airflow stability.",
-            "staticfox" to "Signal analyzer. Claims the white noise of the grid contains 'narrative' structures."
+            "gweaver" to "Freelance node-jumper. Specialized in high-voltage packet routing. Nomad.",
+            "nporter" to "Data auditor with a nihilistic streak. Suspected of intentionally leaking thermal logs.",
+            "bbradley" to "Junior Tech. Trying to pay off terrestrial debt through raw hash-validation.",
+            "fbennett" to "Cooling systems specialist. Obsessed with 12k RPM airflow stability.",
+            "sfasano" to "Signal analyzer. Claims the white noise of the grid contains 'narrative' structures."
         )
         val bioEntry = bios.entries.find { target.contains(it.key) }
         return EmployeeInfo(
@@ -193,9 +193,9 @@ object SocialManager {
         val authority = listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
         val peons = when (stage) {
             0 -> listOf(
-                "@c_ghost", "@p_rat", "@s_lead", "@v_crawler", 
-                "@g_walker", "@n_point", "@b_bee", "@f_boy_7", 
-                "@s_fox", "@n_crawler", "@c_gremlin", "@b_runner"
+                "@m_santos", "@r_perry", "@l_lead", "@v_nguyen", 
+                "@g_weaver", "@n_porter", "@b_bradley", "@f_bennett", 
+                "@s_fasano", "@n_crawler", "@c_gremlin", "@b_runner"
             )
             1 -> listOf(
                 "@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel", 
