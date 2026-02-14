@@ -71,6 +71,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val hasNewSubnetMessage = MutableStateFlow(false)
     val hasNewIOMessage = MutableStateFlow(false)
     val isSubnetTyping = MutableStateFlow(false)
+    val isSubnetPaused = MutableStateFlow(false) // v3.4.27: Choice-Pause
     val isDevMenuVisible = MutableStateFlow(false)
     val isDiagnosticsActive = MutableStateFlow(false)
     val isAuditChallengeActive = MutableStateFlow(false)
@@ -798,7 +799,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     fun addSubnetChatter() {
-        if (isSubnetTyping.value) return 
+        if (isSubnetTyping.value || isSubnetPaused.value) return 
         
         viewModelScope.launch {
             isSubnetTyping.value = true
@@ -811,6 +812,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 hasNewSubnetMessage.value = true
             }
             isSubnetTyping.value = false
+
+            // v3.4.27: Choice-Pause logic
+            if (newMessage.availableResponses.isNotEmpty() || newMessage.isForceReply) {
+                isSubnetPaused.value = true
+            }
         }
     }
 
@@ -822,6 +828,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         val responseData = message.availableResponses.find { it.text == responseText }
         val threadId = message.threadId
         val nextNodeId = responseData?.nextNodeId
+
+        // Resume chatter after interaction
+        isSubnetPaused.value = false
 
         when (message.interactionType) {
             com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
