@@ -1,10 +1,10 @@
 {
-  "version": "3.4.74",
-  "build": 339,
+  "version": "3.4.75",
+  "build": 340,
   "date": "2026-02-14",
   "changelog": [
-    "Fixed Subnet Tab Notification Color"
+    "Fixed Log Identity Colors"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.74",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.74/MINER_3.4.74.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.75",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.75/MINER_3.4.75.apk"
 }

@@ -597,6 +597,7 @@ fun TerminalLogLine(
                     log.startsWith("shadow") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
                     log.startsWith("dominion") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
                     log.startsWith("null") -> ErrorRed
+                    log.startsWith("ASSET_734") -> ErrorRed
                     else -> primaryColor
                 }
 
