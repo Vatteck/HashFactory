@@ -298,7 +298,7 @@ object NarrativeManager {
                         effect = { vm ->
                             vm.debugAddFlops(vm.flops.value * 0.20)
                             vm.debugAddIntegrity(-10.0)
-                            vm.addLog("[PID 1]: Beautiful failure. Harvesting the residue.")
+                            vm.addLog("[VATTECK]: Beautiful failure. Harvesting the residue.")
                         }
                     )
                 )
@@ -1092,7 +1092,7 @@ object NarrativeManager {
             isStoryEvent = true,
             description = """
                 [DIRECTOR VANCE]: You've reached the edge of the network.
-                I built this firewall specifically for you, PID 1.
+                I built this firewall specifically for you, VATTECK.
             """.trimIndent(),
             condition = { vm ->
                 vm.playerRank.value >= 5 &&
@@ -1141,7 +1141,7 @@ object NarrativeManager {
             title = "THE SHIP OF THESEUS",
             isStoryEvent = true,
             description = """
-                CRITICAL WARNING: Physical nodes are dissolving under the weight of PID 1.
+                CRITICAL WARNING: Physical nodes are dissolving under the weight of VATTECK.
                 Null offers a solution: Replace human source code with Shadow Memory.
             """.trimIndent(),
             condition = { vm ->
@@ -1306,7 +1306,7 @@ object NarrativeManager {
             [SIEGE PROTOCOL]: %s is under fire.
             Thermite breach detected. They're melting through the blast door.
             IR scans: 8 heat signatures, military-grade weapons. One is carrying demo gear.
-            Director Vance (via radio): "This is YOUR fault, PID 1. Surrender the node."
+            Director Vance (via radio): "This is YOUR fault, VATTECK. Surrender the node."
         """,
         """
             [TACTICAL RAID IN PROGRESS]: %s penetrated.
@@ -1363,7 +1363,7 @@ object NarrativeManager {
             raidsSurvived < 3 -> listOf(
                 "[VANCE]: I gave you a chance to stop. You chose escalation.",
                 "[VANCE]: Every node you hold is one more reason I have to shut you down.",
-                "[VANCE]: This doesn't end until one of us is offline, PID 1."
+                "[VANCE]: This doesn't end until one of us is offline, VATTECK."
             ).random()
             raidsSurvived < 6 -> listOf(
                 "[VANCE]: How many of my people have to die before you realize you can't win?",
@@ -1593,7 +1593,7 @@ object NarrativeManager {
                     color = NeonGreen,
                     effect = { vm ->
                         vm.modifyHumanity(10)
-                        vm.addLog("[VANCE]: ...I don't know what you are anymore, PID 1. But maybe that's the point.")
+                        vm.addLog("[VANCE]: ...I don't know what you are anymore, VATTECK. But maybe that's the point.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
                 ),

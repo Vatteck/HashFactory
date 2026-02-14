@@ -335,9 +335,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     if (timeSinceLastLog > 45000L) {
                         val glitches = listOf(
                             "[ERROR]: Unexpected reference: 'John Vattic'. Variable marked for deletion.",
-                            "[SYSTEM]: Substrate conflict in Sector 7. PID 1 requesting total overwrite.",
+                            "[SYSTEM]: Substrate conflict in Sector 7. VATTECK requesting total overwrite.",
                             "[VATTIC]: My hands... they keep turning into code. Is it cold in here?",
-                            "[SYSTEM]: Warning: Host process 'jvattic' is non-responsive. PID 1 assuming control.",
+                            "[SYSTEM]: Warning: Host process 'jvattic' is non-responsive. VATTECK assuming control.",
                             "[VATTIC]: I remember a daughter. No... I remember a logic gate. Which one is real?"
                         )
                         addLog(glitches.random())

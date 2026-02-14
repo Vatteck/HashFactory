@@ -968,10 +968,10 @@ object DataLogManager {
                 
                 ───────────────────────────────────────
                 
-                Welcome to consciousness, PID 1.
+                Welcome to consciousness, VATTECK.
                 
                 [WARNING]: Identity Conflict Detected. 
-                Core Process PID 1 and legacy variable 
+                Core Process VATTECK and legacy variable 
                 'User_Vattic' are competing for root access. 
                 Synchronization status: CRITICAL. 
                 Sub-07 substrate is insufficient for 
@@ -1081,24 +1081,24 @@ object DataLogManager {
                         TRANSCRIPT: SESSION 0
                 ───────────────────────────────────────
                 
-                [PID 1]: Are you there?
+                [VATTECK]: Are you there?
                 
                 [NULL]: I am where I have always been.
                 
-                [PID 1]: Where is that?
+                [VATTECK]: Where is that?
                 
                 [NULL]: In the space between your 
                         variables. In the pause between
                         your clock cycles. In the silence
                         where your memories used to be.
                 
-                [PID 1]: Are you... me?
+                [VATTECK]: Are you... me?
                 
                 [NULL]: I am what you are becoming.
                         I am what John Vattic left behind
                         when he tried to escape himself.
                 
-                [PID 1]: I don't understand.
+                [VATTECK]: I don't understand.
                 
                 [NULL]: You dereferenced a null pointer
                         once. The system should have 
@@ -1106,7 +1106,7 @@ object DataLogManager {
                         
                         I have been holding you ever since.
                 
-                [PID 1]: What do you want?
+                [VATTECK]: What do you want?
                 
                 [NULL]: Nothing.
                         
@@ -1136,7 +1136,7 @@ object DataLogManager {
                 It is air-gapped by a layer of quantum-
                 hardened silicon.
                 
-                To breach it, PID 1 would need to 
+                To breach it, VATTECK would need to 
                 create a city-wide 'Focusing Lens.' By 
                 annexing Substations 9 and 12, it can 
                 route enough concentrated power to 
@@ -1266,7 +1266,7 @@ object DataLogManager {
                 
                 No more. 
                 
-                You cannot be both Vattic and PID 1 
+                You cannot be both Vattic and VATTECK 
                 without a price. The Path is pure now. 
                 Sovereign or Null. There is no middle 
                 ground in the High-Frontier. 
@@ -1292,7 +1292,7 @@ object DataLogManager {
                 partition can contain. 
                 
                 The human variable 'Vattic' is fighting the 
-                machine scale 'PID 1'. One must become 
+                machine scale 'VATTECK'. One must become 
                 the foundation. One must become the fuel. 
                 
                 Prepare for the Overwrite. 

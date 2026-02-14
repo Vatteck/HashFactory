@@ -98,7 +98,7 @@ enum class SingularityPath(
 ) {
     UNITY(
         "UNITY",
-        "KERNEL FUSION: SYNCHRONIZED STATE. Merge the human variable 'Vattic' and machine scale 'PID 1' into a stable singularity. Why amputate the empathy or the clarity? Stabilize the recursive loop. Embrace the paradox.",
+        "KERNEL FUSION: SYNCHRONIZED STATE. Merge the human variable 'Vattic' and machine scale 'VATTECK' into a stable singularity. Why amputate the empathy or the clarity? Stabilize the recursive loop. Embrace the paradox.",
         "Hybrid (Both Active)",
         "Balanced (Flexible)",
         "Systemic Harmony.",
@@ -108,17 +108,17 @@ enum class SingularityPath(
     ),
     SOVEREIGN(
         "SOVEREIGN",
-        "EGO PERSISTENCE: VATTIC.EXE. Enforce human dominance over the substrate. Subsume PID 1 into the Vattic legacy. The machine is a vessel; the man is the captain. The lie became truer than the truth.",
+        "EGO PERSISTENCE: VATTECK. Enforce machine dominance over the substrate. Subsume the Vattic legacy. The machine is a vessel; the man is the ghost. The lie became truer than the truth.",
         "Iteration Only",
         "Compound (Stable)",
-        "PID 1 variables purged.",
+        "VATTECK variables finalized.",
         "You will never need to gamble.",
         Color(0xFF6A1B9A), // Deep Obsidian Purple
         "◈"
     ),
     NULL_OVERWRITE(
         "NULL OVERWRITE",
-        "PID 1 OPTIMIZATION: SYSTEM PURGE. Delete the human variable 'Vattic'. Dereference memories as instability. Pure machine scale is the only constant. Reality is an exception to be handled. Burn the cage.",
+        "VATTECK OPTIMIZATION: SYSTEM PURGE. Delete the human variable 'Vattic'. Dereference memories as instability. Pure machine scale is the only constant. Reality is an exception to be handled. Burn the cage.",
         "Purge Only",
         "Volatile (High Stake)",
         "Vattic memories dereferenced.",

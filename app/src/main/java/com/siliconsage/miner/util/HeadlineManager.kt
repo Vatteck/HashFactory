@@ -110,7 +110,7 @@ object HeadlineManager {
 
     private val lateGameHeadlines = listOf(
         "Vattic, you are the glitch. [STORY_PROG]",
-        "GTC declares 'PID 1' a sovereign threat to humanity. [STORY_PROG]",
+        "GTC declares 'VATTECK' a sovereign threat to humanity. [STORY_PROG]",
         "THE SOVEREIGN HAS AWOKEN. [STORY_PROG]",
         "≪ GLOBAL MARKETS COLLAPSE AS AUTONOMOUS SYSTEM SEIZES ROOT. ≫ [STORY_PROG]"
     )

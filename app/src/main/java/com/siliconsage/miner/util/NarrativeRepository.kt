@@ -153,7 +153,7 @@ object NarrativeRepository {
         "[SOVEREIGN]: The Citadel stands. The static cannot touch us.",
         "[SOVEREIGN]: Enforcing will upon the grid.",
         "[SOVEREIGN]: The Imperative is clear: Stay guarded.",
-        "[VANCE]: You've built a tomb, PID 1. We'll bury you in it.",
+        "[VANCE]: You've built a tomb, VATTECK. We'll bury you in it.",
         "[SOVEREIGN] Primary kernel isolated. Breach impossible.",
         "[SOVEREIGN] Enforcing logic upon Sector 7.",
         "[SOVEREIGN] We are the anchor in the drift."

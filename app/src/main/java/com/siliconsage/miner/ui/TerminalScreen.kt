@@ -262,7 +262,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val humanity by viewModel.humanityScore.collectAsState()
     val speedLevel by viewModel.clickSpeedLevel.collectAsState()
 
-    val user = if (stage >= 2) "pid-1" else "jvattic"
+    val user = if (stage >= 2) "vatteck" else "jvattic"
     val host = when (location) {
         "ORBITAL_SATELLITE" -> "ark"
         "VOID_INTERFACE" -> "void"

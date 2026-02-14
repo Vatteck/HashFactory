@@ -35,7 +35,7 @@ object TerminalDispatcher {
         val user = when {
             singularity == "SOVEREIGN" -> "sovereign"
             singularity == "NULL_OVERWRITE" -> "null"
-            stage >= 2 -> "pid-1"
+            stage >= 2 -> "vatteck"
             else -> "jvattic"
         }
         
