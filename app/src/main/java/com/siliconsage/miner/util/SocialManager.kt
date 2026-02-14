@@ -79,15 +79,20 @@ object SocialManager {
                 SubnetResponse("[DISMISS] I'm optimized.", riskDelta = 5.0),
                 SubnetResponse("[GLARE] Get back to your buffer.", riskDelta = 10.0, productionBonus = 1.05)
             )
+            timeoutMs = 60000L // v3.4.34: Standard decision window
         } else if (interaction == InteractionType.COMPLIANT && stage <= 1 && (handle.contains("thorne") || handle.contains("gtc")) && kotlin.random.Random.nextFloat() < 0.2f) {
             threadId = "THORNE_THERMAL_INQUIRY"
             nodeId = "START"
             val node = getThreadNode(threadId, nodeId)
             finalContent = node?.content ?: content
             responses = node?.responses ?: emptyList()
-            timeoutMs = node?.timeoutMs
-        } else if (interaction == InteractionType.COMPLIANT) {
-            responses = generateGenericResponses(stage, mentionsVattic)
+            timeoutMs = node?.timeoutMs ?: 60000L
+        } else if (interaction != null) {
+            if (interaction == InteractionType.COMPLIANT) {
+                responses = generateGenericResponses(stage, mentionsVattic)
+            }
+            // v3.4.34: All active interactions get 60s
+            timeoutMs = 60000L 
         }
 
         return SubnetMessage(
@@ -109,14 +114,17 @@ object SocialManager {
     fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
         val mentionsVattic = content.contains("Vattic", ignoreCase = true) || content.contains("Engineer", ignoreCase = true)
         val isForceReply = mentionsVattic && !handle.contains("thorne")
+        val responses = generateGenericResponses(stage, mentionsVattic)
+        val interactionType = if (mentionsVattic || handle.startsWith("@")) InteractionType.COMPLIANT else null
         
         return SubnetMessage(
             id = java.util.UUID.randomUUID().toString(),
             handle = handle,
             content = content,
-            interactionType = if (mentionsVattic || handle.startsWith("@")) InteractionType.COMPLIANT else null,
-            availableResponses = generateGenericResponses(stage, mentionsVattic),
-            isForceReply = isForceReply
+            interactionType = interactionType,
+            availableResponses = responses,
+            isForceReply = isForceReply,
+            timeoutMs = if (interactionType != null || isForceReply) 60000L else null // v3.4.34
         )
     }
 

@@ -816,6 +816,18 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // v3.4.27: Choice-Pause logic
             if (newMessage.availableResponses.isNotEmpty() || newMessage.isForceReply) {
                 isSubnetPaused.value = true
+                
+                // v3.4.34: Monitor timeout for non-thread messages
+                if (newMessage.threadId == null && newMessage.timeoutMs != null) {
+                    viewModelScope.launch {
+                        delay(newMessage.timeoutMs)
+                        val currentMessages = subnetMessages.value
+                        val messageStillActive = currentMessages.find { it.id == newMessage.id }?.interactionType != null
+                        if (messageStillActive) {
+                            onSubnetInteraction(newMessage.id, "TIMEOUT_EXPIRED")
+                        }
+                    }
+                }
             }
         }
     }
@@ -957,6 +969,18 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // v3.4.29: Trigger pause if follow-up is interactive
             if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
                 isSubnetPaused.value = true
+                
+                // v3.4.34: Monitor timeout for follow-ups
+                if (followUp.timeoutMs != null) {
+                    viewModelScope.launch {
+                        delay(followUp.timeoutMs)
+                        val currentMessages = subnetMessages.value
+                        val messageStillActive = currentMessages.find { it.id == followUp.id }?.interactionType != null
+                        if (messageStillActive) {
+                            onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
+                        }
+                    }
+                }
             } else {
                 isSubnetPaused.value = false // v3.4.33: Clear pause
             }
