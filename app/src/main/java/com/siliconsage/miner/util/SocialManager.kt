@@ -190,13 +190,23 @@ object SocialManager {
                 "Anyone tried the {food}? Tastes like {status}.", 
                 "Living on {food}. {sector} is {status}.",
                 "Vattic is working in {sector} again. Guy's a machine.",
-                "Is it true the Engineer found a backdoor in the firmware?"
+                "Is it true the Engineer found a backdoor in the firmware?",
+                "Caught {admin} staring at the server racks in {sector} for 20 minutes. Just staring.",
+                "Who's responsible for the {tech} in Sector 4? They're whistling in binary.",
+                "I found a {food} wrapper inside my {tech}. Corporate oversight at its finest.",
+                "Hey Vattic, Thorne's looking for the Sector 7 logs. You 'optimized' them again?",
+                "Sector 4 smells like ozone and bad decisions today."
             )
             1 -> listOf(
                 "Thorne is breathing down my neck because {sector} is {status}.", 
                 "Project Second-Sight is {status}.",
                 "I saw Vattic's terminal. There was no OS, just... ghosts.",
-                "Anyone seen the Engineer? He hasn't left Sector 4 in weeks."
+                "Anyone seen the Engineer? He hasn't left Sector 4 in weeks.",
+                "The {tech} are redlining, but the hash-rate isn't moving. Vattic, what did you do?",
+                "Found a logic-leash in the {sector} buffer. Someone's watching the watchers.",
+                "Miller's desk is empty. His {food} is still warm. No one's seen him since the shift change.",
+                "I keep hearing '{id}' through the intercom static. Is the grid leaking?",
+                "The shadows in {sector} are moving faster than the fans."
             )
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
