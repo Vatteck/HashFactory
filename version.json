@@ -1,10 +1,10 @@
 {
-  "version": "3.4.14",
-  "build": 329,
+  "version": "3.4.18",
+  "build": 330,
   "date": "2026-02-14",
   "changelog": [
-    "UI Hardening: Dialogs now require explicit button clicks and ignore outside taps to prevent accidental dismissal during rapid clicking."
+    "Social Interaction Overhaul: Subnet messages are now interactable. Acknowledge Thorne, Exploit tech handles, and Hijack identities in Stage 4."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.14",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.14/MINER_3.4.14.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.18",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.18/MINER_3.4.18.apk"
 }
