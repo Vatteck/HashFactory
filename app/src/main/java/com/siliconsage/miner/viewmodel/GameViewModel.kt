@@ -172,6 +172,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val migrationCount = MutableStateFlow(0)
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
     val customUiScaleFactor = MutableStateFlow(1.0f)
+    val lastSelectedUpgradeTab = MutableStateFlow(0) // 0: Hash, 1: Power, 2: Cooling, 3: Network
 
     // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()

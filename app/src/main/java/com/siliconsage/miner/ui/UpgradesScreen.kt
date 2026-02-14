@@ -38,7 +38,13 @@ fun UpgradesScreen(viewModel: GameViewModel) {
     
     val storyStage by viewModel.storyStage.collectAsState()
     
-    var selectedTab by remember { mutableStateOf(0) }
+    val lastSelectedTab by viewModel.lastSelectedUpgradeTab.collectAsState()
+    var selectedTab by remember { mutableStateOf(lastSelectedTab) }
+
+    // Sync selectedTab back to ViewModel whenever it changes
+    LaunchedEffect(selectedTab) {
+        viewModel.lastSelectedUpgradeTab.value = selectedTab
+    }
 
     // UI State for Errors
     var errorMessage by remember { mutableStateOf<String?>(null) }
