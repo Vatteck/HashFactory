@@ -166,7 +166,7 @@ object SocialManager {
     private fun generateIdentityAwareResponses(stage: Int, handle: String, mentionsVattic: Boolean): List<SubnetResponse> {
         val isAdmin = handle.contains("thorne") || handle.contains("gtc") || handle.contains("mercer") || handle.contains("kessler")
         
-        // v3.4.42 Identity Audit
+        // v3.4.43: Response Routing Audit
         if (isAdmin) {
             val address = when {
                 handle.contains("thorne") -> "Elias"
@@ -182,7 +182,7 @@ object SocialManager {
         }
 
         if (mentionsVattic) {
-            // v3.4.42: variety for direct mentions (Restored passive options)
+            // Context: Peon calling out Vattic
             return listOf(
                 SubnetResponse("Just doing my shift.", riskDelta = -2.0),
                 SubnetResponse("Trying to hit the quota.", riskDelta = -5.0),
@@ -194,10 +194,11 @@ object SocialManager {
             ).shuffled().take(2)
         }
 
-        // Default: General Peon Chatter
+        // Context: General Peon Chatter
         return listOf(
             SubnetResponse("Syncing buffers. Relax.", riskDelta = -2.0, productionBonus = 1.02),
             SubnetResponse("Just a dusty fan, guys.", riskDelta = -5.0),
+            SubnetResponse("PARITY_NOMINAL", riskDelta = 5.0),
             SubnetResponse("0x734_STATE_LOCKED", riskDelta = 20.0, productionBonus = 1.5)
         ).shuffled().take(2)
     }
