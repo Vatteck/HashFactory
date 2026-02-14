@@ -1,10 +1,10 @@
 {
-  "version": "3.4.11",
-  "build": 326,
+  "version": "3.4.12",
+  "build": 327,
   "date": "2026-02-13",
   "changelog": [
-    "UI Scaling Refinement: Added fine-grained slider control for density-based scaling."
+    "Social Hardening: Dynamic Handle Generator and Template Decoupling. Purged dev-tags and improved variety."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.11",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.11/MINER_3.4.11.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.12",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.12/MINER_3.4.12.apk"
 }
