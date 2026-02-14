@@ -25,7 +25,8 @@ import androidx.compose.ui.graphics.RectangleShape
 @Composable
 fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
     val countdown = remember { mutableStateOf(0L) }
-    var showProfile by remember { mutableStateOf(false) }
+    // v3.4.45: Hardened State Preservation
+    var showProfile by remember(message.id) { mutableStateOf(false) }
     
     // v3.4.25: Response Timeout Visualizer
     LaunchedEffect(message.timeoutMs, message.interactionType) {
@@ -40,21 +41,23 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.clickable { 
-                if (message.employeeInfo != null) {
+            // v3.4.45: Expanded Click Target & Visual Hint
+            Box(modifier = Modifier
+                .clickable(enabled = message.employeeInfo != null) { 
                     showProfile = !showProfile
                     com.siliconsage.miner.util.SoundManager.play("click")
                 }
-            }) {
+                .padding(end = 4.dp)
+            ) {
                 Text(
                     text = message.handle,
                     color = color,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = FontFamily.Monospace,
+                    textDecoration = if (message.employeeInfo != null) androidx.compose.ui.text.style.TextDecoration.Underline else null
                 )
             }
-            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = ">>",
                 color = Color.White.copy(alpha = 0.3f),
