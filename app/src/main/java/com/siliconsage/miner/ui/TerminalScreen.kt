@@ -287,9 +287,15 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     }
     
     val ghostChar by viewModel.ghostInputChar.collectAsState()
+    val globalGlitchIntensity by viewModel.globalGlitchIntensity.collectAsState()
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
+            .graphicsLayer { 
+                if (globalGlitchIntensity > 0.3) {
+                    translationX = (Math.random().toFloat() * 4f - 2f) * globalGlitchIntensity
+                }
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         // v3.2.52: Identity Corruption

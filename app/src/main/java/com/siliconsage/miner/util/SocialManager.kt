@@ -60,6 +60,11 @@ object SocialManager {
     }
 
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean = false): String {
+        // v3.4.16: Eldritch Chance for Ghost Handle (Stage 1+)
+        if (!isCommand && stage >= 1 && kotlin.random.Random.nextFloat() < 0.05f) {
+            return " " // Ghost handle
+        }
+
         // v3.4.13: Hardened Handle Generator (Persona-Aware)
         val authority = listOf("@gravel_thorne", "@gtc_internal")
         val hardcodedPeons = when {

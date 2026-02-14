@@ -264,7 +264,7 @@ fun SystemGlitchText(
     var displayedText by remember(text) { mutableStateOf(text) }
     var isGlitching by remember { mutableStateOf(false) }
     
-    val effectiveFrequency = (glitchFrequency + (corruptionLevel / 2.0)).coerceIn(0.0, 0.8)
+    val effectiveFrequency = (glitchFrequency + (corruptionLevel / 2.0)).coerceIn(0.0, 0.9)
     
     val glitchedVariant = remember(text, corruptionLevel) {
         val glitched = text.toCharArray()
@@ -275,14 +275,12 @@ fun SystemGlitchText(
         }
         
         for (i in glitched.indices) { 
-            // Glitch density increases with corruption
             if (Math.random() > (0.9 - (corruptionLevel * 0.4))) { 
                 glitched[i] = symbols.random()
             } 
         }
         
         var result = String(glitched)
-        // Critical Identity Melt: Randomly inject DEADC0DE strings at high corruption
         if (corruptionLevel > 0.8 && Math.random() > 0.7 && result.length > 10) {
             result = "0xDEADC0DE" 
         }
@@ -290,11 +288,18 @@ fun SystemGlitchText(
     }
     val canGlitch = remember { if (activeGlitchCount < MAX_ACTIVE_GLITCHES) { activeGlitchCount++; true } else { false } }
     DisposableEffect(Unit) { onDispose { if (canGlitch) activeGlitchCount-- } }
-    LaunchedEffect(text, glitchFrequency, canGlitch) {
+    
+    LaunchedEffect(text, effectiveFrequency, canGlitch) {
         if (!canGlitch) { displayedText = text; return@LaunchedEffect }
         while (true) {
-            if (Math.random() < glitchFrequency) { isGlitching = true; displayedText = glitchedVariant; delay(glitchDurationMs); displayedText = text; isGlitching = false }
-            delay(500)
+            if (Math.random() < effectiveFrequency) { 
+                isGlitching = true
+                displayedText = glitchedVariant
+                delay(glitchDurationMs)
+                displayedText = text
+                isGlitching = false 
+            }
+            delay(Random.nextLong(200, 1000))
         }
     }
     Text(text = displayedText, modifier = modifier, style = style, color = color, fontSize = fontSize, fontWeight = fontWeight, maxLines = maxLines, overflow = overflow, softWrap = softWrap, lineHeight = lineHeight, letterSpacing = letterSpacing)

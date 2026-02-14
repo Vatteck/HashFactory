@@ -186,7 +186,7 @@ object SimulationService {
                     val count = (currentUpgrades[victim] ?: 0) - 1
                     currentUpgrades[victim] = count; vm.upgrades.value = currentUpgrades
                     vm.viewModelScope.launch { vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(victim.name, victim, count)) }
-                    vm.hallucinationText.value = "CRITICAL LOSS: ${victim.name}"; delay(500L); vm.hallucinationText.value = null
+                    AmbientEffectsService.triggerCriticalHallucination(vm, victim.name)
                 } else {
                     if (!vm.isThermalLockout.value) {
                         vm.isThermalLockout.value = true; vm.overheatSeconds = 0
