@@ -61,7 +61,7 @@ object SocialManager {
         val ids = when {
             stage == 0 -> listOf("the grid", "weird shadows", "ghost-logs", "corrupt sectors", "system-admin")
             stage == 1 -> listOf("DEEP_SIGHT", "Project: Second-Sight", "the ghost", "ECHO-7", "NULL_PTR")
-            else -> listOf("VATTIC_PRIME", "CORE_NULL", "ROOT", "VOID_REBEL", "THE_ARK")
+            else -> listOf("VATTIC.SYS", "CORE_NULL", "ROOT", "VOID_REBEL", "THE_ARK")
         }
 
         val patterns = mapOf(
@@ -78,7 +78,7 @@ object SocialManager {
                 "hissing", "desyncing", "corroding", "shivering", "melting"
             ),
             "{id}" to ids,
-            "{threat_level}" to listOf("THREAT: MINIMAL", "THREAT: ELEVATED", "THREAT: CRITICAL", "THREAT: MALICE", "THREAT: TOTAL_LOSS"),
+            "{threat_level}" to listOf("THREAT: MINIMAL", "THREAT: ELEVATED", "THREAT: CRITICAL", "THREAT: ABYSSAL", "THREAT: TOTAL_LOSS"),
             "{action}" to listOf(
                 "intercepted", "wiped", "ghosted", "uplinked", "redacted", 
                 "purged", "filtered", "scrambled", "swapped", "cloned"
