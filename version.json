@@ -1,10 +1,10 @@
 {
-  "version": "3.4.76",
-  "build": 341,
+  "version": "3.4.77",
+  "build": 342,
   "date": "2026-02-14",
   "changelog": [
-    "Unified Identity Coloring for Stage 0 and 1"
+    "Employee Handle Standardization for Stage 0"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.76",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.76/MINER_3.4.76.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.77",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.77/MINER_3.4.77.apk"
 }

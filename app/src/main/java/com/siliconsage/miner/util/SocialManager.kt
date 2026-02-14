@@ -192,10 +192,15 @@ object SocialManager {
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean): String {
         val authority = listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
         val peons = when (stage) {
-            0, 1 -> listOf(
-                "@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler", 
-                "@grid_walker", "@null_point", "@buffer_bee", "@fan_boy_7", 
-                "@static_fox", "@node_crawler", "@chip_gremlin", "@bus_runner"
+            0 -> listOf(
+                "@c_ghost", "@p_rat", "@s_lead", "@v_crawler", 
+                "@g_walker", "@n_point", "@b_bee", "@f_boy_7", 
+                "@s_fox", "@n_crawler", "@c_gremlin", "@b_runner"
+            )
+            1 -> listOf(
+                "@leaker_x", "@binary_phantom", "@shadow_op", "@logic_rebel", 
+                "@phantom_node", "@glitch_hunter", "@void_seeker", "@proxy_ghost",
+                "@bit_rebel", "@kernel_drifter", "@handshake_bot", "@zero_sum"
             )
             else -> listOf("@anonymous_99", "@grid_survivor", "@null_variable", "@dereferenced")
         }
