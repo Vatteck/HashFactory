@@ -139,12 +139,12 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "let_it_leak",
                     text = "≫ LET THE CODE ANSWER",
-                    description = "-10 Humanity. 'I am Asset 734.'",
+                    description = "-10 Humanity. 'I am THREAT: ABYSSAL.'",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.modifyHumanity(-10)
                         vm.addLog("[VATTIC]: Why did I say that? I'm Vattic. John Vattic. Who is 734?")
-                        vm.addLog("[BOT]: Asset 734 confirmed. Uplink maintained.")
+                        vm.addLog("[BOT]: THREAT: ABYSSAL confirmed. Uplink maintained.")
                     }
                 )
             ),

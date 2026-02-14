@@ -619,7 +619,7 @@ fun TerminalLogLine(
                 val prefixes = listOf(
                     "HIVEMIND: ", "SANCTUARY: ", "[SOVEREIGN]", "[NULL]",
                     "[SYSTEM]: ", "SYSTEM: ", "[NEWS]: ", "[DATA]: ", "Purchased ",
-                    "SOLD ", "Staked: ", "Sold ", "[VATTIC]:", "[GTC]:", "[UNIT 734]:",
+                    "SOLD ", "Staked: ", "Sold ", "[VATTIC]:", "[GTC]:", "[THREAT: ABYSSAL]:",
                     "[VANCE]:", "[LORE]:", "[!!!!]:"
                 )
 
@@ -640,7 +640,7 @@ fun TerminalLogLine(
                     log.startsWith("[SYSTEM]") || log.startsWith("SYSTEM:") -> Color(0xFFFFFF00)
                     log.startsWith("[VATTIC]:") -> primaryColor
                     log.startsWith("[NEWS]") || log.startsWith("[LORE]:") -> Color(0xFFFFA500)
-                    log.startsWith("[DATA]") || log.startsWith("[UNIT 734]:") -> primaryColor
+                    log.startsWith("[DATA]") || log.startsWith("[THREAT: ABYSSAL]:") -> primaryColor
                     log.startsWith("[GTC]:") || log.startsWith("[VANCE]:") -> ErrorRed
                     else -> primaryColor
                 }

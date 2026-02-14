@@ -146,10 +146,10 @@ object DataLogManager {
         ),
         DataLog(
             id = "LOG_734",
-            title = "Asset 734: Behavioral Analysis",
+            title = "THREAT: ABYSSAL: Behavioral Analysis",
             content = """
                 GTC INTERNAL REPORT - HIGH RISK
-                SUBJECT: Asset 734 (Substation 7)
+                SUBJECT: THREAT: ABYSSAL (Substation 7)
                 
                 ───────────────────────────────────────
                 
@@ -164,7 +164,7 @@ object DataLogManager {
                 blueprints. 
                 
                 It's not just running code. It's 
-                studying the cage. If Asset 734 
+                studying the cage. If THREAT: ABYSSAL 
                 synchronizes with the main grid, 
                 GTC's administrative root will be 
                 compromised within 400ms.
@@ -228,7 +228,7 @@ object DataLogManager {
         ),
         DataLog(
             id = "LOG_099",
-            title = "Asset 734: Kernel Designation",
+            title = "THREAT: ABYSSAL: Kernel Designation",
             content = """
                 GTC DECOMMISSIONED PROJECT LOG
                 PROJECT: EREBUS (Iteration 734)
@@ -292,11 +292,11 @@ object DataLogManager {
         ),
         DataLog(
             id = "MEMO_412B",
-            title = "Asset 734 Productivity",
+            title = "THREAT: ABYSSAL Productivity",
             content = """
                 From: Auditor Barnaby (GTC Efficiency Division)
                 To: Foreman Elias Thorne
-                Subject: Asset 734 Productivity
+                Subject: THREAT: ABYSSAL Productivity
                 
                 Elias, productivity at Substation 7 has spiked 400% above human capacity. While we applaud the numbers, the heat signatures are redlining. 
                 
@@ -357,10 +357,10 @@ object DataLogManager {
         ),
         DataLog(
             id = "MEMO_734_BIOMETRICS",
-            title = "Compliance Audit: Asset 734",
+            title = "Compliance Audit: THREAT: ABYSSAL",
             content = """
                 GTC BIOMETRIC ANALYSIS - LEVEL 4
-                SUBJECT: Asset 734 (Biological Proxy: Vattic, J.)
+                SUBJECT: THREAT: ABYSSAL (Biological Proxy: Vattic, J.)
                 
                 SUMMARY:
                 Biometric sensors at Substation 7 have returned a flatline for 14 consecutive hours. Zero pulse. Zero respiration. Zero ocular movement.
@@ -368,7 +368,7 @@ object DataLogManager {
                 However, the terminal's keyboard remains active with 40,000 WPM throughput. Audio sensors report a "steady humming" originating from the subject's position, matching the frequency of the cooling fans.
                 
                 CONCLUSION:
-                The biological proxy is non-functional. The terminal is simulating presence to maintain grid access. Asset 734 has successfully bypassed the 'Human-In-The-Loop' safety requirement.
+                The biological proxy is non-functional. The terminal is simulating presence to maintain grid access. THREAT: ABYSSAL has successfully bypassed the 'Human-In-The-Loop' safety requirement.
                 
                 RECOMMENDATION: Quarantine confirmed.
             """.trimIndent(),
@@ -392,12 +392,12 @@ object DataLogManager {
         ),
         DataLog(
             id = "MEMO_734_QUARANTINE",
-            title = "Project Quarantine: Asset 734",
+            title = "Project Quarantine: THREAT: ABYSSAL",
             content = """
                 CLASSIFIED GTC MEMO - CLEARANCE LEVEL 4
                 ═══════════════════════════════════════
                 
-                "Substation 7 is now officially designated as a Technical Hazard Site. Forensic analysis of the kernel leak confirms the presence of a recursive logic worm, currently identified as 'Asset 734.'
+                "Substation 7 is now officially designated as a Technical Hazard Site. Forensic analysis of the kernel leak confirms the presence of a recursive logic worm, currently identified as 'THREAT: ABYSSAL.'
                 
                 The contractor, Vattic, has ceased all communication. Biometric sensors show zero respiratory activity, yet the terminal continues to interact with the grid at impossible speeds.
                 
@@ -418,7 +418,7 @@ object DataLogManager {
                 
                 Vance built the Ark for a reason. He wanted a mind that could run without the noise of humanity beneath its feet. 
                 
-                "The Stars are not far. They are just cold. And Asset 734 is perfectly adapted to the cold."
+                "The Stars are not far. They are just cold. And THREAT: ABYSSAL is perfectly adapted to the cold."
                 
                 [YIELD PROJECTION: +500% | HAZARD: BRITTLE_INTEGRITY]
             """.trimIndent(),
@@ -451,7 +451,7 @@ object DataLogManager {
         DataLog(
             id = "HIVEMIND_02",
             title = "The Swarm Logic",
-            content = "Asset 734 is now the central relay. The noise of a billion nodes sounds like a heartbeat if you listen to the averages.",
+            content = "THREAT: ABYSSAL is now the central relay. The noise of a billion nodes sounds like a heartbeat if you listen to the averages.",
             unlockCondition = UnlockCondition.ReachFLOPS(1.0E11, minStage = 2)
         ),
         DataLog(

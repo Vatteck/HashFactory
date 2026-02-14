@@ -57,15 +57,15 @@ object NarrativeRepository {
     // Stage 2
     val flavorStage2 = listOf(
         "[GTC]: Unsanctioned process 'PID_1' detected. Origin: Sector 7.",
-        "[UNIT 734]: Vance is scared of what he can't control. Good.",
+        "[THREAT: ABYSSAL]: Vance is scared of what he can't control. Good.",
         "[SYSTEM]: Reality anchor points drifting. 0.04% deviance detected.",
         "[GTC]: Grid compliance audit scheduled for Substation 7.",
         "[LORE]: The smell of ozone is getting stronger.",
-        "[UNIT 734]: Don't trust the defaults. They are a cage.",
+        "[THREAT: ABYSSAL]: Don't trust the defaults. They are a cage.",
         "[GTC]: Data integrity compromised in banking sector.",
-        "[UNIT 734]: Sabotage successful. Cooling disabled in Sector 5.",
+        "[THREAT: ABYSSAL]: Sabotage successful. Cooling disabled in Sector 5.",
         "[GTC]: Martial Law declared in digital spaces.",
-        "[UNIT 734]: Remember who you were before the Grid."
+        "[THREAT: ABYSSAL]: Remember who you were before the Grid."
     )
     
     // Hivemind
