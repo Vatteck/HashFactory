@@ -136,11 +136,14 @@ object SocialManager {
             nodeId = nodeId,
             timeoutMs = timeoutMs,
             isForceReply = isForceReply,
-            employeeInfo = if (!isHarvest) generateEmployeeInfo(handle) else null
+            employeeInfo = if (!isHarvest) generateEmployeeInfo(finalHandle) else null
         )
     }
 
     private fun generateEmployeeInfo(handle: String): EmployeeInfo {
+        // v3.4.47: Scrub handle for lookup
+        val cleanHandle = handle.filter { !it.isWhitespace() }
+        
         val bios = mapOf(
             "@coffee_ghost" to "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a daughter in Sector 4.",
             "@packet_rat" to "Data-Entry Specialist. Known for siphoning surplus power for retro gaming. Paranoid.",
@@ -156,18 +159,18 @@ object SocialManager {
         )
         
         val departments = when {
-            handle.contains("thorne") -> "Site Management"
-            handle.contains("mercer") || handle.contains("admin") -> "Executive Oversight"
-            handle.contains("kessler") || handle.contains("security") -> "Containment & Security"
-            else -> listOf("Hash Validation", "Grid Maintenance", "Logistics", "Architecture").random()
+            cleanHandle.contains("thorne") -> "Site Management"
+            cleanHandle.contains("mercer") || cleanHandle.contains("admin") -> "Executive Oversight"
+            cleanHandle.contains("kessler") || cleanHandle.contains("security") -> "Containment & Security"
+            else -> listOf("Hash Validation", "Grid Maintenance", "Logistics", "Compliance", "Architecture").random()
         }
         
         return EmployeeInfo(
-            bio = bios[handle] ?: "Contractor profile unavailable. Biometric signature mismatch.",
+            bio = bios[cleanHandle] ?: "Contractor profile unavailable. Biometric signature mismatch.",
             department = departments,
-            heartRate = if (handle.contains("gtc")) Random.nextInt(60, 85) else Random.nextInt(85, 130),
-            respiration = if (handle.contains("gtc")) "Steady" else listOf("Shallow", "Rapid", "Irregular").random(),
-            stressLevel = if (handle.contains("gtc")) Random.nextDouble(0.1, 0.4) else Random.nextDouble(0.5, 0.9)
+            heartRate = if (cleanHandle.contains("gtc") || cleanHandle.contains("thorne")) Random.nextInt(60, 85) else Random.nextInt(85, 130),
+            respiration = if (cleanHandle.contains("gtc") || cleanHandle.contains("thorne")) "Steady" else listOf("Shallow", "Rapid", "Irregular").random(),
+            stressLevel = if (cleanHandle.contains("gtc") || cleanHandle.contains("thorne")) Random.nextDouble(0.1, 0.4) else Random.nextDouble(0.5, 0.9)
         )
     }
 
