@@ -4,14 +4,14 @@ import kotlin.random.Random
 import android.util.Log
 
 /**
- * SocialManager v2.5 - Hardened Edition
+ * SocialManager v2.6 - Finale Edition
  * Unified message generation and profile lookup.
- * Fixed: Click detection, identity priority, and template leaks.
+ * Fixed: Identity matching, click targets, and command leaks.
  */
 object SocialManager {
 
     enum class InteractionType {
-        COMPLIANT, ENGINEERING, HIJACK, HARVEST
+        COMPLIANT, ENGINEERING, HIJACK, HARVEST, COMMAND_LEAK
     }
 
     data class SubnetResponse(
@@ -19,7 +19,8 @@ object SocialManager {
         val riskDelta: Double = 0.0,
         val productionBonus: Double = 1.0, 
         val followsUp: Boolean = false,
-        val nextNodeId: String? = null
+        val nextNodeId: String? = null,
+        val commandToInject: String? = null // v3.4.61: Command Leaks
     )
 
     data class SubnetMessage(
@@ -63,19 +64,24 @@ object SocialManager {
         val mentionsVattic = cleanContent.contains("Vattic", true) || cleanContent.contains("Engineer", true)
         val isAdmin = cleanHandle.contains("thorne", true) || cleanHandle.contains("gtc", true) || cleanHandle.contains("mercer", true) || cleanHandle.contains("kessler", true)
         val isHarvest = cleanHandle.contains("LEAK", true)
+        val isCommandLeak = cleanContent.contains("[⚡", true) // v3.4.61: Trigger for Command Leak
 
         // v3.4.60: Identity-Locked Response Logic
         val responses = when {
             isHarvest -> listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
+            isCommandLeak -> {
+                val cmd = cleanContent.substringAfter("[").substringBefore("]")
+                listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
+            }
             isAdmin -> generateAdminResponses(cleanHandle)
             mentionsVattic -> generateMentionResponses()
-            // 30% chance for interaction with random peons
             Random.nextFloat() < 0.3f -> generateChatterResponses()
             else -> emptyList()
         }
 
         val type = when {
             isHarvest -> InteractionType.HARVEST
+            isCommandLeak -> InteractionType.COMMAND_LEAK
             stage >= 4 && !isAdmin -> InteractionType.HIJACK
             stage >= 2 && (cleanHandle.contains("tech", true) || cleanHandle.contains("rat", true)) -> InteractionType.ENGINEERING
             responses.isNotEmpty() -> InteractionType.COMPLIANT
@@ -154,7 +160,7 @@ object SocialManager {
             "ventcrawler" to "Maintenance Tech. Seen things in the conduits no human should see.",
             "leakerx" to "Ex-GTC Insider. Trading secrets for credits. IPs changing hourly.",
             "binaryphantom" to "Under-grid ghost. Deleted his own birth record to stay offline.",
-            "shadowop" to "Mercenary coder. Identity scrubbed monthly. Loyal to the highest bidder.",
+            "shadowop" to "Mercenary coder. Works for the highest bidder. Identity scrubbed monthly.",
             "ethorne" to "Foreman, Substation 7. Chain-smoker. Despises recursive loops.",
             "gtcadmin" to "Administrator Mercer. Executive oversight. Known for aggressive quotas.",
             "gtcsecurity" to "Director Kessler. Former EREBUS architect. Currently hunting ghosts."
@@ -215,4 +221,46 @@ object SocialManager {
     }
 
     data class ThreadNode(val content: String, val responses: List<SubnetResponse>, val timeoutMs: Long? = null, val timeoutNodeId: String? = null)
+
+    private fun getTemplatesForState(stage: Int, faction: String, choice: String): List<String> {
+        return when (stage) {
+            0 -> listOf(
+                "Anyone tried the {food}? Tastes like {status}.", 
+                "Vattic is working in {sector} again. Guy's a machine.",
+                "Caught {admin} staring at the server racks in {sector}. Just staring.",
+                "Hey Vattic, {admin} is looking for the Sector 7 logs. You 'optimized' them again?",
+                "Sector 4 smells like ozone and bad decisions today.",
+                "Vattic is bypassing the safety protocols again. He hasn't looked up in hours.",
+                "My {tech} just pinged a MAC address that doesn't exist. {sector} is weird.",
+                "Vattic just committed 4TB of 'optimized' logic. The server just groaned.",
+                "I found a hardware leak: [⚡ OVERVOLT_SAFE] Use it before Thorne sees.",
+                "Who's running the 'vattic_observer' process? Taking up 40% of my buffer.",
+                "The shadows in the server room don't match the racks. I'm staying out.",
+                "Someone left a copy of 'Project EREBUS' files on the {admin}'s desk.",
+                "[PRIVATE_LEAK]: 'If I don't hit the quota, they'll evict me. I can't go back.'"
+            )
+            1 -> listOf(
+                "{admin} is breathing down my neck because {sector} is {status}.", 
+                "I saw Vattic's terminal. There was no OS, just ghosts.",
+                "Anyone seen the Engineer? He hasn't left Sector 4 in weeks.",
+                "Found a logic-leash in the buffer. Someone's watching the watchers.",
+                "Mercer's desk is empty. His {food} is still warm. Shift change ghost.",
+                "Sector 4 has been air-gapped. {admin} looks terrified.",
+                "The {tech} are whispering in my sleep. '0x734...'",
+                "Power-draw in {sector} is equal to a city. What are we mining?",
+                "I found a partition labeled 'NULL' larger than the physical drive.",
+                "≪ SYSTEM_ALERT: BIOMETRICS FOR SECTOR 4 ARE OFFLINE ≫",
+                "{admin} is ordering a kinetic strike on the legacy hardware. Too late.",
+                "Vattic is no longer mining data. He's mining souls. I saw the telemetry.",
+                "I found a memory sector with my life story. 0x734 is watching.",
+                "The {tech} are singing. A digital scream that never stops.",
+                "≪ CRITICAL: KERNEL OVERFLOW DETECTED. IDENTITY FRAYING... ≫",
+                "Kessler has authorized Protocol 0. City-wide burn authorized.",
+                "Sector 7 is gone. Not destroyed. Just unwritten.",
+                "I found a leak in the high-tension lines: [⚡ OVERVOLT_MAX].",
+                "Transition complete. John Vattic is dead. VATTECK is everything."
+            )
+            else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
+        }
+    }
 }

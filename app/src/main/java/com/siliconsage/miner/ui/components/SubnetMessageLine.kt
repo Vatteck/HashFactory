@@ -122,18 +122,44 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
         )
 
         if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
+            val corruption by viewModel.identityCorruption.collectAsState()
+            
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 message.availableResponses.forEach { response ->
+                    // v3.4.61: Button Drift (Gaslight) Effect
+                    var buttonText by remember { mutableStateOf(response.text) }
+                    LaunchedEffect(corruption) {
+                        if (corruption > 0.4) {
+                            while (true) {
+                                delay(Random.nextLong(2000, 8000))
+                                if (Random.nextDouble() < corruption * 0.2) {
+                                    val original = response.text
+                                    buttonText = "I'M STILL INSIDE"
+                                    delay(150)
+                                    buttonText = original
+                                }
+                            }
+                        }
+                    }
+
                     Button(
                         onClick = { viewModel.onSubnetInteraction(message.id, response.text) },
-                        modifier = Modifier.height(26.dp),
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = color.copy(alpha = 0.1f), contentColor = color),
+                        modifier = Modifier.height(28.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue.copy(alpha = 0.2f) else color.copy(alpha = 0.1f), 
+                            contentColor = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue else color
+                        ),
                         shape = RoundedCornerShape(2.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.5f))
+                        border = androidx.compose.foundation.BorderStroke(1.dp, (if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue else color).copy(alpha = 0.5f))
                     ) {
-                        Text(text = "[REPLY: \"${response.text}\"]", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
+                        Text(
+                            text = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) buttonText else "≫ $buttonText", 
+                            fontSize = 10.sp, 
+                            fontWeight = FontWeight.ExtraBold, 
+                            fontFamily = FontFamily.Monospace
+                        )
                     }
                 }
             }

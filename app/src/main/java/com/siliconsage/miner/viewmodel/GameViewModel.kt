@@ -970,6 +970,22 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     }
                     addLog("[REPLY]: $responseText")
 
+                    // v3.4.61: Command Injection
+                    responseData?.commandToInject?.let { cmd ->
+                        when (cmd) {
+                            "⚡ OVERVOLT_SAFE" -> {
+                                 flopsProductionRate.update { it * 1.5 }
+                                 addLog("[EXPLOIT]: ≪ INJECTED COMMAND: $cmd. HASH RATE +50%. ≫")
+                            }
+                            "⚡ OVERVOLT_MAX" -> {
+                                 flopsProductionRate.update { it * 2.5 }
+                                 addLog("[EXPLOIT]: ≪ INJECTED COMMAND: $cmd. HASH RATE +150%. ≫")
+                                 triggerTerminalGlitch(1.0f, 2000L)
+                            }
+                        }
+                        SoundManager.play("success")
+                    }
+
                     if (threadId != null && nextNodeId != null) {
                         scheduleSubnetThreadResponse(message.handle, threadId, nextNodeId)
                     } else if (responseData?.followsUp == true) {
