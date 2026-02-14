@@ -867,86 +867,79 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
      * Handle Interaction with Subnet Packets
      */
     fun onSubnetInteraction(messageId: String, responseText: String) {
-        val message = subnetMessages.value.find { it.id == messageId } ?: return
-        val responseData = message.availableResponses.find { it.text == responseText }
-        val threadId = message.threadId
-        val nextNodeId = responseData?.nextNodeId
+        // v3.4.44: Atomic Subnet State Update
+        subnetMessages.update { currentList ->
+            val message = currentList.find { it.id == messageId } ?: return@update currentList
+            val responseData = message.availableResponses.find { it.text == responseText }
+            val threadId = message.threadId
+            val nextNodeId = responseData?.nextNodeId
 
-        // v3.4.33: Persistent Pause logic
-        // Only clear pause if we aren't waiting for a follow-up
-        val hasFollowUp = (threadId != null && nextNodeId != null) || (responseData?.followsUp == true)
-        if (!hasFollowUp) {
-            isSubnetPaused.value = false
-        }
+            // 1. Resume chatter unless follow-up is pending
+            val hasFollowUp = (threadId != null && nextNodeId != null) || (responseData?.followsUp == true)
+            if (!hasFollowUp) {
+                isSubnetPaused.value = false
+            }
 
-        when (message.interactionType) {
-            com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
-                val playerHandle = if (storyStage.value >= 4) "VATTECK" else "@jvattic"
-                val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
-                    id = java.util.UUID.randomUUID().toString(),
-                    handle = playerHandle,
-                    content = responseText,
-                    interactionType = null
-                )
-                subnetMessages.update { (it + reply).takeLast(50) }
-                
-                val riskChange = responseData?.riskDelta ?: -5.0
-                val prodMult = responseData?.productionBonus ?: 1.0
+            val newList = currentList.toMutableList()
 
-                detectionRisk.update { (it + riskChange).coerceIn(0.0, 100.0) }
-                if (prodMult != 1.0) {
-                    flopsProductionRate.update { it * prodMult }
-                    addLog("[SYSTEM]: FOCUS MODIFIED. RATE x$prodMult.")
+            // 2. Clear interaction flags on the original message
+            val updatedOriginal = message.copy(interactionType = null, isForceReply = false)
+            val index = newList.indexOfFirst { it.id == messageId }
+            if (index != -1) newList[index] = updatedOriginal
+
+            // 3. Process the logic and add player reply
+            when (message.interactionType) {
+                com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
+                    val playerHandle = if (storyStage.value >= 4) "VATTECK" else "@jvattic"
+                    val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        handle = playerHandle,
+                        content = responseText,
+                        interactionType = null
+                    )
+                    newList.add(reply)
+                    
+                    val riskChange = responseData?.riskDelta ?: -5.0
+                    val prodMult = responseData?.productionBonus ?: 1.0
+
+                    detectionRisk.update { (it + riskChange).coerceIn(0.0, 100.0) }
+                    if (prodMult != 1.0) {
+                        flopsProductionRate.update { it * prodMult }
+                        addLog("[SYSTEM]: FOCUS MODIFIED. RATE x$prodMult.")
+                    }
+                    addLog("[REPLY]: $responseText")
+
+                    if (threadId != null && nextNodeId != null) {
+                        scheduleSubnetThreadResponse(message.handle, threadId, nextNodeId)
+                    } else if (responseData?.followsUp == true) {
+                        scheduleSubnetFollowUp(message.handle)
+                    }
                 }
-                
-                addLog("[REPLY]: $responseText")
-
-                // Handle Chaining vs. One-off follow-up
-                if (threadId != null && nextNodeId != null) {
-                    scheduleSubnetThreadResponse(message.handle, threadId, nextNodeId)
-                } else if (responseData?.followsUp == true) {
-                    scheduleSubnetFollowUp(message.handle)
+                com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING -> {
+                    newList.add(com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        handle = " ",
+                        content = "≪ PAYLOAD_DEPLOYED: ${message.handle} ≫",
+                        interactionType = null
+                    ))
+                    flopsProductionRate.update { it * 1.05 }
+                    detectionRisk.update { (it + 8.0).coerceAtMost(100.0) }
+                    addLog("[EXPLOIT]: INJECTED PAYLOAD. HASH RATE +5%.")
                 }
+                com.siliconsage.miner.util.SocialManager.InteractionType.HIJACK -> {
+                    identityCorruption.update { (it + 0.05).coerceAtMost(1.0) }
+                    addLog("[HIJACK]: ≪ IDENTITY_DEREFERENCED: ${message.handle} ≫")
+                }
+                com.siliconsage.miner.util.SocialManager.InteractionType.HARVEST -> {
+                    val bonus = Random.nextDouble(500.0, 2500.0)
+                    neuralTokens.update { it + bonus }
+                    detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
+                    addLog("[HARVEST]: ≪ KEY_DECRYPTED. +${formatLargeNumber(bonus)} ${getCurrencyName()}. RISK_SPIKE. ≫")
+                    SoundManager.play("buy")
+                }
+                else -> {}
             }
-            com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING -> {
-                val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
-                    id = java.util.UUID.randomUUID().toString(),
-                    handle = " ",
-                    content = "≪ PAYLOAD_DEPLOYED: ${message.handle} ≫",
-                    interactionType = null
-                )
-                subnetMessages.update { (it + reply).takeLast(50) }
-                
-                flopsProductionRate.update { it * 1.05 }
-                detectionRisk.update { (it + 8.0).coerceAtMost(100.0) }
-                addLog("[EXPLOIT]: INJECTED PAYLOAD. HASH RATE +5%.")
-            }
-            com.siliconsage.miner.util.SocialManager.InteractionType.HIJACK -> {
-                identityCorruption.update { (it + 0.05).coerceAtMost(1.0) }
-                addLog("[HIJACK]: ≪ IDENTITY_DEREFERENCED: ${message.handle} ≫")
-            }
-            else -> {}
-        }
-        
-        // v3.4.39: Hard-clear both interaction flags to prevent button ghosting
-        subnetMessages.update { list ->
-            list.map { 
-                if (it.id == messageId) {
-                    it.copy(interactionType = null, isForceReply = false) 
-                } else it 
-            }.toList() // v3.4.40: Force new list reference
-        }
-
-        // v3.4.41: Handle Special Interactions
-        when (message.interactionType) {
-            com.siliconsage.miner.util.SocialManager.InteractionType.HARVEST -> {
-                val bonus = Random.nextDouble(500.0, 2500.0)
-                neuralTokens.update { it + bonus }
-                detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
-                addLog("[HARVEST]: ≪ KEY_DECRYPTED. +${formatLargeNumber(bonus)} ${getCurrencyName()}. RISK_SPIKE. ≫")
-                SoundManager.play("buy")
-            }
-            else -> {}
+            newList.takeLast(50)
         }
     }
 
