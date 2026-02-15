@@ -930,7 +930,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     "The ticker is going crazy: '$metadata'. This grid is falling apart.",
                     "Anyone else worried about that headline? '$metadata'. Sector 7 feels cursed.",
                     "Corporate is spinning '$metadata' again. Don't believe the filters.",
-                    "Vattic, look at the wire: '$metadata'. TheCouncil is watching us."
+                    "Vattic, look at the wire: '$metadata'. The Council is watching us."
                 ).random()
                 else -> "≪ UNKNOWN_SIGNAL_DETECTED ≫"
             }
