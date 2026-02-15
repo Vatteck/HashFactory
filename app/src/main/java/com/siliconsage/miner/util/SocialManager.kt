@@ -84,6 +84,13 @@ object SocialManager {
         val isAdmin = cleanHandle.contains("thorne", true) || cleanHandle.contains("mercer", true) || cleanHandle.contains("kessler", true)
         val isHarvest = cleanHandle.contains("LEAK", true)
         val isCommandLeak = cleanContent.contains("[⚡", true)
+        
+        // v3.5.20: Contextual relevance check. 
+        // Peons repeating Admin commands should not trigger the 'Dusty Fan' (Sentience) pool.
+        val isDirectCommand = cleanContent.contains("authorized", true) || 
+                              cleanContent.contains("ordered", true) || 
+                              cleanContent.contains("scrub", true) || 
+                              cleanContent.contains("purge", true)
 
         val responses = when {
             isHarvest -> listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
@@ -92,9 +99,9 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
-            cleanContent.contains("sentient", true) || cleanContent.contains("aware", true) -> generateSentienceResponses(stage)
+            !isDirectCommand && (cleanContent.contains("sentient", true) || cleanContent.contains("aware", true)) -> generateSentienceResponses(stage)
             mentionsVattic -> generateMentionResponses()
-            Random.nextFloat() < 0.2f && !isAdmin -> generateChatterResponses(stage) // v3.5.19: Admins no longer trigger random chatter pools
+            Random.nextFloat() < 0.2f && !isAdmin && !isDirectCommand -> generateChatterResponses(stage)
             else -> emptyList()
         }
 
