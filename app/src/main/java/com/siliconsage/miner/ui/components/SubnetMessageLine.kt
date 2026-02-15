@@ -119,6 +119,35 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                         fontFamily = FontFamily.Monospace,
                         modifier = Modifier.padding(top = 4.dp)
                     )
+
+                    // v3.5.28: Special Bio Actions
+                    info.specialActions.forEach { action ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { viewModel?.onBioAction(message.id, action) },
+                            modifier = Modifier.fillMaxWidth().height(32.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue.copy(alpha = 0.1f) else Color.DarkGray.copy(alpha = 0.3f),
+                                contentColor = if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.White
+                            ),
+                            shape = RoundedCornerShape(2.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, (if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.Gray).copy(alpha = 0.5f))
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "≫ ${action.text}",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                if (action.productionBonus > 1.0) Text("⚡", fontSize = 10.sp)
+                                if (action.riskDelta > 0) Text("⚠️", fontSize = 10.sp)
+                                if (action.riskDelta < 0) Text("🛡️", fontSize = 10.sp)
+                            }
+                        }
+                    }
                 }
             }
         }

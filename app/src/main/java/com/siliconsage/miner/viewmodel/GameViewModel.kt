@@ -94,6 +94,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val ghostInputChar = MutableStateFlow("")
     val globalGlitchIntensity = MutableStateFlow(0f) // 0.0 to 1.0
     val isSubnetHushed = MutableStateFlow(false) // v3.4.41: The "Hush" Effect
+    val isFalseHeartbeatActive = MutableStateFlow(false) // v3.5.28: Risk detection immunity
 
     // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -427,7 +428,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         lastClickTime = now
 
         if (storyStage.value >= 2) {
-            detectionRisk.update { (it + 0.1).coerceIn(0.0, 100.0) }
+            val d = if (isFalseHeartbeatActive.value) 0.0 else 0.1
+            detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
 
         val p = calculateClickPower(); 
@@ -1029,13 +1031,26 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
      * Handle Interaction with Subnet Packets
      */
     fun onSubnetInteraction(messageId: String, responseText: String) {
+        val message = subnetMessages.value.find { it.id == messageId } ?: return
+        val responseData = message.availableResponses.find { it.text == responseText }
+        processSubnetResponse(message, responseData, responseText)
+    }
+
+    /**
+     * v3.5.28: Handle specialized bio actions (e.g., Siphoning)
+     */
+    fun onBioAction(messageId: String, response: com.siliconsage.miner.util.SocialManager.SubnetResponse) {
+        val message = subnetMessages.value.find { it.id == messageId } ?: return
+        processSubnetResponse(message, response, response.text)
+    }
+
+    private fun processSubnetResponse(
+        message: com.siliconsage.miner.util.SocialManager.SubnetMessage,
+        responseData: com.siliconsage.miner.util.SocialManager.SubnetResponse?,
+        responseText: String
+    ) {
         // v3.4.44: Atomic Subnet State Update
         subnetMessages.update { currentList ->
-            val message = currentList.find { it.id == messageId } ?: return@update currentList
-            val responseData = message.availableResponses.find { it.text == responseText }
-            
-            // v3.4.83: Stop [REPLY] bleed into I/O log. Replies stay in SUBNET.
-            // addLog("[REPLY]: $responseText") // Commented out to prevent cross-tab contamination
             val threadId = message.threadId
             val nextNodeId = responseData?.nextNodeId
 
@@ -1048,15 +1063,19 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
             val newList = currentList.toMutableList()
 
-            // 2. Clear interaction flags on the original message
+            // 2. Clear interaction flags on the original message if it was a dialogue interaction
+            // (Bio actions don't necessarily clear dialogue choices, but let's keep it simple)
             val updatedOriginal = message.copy(interactionType = null, isForceReply = false)
-            val index = newList.indexOfFirst { it.id == messageId }
+            val index = newList.indexOfFirst { it.id == message.id }
             if (index != -1) newList[index] = updatedOriginal
 
             // 3. Process the logic and add player reply
-            when (message.interactionType) {
+            // If it's a bio action, we treat it as COMPLIANT for effect logic
+            val interactionType = message.interactionType ?: com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT
+            
+            when (interactionType) {
                 com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
-                    val playerHandle = if (storyStage.value >= 2) "@j_vattic" else "@j_vattic" // Standardized v3.5.17
+                    val playerHandle = "@j_vattic" 
                     val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                         id = java.util.UUID.randomUUID().toString(),
                         handle = playerHandle,
@@ -1065,12 +1084,45 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     )
                     newList.add(reply)
                     
-                    val riskChange = responseData?.riskDelta ?: -5.0
+                    // v3.5.28: Specialized Action Logic
+                    when (responseText) {
+                        "SCRUB_TRACE_LOGS" -> {
+                            val cost = 5000.0
+                            if (neuralTokens.value >= cost) {
+                                neuralTokens.update { it - cost }
+                                detectionRisk.update { (it - 15.0).coerceAtLeast(0.0) }
+                                addLog("[SYSTEM]: LOGS SCRUBBED. DETECTED_FOOTPRINT REDUCED.")
+                                SoundManager.play("buy")
+                            } else {
+                                addLog("[SYSTEM]: INSUFFICIENT TOKENS TO SCRUB LOGS.")
+                            }
+                        }
+                        "OVERLOAD_DISSIPATOR" -> {
+                            detectionRisk.update { (it - 25.0).coerceAtLeast(0.0) }
+                            addLog("[SABOTAGE]: COOLING FAILURE AT ${message.handle}'S TERMINAL. SECURITY DIVERTED.")
+                            SoundManager.play("glitch")
+                        }
+                        "INJECT_FALSE_HEARTBEAT" -> {
+                            viewModelScope.launch {
+                                isFalseHeartbeatActive.value = true
+                                addLog("[EXPLOIT]: BIOMETRIC FEED SPOOFED. RISK DETECTION IMMUNITY ACTIVE.")
+                                delay(60000) // 1 minute of immunity
+                                isFalseHeartbeatActive.value = false
+                                addLog("[EXPLOIT]: SPOOF EXPIRED. FEED NOMINAL.")
+                            }
+                        }
+                        "SNIFF_DATA_ARCHIVES" -> {
+                            detectionRisk.update { (it + 20.0).coerceAtMost(100.0) }
+                            addLog("[SNIFF]: RECOVERING LOCAL FRAGMENTS FROM ${message.handle}...")
+                            checkUnlocksPublic(true) // Force a lore check
+                        }
+                    }
+
+                    val riskChange = if (isFalseHeartbeatActive.value && (responseData?.riskDelta ?: 0.0) > 0) 0.0 else (responseData?.riskDelta ?: -5.0)
                     val prodMult = responseData?.productionBonus ?: 1.0
 
                     detectionRisk.update { (it + riskChange).coerceIn(0.0, 100.0) }
                     
-                    // v3.5.17: Gain Corporate Reputation for replying (Stage 0 only)
                     if (storyStage.value == 0) {
                         prestigePoints.update { it + 5.0 }
                     }

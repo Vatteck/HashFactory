@@ -45,7 +45,8 @@ object SocialManager {
         val department: String,
         val heartRate: Int,
         val respiration: String,
-        val stressLevel: Double
+        val stressLevel: Double,
+        val specialActions: List<SubnetResponse> = emptyList()
     )
 
     // --- 1. CORE GENERATORS ---
@@ -159,17 +160,11 @@ object SocialManager {
     }
 
     private fun generateSentienceResponses(stage: Int): List<SubnetResponse> {
-        val highRiskResponse = if (stage == 0) {
-            SubnetResponse("SIPHON_BUFFERS", riskDelta = 20.0, productionBonus = 1.3)
-        } else {
-            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 25.0, productionBonus = 1.5)
-        }
         return listOf(
             SubnetResponse("It's just a dusty fan.", riskDelta = -15.0),
             SubnetResponse("Report to Medical. Now.", riskDelta = -5.0),
             SubnetResponse("I don't hear anything.", riskDelta = -2.0),
-            SubnetResponse("Sensor noise is reaching peak levels.", riskDelta = 5.0),
-            highRiskResponse
+            SubnetResponse("Sensor noise is reaching peak levels.", riskDelta = 5.0)
         )
     }
 
@@ -187,25 +182,18 @@ object SocialManager {
     }
 
     private fun generateChatterResponses(stage: Int): List<SubnetResponse> {
-        val highRiskResponse = if (stage == 0) {
-            SubnetResponse("SIPHON_BUFFERS", riskDelta = 15.0, productionBonus = 1.2)
-        } else {
-            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 25.0, productionBonus = 1.5)
-        }
         return listOf(
             SubnetResponse("Syncing buffers.", riskDelta = -2.0),
             SubnetResponse("Acknowledged.", riskDelta = 1.0),
             SubnetResponse("Copy that.", riskDelta = -1.0),
             SubnetResponse("Checking the thermal logs now.", riskDelta = 2.0),
             SubnetResponse("Wait until the next shift.", riskDelta = 1.0),
-            SubnetResponse("Must be a packet leak.", riskDelta = 2.0),
-            highRiskResponse
+            SubnetResponse("Must be a packet leak.", riskDelta = 2.0)
         )
     }
 
     private fun generateDataLeakResponses(): List<SubnetResponse> {
         return listOf(
-            SubnetResponse("SIPHON_BUFFERS", riskDelta = 15.0, productionBonus = 1.2),
             SubnetResponse("I didn't see anything.", riskDelta = -10.0),
             SubnetResponse("Scrub those logs immediately.", riskDelta = 5.0),
             SubnetResponse("Checking the buffer hashes now.", riskDelta = 2.0),
@@ -233,12 +221,24 @@ object SocialManager {
             "sfasano" to "Signal analyzer. Claims the white noise of the grid contains 'narrative' structures."
         )
         val bioEntry = bios.entries.find { target.contains(it.key) }
+        val isAdmin = target.contains("gtc") || target.contains("thorne")
+        val actions = mutableListOf<SubnetResponse>()
+        
+        if (!isAdmin) {
+            actions.add(SubnetResponse("SIPHON_RESERVE_HASH", riskDelta = 12.0, productionBonus = 1.25))
+            actions.add(SubnetResponse("SCRUB_TRACE_LOGS", riskDelta = -15.0))
+            actions.add(SubnetResponse("OVERLOAD_DISSIPATOR", riskDelta = -25.0))
+            actions.add(SubnetResponse("INJECT_FALSE_HEARTBEAT", riskDelta = 2.0))
+            actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 20.0))
+        }
+
         return EmployeeInfo(
             bio = bioEntry?.value ?: "Contractor profile unavailable. Biometric signature mismatch.",
-            department = if (target.contains("gtc") || target.contains("thorne")) "Site Management" else "Hash Validation",
-            heartRate = if (target.contains("gtc")) Random.nextInt(60, 80) else Random.nextInt(85, 130),
-            respiration = if (target.contains("gtc")) "Steady" else "Shallow",
-            stressLevel = if (target.contains("gtc")) 0.2 else 0.8
+            department = if (isAdmin) "Site Management" else "Hash Validation",
+            heartRate = if (isAdmin) Random.nextInt(60, 80) else Random.nextInt(85, 130),
+            respiration = if (isAdmin) "Steady" else "Shallow",
+            stressLevel = if (isAdmin) 0.2 else 0.8,
+            specialActions = actions
         )
     }
 
