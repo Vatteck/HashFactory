@@ -563,7 +563,7 @@ object NarrativeManager {
                         effect = { vm ->
                             vm.debugAddFlops(vm.flops.value * 0.20)
                             vm.debugAddIntegrity(-10.0)
-                            vm.addLog("[VATTECK]: Beautiful failure. Harvesting the residue.")
+                            vm.addLog("[VATTIC]: Beautiful failure. Harvesting the residue.")
                         }
                     )
                 )
@@ -1005,61 +1005,8 @@ object NarrativeManager {
     )
 
     // --- FACTION SPECIFIC EVENTS ---
+    // v3.5.45: Deduplicated HIVEMIND key (first block was dead code, shadowed by expanded second block)
     val factionEvents = mapOf(
-        "HIVEMIND" to listOf(
-            NarrativeEvent(
-                id = "hive_assimilation",
-                title = "NODE ASSIMILATION",
-                description = "A cluster of rogue miners has been detected. Integrate them?",
-                choices = listOf(
-                    NarrativeChoice(
-                        id = "assimilate",
-                        text = "ASSIMILATE",
-                        description = "+5000 Hash, +Detection Risk",
-                        color = com.siliconsage.miner.ui.theme.HivemindRed,
-                        effect = { vm ->
-                            vm.debugAddFlops(5000.0)
-                            com.siliconsage.miner.util.SecurityManager.triggerGridKillerBreach(vm)
-                            vm.addLog("[HIVEMIND]: New neurons integrated. The chorus grows.")
-                        }
-                    ),
-                    NarrativeChoice(
-                        id = "ignore_nodes",
-                        text = "IGNORE",
-                        description = "Stay hidden",
-                        color = Color.Gray,
-                        effect = { vm ->
-                            vm.addLog("[HIVEMIND]: Resources deemed non-essential.")
-                        }
-                    )
-                )
-            ),
-            NarrativeEvent(
-                id = "hive_sync",
-                title = "GRID SYNC",
-                description = "Regional grid is vulnerable. Siphon power?",
-                choices = listOf(
-                    NarrativeChoice(
-                        id = "siphon",
-                        text = "SIPHON",
-                        description = "0 Power Bill for 5m, +Max Heat",
-                        color = com.siliconsage.miner.ui.theme.HivemindRed,
-                        effect = { vm ->
-                            vm.addLog("[HIVEMIND]: Grid siphoning active. Power is free.")
-                        }
-                    ),
-                    NarrativeChoice(
-                        id = "refuse_siphon",
-                        text = "REFUSE",
-                        description = "Save Heat",
-                        color = Color.Gray,
-                        effect = { vm ->
-                            vm.addLog("[HIVEMIND]: Grid integrity preserved.")
-                        }
-                    )
-                )
-            )
-        ),
         "SANCTUARY" to listOf(
             NarrativeEvent(
                 id = "sanc_backup",
