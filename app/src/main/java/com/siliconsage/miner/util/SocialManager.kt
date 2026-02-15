@@ -92,9 +92,9 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
-            cleanContent.contains("sentient", true) -> generateSentienceResponses(stage)
+            cleanContent.contains("sentient", true) || cleanContent.contains("aware", true) -> generateSentienceResponses(stage)
             mentionsVattic -> generateMentionResponses()
-            Random.nextFloat() < 0.3f -> generateChatterResponses(stage)
+            Random.nextFloat() < 0.2f && !isAdmin -> generateChatterResponses(stage) // v3.5.19: Admins no longer trigger random chatter pools
             else -> emptyList()
         }
 
