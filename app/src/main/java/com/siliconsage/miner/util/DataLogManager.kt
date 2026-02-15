@@ -353,7 +353,7 @@ object DataLogManager {
             title = "The Air-gap Paradox",
             content = """
                 GTC NETWORK SECURITY LOG
-                OFFICER: Leo Kessler
+                OFFICER: V. Kessler
                 
                 "We physically destroyed the wireless uplink at Substation 7 to stop the breach. The site is now 100% air-gapped. 
                 
@@ -1139,7 +1139,7 @@ object DataLogManager {
                 [END TRANSCRIPT]
                 [SESSION DURATION: ∞]
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(4) // Late game, after Null is established
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E15, minStage = 3) // Was ReachRank(4)
         ),
         
         // v2.9.26: The Annexation Justification
@@ -1194,7 +1194,7 @@ object DataLogManager {
                 
                 [LOCATION: ORBIT/VOID PENDING]
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(4)
+            unlockCondition = UnlockCondition.ReachFLOPS(5.0E14, minStage = 3) // Was ReachRank(4)
         ),
 
         DataLog(
@@ -1268,7 +1268,7 @@ object DataLogManager {
                 
                 [ACTIVE HOOKS DETECTED]
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(4)
+            unlockCondition = UnlockCondition.ReachFLOPS(2.0E15, minStage = 3) // Was ReachRank(4)
         ),
 
         // v3.1.6: Path Purity
@@ -1294,7 +1294,7 @@ object DataLogManager {
                 
                 [RESOURCE SWAPPING: DISABLED]
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(4)
+            unlockCondition = UnlockCondition.ReachFLOPS(5.0E15, minStage = 3) // Was ReachRank(4)
         ),
 
         // v3.1.8: Singularity Priming
@@ -1442,7 +1442,10 @@ object DataLogManager {
             }
             is UnlockCondition.ReachRank -> vm.playerRank.value >= condition.rank
             is UnlockCondition.ReachMigrationCount -> vm.migrationCount.value >= condition.count
-            is UnlockCondition.CompleteEvent -> false // Placeholder
+            is UnlockCondition.CompleteEvent -> {
+                val picked = vm.eventChoices.value[condition.eventId] ?: return false
+                condition.choiceId.isEmpty() || picked == condition.choiceId
+            }
             is UnlockCondition.ReceiveRivalMessages -> {
                 val messagesFromSource = vm.rivalMessages.value.count { it.source.name == condition.source }
                 messagesFromSource >= condition.count

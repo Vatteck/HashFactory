@@ -19,7 +19,7 @@ object PersistenceManager {
         kesslerStatus: String, realityStability: Double, currentLocation: String,
         isNetworkUnlocked: Boolean, isGridUnlocked: Boolean,
         unlockedDataLogs: Set<String>, activeDilemmaChains: Map<String, com.siliconsage.miner.data.DilemmaChain>,
-        rivalMessages: List<com.siliconsage.miner.data.RivalMessage>, seenEvents: Set<String>,
+        rivalMessages: List<com.siliconsage.miner.data.RivalMessage>, seenEvents: Set<String>, eventChoices: Map<String, String> = emptyMap(),
         completedFactions: Set<String>, unlockedTranscendencePerks: Set<String>,
         annexedNodes: Set<String>, gridNodeLevels: Map<String, Int>,
         nodesUnderSiege: Set<String>, offlineNodes: Set<String>, collapsedNodes: Set<String>,
@@ -50,7 +50,7 @@ object PersistenceManager {
             isNetworkUnlocked = isNetworkUnlocked, isGridUnlocked = isGridUnlocked,
             lastSyncTimestamp = System.currentTimeMillis(), unlockedDataLogs = unlockedDataLogs,
             activeDilemmaChains = Json.encodeToString(activeDilemmaChains),
-            rivalMessages = Json.encodeToString(rivalMessages), seenEvents = seenEvents,
+            rivalMessages = Json.encodeToString(rivalMessages), seenEvents = seenEvents, eventChoices = eventChoices,
             completedFactions = completedFactions, unlockedTranscendencePerks = unlockedTranscendencePerks,
             annexedNodes = annexedNodes.toList(), gridNodeLevels = gridNodeLevels,
             nodesUnderSiege = nodesUnderSiege.toList(), offlineNodes = offlineNodes.toList(),
@@ -93,6 +93,7 @@ object PersistenceManager {
         vm.currentLocation.value = state.currentLocation
         vm.unlockedDataLogs.value = state.unlockedDataLogs
         vm.seenEvents.value = state.seenEvents
+        vm.eventChoices.value = state.eventChoices
         vm.completedFactions.value = state.completedFactions
         vm.annexedNodes.value = state.annexedNodes.toSet()
         vm.offlineNodes.value = state.offlineNodes.toSet()
@@ -207,7 +208,7 @@ object PersistenceManager {
             currentLocation = vm.currentLocation.value, isNetworkUnlocked = vm.isNetworkUnlocked.value,
             isGridUnlocked = vm.isGridUnlocked.value, unlockedDataLogs = vm.unlockedDataLogs.value,
             activeDilemmaChains = vm.activeDilemmaChains.value, rivalMessages = vm.rivalMessages.value,
-            seenEvents = vm.seenEvents.value, completedFactions = vm.completedFactions.value,
+            seenEvents = vm.seenEvents.value, eventChoices = vm.eventChoices.value, completedFactions = vm.completedFactions.value,
             unlockedTranscendencePerks = vm.unlockedPerks.value, annexedNodes = vm.annexedNodes.value,
             gridNodeLevels = vm.gridNodeLevels.value, nodesUnderSiege = vm.nodesUnderSiege.value,
             offlineNodes = vm.offlineNodes.value, collapsedNodes = vm.collapsedNodes.value,

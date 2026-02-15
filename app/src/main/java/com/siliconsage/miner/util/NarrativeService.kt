@@ -93,7 +93,10 @@ object NarrativeService {
         choice.effect(vm)
         vm.markPopupShown()
         
-        currentEvent?.let { vm.markEventSeen(it.id) }
+        currentEvent?.let {
+            vm.markEventSeen(it.id)
+            vm.markEventChoice(it.id, choice.id) // v3.5.40: Track choice for CompleteEvent unlocks
+        }
         
         if (choice.nextPartId != null) {
             val chainId = currentEvent?.chainId ?: "unknown_chain"

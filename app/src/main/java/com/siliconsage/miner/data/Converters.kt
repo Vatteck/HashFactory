@@ -65,6 +65,21 @@ class Converters {
         }
     }
 
+    // Map<String, String> Converter (v3.5.40: eventChoices)
+    @TypeConverter
+    fun fromMapStringString(value: Map<String, String>): String {
+        return Json.encodeToString(value)
+    }
+
+    @TypeConverter
+    fun toMapStringString(value: String): Map<String, String> {
+        return try {
+            Json.decodeFromString<Map<String, String>>(value)
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+
     // Map<String, Int> Converter (v2.9.72)
     @TypeConverter
     fun fromMapStringInt(value: Map<String, Int>): String {

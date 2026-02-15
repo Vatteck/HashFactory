@@ -40,6 +40,7 @@ data class GameState(
     val rivalMessages: String = "[]", // JSON array of RivalMessage
     val dismissedRivalIds: Set<String> = emptySet(), // v2.5.0
     val seenEvents: Set<String> = emptySet(), // v2.5.1
+    val eventChoices: Map<String, String> = emptyMap(), // v3.5.40: eventId → choiceId for CompleteEvent unlock
     val completedFactions: Set<String> = emptySet(), // v2.5.0
     val unlockedTranscendencePerks: Set<String> = emptySet(), // v2.7.7
     val isTrueNull: Boolean = false, // v2.8.0: Narrative state (Hivemind)

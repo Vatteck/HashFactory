@@ -20,7 +20,7 @@ sealed class UnlockCondition {
     @Serializable data class PathSpecific(val location: String) : UnlockCondition()
     @Serializable data class ChoiceSpecific(val choice: String) : UnlockCondition()
     @Serializable data class FactionSpecific(val faction: String) : UnlockCondition()
-    @Serializable data class MinTimeInStage(val seconds: Long, val stage: Int) : UnlockCondition()
+    @Serializable data class MinTimeInStage(val stage: Int, val seconds: Long) : UnlockCondition()
     @Serializable data class IdentityCorruptionThreshold(val minCorruption: Double) : UnlockCondition()
     @Serializable data class HardwareIntegrityThreshold(val maxIntegrity: Double) : UnlockCondition()
     @Serializable data class HasTechNode(val nodeId: String) : UnlockCondition()
@@ -30,7 +30,7 @@ sealed class UnlockCondition {
     @Serializable object NullActive : UnlockCondition()
     @Serializable object Victory : UnlockCondition()
     
-    // Legacy mapping (Keep for backward compatibility during migration)
+    // Legacy stubs (return true — kept only for deserialization of old saves)
     @Serializable object Flops : UnlockCondition()
     @Serializable object Stage : UnlockCondition()
     @Serializable object Time : UnlockCondition()

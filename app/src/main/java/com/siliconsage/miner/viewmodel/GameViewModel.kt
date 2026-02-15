@@ -102,6 +102,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val upgrades = MutableStateFlow<Map<UpgradeType, Int>>(emptyMap())
     val unlockedDataLogs = MutableStateFlow<Set<String>>(emptySet())
     val seenEvents = MutableStateFlow<Set<String>>(emptySet())
+    val eventChoices = MutableStateFlow<Map<String, String>>(emptyMap()) // v3.5.40: eventId → choiceId
     val completedFactions = MutableStateFlow<Set<String>>(emptySet())
     val annexedNodes = MutableStateFlow<Set<String>>(setOf("D1"))
     val shadowRelays = MutableStateFlow<Set<String>>(emptySet())
@@ -383,7 +384,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 unlockedDataLogs = unlockedDataLogs.value, 
                 activeDilemmaChains = activeDilemmaChains.value, 
                 rivalMessages = rivalMessages.value, 
-                seenEvents = seenEvents.value, 
+                seenEvents = seenEvents.value, eventChoices = eventChoices.value,
                 completedFactions = completedFactions.value, 
                 unlockedTranscendencePerks = unlockedPerks.value, 
                 annexedNodes = annexedNodes.value, 
@@ -579,6 +580,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         logCounter = 0
         upgrades.value = emptyMap()
         seenEvents.value = emptySet()
+        eventChoices.value = emptyMap()
         unlockedDataLogs.value = emptySet() 
         unlockedTechNodes.value = emptyList()
         DataLogManager.reset()
@@ -695,6 +697,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun addRivalMessage(m: RivalMessage) = NarrativeService.addRivalMessage(m, this)
     fun unlockSkillUpgrade(t: UpgradeType) { viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, 1)); upgrades.update { it + (t to 1) } } }
     fun markEventSeen(id: String) { seenEvents.update { it + id } }
+    fun markEventChoice(eventId: String, choiceId: String) { eventChoices.update { it + (eventId to choiceId) } } // v3.5.40
     fun hasSeenEvent(id: String) = seenEvents.value.contains(id)
     fun initializeGlobalGrid() { if (globalSectors.value.isEmpty()) { globalSectors.value = SectorManager.getInitialGlobalGrid(singularityChoice.value) } }
     fun startUpdateDownload(c: android.content.Context? = null, info: UpdateInfo? = null) { if (c == null || info == null) return; isUpdateDownloading.value = true; UpdateService.startDownload(c, info, viewModelScope, { updateDownloadProgress.value = it }, { isUpdateDownloading.value = false }) }
