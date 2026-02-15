@@ -26,20 +26,23 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
     val countdown = remember { mutableStateOf(0L) }
     var showProfile by remember(message.id) { mutableStateOf(false) }
     
-    // v3.5.7: Detect system-style messages that shouldn't show a handle header
-    val isSystemStyle = message.content.startsWith("[PRIVATE_LEAK]") || 
-                        message.content.startsWith("≪") || 
-                        message.content.startsWith("[SIGNAL LOSS]")
-
-    // v3.5.31: Detect indentation state (Player replies or threaded peon chains)
-    val isIndented = message.isIndented || message.handle == "@j_vattic"
-    val isPlayerReply = message.handle == "@j_vattic"
-    
-    // v3.5.37: Admin detection (shared across button styling + IGNORE logic)
+    // v3.5.37: Admin detection (shared across handle visibility, button styling, IGNORE logic)
     val isAdminMessage = message.handle.contains("thorne", true) || 
                          message.handle.contains("mercer", true) || 
                          message.handle.contains("kessler", true) || 
                          message.handle.contains("gtc", true)
+
+    // v3.5.7: Detect system-style messages that shouldn't show a handle header
+    // v3.5.39: Admin messages and interactive messages always show their handle
+    val hasResponses = message.availableResponses.isNotEmpty() || message.isForceReply
+    val isSystemStyle = !isAdminMessage && !hasResponses && (
+                        message.content.startsWith("[PRIVATE_LEAK]") || 
+                        message.content.startsWith("≪") || 
+                        message.content.startsWith("[SIGNAL LOSS]"))
+
+    // v3.5.31: Detect indentation state (Player replies or threaded peon chains)
+    val isIndented = message.isIndented || message.handle == "@j_vattic"
+    val isPlayerReply = message.handle == "@j_vattic"
     
     // v3.5.37: Relative timestamp
     var timeLabel by remember { mutableStateOf("now") }
