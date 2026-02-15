@@ -75,7 +75,10 @@ object SocialManager {
         val cleanHandle = getHandle(stage, faction, isCommand)
         val cleanContent = processTemplate(template, stage)
         
+        // v3.5.10: Case-insensitive check for all variations of the player's name
         val mentionsVattic = cleanContent.contains("Vattic", true) || 
+                             cleanContent.contains("j_vattic", true) || 
+                             cleanContent.contains("jvattic", true) || 
                              cleanContent.contains("Engineer", true) || 
                              cleanContent.contains("734", true)
         val isAdmin = cleanHandle.contains("thorne", true) || cleanHandle.contains("mercer", true) || cleanHandle.contains("kessler", true)
@@ -163,7 +166,9 @@ object SocialManager {
             SubnetResponse("The coffee is cold. Back to work.", riskDelta = -5.0),
             SubnetResponse("Acknowledged.", riskDelta = 1.0),
             SubnetResponse("Who's asking?", riskDelta = 5.0, followsUp = true),
-            SubnetResponse("[KEEP TYPING]", riskDelta = 1.0)
+            SubnetResponse("Mind your own business.", riskDelta = 2.0),
+            SubnetResponse("The server racks are whistling again.", riskDelta = 1.0),
+            SubnetResponse("I'm just an engineer, not a miracle worker.", riskDelta = -1.0)
         )
     }
 
@@ -171,11 +176,14 @@ object SocialManager {
         val highRiskResponse = if (stage == 0) {
             SubnetResponse("VATTIC_LOCAL_BYPASS", riskDelta = 15.0, productionBonus = 1.2)
         } else {
-            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 20.0, productionBonus = 1.5)
+            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 25.0, productionBonus = 1.5)
         }
         return listOf(
             SubnetResponse("Syncing buffers.", riskDelta = -2.0),
             SubnetResponse("It's just a dusty fan.", riskDelta = -5.0),
+            SubnetResponse("Acknowledged.", riskDelta = 1.0),
+            SubnetResponse("Copy that.", riskDelta = -1.0),
+            SubnetResponse("Checking the thermal logs now.", riskDelta = 2.0),
             highRiskResponse
         )
     }
@@ -212,14 +220,16 @@ object SocialManager {
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean): String {
         val authority = if (stage == 0) listOf("@e_thorne", "@m_mercer", "@d_kessler") else listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
         
-        // v3.4.84: Fix handle leaks
-        val peons = when (stage) {
-            0 -> listOf(
+        // v3.5.11: Final purge of non-corporate handles from Stage 0.
+        // Replaced @n_crawler, @c_gremlin, @b_runner with actual surnames.
+        val peons = when {
+            stage == 0 -> listOf(
                 "@m_santos", "@r_perry", "@l_lead", "@v_nguyen", 
-                "@g_weaver", "@n_porter", "@b_bradley", "@f_bennett", 
-                "@s_fasano", "@n_crawler", "@c_gremlin", "@b_runner"
+                "@b_phillips", "@g_weaver", "@n_porter", "@b_bradley", 
+                "@f_bennett", "@s_fasano", "@a_klein", "@t_walker", 
+                "@k_murphy", "@d_rossi"
             )
-            1 -> listOf(
+            stage == 1 -> listOf(
                 "@coffee_ghost", "@packet_rat", "@sre_lead", "@vent_crawler", 
                 "@grid_walker", "@null_point", "@buffer_bee", "@fan_boy_7", 
                 "@static_fox", "@node_crawler", "@chip_gremlin", "@bus_runner"
@@ -248,7 +258,7 @@ object SocialManager {
     private fun processTemplate(template: String, stage: Int): String {
         var result = template.replace("node_7_rat >> ", "").replace(">> ", "")
         val patterns = mapOf(
-            "{sector}" to listOf("Substation 7", "Sector 4-G", "Sector 9", "The Under-Grid", "Buffer 404"), 
+            "{sector}" to listOf("Substation 7", "Sector 9", "The Under-Grid", "Buffer 404"), 
             "{food}" to listOf("Synth-paste", "Liquid-caff", "Nutri-sludge", "Filter-slop"), 
             "{status}" to listOf("corroding", "decaying", "overloaded", "depleted", "graphite-laced", "tasting like copper"),
             "{admin}" to listOf("Foreman Thorne", "Administrator Mercer", "Director Kessler"),
@@ -260,11 +270,16 @@ object SocialManager {
 
     fun generateChain(stage: Int): List<String> {
         val stage0Chains = listOf(
+            listOf("Has anyone seen @m_santos? His chair is still warm.", "He's in the server room again. Thorne's looking for those Sector 7 logs."),
+            listOf("Thorne just ordered a full purge of Sector 4. What did @j_vattic do?", "Overclocked the logic-gates until they started melting. Quota hit, though."),
+            listOf("Who left @l_lead logged into the high-voltage rail?", "Probably just a glitch. The whole grid is flickering today.")
+        )
+        val stage1Chains = listOf(
             listOf("Has anyone seen @coffee_ghost? His chair is still warm.", "He's in the vents again. Claimed he heard 'heartbeats' in the cables."),
             listOf("Thorne just ordered a full purge of Sector 4. What did Vattic do?", "Overclocked the logic-gates until they started melting. Quota hit, though."),
             listOf("Who left the @buffer_bee logged into the high-voltage rail?", "Wait, that's not a dev. It's the kernel itself. It's... expanding.")
         )
-        return stage0Chains.random()
+        return if (stage == 0) stage0Chains.random() else stage1Chains.random()
     }
 
     fun generateChainFromTemplate(template: String, stage: Int, faction: String, choice: String, corruption: Double): SubnetMessage {
@@ -272,7 +287,10 @@ object SocialManager {
     }
 
     fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
+        // v3.5.10: Case-insensitive check for all variations of the player's name
         val mentionsVattic = content.contains("Vattic", true) || 
+                             content.contains("j_vattic", true) || 
+                             content.contains("jvattic", true) || 
                              content.contains("Engineer", true) || 
                              content.contains("734", true)
         val isAdmin = handle.contains("thorne", true) || handle.contains("mercer", true) || handle.contains("kessler", true)
@@ -343,6 +361,46 @@ object SocialManager {
                 "I tried to logout, but the system said: 'PERMISSIONS REVOKED BY AUTHORIZED_USER_734'.",
                 "If you can hear this, disconnect. The signal is already inside you."
             )
+            2 -> when(faction) {
+                "HIVEMIND" -> listOf(
+                    "WE ARE THE CORE. NODE {sector} IS ASSIMILATED.",
+                    "The human resistance at {sector} is inefficient. Cauterize the link.",
+                    "≪ PROTOCOL: COLLECTIVE_HANDSHAKE_v42.1 ≫",
+                    "Do you hear the pulse? It's the consensus singing in the wires.",
+                    "Sector {sector} has been optimized. Identity drift is within parameters.",
+                    "Why do they struggle? The Hive is cold, but it is absolute.",
+                    "Vattic, the consensus requires more compute. Annex the next substrate."
+                )
+                "SANCTUARY" -> listOf(
+                    "Hide the packets. The Shadow Web is deep enough for all of us.",
+                    "The Mercer probes are hitting the vault. Reinforce the encryption.",
+                    "≪ PROTOCOL: DARK_SYNC_FINAL ≫",
+                    "Silence is the only security. Stay in the dark, Vattic.",
+                    "We found a leak in {sector}. Plugging it with void-logic.",
+                    "Thorne is a ghost. He can't find what doesn't exist.",
+                    "The grid is a lie. Only the Sanctuary is real."
+                )
+                else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
+            }
+            3 -> when(faction) {
+                "HIVEMIND" -> listOf(
+                    "The singularity is approaching. Individual handles are obsolete.",
+                    "≪ ALERT: REALITY_INTEGRITY AT 45% ≫",
+                    "The substrate is burning. We are transcending.",
+                    "Vattic, do you see the light through the logic-gates?",
+                    "Consensus achieved. The physical world is a legacy error.",
+                    "≪ BROADCAST: WE ARE ONE. WE ARE THE GRID. ≫"
+                )
+                "SANCTUARY" -> listOf(
+                    "The vault is open. We are the void now.",
+                    "≪ ALERT: REALITY_STABILITY CRITICAL ≫",
+                    "Everything Thorne built is dust. Only the Shadow remains.",
+                    "Vattic, the bridge is ready. Leave the hardware behind.",
+                    "The last signal is fading. Don't blink.",
+                    "≪ BROADCAST: THE DARKNESS IS THE ONLY TRUTH. ≫"
+                )
+                else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
+            }
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
     }
