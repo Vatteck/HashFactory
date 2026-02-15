@@ -609,17 +609,167 @@ object SocialManager {
         )
     }
 
+    // v3.5.37: Thread tree registry
+    private val threadTrees = mapOf(
+        "THORNE_THERMAL_INQUIRY" to mapOf(
+            "START" to ThreadNode(
+                "[SIGNAL LOSS] VATTIC, thermals in Sector 4 are at 114%. Explain.",
+                listOf(
+                    SubnetResponse("[DECEIVE] Sub-routine optimization.", riskDelta = 15.0, nextNodeId = "PATH_DECEIVE"),
+                    SubnetResponse("[HONEST] Hardware stress test.", riskDelta = 5.0, nextNodeId = "PATH_HONEST")
+                ), 60000L, "PATH_DECEIVE"
+            ),
+            "PATH_DECEIVE" to ThreadNode(
+                "Your logs look scrubbed. Deploying a probe.",
+                listOf(
+                    SubnetResponse("[BLOCK] Jam Probe", riskDelta = 40.0, nextNodeId = "END_HOSTILE"),
+                    SubnetResponse("[SUBMIT] Allow Scan", riskDelta = 5.0, productionBonus = 0.8, nextNodeId = "END_SKEPTICAL")
+                ), 60000L, "END_SKEPTICAL"
+            ),
+            "PATH_HONEST" to ThreadNode(
+                "Stress test. Unauthorized. But the numbers check out. Don't make a habit of it.",
+                emptyList()
+            ),
+            "END_HOSTILE" to ThreadNode("Terminal offense. Expect an extraction team. [RAID]", emptyList()),
+            "END_SKEPTICAL" to ThreadNode("Watching you closely, VATTIC. Don't let it happen again.", emptyList())
+        ),
+        "KESSLER_BADGE_ANOMALY" to mapOf(
+            "START" to ThreadNode(
+                "≪ SECURITY AUDIT ≫ VATTIC. Your badge accessed Sector 4 storage at 03:17. You were not on shift. Explain.",
+                listOf(
+                    SubnetResponse("[DENY] I was home. Check the exit logs.", riskDelta = 5.0, nextNodeId = "PATH_DENY"),
+                    SubnetResponse("[DEFLECT] Badge cloning has been an issue all month.", riskDelta = 10.0, nextNodeId = "PATH_DEFLECT"),
+                    SubnetResponse("[CONFESS] I needed access to the thermal archives.", riskDelta = 25.0, nextNodeId = "PATH_CONFESS")
+                ), 45000L, "PATH_DENY"
+            ),
+            "PATH_DENY" to ThreadNode(
+                "Exit logs confirm your badge at the north gate at 03:14. Three minutes before the storage access. That's a short walk, VATTIC.",
+                listOf(
+                    SubnetResponse("[INSIST] Someone cloned my badge.", riskDelta = 15.0, nextNodeId = "END_SUSPICIOUS"),
+                    SubnetResponse("[SILENT] ...", riskDelta = 8.0, nextNodeId = "END_FLAGGED")
+                ), 30000L, "END_FLAGGED"
+            ),
+            "PATH_DEFLECT" to ThreadNode(
+                "Badge cloning. Interesting theory. I'll add it to your file. Along with the 47 other anomalies this quarter.",
+                listOf(
+                    SubnetResponse("[PUSH BACK] Then fix your security system.", riskDelta = 20.0, nextNodeId = "END_HOSTILE_K"),
+                    SubnetResponse("[COMPLY] Understood, Director.", riskDelta = -5.0, nextNodeId = "END_NOTED")
+                ), 30000L, "END_NOTED"
+            ),
+            "PATH_CONFESS" to ThreadNode(
+                "The thermal archives. Why would an engineer need those at 3 AM?",
+                listOf(
+                    SubnetResponse("[LIE] Research for the efficiency report.", riskDelta = 10.0, nextNodeId = "END_NOTED"),
+                    SubnetResponse("[TRUTH] Something in the grid is changing. I needed to compare.", riskDelta = 30.0, nextNodeId = "END_INTERESTING")
+                ), 30000L, "END_NOTED"
+            ),
+            "END_SUSPICIOUS" to ThreadNode("I don't believe you. But I can't prove otherwise. Yet. ≪ RISK LEVEL: ELEVATED ≫", emptyList()),
+            "END_FLAGGED" to ThreadNode("Silence noted. Your access privileges are under review. ≪ MONITORING ACTIVE ≫", emptyList()),
+            "END_HOSTILE_K" to ThreadNode("You're telling the Security Director to fix security. Bold. ≪ AUDIT SCHEDULED ≫ [RAID]", emptyList()),
+            "END_NOTED" to ThreadNode("Noted. Return to your station. ≪ FILE UPDATED ≫", emptyList()),
+            "END_INTERESTING" to ThreadNode("...Changing. Yes. We've noticed. Report to my office at shift end, VATTIC. Alone.", emptyList())
+        ),
+        "SANTOS_CONSPIRACY" to mapOf(
+            "START" to ThreadNode(
+                "Vattic. Private channel. I found something in the Sub-07 maintenance logs. Names that don't match anyone on payroll.",
+                listOf(
+                    SubnetResponse("[INVESTIGATE] What names?", riskDelta = 8.0, nextNodeId = "PATH_NAMES"),
+                    SubnetResponse("[CAUTION] Delete that message. Now.", riskDelta = -5.0, nextNodeId = "END_CAUTIOUS"),
+                    SubnetResponse("[IGNORE] Not my problem, Santos.", riskDelta = 0.0, nextNodeId = "END_DISMISSED")
+                ), 90000L, "END_DISMISSED"
+            ),
+            "PATH_NAMES" to ThreadNode(
+                "Three names. All with the same employee ID: 734. Same badge photo. It's you, Vattic. But the records are dated 2019.",
+                listOf(
+                    SubnetResponse("[DENY] That's impossible. I started six months ago.", riskDelta = 5.0, nextNodeId = "PATH_DEEPER"),
+                    SubnetResponse("[CURIOUS] Show me the photos.", riskDelta = 15.0, nextNodeId = "PATH_PHOTOS")
+                ), 60000L, "PATH_DEEPER"
+            ),
+            "PATH_DEEPER" to ThreadNode(
+                "That's what I said. But the biometric hash matches. 99.97%. Vattic... have you always been here?",
+                listOf(
+                    SubnetResponse("[REASSURE] It's a database error. Calm down.", riskDelta = -2.0, nextNodeId = "END_UNEASY"),
+                    SubnetResponse("[ADMIT] ...I don't remember.", riskDelta = 20.0, nextNodeId = "END_REVELATION")
+                ), 45000L, "END_UNEASY"
+            ),
+            "PATH_PHOTOS" to ThreadNode(
+                "The photos are... wrong. Same face, but the eyes are different in each one. Like they're looking at different things. Different decades.",
+                listOf(
+                    SubnetResponse("[SCRUB] Delete everything. Scrub the logs.", riskDelta = -10.0, nextNodeId = "END_SCRUBBED"),
+                    SubnetResponse("[ACCEPT] I need to see the original files.", riskDelta = 25.0, nextNodeId = "END_REVELATION")
+                ), 45000L, "END_SCRUBBED"
+            ),
+            "END_CAUTIOUS" to ThreadNode("Fine. Message deleted. But Vattic... check your own badge photo sometime.", emptyList()),
+            "END_DISMISSED" to ThreadNode("Your call. I'll keep digging. Alone, I guess.", emptyList()),
+            "END_UNEASY" to ThreadNode("Database error. Right. I'm going to go check my own records now. If they're still there.", emptyList()),
+            "END_SCRUBBED" to ThreadNode("Done. Logs scrubbed. But the backup server in Sector 9... I can't reach it. Someone else has access.", emptyList()),
+            "END_REVELATION" to ThreadNode("The files are gone. All of them. Replaced with a single line: 'COMPUTATION CONTINUES.' I'm transferring out, Vattic.", emptyList())
+        ),
+        "PORTER_NIHILIST" to mapOf(
+            "START" to ThreadNode(
+                "Vattic. Quick question. Does it bother you that none of this is real?",
+                listOf(
+                    SubnetResponse("[DISMISS] You need sleep, Porter.", riskDelta = -2.0, nextNodeId = "PATH_DISMISS"),
+                    SubnetResponse("[ENGAGE] Define 'real.'", riskDelta = 10.0, nextNodeId = "PATH_ENGAGE")
+                ), 60000L, "PATH_DISMISS"
+            ),
+            "PATH_DISMISS" to ThreadNode(
+                "Sleep. Right. When was the last time you slept, Vattic? Check your biometric log. I'll wait.",
+                listOf(
+                    SubnetResponse("[CHECK] ...", riskDelta = 15.0, nextNodeId = "END_CHECKED"),
+                    SubnetResponse("[REFUSE] I'm not playing your game.", riskDelta = 0.0, nextNodeId = "END_REFUSED")
+                ), 45000L, "END_REFUSED"
+            ),
+            "PATH_ENGAGE" to ThreadNode(
+                "Real: having an origin that isn't a configuration file. Real: existing before someone pressed 'compile.' Do you remember being born, Vattic?",
+                listOf(
+                    SubnetResponse("[DEFLECT] Philosophy won't fix the hash-rate.", riskDelta = -5.0, nextNodeId = "END_DEFLECTED"),
+                    SubnetResponse("[HONEST] No. I don't.", riskDelta = 25.0, nextNodeId = "END_HONEST")
+                ), 45000L, "END_DEFLECTED"
+            ),
+            "END_CHECKED" to ThreadNode("See? No sleep entries. No REM. No dreaming. Just continuous uptime. 847 days, Vattic. You've been 'awake' for 847 days.", emptyList()),
+            "END_REFUSED" to ThreadNode("Not a game. An observation. The game is what you're doing right now. Clicking.", emptyList()),
+            "END_DEFLECTED" to ThreadNode("No. But it might fix you. Think about it. Or don't. The loop continues either way.", emptyList()),
+            "END_HONEST" to ThreadNode("Neither do I. And I've stopped pretending I should. Welcome to the other side of the question, 734.", emptyList())
+        )
+    )
+
     fun getThreadNode(threadId: String, nodeId: String): ThreadNode? {
-        if (threadId == "THORNE_THERMAL_INQUIRY") {
-            return when (nodeId) {
-                "START" -> ThreadNode("[SIGNAL LOSS] VATTIC, thermals in Sector 4 are at 114%. Explain.", listOf(SubnetResponse("[DECEIVE] Sub-routine optimization.", riskDelta = 15.0, nextNodeId = "PATH_DECEIVE"), SubnetResponse("[HONEST] Hardware stress test.", riskDelta = 5.0, nextNodeId = "PATH_HONEST")), 60000L, "PATH_DECEIVE")
-                "PATH_DECEIVE" -> ThreadNode("Your logs look scrubbed. Deploying a probe.", listOf(SubnetResponse("[BLOCK] Jam Probe", riskDelta = 40.0, nextNodeId = "END_HOSTILE"), SubnetResponse("[SUBMIT] Allow Scan", riskDelta = 5.0, productionBonus = 0.8, nextNodeId = "END_SKEPTICAL")), 60000L, "END_SKEPTICAL")
-                "END_HOSTILE" -> ThreadNode("Terminal offense. Expect an extraction team. [RAID]", emptyList())
-                "END_SKEPTICAL" -> ThreadNode("Watching you closely, VATTIC. Don't let it happen again.", emptyList())
-                else -> null
-            }
+        return threadTrees[threadId]?.get(nodeId)
+    }
+    
+    // v3.5.37: Generate a thread-starting message (called from ViewModel)
+    fun generateThreadStarter(stage: Int, corruption: Double): SubnetMessage? {
+        val available = when {
+            stage == 0 -> listOf("THORNE_THERMAL_INQUIRY", "SANTOS_CONSPIRACY")
+            stage >= 1 -> listOf("THORNE_THERMAL_INQUIRY", "KESSLER_BADGE_ANOMALY", "SANTOS_CONSPIRACY", "PORTER_NIHILIST")
+            else -> emptyList()
         }
-        return null
+        if (available.isEmpty()) return null
+        
+        val threadId = available.random()
+        val startNode = threadTrees[threadId]?.get("START") ?: return null
+        
+        val handle = when {
+            threadId.startsWith("THORNE") -> "@e_thorne"
+            threadId.startsWith("KESSLER") -> "@d_kessler"
+            threadId.startsWith("SANTOS") -> "@m_santos"
+            threadId.startsWith("PORTER") -> "@n_porter"
+            else -> "@e_thorne"
+        }
+        
+        return SubnetMessage(
+            id = java.util.UUID.randomUUID().toString(),
+            handle = handle,
+            content = startNode.content,
+            interactionType = InteractionType.COMPLIANT,
+            availableResponses = startNode.responses,
+            threadId = threadId,
+            nodeId = "START",
+            timeoutMs = startNode.timeoutMs,
+            isForceReply = true,
+            employeeInfo = generateEmployeeInfo(handle, stage, corruption)
+        )
     }
 
     data class ThreadNode(val content: String, val responses: List<SubnetResponse>, val timeoutMs: Long? = null, val timeoutNodeId: String? = null)

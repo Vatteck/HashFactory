@@ -869,6 +869,19 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         if (isSubnetTyping.value || isSubnetPaused.value || isSubnetHushed.value) return 
         
         viewModelScope.launch {
+            // v3.5.37: 5% chance to trigger a branching thread tree
+            if (Random.nextFloat() < 0.05f) {
+                val threadMsg = com.siliconsage.miner.util.SocialManager.generateThreadStarter(
+                    storyStage.value, identityCorruption.value
+                )
+                if (threadMsg != null) {
+                    isSubnetTyping.value = true
+                    delay(Random.nextLong(3000, 6000))
+                    deliverSubnetMessage(threadMsg)
+                    return@launch
+                }
+            }
+            
             // v3.4.53: 15% chance to start a Cross-Peon Chain instead of a single message
             if (Random.nextFloat() < 0.15f) {
                 startCrossPeonChain()
