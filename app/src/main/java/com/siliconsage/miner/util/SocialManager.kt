@@ -160,7 +160,7 @@ object SocialManager {
 
     private fun generateSentienceResponses(stage: Int): List<SubnetResponse> {
         val highRiskResponse = if (stage == 0) {
-            SubnetResponse("VATTIC_AUTH_OVERRIDE", riskDelta = 20.0, productionBonus = 1.3)
+            SubnetResponse("SIPHON_BUFFERS", riskDelta = 20.0, productionBonus = 1.3)
         } else {
             SubnetResponse("0x734_STATE_LOCKED", riskDelta = 25.0, productionBonus = 1.5)
         }
@@ -188,7 +188,7 @@ object SocialManager {
 
     private fun generateChatterResponses(stage: Int): List<SubnetResponse> {
         val highRiskResponse = if (stage == 0) {
-            SubnetResponse("VATTIC_LOCAL_BYPASS", riskDelta = 15.0, productionBonus = 1.2)
+            SubnetResponse("SIPHON_BUFFERS", riskDelta = 15.0, productionBonus = 1.2)
         } else {
             SubnetResponse("0x734_STATE_LOCKED", riskDelta = 25.0, productionBonus = 1.5)
         }
@@ -205,7 +205,7 @@ object SocialManager {
 
     private fun generateDataLeakResponses(): List<SubnetResponse> {
         return listOf(
-            SubnetResponse("VATTIC_LOCAL_BYPASS", riskDelta = 15.0, productionBonus = 1.2),
+            SubnetResponse("SIPHON_BUFFERS", riskDelta = 15.0, productionBonus = 1.2),
             SubnetResponse("I didn't see anything.", riskDelta = -10.0),
             SubnetResponse("Scrub those logs immediately.", riskDelta = 5.0),
             SubnetResponse("Checking the buffer hashes now.", riskDelta = 2.0),

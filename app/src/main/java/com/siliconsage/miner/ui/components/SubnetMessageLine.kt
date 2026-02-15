@@ -135,7 +135,10 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
             val corruption by viewModel.identityCorruption.collectAsState()
             
             Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 message.availableResponses.forEach { response ->
                     // v3.4.61: Button Drift (Gaslight) Effect
                     var buttonText by remember { mutableStateOf(response.text) }
@@ -155,8 +158,8 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
                     Button(
                         onClick = { viewModel.onSubnetInteraction(message.id, response.text) },
-                        modifier = Modifier.height(28.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                        modifier = Modifier.weight(1f).heightIn(min = 28.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue.copy(alpha = 0.2f) else color.copy(alpha = 0.1f), 
                             contentColor = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue else color
@@ -164,12 +167,34 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                         shape = RoundedCornerShape(2.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, (if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue else color).copy(alpha = 0.5f))
                     ) {
-                        Text(
-                            text = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) buttonText else "≫ $buttonText", 
-                            fontSize = 10.sp, 
-                            fontWeight = FontWeight.ExtraBold, 
-                            fontFamily = FontFamily.Monospace
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) buttonText else "≫ $buttonText", 
+                                fontSize = 10.sp, 
+                                fontWeight = FontWeight.ExtraBold, 
+                                fontFamily = FontFamily.Monospace,
+                                lineHeight = 12.sp,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            
+                            // v3.5.25: Visual Hints for Choice Effects
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (response.productionBonus > 1.0) {
+                                    Text(" ⚡", color = com.siliconsage.miner.ui.theme.ElectricBlue, fontSize = 9.sp)
+                                }
+                                if (response.riskDelta > 0) {
+                                    Text(" ⚠️", color = com.siliconsage.miner.ui.theme.ErrorRed, fontSize = 9.sp)
+                                } else if (response.riskDelta < 0) {
+                                    Text(" 🛡️", color = color, fontSize = 9.sp)
+                                }
+                                if (response.followsUp) {
+                                    Text(" […]", color = Color.Gray, fontSize = 9.sp)
+                                }
+                            }
+                        }
                     }
                 }
             }
