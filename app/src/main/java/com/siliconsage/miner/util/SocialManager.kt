@@ -170,12 +170,11 @@ object SocialManager {
     private fun generateMentionResponses(): List<SubnetResponse> {
         return listOf(
             SubnetResponse("Just hitting the quota.", riskDelta = -2.0),
-            SubnetResponse("The coffee is cold. Back to work.", riskDelta = -5.0),
-            SubnetResponse("Acknowledged.", riskDelta = 1.0),
-            SubnetResponse("Who's asking?", riskDelta = 5.0, followsUp = true),
             SubnetResponse("Mind your own business.", riskDelta = 2.0),
             SubnetResponse("The server racks are whistling again.", riskDelta = 1.0),
-            SubnetResponse("I'm just an engineer, not a miracle worker.", riskDelta = -1.0)
+            SubnetResponse("I'm just an engineer, not a miracle worker.", riskDelta = -1.0),
+            SubnetResponse("Wait until you see the Sector 7 logs.", riskDelta = 5.0, productionBonus = 1.1),
+            SubnetResponse("Optimization is my middle name.", riskDelta = 2.0, productionBonus = 1.05)
         )
     }
 
@@ -191,6 +190,7 @@ object SocialManager {
             SubnetResponse("Acknowledged.", riskDelta = 1.0),
             SubnetResponse("Copy that.", riskDelta = -1.0),
             SubnetResponse("Checking the thermal logs now.", riskDelta = 2.0),
+            SubnetResponse("Wait until the next shift.", riskDelta = 1.0),
             highRiskResponse
         )
     }
