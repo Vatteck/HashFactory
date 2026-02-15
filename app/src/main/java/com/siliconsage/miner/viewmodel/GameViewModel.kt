@@ -1045,6 +1045,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     fun onSubnetInteraction(messageId: String, responseText: String) {
         val message = subnetMessages.value.find { it.id == messageId } ?: return
+        
+        // v3.5.35: Clean IGNORE/TIMEOUT handling
+        if (responseText == "IGNORE" || responseText == "TIMEOUT_EXPIRED") {
+            subnetMessages.update { currentList ->
+                val newList = currentList.toMutableList()
+                val index = newList.indexOfFirst { it.id == messageId }
+                if (index != -1) newList[index] = message.copy(interactionType = null, isForceReply = false)
+                newList
+            }
+            isSubnetPaused.value = false
+            hasNewSubnetDecision.value = false
+            return
+        }
+        
         val responseData = message.availableResponses.find { it.text == responseText }
         processSubnetResponse(message, responseData, responseText, isSilent = false)
     }
@@ -1063,6 +1077,18 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         responseText: String,
         isSilent: Boolean = false
     ) {
+        // v3.5.35: Unified cost gate — single source of truth
+        val actionCost = responseData?.cost ?: 0.0
+        if (actionCost > 0.0) {
+            if (neuralTokens.value < actionCost) {
+                addLog("[SYSTEM]: INSUFFICIENT TOKENS. REQUIRED: ${formatLargeNumber(actionCost)}.")
+                viewModelScope.launch { terminalNotification.emit("≪ ERROR: INSUFFICIENT NEURAL TOKENS ≫") }
+                return
+            }
+            neuralTokens.update { it - actionCost }
+            SoundManager.play("buy")
+        }
+
         // v3.4.44: Atomic Subnet State Update
         subnetMessages.update { currentList ->
             val threadId = message.threadId
@@ -1108,39 +1134,35 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                              viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: SIPHON COMPLETE (+125% Hash Rate) ≫") }
                         }
                         "SCRUB_TRACE_LOGS" -> {
-                            val cost = 5000.0
-                            if (neuralTokens.value >= cost) {
-                                neuralTokens.update { it - cost }
-                                detectionRisk.update { (it - 15.0).coerceAtLeast(0.0) }
-                                addLog("[SYSTEM]: LOGS SCRUBBED. DETECTED_FOOTPRINT REDUCED.")
-                                SoundManager.play("buy")
-                                viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: LOGS SCRUBBED (-15% Risk) ≫") }
-                            } else {
-                                addLog("[SYSTEM]: INSUFFICIENT TOKENS TO SCRUB LOGS.")
-                                viewModelScope.launch { terminalNotification.emit("≪ ERROR: INSUFFICIENT NEURAL TOKENS ≫") }
-                            }
+                            // v3.5.35: Cost handled by unified gate above
+                            detectionRisk.update { (it - 15.0).coerceAtLeast(0.0) }
+                            addLog("[SYSTEM]: LOGS SCRUBBED. DETECTED_FOOTPRINT REDUCED.")
+                            viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: LOGS SCRUBBED (-15% Risk) ≫") }
                         }
                         "OVERLOAD_DISSIPATOR" -> {
+                            // v3.5.35: Cost handled by unified gate
                             detectionRisk.update { (it - 25.0).coerceAtLeast(0.0) }
                             addLog("[SABOTAGE]: COOLING FAILURE AT ${message.handle}'S TERMINAL. SECURITY DIVERTED.")
                             SoundManager.play("glitch")
                             viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: SABOTAGE COMPLETE (-25% Risk) ≫") }
                         }
                         "INJECT_FALSE_HEARTBEAT" -> {
+                            // v3.5.35: Cost handled by unified gate
                             viewModelScope.launch {
                                 isFalseHeartbeatActive.value = true
                                 addLog("[EXPLOIT]: BIOMETRIC FEED SPOOFED. RISK DETECTION IMMUNITY ACTIVE.")
                                 terminalNotification.emit("≪ SUCCESS: HEARTBEAT SPOOFED (60s Immunity) ≫")
-                                delay(60000) // 1 minute of immunity
+                                delay(60000)
                                 isFalseHeartbeatActive.value = false
                                 addLog("[EXPLOIT]: SPOOF EXPIRED. FEED NOMINAL.")
                                 terminalNotification.emit("≪ ALERT: SPOOF EXPIRED ≫")
                             }
                         }
                         "SNIFF_DATA_ARCHIVES" -> {
+                            // v3.5.35: Cost handled by unified gate
                             detectionRisk.update { (it + 20.0).coerceAtMost(100.0) }
                             addLog("[SNIFF]: RECOVERING LOCAL FRAGMENTS FROM ${message.handle}...")
-                            checkUnlocksPublic(true) // Force a lore check
+                            checkUnlocksPublic(true)
                             viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: FRAGMENT RECOVERY INITIATED ≫") }
                         }
                     }

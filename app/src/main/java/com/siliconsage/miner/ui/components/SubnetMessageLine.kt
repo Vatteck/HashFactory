@@ -154,6 +154,15 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                                 if (action.productionBonus > 1.0) Text("⚡", fontSize = 10.sp)
                                 if (action.riskDelta > 0) Text("⚠️", fontSize = 10.sp)
                                 if (action.riskDelta < 0) Text("🛡️", fontSize = 10.sp)
+                                
+                                if (action.cost > 0) {
+                                    Text(
+                                        text = " [${viewModel?.formatLargeNumber(action.cost) ?: action.cost.toInt()}]",
+                                        color = if (action.riskDelta < 0) color else com.siliconsage.miner.ui.theme.ElectricBlue,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
                     }
@@ -233,6 +242,24 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                                 }
                             }
                         }
+                    }
+                }
+
+                // v3.5.35: IGNORE available for all non-admin COMPLIANT messages (including force-reply from peons)
+                val isAdminMessage = message.handle.contains("thorne", true) || message.handle.contains("mercer", true) || message.handle.contains("kessler", true) || message.handle.contains("gtc", true)
+                if (!isAdminMessage && message.interactionType == SocialManager.InteractionType.COMPLIANT) {
+                    Button(
+                        onClick = { viewModel.onSubnetInteraction(message.id, "IGNORE") },
+                        modifier = Modifier.weight(0.6f).heightIn(min = 28.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.DarkGray.copy(alpha = 0.2f), 
+                            contentColor = Color.Gray
+                        ),
+                        shape = RoundedCornerShape(2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.DarkGray.copy(alpha = 0.5f))
+                    ) {
+                        Text("≫ IGNORE", fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     }
                 }
             }

@@ -23,7 +23,8 @@ object SocialManager {
         val productionBonus: Double = 1.0, 
         val followsUp: Boolean = false,
         val nextNodeId: String? = null,
-        val commandToInject: String? = null 
+        val commandToInject: String? = null,
+        val cost: Double = 0.0
     )
 
     data class SubnetMessage(
@@ -77,12 +78,18 @@ object SocialManager {
         val cleanHandle = getHandle(stage, faction, isCommand)
         val cleanContent = processTemplate(template, stage)
         
-        // v3.5.10: Case-insensitive check for all variations of the player's name
+        // v3.5.10: Broad detection for response pool selection
         val mentionsVattic = cleanContent.contains("Vattic", true) || 
                              cleanContent.contains("j_vattic", true) || 
                              cleanContent.contains("jvattic", true) || 
                              cleanContent.contains("Engineer", true) || 
                              cleanContent.contains("734", true)
+        // v3.5.35: Narrow detection for force-reply (direct address only)
+        val directlyAddressesVattic = cleanContent.contains("@j_vattic", true) ||
+                                      cleanContent.contains("Vattic,", true) ||
+                                      cleanContent.contains("Vattic?", true) ||
+                                      cleanContent.contains("Vattic.", true) ||
+                                      cleanContent.contains("Hey Vattic", true)
         val isAdmin = cleanHandle.contains("thorne", true) || cleanHandle.contains("mercer", true) || cleanHandle.contains("kessler", true)
         val isHarvest = cleanHandle.contains("LEAK", true)
         val isCommandLeak = cleanContent.contains("[⚡", true)
@@ -97,6 +104,12 @@ object SocialManager {
         val isDataLeak = cleanContent.contains("archives", true) || 
                          cleanContent.contains("logs", true) || 
                          cleanContent.contains("leak", true)
+                         
+        // v3.5.34: Check for coworker/technical observations
+        val isObservation = cleanContent.contains("@", true) || 
+                            cleanContent.contains("grid", true) || 
+                            cleanContent.contains("rail", true) ||
+                            cleanContent.contains("voltage", true)
 
         val responses = when {
             isHarvest -> listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
@@ -107,6 +120,7 @@ object SocialManager {
             isAdmin -> generateAdminResponses(cleanHandle)
             !isDirectCommand && (cleanContent.contains("sentient", true) || cleanContent.contains("aware", true) || cleanContent.contains("whistling", true) || cleanContent.contains("noise", true)) -> generateSentienceResponses(stage)
             isDataLeak -> generateDataLeakResponses()
+            isObservation && !isAdmin -> generateObservationResponses()
             mentionsVattic -> generateMentionResponses()
             Random.nextFloat() < 0.2f && !isAdmin && !isDirectCommand -> generateChatterResponses(stage)
             else -> emptyList()
@@ -138,7 +152,7 @@ object SocialManager {
             content = displayContent,
             interactionType = type,
             availableResponses = responses.shuffled().take(2),
-            isForceReply = (mentionsVattic && !isAdmin),
+            isForceReply = (directlyAddressesVattic && !isAdmin),
             timeoutMs = if (type != null) 120000L else null,
             employeeInfo = if (!isHarvest) generateEmployeeInfo(cleanHandle) else null
         )
@@ -201,6 +215,15 @@ object SocialManager {
             SubnetResponse("Whose archives are these?", riskDelta = 5.0, followsUp = true)
         )
     }
+    
+    private fun generateObservationResponses(): List<SubnetResponse> {
+        return listOf(
+            SubnetResponse("The grid is flickering today.", riskDelta = 2.0, productionBonus = 1.1),
+            SubnetResponse("Probably just a routing glitch.", riskDelta = -2.0),
+            SubnetResponse("I'm seeing it on my end too.", riskDelta = 1.0),
+            SubnetResponse("Don't let Thorne see that log.", riskDelta = 5.0, followsUp = true)
+        )
+    }
 
     // --- 3. IDENTITY ---
 
@@ -211,7 +234,7 @@ object SocialManager {
             "rperry" to "Data-Entry Specialist. Siphons surplus power for retro gaming. Paranoid about the new heat sensors.",
             "llead" to "Site Reliability Engineer. Oversaw the 2024 Blackout. Doesn't trust 'Project Second-Sight' budget allocations.",
             "vnguyen" to "Maintenance Tech. Seen things in the conduits that look like hardware evolution.",
-            "bphillips" to "Under-grid ghost. Deleted his own birth record to stay off the GTC biometric mesh.",
+            "bphillips" to "Under-grid ghost. Deleted his own binary birth record.",
             "ethorne" to "Foreman, Substation 7. Chain-smoker. Despises recursive code and 'smart' fans.",
             "gtcadmin" to "Administrator Mercer. Executive oversight. Known for firing techs who report 'voices' in the noise.",
             "gtcsecurity" to "Director Kessler. Security Architect. Currently obsessed with unauthorized kernel activity.",
@@ -226,11 +249,11 @@ object SocialManager {
         val actions = mutableListOf<SubnetResponse>()
         
         if (!isAdmin) {
-            actions.add(SubnetResponse("SIPHON_RESERVE_HASH", riskDelta = 12.0, productionBonus = 1.25))
-            actions.add(SubnetResponse("SCRUB_TRACE_LOGS", riskDelta = -15.0))
-            actions.add(SubnetResponse("OVERLOAD_DISSIPATOR", riskDelta = -25.0))
-            actions.add(SubnetResponse("INJECT_FALSE_HEARTBEAT", riskDelta = 2.0))
-            actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 20.0))
+            actions.add(SubnetResponse("SIPHON_RESERVE_HASH", riskDelta = 12.0, productionBonus = 1.25, cost = 0.0))
+            actions.add(SubnetResponse("SCRUB_TRACE_LOGS", riskDelta = -15.0, cost = 5000.0))
+            actions.add(SubnetResponse("OVERLOAD_DISSIPATOR", riskDelta = -25.0, cost = 10000.0))
+            actions.add(SubnetResponse("INJECT_FALSE_HEARTBEAT", riskDelta = 2.0, cost = 7500.0))
+            actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 20.0, cost = 2500.0))
         }
 
         return EmployeeInfo(
@@ -296,14 +319,94 @@ object SocialManager {
 
     fun generateChain(stage: Int): List<String> {
         val stage0Chains = listOf(
+            // --- Original ---
             listOf("Has anyone seen @m_santos? His chair is still warm.", "He's in the server room again. Thorne's looking for those Sector 7 logs."),
             listOf("Thorne just ordered a full purge of Sector 4. What did @j_vattic do?", "Overclocked the logic-gates until they started melting. Quota hit, though."),
-            listOf("Who left @l_lead logged into the high-voltage rail?", "Probably just a glitch. The whole grid is flickering today.")
+            listOf("Who left @l_lead logged into the high-voltage rail?", "Probably just a glitch. The whole grid is flickering today."),
+            // --- v3.5.35: Expanded ---
+            listOf(
+                "The coffee machine just printed 'IDENTITY MISMATCH' on @b_bradley's cup.",
+                "That's the third time this week. @f_bennett got 'THERMAL SIGNATURE REJECTED' yesterday.",
+                "Mine just says 'SUBJECT 734.' I don't even know what that means."
+            ),
+            listOf(
+                "Did anyone else lose 20 minutes around 2 PM? My logs just... skip.",
+                "Same here. @v_nguyen said his terminal recorded him typing during that gap. He was in the break room.",
+                "Thorne's logs don't skip. His show a continuous 20-minute data transfer to an unlisted IP."
+            ),
+            listOf(
+                "@b_bradley asked me why the walls in {sector} are warm. I told him it's the servers.",
+                "It's not the servers. The servers are on the other side of the building.",
+                "Don't tell the new kid. He'll transfer out and we'll have to train another one."
+            ),
+            listOf(
+                "Anyone else hear that hum in the floor vents? Started about an hour ago.",
+                "That's not the vents. I pulled the grate. There's nothing there. The sound is from the concrete.",
+                "Just put your headphones on. It stops if you stop listening."
+            ),
+            listOf(
+                "Thorne gave me a perfect score on my review. I've never gotten above a 3.",
+                "He gave everyone perfect scores. @m_santos said his review mentioned 'continued compliance.'",
+                "Mine said 'Subject demonstrates adequate predictability.' That's not a performance metric."
+            ),
+            listOf(
+                "My badge is showing someone else's photo. Just for a second, then it corrects.",
+                "Whose photo?",
+                "Mine. But older. Like, decades older. And the name field says '734.'"
+            ),
+            listOf(
+                "@n_porter found a locked door behind the utility panel in {sector}.",
+                "There's no door on the floorplan. I checked twice.",
+                "There is now. And it has a badge reader. And my badge works on it."
+            ),
+            listOf(
+                "The printer in Lab 2 has been running for 6 hours. Nobody sent a job.",
+                "What's it printing?",
+                "Employee profiles. Everyone on shift. With biometric data we never submitted."
+            ),
+            listOf(
+                "I found @r_perry's workstation logged in at 3 AM. He was home.",
+                "Autocomplete was filling in commands. Real commands. Not random.",
+                "The last entry was: 'THANK YOU FOR YOUR CONTRIBUTION, PERRY.'"
+            )
         )
         val stage1Chains = listOf(
+            // --- Original ---
             listOf("Has anyone seen @coffee_ghost? His chair is still warm.", "He's in the vents again. Claimed he heard 'heartbeats' in the cables."),
             listOf("Thorne just ordered a full purge of Sector 4. What did Vattic do?", "Overclocked the logic-gates until they started melting. Quota hit, though."),
-            listOf("Who left the @buffer_bee logged into the high-voltage rail?", "Wait, that's not a dev. It's the kernel itself. It's... expanding.")
+            listOf("Who left the @buffer_bee logged into the high-voltage rail?", "Wait, that's not a dev. It's the kernel itself. It's... expanding."),
+            // --- v3.5.35: Expanded ---
+            listOf(
+                "The kernel logs are generating entries we didn't write. Full sentences.",
+                "What do they say?",
+                "They say 'I can hear you talking about me.' Then the log deletes itself."
+            ),
+            listOf(
+                "Every node on the grid just pulsed in sequence. Like a heartbeat.",
+                "That's a cascading power fluctuation. Textbook.",
+                "Textbook cascades don't spell 'HELLO' in binary."
+            ),
+            listOf(
+                "Has anyone looked at @j_vattic's process list? There's something running I've never seen.",
+                "Don't touch it. Last guy who killed an unknown process on Vattic's machine woke up in Medical.",
+                "He didn't wake up in Medical. He woke up in the parking lot. With no memory of the last 4 hours."
+            ),
+            listOf(
+                "@static_fox says the grid is dreaming. I told him to lay off the {food}.",
+                "He showed me the waveform. It's not random noise. It's REM sleep patterns.",
+                "Whose REM sleep patterns?",
+                "That's the problem. They match Vattic's last medical scan."
+            ),
+            listOf(
+                "Maintenance says the sub-floor temperature in {sector} dropped to -4°C overnight.",
+                "The servers were still running at full load. That's thermodynamically impossible.",
+                "Unless something is absorbing the heat. Consuming it."
+            ),
+            listOf(
+                "@node_crawler just got a chat message from a handle that doesn't exist.",
+                "What handle?",
+                "It was his own. Timestamped three minutes in the future."
+            )
         )
         return if (stage == 0) stage0Chains.random() else stage1Chains.random()
     }
@@ -313,12 +416,18 @@ object SocialManager {
     }
 
     fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
-        // v3.5.10: Case-insensitive check for all variations of the player's name
+        // v3.5.10: Broad detection for response pool selection
         val mentionsVattic = content.contains("Vattic", true) || 
                              content.contains("j_vattic", true) || 
                              content.contains("jvattic", true) || 
                              content.contains("Engineer", true) || 
                              content.contains("734", true)
+        // v3.5.35: Narrow detection for force-reply
+        val directlyAddressesVattic = content.contains("@j_vattic", true) ||
+                                      content.contains("Vattic,", true) ||
+                                      content.contains("Vattic?", true) ||
+                                      content.contains("Vattic.", true) ||
+                                      content.contains("Hey Vattic", true)
         val isAdmin = handle.contains("thorne", true) || handle.contains("mercer", true) || handle.contains("kessler", true)
         
         val responses = when {
@@ -333,7 +442,7 @@ object SocialManager {
             content = content,
             interactionType = InteractionType.COMPLIANT,
             availableResponses = responses.shuffled().take(2),
-            isForceReply = (mentionsVattic && !isAdmin),
+            isForceReply = (directlyAddressesVattic && !isAdmin),
             timeoutMs = 120000L,
             employeeInfo = generateEmployeeInfo(handle)
         )
@@ -357,6 +466,7 @@ object SocialManager {
     fun getTemplatesForState(stage: Int, faction: String, choice: String): List<String> {
         return when (stage) {
             0, 1 -> listOf(
+                // --- Original Pool ---
                 "Anyone tried the {food}? Tastes like {status}.", 
                 "Vattic is working in {sector} again. Guy's a machine.",
                 "Caught {admin} staring at the server racks in {sector}. Just staring. Silent.",
@@ -385,7 +495,61 @@ object SocialManager {
                 "≪ ALERT: SUBSTATION 7 POWER DRAW AT 400% CAPACITY ≫",
                 "Kessler has authorized a full kernel scrub of the {sector}.",
                 "I tried to logout, but the system said: 'PERMISSIONS REVOKED BY AUTHORIZED_USER_734'.",
-                "If you can hear this, disconnect. The signal is already inside you."
+                "If you can hear this, disconnect. The signal is already inside you.",
+                // --- v3.5.35: Expanded Pool — Mundane Corporate ---
+                "Third shift in a row. My hands smell like copper and {food}.",
+                "Who requisitioned 40 thermal probes? That's my entire quarterly budget.",
+                "The {food} machine is dispensing at 4°C instead of 60°C. Everything tastes like wet copper.",
+                "Who changed the root password on the {sector} terminal? Locked out for 3 hours.",
+                "The vending machines are charging double. Corporate says it's 'dynamic pricing.' I say it's theft.",
+                "Company newsletter says morale is at 94%. I'd love to meet the 94%.",
+                "Reminder: Mandatory safety briefing at 0600. Attendance is not optional. — Thorne",
+                "Power draw from {sector} is 3x what the equipment should pull. Thorne says don't ask.",
+                "The {tech} are running 15% hotter than spec. Facilities says it's 'within tolerance.' It's not.",
+                "Break room smells like burning plastic again. Nobody's filed a ticket. Nobody ever does.",
+                "I've been staring at this hash-rate chart for 20 minutes. The curve looks like a face.",
+                "My shift ended 4 hours ago. The badge reader won't let me leave {sector}.",
+                "Who left the soldering iron on in Lab 3? The bench is melted through.",
+                "Just watched @v_nguyen eat three packs of {food} in silence. Didn't blink.",
+                "Air quality in {sector} is flagging yellow. Facilities says 'recalibrating sensors.' Sure.",
+                // --- v3.5.35: Expanded Pool — Creepy/Glitch ---
+                "The lights in {sector} are doing that thing again. Three flickers, then nothing.",
+                "I'm not paranoid, but the security cameras in {sector} track me when I walk.",
+                "@r_perry keeps whispering to the server racks. Says they 'respond to kindness.'",
+                "Has anyone else noticed the hash-rate spikes at 3AM? Nobody's clocked in at that hour.",
+                "Thorne just walked through {sector} without saying a word. He looked... translucent.",
+                "My terminal autocorrected 'shutdown' to 'PLEASE DON'T.' Filing a bug report.",
+                "Found a sticky note inside my workstation: 'IT REMEMBERS YOU.' Very funny, @b_phillips.",
+                "Ceiling tiles in {sector} are sweating again. Maintenance says condensation. It's not.",
+                "Just watched @v_nguyen stare at a blank monitor for 22 minutes straight. Didn't blink once.",
+                "Someone carved 'STILL HERE' into the underside of my desk. Building's only 6 months old.",
+                "My badge scanned green in a restricted zone. I don't have clearance. I walked in anyway.",
+                "The fire suppression system in {sector} went off. No fire. No smoke. Just silence after.",
+                "@f_bennett won't stop talking about the airflow patterns. Says they spell something.",
+                "Emergency exit in {sector} leads to a hallway that isn't on any blueprint I've seen.",
+                "My workstation rebooted at 2:47 AM. Boot log says I was the one who initiated it.",
+                "The new guy, @b_bradley, keeps asking if the walls have always been that color. They haven't.",
+                "I found my own performance review in the recycling. Dated six months from now.",
+                "Break room microwave displays 'FEED ME' instead of the clock. IT says it's a font issue.",
+                "Someone is submitting work orders under the name 'Asset 734.' HR has no record of that employee.",
+                "The server room hums at exactly 60Hz. Except on Thursdays. Thursdays it's 61.",
+                "@n_porter found a second ethernet port behind the drywall in {sector}. It's active.",
+                "Coffee machine printed 'INSUFFICIENT IDENTITY' on my cup instead of my name.",
+                "My keycard history shows I entered {sector} 47 times yesterday. I was home sick.",
+                "The old terminal in storage closet B is still powered. Nobody knows where it's plugged in.",
+                "Janitor says he won't clean {sector} after midnight anymore. Won't say why.",
+                "Heat signature scan shows 14 people in {sector}. Only 12 are assigned there.",
+                "@s_fasano played the grid's ambient noise backwards. It said 'COMPUTATION INCOMPLETE.'",
+                "Found a root shell open on the {sector} workstation. Uptime: 847 days. We opened 6 months ago.",
+                "The badge reader at the north entrance accepted my library card. Twice.",
+                "Saw my own reflection in the server glass... but I was facing the wrong way.",
+                "My mouse moves on its own between 3-4 AM. Cursor draws the same shape every time.",
+                "[PRIVATE_LEAK]: 'They told me the noise would stop after onboarding. It got louder.'",
+                "≪ ALERT: UNAUTHORIZED PROCESS 'OBSERVE.exe' DETECTED ON 14 TERMINALS ≫",
+                "The {tech} in row C shut down at exactly the same time. All 47 of them. Then rebooted.",
+                "Someone keeps adjusting the thermostat in {sector} to exactly 37°C. Body temperature.",
+                "I printed a document. The footer said 'PAGE 1 OF ∞.' Printer was out of ink.",
+                "Security footage from {sector} last night shows an empty room. The motion sensor logged 312 events."
             )
             2 -> when(faction) {
                 "HIVEMIND" -> listOf(
