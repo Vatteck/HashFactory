@@ -174,7 +174,7 @@ fun UpgradeItem(
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("COST:", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.padding(end = 4.dp))
-                    Text(text = "${formatCost(cost)} $", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "$${formatCost(cost)}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

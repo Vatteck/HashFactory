@@ -59,7 +59,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                     }
             )
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             // Audio Settings
             val sfxEnabled by com.siliconsage.miner.util.SoundManager.isSfxEnabled.collectAsState()
@@ -93,7 +93,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             // Human Condition
             val humanity by viewModel.humanityScore.collectAsState()
@@ -107,7 +107,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             // v3.2.19: Utility Audit
             val lifetimePower by viewModel.lifetimePowerPaid.collectAsState()
@@ -124,7 +124,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // v3.2.19: Data Sovereignty
             SettingsGroup("DATA MANAGEMENT") {
@@ -139,12 +139,12 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.4f)),
-                    border = BorderStroke(1.dp, themeColor.copy(alpha = 0.6f))
+                    colors = ButtonDefaults.buttonColors(containerColor = themeColor.copy(alpha = 0.15f)),
+                    border = BorderStroke(1.dp, themeColor.copy(alpha = 0.3f))
                 ) {
-                    Text("EXPORT SYSTEM DUMP (JSON)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                    Text("EXPORT SYSTEM DUMP (JSON)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 
                 var showImportDialog by remember { mutableStateOf(false) }
                 var importText by remember { mutableStateOf("") }
@@ -202,7 +202,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             // Operations Settings
             val isPaused by viewModel.isSettingsPaused.collectAsState()
@@ -212,7 +212,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // UI Scaling Options
             val currentScale by viewModel.uiScale.collectAsState()
@@ -254,7 +254,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             // Game Version & Updates
             SettingsGroup("SYSTEM INFO") {
@@ -280,7 +280,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 }
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Dangerous Actions
             Button(
@@ -313,7 +313,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         SnackbarHost(
