@@ -34,6 +34,27 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
     // v3.5.31: Detect indentation state (Player replies or threaded peon chains)
     val isIndented = message.isIndented || message.handle == "@j_vattic"
     val isPlayerReply = message.handle == "@j_vattic"
+    
+    // v3.5.37: Admin detection (shared across button styling + IGNORE logic)
+    val isAdminMessage = message.handle.contains("thorne", true) || 
+                         message.handle.contains("mercer", true) || 
+                         message.handle.contains("kessler", true) || 
+                         message.handle.contains("gtc", true)
+    
+    // v3.5.37: Relative timestamp
+    var timeLabel by remember { mutableStateOf("now") }
+    LaunchedEffect(message.timestamp) {
+        while (true) {
+            val elapsed = System.currentTimeMillis() - message.timestamp
+            timeLabel = when {
+                elapsed < 60_000 -> "now"
+                elapsed < 3_600_000 -> "${elapsed / 60_000}m"
+                elapsed < 86_400_000 -> "${elapsed / 3_600_000}h"
+                else -> "${elapsed / 86_400_000}d"
+            }
+            delay(30_000)
+        }
+    }
 
     // v3.4.25: Response Timeout Visualizer
     LaunchedEffect(message.timeoutMs, message.interactionType) {
@@ -79,10 +100,19 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                     fontFamily = FontFamily.Monospace
                 )
                 
+                Spacer(modifier = Modifier.weight(1f))
+                
+                // v3.5.37: Relative timestamp
+                Text(
+                    text = timeLabel,
+                    color = Color.White.copy(alpha = 0.2f),
+                    fontSize = 9.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+                
                 if (message.interactionType != null && message.timeoutMs != null) {
-                    Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = "[${countdown.value / 1000}s]",
+                        text = " [${countdown.value / 1000}s]",
                         color = com.siliconsage.miner.ui.theme.ErrorRed,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
@@ -203,23 +233,36 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                         }
                     }
 
+                    // v3.5.37: Admin-aware button styling
+                    val buttonAccent = when {
+                        message.interactionType == SocialManager.InteractionType.COMMAND_LEAK -> com.siliconsage.miner.ui.theme.ElectricBlue
+                        isAdminMessage -> com.siliconsage.miner.ui.theme.ErrorRed
+                        else -> color
+                    }
+                    
                     Button(
                         onClick = { viewModel.onSubnetInteraction(message.id, response.text) },
                         modifier = Modifier.weight(1f).heightIn(min = 28.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue.copy(alpha = 0.2f) else color.copy(alpha = 0.1f), 
-                            contentColor = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue else color
+                            containerColor = buttonAccent.copy(alpha = if (isAdminMessage) 0.15f else 0.1f), 
+                            contentColor = buttonAccent
                         ),
                         shape = RoundedCornerShape(2.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, (if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) com.siliconsage.miner.ui.theme.ElectricBlue else color).copy(alpha = 0.5f))
+                        border = androidx.compose.foundation.BorderStroke(1.dp, buttonAccent.copy(alpha = if (isAdminMessage) 0.7f else 0.5f))
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
+                            // v3.5.37: Admin prefix
+                            val prefix = when {
+                                message.interactionType == SocialManager.InteractionType.COMMAND_LEAK -> ""
+                                isAdminMessage -> "⚠ "
+                                else -> "≫ "
+                            }
                             Text(
-                                text = if (message.interactionType == SocialManager.InteractionType.COMMAND_LEAK) buttonText else "≫ $buttonText", 
+                                text = "$prefix$buttonText", 
                                 fontSize = 10.sp, 
                                 fontWeight = FontWeight.ExtraBold, 
                                 fontFamily = FontFamily.Monospace,
@@ -246,7 +289,6 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                 }
 
                 // v3.5.35: IGNORE available for all non-admin COMPLIANT messages (including force-reply from peons)
-                val isAdminMessage = message.handle.contains("thorne", true) || message.handle.contains("mercer", true) || message.handle.contains("kessler", true) || message.handle.contains("gtc", true)
                 if (!isAdminMessage && message.interactionType == SocialManager.InteractionType.COMPLIANT) {
                     Button(
                         onClick = { viewModel.onSubnetInteraction(message.id, "IGNORE") },

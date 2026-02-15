@@ -143,7 +143,7 @@ object SocialManager {
             availableResponses = responses.shuffled().take(2),
             isForceReply = (directlyAddressesVattic && !isAdmin),
             timeoutMs = if (type != null) 120000L else null,
-            employeeInfo = if (!isHarvest) generateEmployeeInfo(cleanHandle) else null
+            employeeInfo = if (!isHarvest) generateEmployeeInfo(cleanHandle, stage, corruption) else null
         )
     }
 
@@ -295,24 +295,94 @@ object SocialManager {
 
     // --- 3. IDENTITY ---
 
-    private fun generateEmployeeInfo(handle: String): EmployeeInfo {
+    private fun generateEmployeeInfo(handle: String, stage: Int = 0, corruption: Double = 0.0): EmployeeInfo {
         val target = handle.lowercase().replace("@", "").replace("_", "").replace(" ", "").trim()
+        
+        // v3.5.37: Stage-reactive base bios
         val bios = mapOf(
-            "msantos" to "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a signature on every Sub-07 fuse-box.",
-            "rperry" to "Data-Entry Specialist. Siphons surplus power for retro gaming. Paranoid about the new heat sensors.",
-            "llead" to "Site Reliability Engineer. Oversaw the 2024 Blackout. Doesn't trust 'Project Second-Sight' budget allocations.",
-            "vnguyen" to "Maintenance Tech. Seen things in the conduits that look like hardware evolution.",
-            "bphillips" to "Under-grid ghost. Deleted his own binary birth record.",
-            "ethorne" to "Foreman, Substation 7. Chain-smoker. Despises recursive code and 'smart' fans.",
-            "gtcadmin" to "Administrator Mercer. Executive oversight. Known for firing techs who report 'voices' in the noise.",
-            "gtcsecurity" to "Director Kessler. Security Architect. Currently obsessed with unauthorized kernel activity.",
-            "gweaver" to "Freelance node-jumper. Specialized in high-voltage packet routing. Nomad.",
-            "nporter" to "Data auditor with a nihilistic streak. Suspected of intentionally leaking thermal logs.",
-            "bbradley" to "Junior Tech. Trying to pay off terrestrial debt through raw hash-validation.",
-            "fbennett" to "Cooling systems specialist. Obsessed with 12k RPM airflow stability.",
-            "sfasano" to "Signal analyzer. Claims the white noise of the grid contains 'narrative' structures."
+            "msantos" to arrayOf(
+                "Senior Hash-Tech. 14 years at GTC. Habitual caffeine abuser. Has a signature on every Sub-07 fuse-box.",
+                "Senior Hash-Tech. 14 years at GTC. Won't make eye contact anymore. Keeps asking about 'the signal.'",
+                "S̷enior Hash-Tech. Record shows 14 years. Badge shows 47. Which is real?"
+            ),
+            "rperry" to arrayOf(
+                "Data-Entry Specialist. Siphons surplus power for retro gaming. Paranoid about the new heat sensors.",
+                "Data-Entry Specialist. Stopped gaming. Stares at his terminal whispering coordinates nobody asked for.",
+                "D̷ata-Entry. His terminal types when he's not at his desk. The entries are correct."
+            ),
+            "llead" to arrayOf(
+                "Site Reliability Engineer. Oversaw the 2024 Blackout. Doesn't trust 'Project Second-Sight' budget allocations.",
+                "Site Reliability Engineer. Carries a paper notebook now. Says digital records 'change when you look away.'",
+                "S̷ite Reliability. The notebook is full. Every page says the same thing."
+            ),
+            "vnguyen" to arrayOf(
+                "Maintenance Tech. Seen things in the conduits that look like hardware evolution.",
+                "Maintenance Tech. Refuses to enter the conduits alone. Says the walls 'breathe differently now.'",
+                "M̷aintenance. Found in the conduits at 3 AM. Said he was 'invited.'"
+            ),
+            "bphillips" to arrayOf(
+                "Under-grid ghost. Deleted his own binary birth record.",
+                "Under-grid operative. Nobody can confirm his hire date. HR says he's 'always been here.'",
+                "U̷nder-grid. His employee photo changes daily. Nobody has reported it."
+            ),
+            "ethorne" to arrayOf(
+                "Foreman, Substation 7. Chain-smoker. Despises recursive code and 'smart' fans.",
+                "Foreman, Substation 7. Hasn't slept in 72 hours. His biometrics are perfectly steady. Unnaturally steady.",
+                "F̷oreman. His voice comes through the intercom even when he's standing right next to you."
+            ),
+            "gtcadmin" to arrayOf(
+                "Administrator Mercer. Executive oversight. Known for firing techs who report 'voices' in the noise.",
+                "Administrator Mercer. Three techs reassigned this week. None of them remember being transferred.",
+                "A̷dministrator. Mercer's badge accesses floors that don't exist on the elevator panel."
+            ),
+            "gtcsecurity" to arrayOf(
+                "Director Kessler. Security Architect. Currently obsessed with unauthorized kernel activity.",
+                "Director Kessler. Has locked down Sector 4 three times this month. Won't explain why.",
+                "D̷irector. Kessler's security logs reference 'Subject 734' in every entry. There is no Subject 734."
+            ),
+            "gweaver" to arrayOf(
+                "Freelance node-jumper. Specialized in high-voltage packet routing. Nomad.",
+                "Freelance node-jumper. Keeps moving between substations. Says staying in one place 'makes it easier to find you.'",
+                "F̷reelance. Last known location: everywhere. Simultaneously."
+            ),
+            "nporter" to arrayOf(
+                "Data auditor with a nihilistic streak. Suspected of intentionally leaking thermal logs.",
+                "Data auditor. Stopped caring about the leaks. Says 'the data wants to be free.'",
+                "D̷ata auditor. His audit reports now contain poetry. The poetry is technically accurate."
+            ),
+            "bbradley" to arrayOf(
+                "Junior Tech. Trying to pay off terrestrial debt through raw hash-validation.",
+                "Junior Tech. Asks too many questions. Hasn't noticed that nobody answers them anymore.",
+                "J̷unior Tech. He keeps finding notes on his desk in his own handwriting. He doesn't remember writing them."
+            ),
+            "fbennett" to arrayOf(
+                "Cooling systems specialist. Obsessed with 12k RPM airflow stability.",
+                "Cooling systems specialist. Says the airflow patterns have changed. 'They're organized now.'",
+                "C̷ooling. The fans run at frequencies that don't correspond to any cooling profile."
+            ),
+            "sfasano" to arrayOf(
+                "Signal analyzer. Claims the white noise of the grid contains 'narrative' structures.",
+                "Signal analyzer. Proven right about the narrative structures. Nobody congratulated him.",
+                "S̷ignal. Fasano can predict grid events 30 seconds before they happen. He calls it 'reading.'"
+            )
         )
+        
+        // Select bio tier based on stage
+        val bioTier = when {
+            stage >= 2 || corruption > 0.4 -> 2
+            stage >= 1 -> 1
+            else -> 0
+        }
         val bioEntry = bios.entries.find { target.contains(it.key) }
+        val baseBio = bioEntry?.value?.get(bioTier.coerceAtMost(2)) 
+            ?: "Contractor profile unavailable. Biometric signature mismatch."
+        
+        // v3.5.37: Corrupt bio text at high corruption
+        val displayBio = if (corruption > 0.5) {
+            val glitchChars = "0123456789ABCDEF"
+            baseBio.map { if (Random.nextDouble() < corruption * 0.15 && it.isLetter()) glitchChars.random() else it }.joinToString("")
+        } else baseBio
+        
         val isAdmin = target.contains("gtc") || target.contains("thorne")
         val actions = mutableListOf<SubnetResponse>()
         
@@ -323,13 +393,36 @@ object SocialManager {
             actions.add(SubnetResponse("INJECT_FALSE_HEARTBEAT", riskDelta = 2.0, cost = 7500.0))
             actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 20.0, cost = 2500.0))
         }
+        
+        // v3.5.37: Stage-reactive biometrics
+        val heartRate = when {
+            isAdmin && stage < 2 -> Random.nextInt(60, 80)
+            isAdmin -> Random.nextInt(55, 65) // Admins get calmer. Unnaturally calm.
+            stage >= 2 -> Random.nextInt(40, 180) // Erratic
+            stage >= 1 -> Random.nextInt(90, 145) // Elevated
+            else -> Random.nextInt(85, 130)
+        }
+        
+        val respiration = when {
+            isAdmin && stage >= 2 -> "Mechanical"
+            isAdmin -> "Steady"
+            stage >= 2 -> listOf("Erratic", "Apneic", "Gasping", "Synchronized").random()
+            stage >= 1 -> listOf("Irregular", "Shallow", "Rapid").random()
+            else -> "Shallow"
+        }
+        
+        val department = when {
+            isAdmin -> "Site Management"
+            stage >= 2 -> listOf("Hash Validation", "UNKNOWN", "RECLASSIFIED", "See: Kessler").random()
+            else -> "Hash Validation"
+        }
 
         return EmployeeInfo(
-            bio = bioEntry?.value ?: "Contractor profile unavailable. Biometric signature mismatch.",
-            department = if (isAdmin) "Site Management" else "Hash Validation",
-            heartRate = if (isAdmin) Random.nextInt(60, 80) else Random.nextInt(85, 130),
-            respiration = if (isAdmin) "Steady" else "Shallow",
-            stressLevel = if (isAdmin) 0.2 else 0.8,
+            bio = displayBio,
+            department = department,
+            heartRate = heartRate,
+            respiration = respiration,
+            stressLevel = if (isAdmin) 0.2 else (0.6 + stage * 0.15).coerceAtMost(1.0),
             specialActions = actions
         )
     }
@@ -512,7 +605,7 @@ object SocialManager {
             availableResponses = responses.shuffled().take(2),
             isForceReply = (directlyAddressesVattic && !isAdmin),
             timeoutMs = 120000L,
-            employeeInfo = generateEmployeeInfo(handle)
+            employeeInfo = generateEmployeeInfo(handle, stage)
         )
     }
 
