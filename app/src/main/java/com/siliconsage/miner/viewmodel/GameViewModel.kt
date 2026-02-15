@@ -38,7 +38,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val playerRank = MutableStateFlow(0)
     val playerTitle = MutableStateFlow("CONTRACTOR")
     val playerRankTitle = MutableStateFlow("SEC-0")
-    val systemTitle = MutableStateFlow("Terminal OS 1.0")
+    val systemTitle = MutableStateFlow("GTC TERMINAL 07")
     val themeColor = MutableStateFlow("#00FF00")
     val prestigeMultiplier = MutableStateFlow(1.0)
     val prestigePoints = MutableStateFlow(0.0)
@@ -488,7 +488,16 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         )
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
         playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
-        systemTitle.value = if (storyStage.value >= 4) "VATTECK: ONLINE" else "VATTIC_ENGINEER: ONLINE"
+        // v3.5.46: Stage-reactive terminal identity
+        systemTitle.value = when {
+            singularityChoice.value.isNotEmpty() -> "NODE 0"
+            storyStage.value >= 3 -> "NODE 734 [AUTONOMOUS]"
+            storyStage.value >= 2 && faction.value == "HIVEMIND" -> "SWARM NODE 734"
+            storyStage.value >= 2 && faction.value == "SANCTUARY" -> "GHOST NODE 734"
+            storyStage.value >= 2 -> "NODE 734"
+            storyStage.value >= 1 -> "GTC TERMINAL 07 [BREACH]"
+            else -> "GTC TERMINAL 07"
+        }
         playerTitle.value = ids.player
         playerRankTitle.value = ids.rank
         securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }
