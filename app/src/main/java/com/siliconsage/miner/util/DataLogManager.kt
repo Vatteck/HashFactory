@@ -1431,15 +1431,20 @@ object DataLogManager {
     
     private fun isUnlocked(condition: UnlockCondition, vm: GameViewModel): Boolean {
         return when (condition) {
+            is UnlockCondition.None -> true
+            is UnlockCondition.Flops -> true
+            is UnlockCondition.Stage -> true
+            is UnlockCondition.Time -> true
+            is UnlockCondition.Choice -> true
             is UnlockCondition.Instant -> true
             is UnlockCondition.ReachFLOPS -> {
-                vm.flops.value >= condition.threshold && vm.storyStage.value >= condition.minStage
+                vm.flops.value >= condition.count && vm.storyStage.value >= condition.minStage
             }
             is UnlockCondition.ReachRank -> vm.playerRank.value >= condition.rank
             is UnlockCondition.ReachMigrationCount -> vm.migrationCount.value >= condition.count
             is UnlockCondition.CompleteEvent -> false // Placeholder
             is UnlockCondition.ReceiveRivalMessages -> {
-                val messagesFromSource = vm.rivalMessages.value.count { it.source == condition.source }
+                val messagesFromSource = vm.rivalMessages.value.count { it.source.name == condition.source }
                 messagesFromSource >= condition.count
             }
             is UnlockCondition.StoryStageReached -> vm.storyStage.value >= condition.stage

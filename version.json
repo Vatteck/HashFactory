@@ -1,10 +1,10 @@
 {
-  "version": "3.4.87",
-  "build": 355,
+  "version": "3.4.89",
+  "build": 361,
   "date": "2026-02-14",
   "changelog": [
-    "Force-Purged Legacy Lore From Data Logs"
+    "Substrate Restored: Schema Integrity Recovered"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.87",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.87/MINER_3.4.87.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.89",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.89/MINER_3.4.89.apk"
 }
