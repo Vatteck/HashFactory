@@ -100,7 +100,7 @@ object SocialManager {
                               cleanContent.contains("scrub", true) || 
                               cleanContent.contains("purge", true)
 
-        // v3.5.36: Unified response routing — priority cascade
+        // v3.5.38: Unified response routing — priority cascade (frequency tuned)
         val responses = when {
             isHarvest -> listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
             isCommandLeak -> {
@@ -108,10 +108,11 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
-            mentionsVattic && directlyAddressesVattic -> generateMentionResponses()
-            // v3.5.36: Content-aware contextual routing for everything else
-            !isAdmin && !isDirectCommand && Random.nextFloat() < 0.30f -> generateContextualResponses(cleanContent, stage)
-            mentionsVattic -> generateMentionResponses()
+            directlyAddressesVattic -> generateMentionResponses()
+            // v3.5.38: 12% chance for contextual responses (down from 30%)
+            !isAdmin && !isDirectCommand && Random.nextFloat() < 0.12f -> generateContextualResponses(cleanContent, stage)
+            // v3.5.38: Indirect mentions only 30% of the time
+            mentionsVattic && Random.nextFloat() < 0.30f -> generateMentionResponses()
             else -> emptyList()
         }
 

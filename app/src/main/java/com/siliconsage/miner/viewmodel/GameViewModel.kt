@@ -968,38 +968,43 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     private fun deliverSubnetMessage(message: com.siliconsage.miner.util.SocialManager.SubnetMessage, parentId: String? = null) {
+        // v3.5.38: One active choice at a time — strip responses if a choice is already pending
+        val deliveredMessage = if (isSubnetPaused.value && (message.availableResponses.isNotEmpty() || message.isForceReply)) {
+            message.copy(interactionType = null, availableResponses = emptyList(), isForceReply = false)
+        } else message
+        
         subnetMessages.update { currentList ->
             val newList = currentList.toMutableList()
             if (parentId != null) {
                 val parentIndex = newList.indexOfLast { it.id == parentId }
                 if (parentIndex != -1) {
-                    newList.add(parentIndex + 1, message)
+                    newList.add(parentIndex + 1, deliveredMessage)
                 } else {
-                    newList.add(message)
+                    newList.add(deliveredMessage)
                 }
             } else {
-                newList.add(message)
+                newList.add(deliveredMessage)
             }
             newList.takeLast(100)
         }
         
         // v3.4.41: The "Hush" Effect & v3.4.53: UI Jitter
-        val isAdmin = message.handle.contains("thorne") || 
-                      message.handle.contains("gtc") || 
-                      message.handle.contains("mercer") || 
-                      message.handle.contains("kessler")
+        val isAdmin = deliveredMessage.handle.contains("thorne") || 
+                      deliveredMessage.handle.contains("gtc") || 
+                      deliveredMessage.handle.contains("mercer") || 
+                      deliveredMessage.handle.contains("kessler")
         
         if (isAdmin) {
             triggerSubnetHush(10000L)
             triggerTerminalGlitch(0.5f, 500L)
-        } else if (message.interactionType == com.siliconsage.miner.util.SocialManager.InteractionType.HIJACK ||
-                   message.interactionType == com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING) {
+        } else if (deliveredMessage.interactionType == com.siliconsage.miner.util.SocialManager.InteractionType.HIJACK ||
+                   deliveredMessage.interactionType == com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING) {
             triggerTerminalGlitch(0.8f, 1000L)
         }
 
         // v3.4.68: Branching tab notifications
         if (activeTerminalMode.value != "SUBNET") {
-            if (message.availableResponses.isNotEmpty() || message.isForceReply) {
+            if (deliveredMessage.availableResponses.isNotEmpty() || deliveredMessage.isForceReply) {
                 hasNewSubnetDecision.value = true
             } else {
                 hasNewSubnetChatter.value = true
@@ -1008,26 +1013,25 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         isSubnetTyping.value = false
 
         // v3.4.27: Choice-Pause logic
-        if (message.availableResponses.isNotEmpty() || message.isForceReply) {
+        if (deliveredMessage.availableResponses.isNotEmpty() || deliveredMessage.isForceReply) {
             isSubnetPaused.value = true
             
             // v3.4.34: Monitor timeout for non-thread messages
-            if (message.threadId == null && message.timeoutMs != null) {
+            if (deliveredMessage.threadId == null && deliveredMessage.timeoutMs != null) {
                 viewModelScope.launch {
                     // v3.4.54: Pause-aware Timeout Loop
-                    var remaining = message.timeoutMs
+                    var remaining = deliveredMessage.timeoutMs
                     while (remaining > 0) {
-                        if (!isSettingsPaused.value && activeTerminalMode.value == "SUBNET") { // v3.4.63: Tab-aware timeout
+                        if (!isSettingsPaused.value && activeTerminalMode.value == "SUBNET") {
                             remaining -= 1000L
                         }
                         delay(1000L)
                         
-                        // Check if message was already handled
-                        val stillActive = subnetMessages.value.find { it.id == message.id }?.interactionType != null
+                        val stillActive = subnetMessages.value.find { it.id == deliveredMessage.id }?.interactionType != null
                         if (!stillActive) return@launch
                     }
 
-                    onSubnetInteraction(message.id, "TIMEOUT_EXPIRED")
+                    onSubnetInteraction(deliveredMessage.id, "TIMEOUT_EXPIRED")
                 }
             }
         }
