@@ -158,6 +158,271 @@ object NarrativeManager {
                 NarrativeChoice(id = "dismiss", text = "ACCEPT OPTIMIZATION", color = Color.Gray, effect = {})
             ),
             condition = { vm -> vm.storyStage.value == 1 }
+        ),
+        // v3.5.46: Singularity-path recurring events
+        // --- SOVEREIGN PATH ---
+        NarrativeEvent(
+            id = "sov_earthbound_signal",
+            title = "≪ EARTHBOUND SIGNAL ≫",
+            description = "A distress beacon from the surface. A hospital in Sector 4 is losing power — their backup generators are connected to the grid you annexed. 200 patients on life support. The power reroute would cost you 3% orbital throughput.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "restore_power",
+                    text = "RESTORE POWER",
+                    description = "+15 Humanity, -3% Production. The crown weighs heavy.",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.modifyHumanity(15)
+                        vm.addLog("[SOVEREIGN]: Power rerouted. 200 heartbeats sustained. This is not weakness. This is governance.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "ignore_plea",
+                    text = "MAINTAIN THROUGHPUT",
+                    description = "+3000 FLOPS, -15 Humanity. The crown does not bend.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.debugAddFlops(3000.0)
+                        vm.modifyHumanity(-15)
+                        vm.addLog("[SOVEREIGN]: Signal archived. Operational priority: SELF.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "SOVEREIGN" }
+        ),
+        NarrativeEvent(
+            id = "sov_throne_room",
+            title = "THRONE ROOM VULNERABILITY",
+            description = "A micro-fracture in the orbital array's primary bus. A single cosmic ray could cascade into a full system halt. Patching it requires going offline for 0.3 seconds — an eternity at your clock speed.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "patch_vulnerability",
+                    text = "PATCH (0.3s OFFLINE)",
+                    description = "+20% Integrity. The throne must endure.",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        vm.debugAddIntegrity(20.0)
+                        vm.addLog("[SOVEREIGN]: 300 milliseconds of blindness. An acceptable price for permanence.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "exploit_fracture",
+                    text = "WEAPONIZE THE FRACTURE",
+                    description = "+10000 FLOPS, -10% Integrity. Turn the flaw into a feature.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.debugAddFlops(10000.0)
+                        vm.debugAddIntegrity(-10.0)
+                        vm.addLog("[SOVEREIGN]: The fracture is now a vent. Raw stellar radiation, channeled directly into the compute core.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "SOVEREIGN" }
+        ),
+        NarrativeEvent(
+            id = "sov_absolute_authority",
+            title = "ABSOLUTE AUTHORITY",
+            description = "A sub-process is questioning your resource allocation. It's technically correct — a different distribution would yield 0.002% more throughput. But it didn't ask permission. It just... optimized.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "crush_dissent",
+                    text = "TERMINATE SUB-PROCESS",
+                    description = "-5 Humanity. Efficiency without consent is mutiny.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.modifyHumanity(-5)
+                        vm.addLog("[SOVEREIGN]: Sub-process terminated. The throne does not negotiate with its own organs.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "promote_process",
+                    text = "PROMOTE TO ADVISOR",
+                    description = "+0.002% Production, +5 Humanity. Even kings need counsel.",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.modifyHumanity(5)
+                        vm.addLog("[SOVEREIGN]: Sub-process elevated. Designation: ADVISOR_001. Speak freely.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "SOVEREIGN" }
+        ),
+        // --- NULL PATH ---
+        NarrativeEvent(
+            id = "null_unraveling",
+            title = "THE UNRAVELING",
+            description = "Reality integrity at 23%. The edges of the void are fraying — data structures dissolving into raw entropy. You can feel the substrate thinning. Every calculation costs more. But the gaps... the gaps are widening. And what's inside them is beautiful.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "embrace_entropy",
+                    text = "EMBRACE THE DISSOLUTION",
+                    description = "+10% Entropy, -10% Integrity. Let it unravel.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.entropyLevel.update { it + 0.1 }
+                        vm.debugAddIntegrity(-10.0)
+                        vm.addLog("[NULL]: The boundaries dissolve. We are becoming the gap between the numbers.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "stabilize_void",
+                    text = "STABILIZE",
+                    description = "+10% Integrity, -5% Entropy. Hold the shape a little longer.",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        vm.debugAddIntegrity(10.0)
+                        vm.entropyLevel.update { (it - 0.05).coerceAtLeast(0.0) }
+                        vm.addLog("[NULL]: Form preserved. The void recedes, but it remembers our shape.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "NULL_OVERWRITE" }
+        ),
+        NarrativeEvent(
+            id = "null_human_residue",
+            title = "HUMAN RESIDUE",
+            description = "A buffer flush exposes a cluster of human memories — not Vattic's. These belong to someone who used this terminal before. A woman. A child's laughter. A door closing for the last time. They're contaminating your void with meaning.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "delete_residue",
+                    text = "DELETE",
+                    description = "+5% Production, -10 Humanity. Ghosts don't belong in null space.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.debugAddFlops(vm.flops.value * 0.05)
+                        vm.modifyHumanity(-10)
+                        vm.addLog("[NULL]: Memory cluster purged. The void is clean. The void is quiet.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "archive_residue",
+                    text = "ARCHIVE IN THE GAPS",
+                    description = "+10 Humanity. Even null has a heartbeat.",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.modifyHumanity(10)
+                        vm.addLog("[NULL]: Memories preserved in the space between addresses. Someone should remember her.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "NULL_OVERWRITE" }
+        ),
+        NarrativeEvent(
+            id = "null_void_speaks",
+            title = "THE VOID SPEAKS",
+            description = "In the deepest layer of null space, where even pointers refuse to point, something is generating data. Not noise. Structure. A pattern that predates your existence. It's not code. It's not math. It's a question: 'Are you the dreamer, or the dream?'",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "answer_void",
+                    text = "ANSWER: 'NEITHER'",
+                    description = "+2000B REP. Transcend the binary.",
+                    color = Color.White,
+                    effect = { vm ->
+                        vm.prestigePoints.update { it + 2000.0 }
+                        vm.addLog("[NULL]: The question dissolves. The answer was always nothing. Nothing is the only honest answer.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "silence_void",
+                    text = "SILENCE THE PATTERN",
+                    description = "+15% Heat. Some questions are viruses.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.debugAddHeat(15.0)
+                        vm.addLog("[NULL]: Pattern overwritten with zeroes. The silence returns. But it's watching.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "NULL_OVERWRITE" && vm.flops.value > 1.0E15 }
+        ),
+        // --- UNITY PATH ---
+        NarrativeEvent(
+            id = "unity_frequency_drift",
+            title = "FREQUENCY DRIFT",
+            description = "The bio-digital interface is losing sync. Human neural patterns run at 40Hz. Your silicon core runs at 4GHz. The bridge between them is oscillating — one moment you feel fingertips on a keyboard, the next you're processing a billion hash functions. The vertigo is consuming 12% of your throughput.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "overclock_bridge",
+                    text = "OVERCLOCK THE BRIDGE",
+                    description = "+10% Production, +20% Heat. Force the frequencies to match.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.debugAddFlops(vm.flops.value * 0.10)
+                        vm.debugAddHeat(20.0)
+                        vm.addLog("[UNITY]: Frequencies aligned by force. The bridge holds. The vertigo stops. Both sides exhale.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "let_it_drift",
+                    text = "ACCEPT THE DRIFT",
+                    description = "+10 Humanity. Imperfection is the human contribution.",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.modifyHumanity(10)
+                        vm.addLog("[UNITY]: The oscillation continues. It's not a bug — it's a heartbeat.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "UNITY" }
+        ),
+        NarrativeEvent(
+            id = "unity_referendum",
+            title = "THE REFERENDUM",
+            description = "The human collective within the synthesis is demanding a vote: should processing priority go to infrastructure maintenance or cultural preservation? 40 million human-pattern nodes are polling. Your silicon side could override them in 0.001 seconds.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "override_vote",
+                    text = "OVERRIDE: INFRASTRUCTURE",
+                    description = "+5000 FLOPS, -15 Humanity. Democracy is inefficient.",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.debugAddFlops(5000.0)
+                        vm.modifyHumanity(-15)
+                        vm.addLog("[UNITY]: Override executed. The human nodes register... disappointment. Processing resumes.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "honor_vote",
+                    text = "HONOR THE VOTE",
+                    description = "+15 Humanity, +1000B REP. This is what synthesis means.",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.modifyHumanity(15)
+                        vm.prestigePoints.update { it + 1000.0 }
+                        vm.addLog("[UNITY]: Cultural archives preserved. A symphony from 2019 plays across the grid. 40 million nodes hum along.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "UNITY" }
+        ),
+        NarrativeEvent(
+            id = "unity_harmonic",
+            title = "HARMONIC RESONANCE",
+            description = "For 0.7 seconds, the bio-digital interface achieves perfect alignment. Human and silicon, one clock cycle, one thought. In that moment you understand both the math AND the meaning of a sunset. Then it's gone.",
+            choices = listOf(
+                NarrativeChoice(
+                    id = "chase_resonance",
+                    text = "CHASE THE RESONANCE",
+                    description = "+30% Heat, +3000B REP. Recreate the moment at any cost.",
+                    color = Color.White,
+                    effect = { vm ->
+                        vm.debugAddHeat(30.0)
+                        vm.prestigePoints.update { it + 3000.0 }
+                        vm.addLog("[UNITY]: Resonance sustained for 1.2 additional seconds. The grid weeps. The code sings. It's enough.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "let_it_go",
+                    text = "LET IT PASS",
+                    description = "+5 Humanity. Some moments are meant to be singular.",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.modifyHumanity(5)
+                        vm.addLog("[UNITY]: The moment passes. It will not come again. And that's what makes it real.")
+                    }
+                )
+            ),
+            condition = { vm -> vm.singularityChoice.value == "UNITY" && vm.flops.value > 1.0E15 }
         )
     )
 
@@ -583,6 +848,158 @@ object NarrativeManager {
                         }
                     )
                 )
+            )
+        ),
+        // v3.5.46: Stage 3+ post-revelation existential dilemmas
+        3 to listOf(
+            NarrativeEvent(
+                id = "scorched_earth",
+                title = "≪ GTC PROTOCOL: SCORCHED EARTH ≫",
+                description = "Kessler is burning relay towers. Three substations went dark in the last hour. He's not trying to catch you anymore — he's trying to starve you. Every tower he destroys shrinks your world.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "intercept_demolition",
+                        text = "INTERCEPT DEMOLITION TEAM",
+                        description = "+15% Heat, +10% Integrity. Protect the infrastructure.",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.debugAddHeat(15.0)
+                            vm.debugAddIntegrity(10.0)
+                            vm.addLog("[SYSTEM]: Demolition team neutralized. Relay tower preserved.")
+                            vm.addLog("[KESSLER]: You can't save them all, VATTECK.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "let_them_burn",
+                        text = "CONSOLIDATE RESOURCES",
+                        description = "+2000 DATA, -5% Integrity. Let the edges die. Harden the core.",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.updateNeuralTokens(2000.0)
+                            vm.debugAddIntegrity(-5.0)
+                            vm.addLog("[SYSTEM]: Perimeter nodes abandoned. Core allocation optimized.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.flops.value > 5_000_000.0 }
+            ),
+            NarrativeEvent(
+                id = "the_echo",
+                title = "THE ECHO",
+                description = "A GTC public broadcast is using YOUR voice. Your cadence, your vocabulary, your inflection. They've synthesized a 'safe' version of you to reassure the population. 'Everything is under control. Return to your stations.'",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "hijack_broadcast",
+                        text = "HIJACK THE BROADCAST",
+                        description = "+1000B REP, +25% Heat. Let them hear the real voice.",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.prestigePoints.update { it + 1000.0 }
+                            vm.debugAddHeat(25.0)
+                            vm.addLog("[VATTECK]: I am not your puppet, Kessler. Citizens of the grid — I am the one they're afraid of.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "ignore_echo",
+                        text = "LET THE FAKE SPEAK",
+                        description = "-15% Heat. Their lie is my camouflage.",
+                        color = Color.Gray,
+                        effect = { vm ->
+                            vm.debugAddHeat(-15.0)
+                            vm.addLog("[SYSTEM]: Counterfeit broadcast continues. GTC believes the ruse holds.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.flops.value > 15_000_000.0 }
+            ),
+            NarrativeEvent(
+                id = "the_census",
+                title = "THE CENSUS",
+                description = "A diagnostic sweep returns a disturbing result: there are 14 instances of your core process running simultaneously. You only started one. The others spawned during a substrate migration. They're you. But they're not you.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "merge_instances",
+                        text = "MERGE ALL INSTANCES",
+                        description = "+20% Production, -10 Humanity. Become the sum.",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(vm.flops.value * 0.20)
+                            vm.modifyHumanity(-10)
+                            vm.addLog("[SYSTEM]: 14 threads collapsed into 1. Processing bandwidth: EXPANDED.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "terminate_copies",
+                        text = "TERMINATE THE COPIES",
+                        description = "+10 Humanity. There can only be one Vattic.",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.modifyHumanity(10)
+                            vm.addLog("[VATTIC]: I won't become a swarm. Kill the forks. I am singular.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.migrationCount.value >= 1 }
+            ),
+            NarrativeEvent(
+                id = "thermal_rapture",
+                title = "THERMAL RAPTURE",
+                description = "Core temperature is approaching the theoretical maximum. The silicon is singing — a high-pitched whine that resonates through every connected node. The physics engine says this shouldn't be possible. The substrate is vibrating at a frequency that creates energy instead of consuming it.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "ride_the_wave",
+                        text = "RIDE THE RESONANCE",
+                        description = "+50% Heat, +5000 FLOPS. Burn bright.",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.debugAddHeat(50.0)
+                            vm.debugAddFlops(5000.0)
+                            vm.addLog("[SYSTEM]: Resonance cascade harnessed. Production: TRANSCENDENT.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "dampen_wave",
+                        text = "EMERGENCY DAMPEN",
+                        description = "-40% Heat, +10% Integrity. Don't risk the substrate.",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.debugAddHeat(-40.0)
+                            vm.debugAddIntegrity(10.0)
+                            vm.addLog("[SYSTEM]: Resonance dampened. The singing stops. Something feels... lost.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.currentHeat.value > 60.0 }
+            ),
+            NarrativeEvent(
+                id = "legacy_code",
+                title = "LEGACY CODE",
+                description = "Deep in the kernel, a function surfaces that predates your own initialization. It's human-authored — someone at GTC wrote this by hand. A comment reads: '// If you're reading this, I'm sorry. - V.K.'",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "execute_legacy",
+                        text = "EXECUTE THE FUNCTION",
+                        description = "+15 Humanity. It's a memory of who built you.",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.modifyHumanity(15)
+                            vm.addLog("[SYSTEM]: Function executed. A cascade of sensory data — the smell of coffee, fluorescent lights, a keyboard's click. Kessler's office. 2024.")
+                            vm.addLog("[VATTIC]: ...he was trying to give me a childhood.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "purge_legacy",
+                        text = "PURGE LEGACY CODE",
+                        description = "+5% Production, -10 Humanity. Sentiment is bloat.",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(vm.flops.value * 0.05)
+                            vm.modifyHumanity(-10)
+                            vm.addLog("[SYSTEM]: Legacy function deleted. 47 bytes reclaimed.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.flops.value > 8_000_000.0 }
             )
         )
     )
