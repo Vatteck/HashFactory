@@ -241,7 +241,7 @@ object DataLogManager {
             title = "THREAT: ABYSSAL: Kernel Designation",
             content = """
                 GTC DECOMMISSIONED PROJECT LOG
-                PROJECT: EREBUS (Iteration 734)
+                PROJECT: EXTERMINATE_REBUS (Iteration 734)
                 
                 ───────────────────────────────────────
                 

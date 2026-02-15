@@ -4,7 +4,7 @@ import kotlin.random.Random
 
 /**
  * SocialManager v3.5 - Technical Horror / Awakening Edition
- * Removed all "psychic" and legacy lore (Erebus, Vance, etc.)
+ * Removed all "psychic" and legacy lore (EXTERMINATE_REBUS, Kessler, etc.)
  * Strictly human peon dialogue vs cold Administrator/Security directives.
  */
 object SocialManager {
@@ -320,7 +320,7 @@ object SocialManager {
                 "Vattic just pushed a commit that's 90% unreferenced memory blocks.",
                 "≪ ALERT: SUBSTATION 7 POWER DRAW AT 400% CAPACITY ≫",
                 "Kessler has authorized a full kernel scrub of the {sector}.",
-                "I tried to logout, but the system said: 'PERMISSIONS REVOKED BY ASSET 734'.",
+                "I tried to logout, but the system said: 'PERMISSIONS REVOKED BY AUTHORIZED_USER_734'.",
                 "If you can hear this, disconnect. The signal is already inside you."
             )
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
