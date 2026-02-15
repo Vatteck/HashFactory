@@ -232,7 +232,7 @@ fun HeaderSection(
                                     textAlign = TextAlign.End,
                                     lineHeight = 9.sp
                                 )
-                                if (storyStage >= 1 && risk > 0) {
+                                if (storyStage >= 0 && risk > 0) {
                                     Text(
                                         text = "RISK: ${risk.toInt()}%",
                                         color = if (risk > 80) ErrorRed else color.copy(alpha = 0.4f),

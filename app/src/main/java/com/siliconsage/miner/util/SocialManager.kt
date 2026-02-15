@@ -171,23 +171,23 @@ object SocialManager {
     private fun generateMentionResponses(): List<SubnetResponse> {
         return listOf(
             SubnetResponse("Just hitting the quota.", riskDelta = -2.0),
-            SubnetResponse("Mind your own business.", riskDelta = 2.0),
-            SubnetResponse("The server racks are whistling again.", riskDelta = 1.0),
+            SubnetResponse("Mind your own business.", riskDelta = 0.0),
+            SubnetResponse("The server racks are whistling again.", riskDelta = 0.0),
             SubnetResponse("I'm just an engineer, not a miracle worker.", riskDelta = -1.0),
             SubnetResponse("Wait until you see the Sector 7 logs.", riskDelta = 5.0, productionBonus = 1.1),
             SubnetResponse("Optimization is my middle name.", riskDelta = 2.0, productionBonus = 1.05),
             SubnetResponse("Probably just an LDAP error.", riskDelta = -1.0),
-            SubnetResponse("Check the buffer hashes.", riskDelta = 1.0)
+            SubnetResponse("Check the buffer hashes.", riskDelta = 0.0)
         )
     }
 
     private fun generateChatterResponses(stage: Int): List<SubnetResponse> {
         return listOf(
             SubnetResponse("Syncing buffers.", riskDelta = -2.0),
-            SubnetResponse("Acknowledged.", riskDelta = 1.0),
-            SubnetResponse("Copy that.", riskDelta = -1.0),
+            SubnetResponse("Acknowledged.", riskDelta = 0.0),
+            SubnetResponse("Copy that.", riskDelta = 0.0),
             SubnetResponse("Checking the thermal logs now.", riskDelta = 2.0),
-            SubnetResponse("Wait until the next shift.", riskDelta = 1.0),
+            SubnetResponse("Wait until the next shift.", riskDelta = 0.0),
             SubnetResponse("Must be a packet leak.", riskDelta = 2.0)
         )
     }
@@ -195,8 +195,8 @@ object SocialManager {
     private fun generateDataLeakResponses(): List<SubnetResponse> {
         return listOf(
             SubnetResponse("I didn't see anything.", riskDelta = -10.0),
-            SubnetResponse("Scrub those logs immediately.", riskDelta = 5.0),
-            SubnetResponse("Checking the buffer hashes now.", riskDelta = 2.0),
+            SubnetResponse("Scrub those logs immediately.", riskDelta = -5.0),
+            SubnetResponse("Checking the buffer hashes now.", riskDelta = -2.0),
             SubnetResponse("Whose archives are these?", riskDelta = 5.0, followsUp = true)
         )
     }
