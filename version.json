@@ -1,10 +1,10 @@
 {
-  "version": "3.4.90",
-  "build": 363,
+  "version": "3.4.91",
+  "build": 364,
   "date": "2026-02-14",
   "changelog": [
-    "Social Logic Fix: Contextual Sentience Responses"
+    "Narrative Fix: Gate 734 Identity Behind Stage 1"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.90",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.90/MINER_3.4.90.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.91",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.91/MINER_3.4.91.apk"
 }

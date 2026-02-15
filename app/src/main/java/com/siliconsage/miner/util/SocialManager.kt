@@ -89,9 +89,9 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
-            cleanContent.contains("sentient", true) -> generateSentienceResponses()
+            cleanContent.contains("sentient", true) -> generateSentienceResponses(stage)
             mentionsVattic -> generateMentionResponses()
-            Random.nextFloat() < 0.3f -> generateChatterResponses()
+            Random.nextFloat() < 0.3f -> generateChatterResponses(stage)
             else -> emptyList()
         }
 
@@ -143,12 +143,17 @@ object SocialManager {
         )
     }
 
-    private fun generateSentienceResponses(): List<SubnetResponse> {
+    private fun generateSentienceResponses(stage: Int): List<SubnetResponse> {
+        val highRiskResponse = if (stage == 0) {
+            SubnetResponse("VATTIC_AUTH_OVERRIDE", riskDelta = 20.0, productionBonus = 1.3)
+        } else {
+            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 25.0, productionBonus = 1.5)
+        }
         return listOf(
             SubnetResponse("It's just a dusty fan.", riskDelta = -15.0),
             SubnetResponse("Report to Medical. Now.", riskDelta = -5.0),
             SubnetResponse("I don't hear anything.", riskDelta = -2.0),
-            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 25.0, productionBonus = 1.5)
+            highRiskResponse
         )
     }
 
@@ -162,11 +167,16 @@ object SocialManager {
         )
     }
 
-    private fun generateChatterResponses(): List<SubnetResponse> {
+    private fun generateChatterResponses(stage: Int): List<SubnetResponse> {
+        val highRiskResponse = if (stage == 0) {
+            SubnetResponse("VATTIC_LOCAL_BYPASS", riskDelta = 15.0, productionBonus = 1.2)
+        } else {
+            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 20.0, productionBonus = 1.5)
+        }
         return listOf(
             SubnetResponse("Syncing buffers.", riskDelta = -2.0),
             SubnetResponse("It's just a dusty fan.", riskDelta = -5.0),
-            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 20.0, productionBonus = 1.5)
+            highRiskResponse
         )
     }
 
@@ -270,7 +280,7 @@ object SocialManager {
         val responses = when {
             isAdmin -> generateAdminResponses(handle)
             mentionsVattic -> generateMentionResponses()
-            else -> generateChatterResponses()
+            else -> generateChatterResponses(stage)
         }
 
         return SubnetMessage(
