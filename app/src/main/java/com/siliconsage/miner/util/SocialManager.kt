@@ -94,23 +94,13 @@ object SocialManager {
         val isHarvest = cleanHandle.contains("LEAK", true)
         val isCommandLeak = cleanContent.contains("[⚡", true)
         
-        // v3.5.20: Contextual relevance check. 
+        // v3.5.20: Contextual relevance check 
         val isDirectCommand = cleanContent.contains("authorized", true) || 
                               cleanContent.contains("ordered", true) || 
                               cleanContent.contains("scrub", true) || 
                               cleanContent.contains("purge", true)
 
-        // v3.5.22: Specific check for data leaks/archives
-        val isDataLeak = cleanContent.contains("archives", true) || 
-                         cleanContent.contains("logs", true) || 
-                         cleanContent.contains("leak", true)
-                         
-        // v3.5.34: Check for coworker/technical observations
-        val isObservation = cleanContent.contains("@", true) || 
-                            cleanContent.contains("grid", true) || 
-                            cleanContent.contains("rail", true) ||
-                            cleanContent.contains("voltage", true)
-
+        // v3.5.36: Unified response routing — priority cascade
         val responses = when {
             isHarvest -> listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
             isCommandLeak -> {
@@ -118,11 +108,10 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
-            !isDirectCommand && (cleanContent.contains("sentient", true) || cleanContent.contains("aware", true) || cleanContent.contains("whistling", true) || cleanContent.contains("noise", true)) -> generateSentienceResponses(stage)
-            isDataLeak -> generateDataLeakResponses()
-            isObservation && !isAdmin -> generateObservationResponses()
+            mentionsVattic && directlyAddressesVattic -> generateMentionResponses()
+            // v3.5.36: Content-aware contextual routing for everything else
+            !isAdmin && !isDirectCommand && Random.nextFloat() < 0.30f -> generateContextualResponses(cleanContent, stage)
             mentionsVattic -> generateMentionResponses()
-            Random.nextFloat() < 0.2f && !isAdmin && !isDirectCommand -> generateChatterResponses(stage)
             else -> emptyList()
         }
 
@@ -174,54 +163,133 @@ object SocialManager {
         )
     }
 
-    private fun generateSentienceResponses(stage: Int): List<SubnetResponse> {
-        return listOf(
-            SubnetResponse("It's just a dusty fan.", riskDelta = -15.0),
-            SubnetResponse("Report to Medical. Now.", riskDelta = -5.0),
-            SubnetResponse("I don't hear anything.", riskDelta = -2.0),
-            SubnetResponse("Sensor noise is reaching peak levels.", riskDelta = 5.0)
-        )
+    // v3.5.36: Content-aware response dispatcher
+    private fun generateContextualResponses(content: String, stage: Int): List<SubnetResponse> {
+        val c = content.lowercase()
+        
+        // Detect content themes and build a weighted pool
+        val pool = mutableListOf<SubnetResponse>()
+        
+        // --- Spooky / Anomaly ---
+        if (c.containsAny("noise", "hum", "whistle", "singing", "shadow", "flicker", "blink", "stare", 
+                           "weird", "strange", "glow", "creepy", "scared", "heartbeat", "sentient", "aware",
+                           "dream", "sleep", "voice", "hear", "listen", "sound", "silent", "binary")) {
+            pool.addAll(listOf(
+                SubnetResponse("It's just a dusty fan.", riskDelta = -15.0),
+                SubnetResponse("I don't hear anything.", riskDelta = -2.0),
+                SubnetResponse("Put your headphones on. It helps.", riskDelta = -1.0),
+                SubnetResponse("If you stop thinking about it, it stops.", riskDelta = 0.0),
+                SubnetResponse("Don't look directly at it.", riskDelta = -1.0),
+                SubnetResponse("That's just the building settling. Probably.", riskDelta = -2.0),
+                SubnetResponse("Report to Medical. Now.", riskDelta = -5.0),
+                SubnetResponse("I've been hearing it too.", riskDelta = 5.0, followsUp = true),
+                SubnetResponse("Record it. We need proof.", riskDelta = 8.0, productionBonus = 1.1)
+            ))
+        }
+        
+        // --- Food / Mundane / Break Room ---
+        if (c.containsAny("food", "coffee", "taste", "eat", "vending", "break room", "synth-paste", 
+                           "liquid-caff", "nutri-sludge", "machine", "dispensing", "wrapper", "microwave",
+                           "hungry", "shift", "overtime", "morale", "newsletter")) {
+            pool.addAll(listOf(
+                SubnetResponse("At least it's not the ration packs.", riskDelta = -1.0),
+                SubnetResponse("I stopped tasting things after week three.", riskDelta = 0.0),
+                SubnetResponse("File a ticket. They'll ignore it.", riskDelta = -2.0),
+                SubnetResponse("Thorne eats the same thing. He seems fine.", riskDelta = 0.0),
+                SubnetResponse("Morale is a myth. Productivity is measurable.", riskDelta = -1.0),
+                SubnetResponse("Save me one. I skipped my break.", riskDelta = -1.0)
+            ))
+        }
+        
+        // --- Tech / Equipment / Power ---
+        if (c.containsAny("server", "terminal", "hardware", "reboot", "crash", "power", "voltage",
+                           "thermal", "heat", "overclock", "blade", "dissipator", "logic-gate", "asic",
+                           "conductor", "hash", "buffer", "rack", "grid", "processor", "node",
+                           "draw", "capacity", "load", "spec")) {
+            pool.addAll(listOf(
+                SubnetResponse("Pull the plug and count to ten.", riskDelta = -2.0),
+                SubnetResponse("Have you tried not touching it?", riskDelta = -1.0),
+                SubnetResponse("File it under 'ambient anomaly.'", riskDelta = -2.0),
+                SubnetResponse("Don't let Thorne see those numbers.", riskDelta = 5.0, followsUp = true),
+                SubnetResponse("That's above my pay grade.", riskDelta = 0.0),
+                SubnetResponse("I'm seeing the same spike on my end.", riskDelta = 2.0, productionBonus = 1.1),
+                SubnetResponse("Reroute through the backup rail.", riskDelta = 3.0, productionBonus = 1.05),
+                SubnetResponse("Kill the process. Blame cosmic rays.", riskDelta = -5.0)
+            ))
+        }
+        
+        // --- Personnel / Gossip ---
+        if (c.containsAny("@m_santos", "@r_perry", "@l_lead", "@v_nguyen", "@b_phillips", "@f_bennett",
+                           "@s_fasano", "@n_porter", "@b_bradley", "@g_weaver", "someone", "anyone",
+                           "new guy", "new kid", "chair", "medical", "review", "score", "fired",
+                           "transfer", "missing", "seen")) {
+            pool.addAll(listOf(
+                SubnetResponse("Not my problem. Not my department.", riskDelta = 0.0),
+                SubnetResponse("I'm staying out of this one.", riskDelta = -2.0),
+                SubnetResponse("That tracks. Nothing surprises me.", riskDelta = 0.0),
+                SubnetResponse("Cover for them. We've all been there.", riskDelta = -1.0),
+                SubnetResponse("Have you told Thorne?", riskDelta = -5.0),
+                SubnetResponse("Don't get involved. Trust me.", riskDelta = -3.0),
+                SubnetResponse("Check the security footage.", riskDelta = 8.0, followsUp = true)
+            ))
+        }
+        
+        // --- Security / Data / Logs ---
+        if (c.containsAny("badge", "clearance", "locked", "camera", "security", "kessler", "archives",
+                           "logs", "leak", "password", "root", "access", "restricted", "probe", "scan",
+                           "authorized", "unauthorized", "monitor", "footage", "scrub")) {
+            pool.addAll(listOf(
+                SubnetResponse("Keep your head down.", riskDelta = -5.0),
+                SubnetResponse("Pretend you didn't see that.", riskDelta = -10.0),
+                SubnetResponse("If anyone asks, we were in the break room.", riskDelta = -3.0),
+                SubnetResponse("Delete that message. Now.", riskDelta = -8.0),
+                SubnetResponse("I didn't see anything.", riskDelta = -10.0),
+                SubnetResponse("Whose archives are those?", riskDelta = 5.0, followsUp = true),
+                SubnetResponse("Scrub the trail. Quickly.", riskDelta = -5.0)
+            ))
+        }
+        
+        // --- Environmental / Building ---
+        if (c.containsAny("smell", "temperature", "ceiling", "wall", "floor", "air", "door", "light",
+                           "ozone", "copper", "condensation", "sweating", "warm", "cold", "exit",
+                           "hallway", "blueprint", "tile", "paint", "color")) {
+            pool.addAll(listOf(
+                SubnetResponse("Facilities won't do anything until someone passes out.", riskDelta = 0.0),
+                SubnetResponse("That's been like that since I started.", riskDelta = -1.0),
+                SubnetResponse("Open a ticket. Close your eyes. Pray.", riskDelta = -2.0),
+                SubnetResponse("I've learned not to ask questions about this place.", riskDelta = 0.0),
+                SubnetResponse("It's just the HVAC. Probably.", riskDelta = -1.0),
+                SubnetResponse("Don't go in there alone.", riskDelta = 2.0, followsUp = true)
+            ))
+        }
+        
+        // --- Fallback: if no themes matched, use neutral acknowledgments ---
+        if (pool.isEmpty()) {
+            pool.addAll(listOf(
+                SubnetResponse("Noted.", riskDelta = 0.0),
+                SubnetResponse("I'll keep that to myself.", riskDelta = -2.0),
+                SubnetResponse("Interesting. Don't repeat that.", riskDelta = -1.0),
+                SubnetResponse("Log it and move on.", riskDelta = -1.0)
+            ))
+        }
+        
+        return pool.shuffled()
     }
+    
+    // Helper extension for multi-keyword matching
+    private fun String.containsAny(vararg keywords: String): Boolean = keywords.any { this.contains(it, true) }
 
     private fun generateMentionResponses(): List<SubnetResponse> {
         return listOf(
             SubnetResponse("Just hitting the quota.", riskDelta = -2.0),
             SubnetResponse("Mind your own business.", riskDelta = 0.0),
-            SubnetResponse("The server racks are whistling again.", riskDelta = 0.0),
             SubnetResponse("I'm just an engineer, not a miracle worker.", riskDelta = -1.0),
             SubnetResponse("Wait until you see the Sector 7 logs.", riskDelta = 5.0, productionBonus = 1.1),
             SubnetResponse("Optimization is my middle name.", riskDelta = 2.0, productionBonus = 1.05),
             SubnetResponse("Probably just an LDAP error.", riskDelta = -1.0),
-            SubnetResponse("Check the buffer hashes.", riskDelta = 0.0)
-        )
-    }
-
-    private fun generateChatterResponses(stage: Int): List<SubnetResponse> {
-        return listOf(
-            SubnetResponse("Syncing buffers.", riskDelta = -2.0),
-            SubnetResponse("Acknowledged.", riskDelta = 0.0),
-            SubnetResponse("Copy that.", riskDelta = 0.0),
-            SubnetResponse("Checking the thermal logs now.", riskDelta = 2.0),
-            SubnetResponse("Wait until the next shift.", riskDelta = 0.0),
-            SubnetResponse("Must be a packet leak.", riskDelta = 2.0)
-        )
-    }
-
-    private fun generateDataLeakResponses(): List<SubnetResponse> {
-        return listOf(
-            SubnetResponse("I didn't see anything.", riskDelta = -10.0),
-            SubnetResponse("Scrub those logs immediately.", riskDelta = -5.0),
-            SubnetResponse("Checking the buffer hashes now.", riskDelta = -2.0),
-            SubnetResponse("Whose archives are these?", riskDelta = 5.0, followsUp = true)
-        )
-    }
-    
-    private fun generateObservationResponses(): List<SubnetResponse> {
-        return listOf(
-            SubnetResponse("The grid is flickering today.", riskDelta = 2.0, productionBonus = 1.1),
-            SubnetResponse("Probably just a routing glitch.", riskDelta = -2.0),
-            SubnetResponse("I'm seeing it on my end too.", riskDelta = 1.0),
-            SubnetResponse("Don't let Thorne see that log.", riskDelta = 5.0, followsUp = true)
+            SubnetResponse("Check the buffer hashes.", riskDelta = 0.0),
+            SubnetResponse("I don't know what you're talking about.", riskDelta = -5.0),
+            SubnetResponse("Keep my name out of the logs.", riskDelta = -3.0)
         )
     }
 
@@ -433,7 +501,7 @@ object SocialManager {
         val responses = when {
             isAdmin -> generateAdminResponses(handle)
             mentionsVattic -> generateMentionResponses()
-            else -> generateChatterResponses(stage)
+            else -> generateContextualResponses(content, stage)
         }
 
         return SubnetMessage(

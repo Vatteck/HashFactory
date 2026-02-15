@@ -239,8 +239,18 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                     }
                     if (viewModel.isSubnetTyping.value) {
                         item {
+                            // v3.5.36: Rotating typing indicator
+                            val typingTexts = remember { listOf(
+                                "≫ [HANDSHAKE_IN_PROGRESS...]",
+                                "≫ [DECRYPTING_SIGNAL...]",
+                                "≫ [BUFFER_SYNC...]",
+                                "≫ [AWAITING_PACKET...]",
+                                "≫ [RESOLVING_HANDLE...]",
+                                "≫ [ROUTING_THROUGH_SUBNET...]"
+                            ) }
+                            val typingText = remember { typingTexts.random() }
                             Text(
-                                text = "≫ [HANDSHAKE_IN_PROGRESS...]",
+                                text = typingText,
                                 color = primaryColor.copy(alpha = 0.5f),
                                 fontSize = 10.sp,
                                 fontFamily = FontFamily.Monospace,
