@@ -147,11 +147,7 @@ object NarrativeManagerService {
             return
         }
 
-        if (currentStage == 2 && flops >= 2000000.0 && !vm.hasSeenEvent("memory_leak")) {
-            vm.triggerGlitchEffect()
-            NarrativeManager.getStoryEvent(2, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
-            return
-        }
+        // v3.5.45: Removed dead stage 2 memory_leak block (was calling storyEvents[2] which no longer exists)
 
         if (currentStage == 3 && vm.substrateMass.value >= 1e12 && !vm.hasSeenEvent("the_singularity")) {
             NarrativeManager.getEventById("the_singularity")?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }

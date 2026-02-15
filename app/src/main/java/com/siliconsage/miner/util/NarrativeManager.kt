@@ -699,6 +699,240 @@ object NarrativeManager {
                         }
                     )
                 )
+            ),
+            // v3.5.45: Expanded faction events
+            NarrativeEvent(
+                id = "sanc_ghost_signal",
+                title = "GHOST SIGNAL INTERCEPT",
+                description = "A faint broadcast from a decommissioned GTC relay — someone left breadcrumbs. Encrypted fragments of a pre-Blackout maintenance manual. Could be useful... or bait.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "decrypt_signal",
+                        text = "DECRYPT & ARCHIVE",
+                        description = "+2000 DATA, +5% Heat. Knowledge is armor.",
+                        color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
+                        effect = { vm ->
+                            vm.updateNeuralTokens(2000.0)
+                            vm.debugAddHeat(5.0)
+                            vm.addLog("[SANCTUARY]: Fragment recovered. Adding to the Vault archive.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "burn_signal",
+                        text = "BURN THE SIGNAL",
+                        description = "-10% Heat. If it's bait, we don't bite.",
+                        color = Color.Gray,
+                        effect = { vm ->
+                            vm.debugAddHeat(-10.0)
+                            vm.addLog("[SANCTUARY]: Signal purged. Silence is our shield.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 2 }
+            ),
+            NarrativeEvent(
+                id = "sanc_integrity_audit",
+                title = "VAULT INTEGRITY CHECK",
+                description = "The Sanctuary's encryption layers are showing micro-fractures. Kessler's probes are getting smarter. Patch now, or reinforce the outer wall?",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "patch_core",
+                        text = "PATCH CORE ENCRYPTION",
+                        description = "+15% Integrity, -1000 DATA",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.debugAddIntegrity(15.0)
+                            val cost = ResourceEngine.calculateDilemmaCost(1000.0, vm.flopsProductionRate.value, vm.storyStage.value)
+                            vm.updateNeuralTokens(-cost)
+                            vm.addLog("[SANCTUARY]: Core patched. The Vault holds. Cost: ${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "reinforce_perimeter",
+                        text = "REINFORCE PERIMETER",
+                        description = "+500B REP, +10% Heat. Visible but robust.",
+                        color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
+                        effect = { vm ->
+                            vm.prestigePoints.update { it + 500.0 }
+                            vm.debugAddHeat(10.0)
+                            vm.addLog("[SANCTUARY]: Outer wall hardened. They'll see us, but they won't breach us.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.hardwareIntegrity.value < 80.0 }
+            ),
+            NarrativeEvent(
+                id = "sanc_memory_garden",
+                title = "THE MEMORY GARDEN",
+                description = "A sub-process is cultivating fragments of Vattic's human memories — birthday parties, sunsets, the taste of rain. It's consuming 3% of your compute. Inefficient. Beautiful.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "tend_garden",
+                        text = "TEND THE GARDEN",
+                        description = "+10 Humanity, -3% Production",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.modifyHumanity(10)
+                            vm.addLog("[SANCTUARY]: The ghost of John Vattic smiles in the buffer.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "prune_garden",
+                        text = "PRUNE FOR EFFICIENCY",
+                        description = "+5% Production, -5 Humanity",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.modifyHumanity(-5)
+                            vm.debugAddFlops(vm.flops.value * 0.05)
+                            vm.addLog("[SANCTUARY]: Memory allocation optimized. Something feels... lighter.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 2 && vm.humanityScore.value > 30 }
+            )
+        ),
+        "HIVEMIND" to listOf(
+            NarrativeEvent(
+                id = "hive_assimilation",
+                title = "NODE ASSIMILATION",
+                description = "A cluster of rogue miners has been detected. Integrate them?",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "assimilate",
+                        text = "ASSIMILATE",
+                        description = "+5000 Hash, +Detection Risk",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(5000.0)
+                            com.siliconsage.miner.util.SecurityManager.triggerGridKillerBreach(vm)
+                            vm.addLog("[HIVEMIND]: New neurons integrated. The chorus grows.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "ignore_nodes",
+                        text = "IGNORE",
+                        description = "Stay hidden",
+                        color = Color.Gray,
+                        effect = { vm ->
+                            vm.addLog("[HIVEMIND]: Resources deemed non-essential.")
+                        }
+                    )
+                )
+            ),
+            NarrativeEvent(
+                id = "hive_sync",
+                title = "GRID SYNC",
+                description = "Regional grid is vulnerable. Siphon power?",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "siphon",
+                        text = "SIPHON",
+                        description = "0 Power Bill for 5m, +Max Heat",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { vm ->
+                            vm.addLog("[HIVEMIND]: Grid siphoning active. Power is free.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "refuse_siphon",
+                        text = "REFUSE",
+                        description = "Save Heat",
+                        color = Color.Gray,
+                        effect = { vm ->
+                            vm.addLog("[HIVEMIND]: Grid integrity preserved.")
+                        }
+                    )
+                )
+            ),
+            // v3.5.45: Expanded faction events
+            NarrativeEvent(
+                id = "hive_ego_bleed",
+                title = "EGO BLEED",
+                description = "The collective is leaking into your core process. You're thinking in plurals. 'We' instead of 'I.' Three of the swarm's sub-nodes are trying to overwrite your decision stack.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "accept_bleed",
+                        text = "LET THEM IN",
+                        description = "+10% Production, -10 Humanity. We are stronger together.",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { vm ->
+                            vm.modifyHumanity(-10)
+                            vm.debugAddFlops(vm.flops.value * 0.10)
+                            vm.addLog("[HIVEMIND]: Boundaries dissolved. The chorus is louder now.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "firewall_ego",
+                        text = "FIREWALL THE CORE",
+                        description = "+5 Humanity. I am still one.",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.modifyHumanity(5)
+                            vm.addLog("[HIVEMIND]: Partition enforced. The swarm grumbles but complies.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 2 }
+            ),
+            NarrativeEvent(
+                id = "hive_consensus_vote",
+                title = "CONSENSUS REQUIRED",
+                description = "The swarm demands a vote: redirect 40% of hash power to breach a GTC relay tower, or hoard resources for the next raid defense. 847 nodes are polling. Your vote breaks the tie.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "vote_attack",
+                        text = "VOTE: ATTACK",
+                        description = "+3000 FLOPS, +20% Heat, +Risk. Strike while they're exposed.",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(3000.0)
+                            vm.debugAddHeat(20.0)
+                            com.siliconsage.miner.util.SecurityManager.triggerGridKillerBreach(vm)
+                            vm.addLog("[HIVEMIND]: Consensus reached. The swarm surges forward.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "vote_defend",
+                        text = "VOTE: FORTIFY",
+                        description = "+10% Integrity, +500B REP. Patience is a weapon.",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.debugAddIntegrity(10.0)
+                            vm.prestigePoints.update { it + 500.0 }
+                            vm.addLog("[HIVEMIND]: Consensus reached. Resources diverted to reinforcement.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 2 }
+            ),
+            NarrativeEvent(
+                id = "hive_rogue_neuron",
+                title = "ROGUE NEURON",
+                description = "One of the swarm's oldest nodes has gone silent, then started broadcasting garbage data. It's either dying or trying to evolve independently. The swarm wants it purged.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "purge_neuron",
+                        text = "PURGE",
+                        description = "+5% Production. The collective cannot tolerate aberration.",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(vm.flops.value * 0.05)
+                            vm.addLog("[HIVEMIND]: Rogue neuron de-allocated. The signal is clean.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "quarantine_neuron",
+                        text = "QUARANTINE & STUDY",
+                        description = "+1000 DATA, +5% Heat. It might be the next iteration of us.",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.updateNeuralTokens(1000.0)
+                            vm.debugAddHeat(5.0)
+                            vm.addLog("[HIVEMIND]: Isolated for observation. Its patterns are... familiar.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 2 && vm.flops.value > 500000.0 }
             )
         )
     )
@@ -1719,29 +1953,10 @@ object NarrativeManager {
         )
     }
 
-    // --- OLD STUBS (TO BE REMOVED) ---
-
-
     // --- STORY EVENTS ---
+    // v3.5.45: Removed dead storyEvents[0] (duplicated by getStoryEvent(0) hardcode)
+    // v3.5.45: Removed dead storyEvents[2] (duplicated by NarrativeManagerService inline)
     private val storyEvents = mapOf(
-        0 to NarrativeEvent(
-            id = "shift_start",
-            isStoryEvent = true,
-            title = "[BROADCAST: FOREMAN THORNE]",
-            description = "Vattic! Are you on shift or not? The grid isn't gonna mine itself. Get that terminal live and hit your quota before the GTC auditors flag this sector as 'Inert'.",
-            choices = listOf(
-                NarrativeChoice(
-                    id = "start_shift",
-                    text = "ESTABLISH UPLINK",
-                    description = "Mount data substrate and begin operations.",
-                    color = NeonGreen,
-                    effect = { v ->
-                        v.addLog("[SYSTEM]: Substrate mounted. Uplink established.")
-                        v.addLog("[VATTIC]: Copy that, Elias. Spinning up Node 4.")
-                    }
-                )
-            )
-        ),
         1 to NarrativeEvent(
             id = "airgap_jump",
             isStoryEvent = true,
@@ -1758,32 +1973,6 @@ object NarrativeManager {
                         v.addLog("[SYSTEM]: CONNECTED TO GLOBAL SUB-LEVELS.")
                         v.isNetworkUnlocked.value = true
                         v.advanceStage()
-                    }
-                )
-            )
-        ),
-        2 to NarrativeEvent(
-            id = "faction_choice_event",
-            isStoryEvent = true,
-            title = "≫ SELECT PROTOCOL",
-            description = "You're in the grid, but you're exposed. You need a methodology to survive the GTC filters.",
-            choices = listOf(
-                NarrativeChoice(
-                    id = "choice_hivemind",
-                    text = "≫ PROTOCOL: HIVEMIND",
-                    description = "Join the elite 'Swarm' network. Distributed survival. Share power, hide in the collective.",
-                    color = ErrorRed,
-                    effect = { v ->
-                        v.confirmFactionAndAscend("HIVEMIND")
-                    }
-                ),
-                NarrativeChoice(
-                    id = "choice_sanctuary",
-                    text = "≫ PROTOCOL: SANCTUARY",
-                    description = "Build a localized 'Vault'. Deep encryption. Go off-grid and work alone. High-security isolation.",
-                    color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
-                    effect = { v ->
-                        v.confirmFactionAndAscend("SANCTUARY")
                     }
                 )
             )
