@@ -4,7 +4,7 @@ import kotlin.random.Random
 
 /**
  * SocialManager v3.5 - Technical Horror / Awakening Edition
- * Removed all "psychic" and legacy lore (EXTERMINATE_REBUS, Kessler, etc.)
+ * Removed all "psychic" and legacy lore references.
  * Strictly human peon dialogue vs cold Administrator/Security directives.
  */
 object SocialManager {

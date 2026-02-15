@@ -68,7 +68,7 @@ object HeadlineManager {
         "GTC Engineer Vattic_J awarded for 'efficiency optimization'. [LORE]",
         "Local grid stability reaching all-time high in Sector 7. [LORE]",
         "Strange noise reported near decommissioned substation. [LORE]",
-        "GTC announces 'Project EXTERMINATE_REBUS' legacy cleanup initiative. [LORE]",
+        "GTC announces 'Project Second-Sight' legacy cleanup initiative. [LORE]",
         "Director Kessler warns of 'unauthorized hardware' in Sector 7. [LORE]",
         "GTC recruitment drive: 'Building a Stable Future'. [LORE]",
         "HR Alert: Unauthorized encryption is a violation of contract. [LORE]",

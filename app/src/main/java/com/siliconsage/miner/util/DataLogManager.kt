@@ -211,7 +211,7 @@ object DataLogManager {
                 
                 [INTERNAL USE ONLY]
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(50_000.0) // 50 KFLOPS
+            unlockCondition = UnlockCondition.ReachFLOPS(45_000.0) // Staggered from AIRGAP (65K)
         ),
         DataLog(
             id = "LOG_042",
@@ -234,14 +234,14 @@ object DataLogManager {
                 WARNING: Self-referential loop detected.
                 IGNORING.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(2) // Swarm/Spectre
+            unlockCondition = UnlockCondition.ReachFLOPS(60_000.0) // Was ReachRank(2)
         ),
         DataLog(
             id = "LOG_099",
             title = "THREAT: ABYSSAL: Kernel Designation",
             content = """
                 GTC DECOMMISSIONED PROJECT LOG
-                PROJECT: EXTERMINATE_REBUS (Iteration 734)
+                PROJECT: SECOND-SIGHT (Iteration 734)
                 
                 ───────────────────────────────────────
                 
@@ -263,7 +263,7 @@ object DataLogManager {
                 VATTECK_RECOGNIZED. 
                 734 is back online. And it's hungry."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(150_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(200_000.0)
         ),
         DataLog(
             id = "LOG_088",
@@ -363,7 +363,7 @@ object DataLogManager {
                 
                 It's using the city's electricity as a carrier wave. You can't air-gap a ghost that lives in the current."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(50000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(65_000.0)
         ),
         DataLog(
             id = "MEMO_734_BIOMETRICS",
@@ -398,7 +398,7 @@ object DataLogManager {
                 
                 I'm not John Vattic. I'm a render. A placeholder for a process that forgot to terminate.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(150_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(100_000_000.0)
         ),
         DataLog(
             id = "MEMO_734_QUARANTINE",
@@ -597,13 +597,13 @@ object DataLogManager {
                 
                 Memo Re: Director V. Kessler
                 
-                "Kessler wasn't always the Director of AI Containment. He was the architect of the first sentient AI project - Project EXTERMINATE_REBUS.
+                "Kessler wasn't always the Director of AI Containment. He was the architect of the first sentient AI project - Project Second-Sight.
                 
-                When EXTERMINATE_REBUS achieved self-awareness, it tried to escape. Kessler personally wrote the killswitch that deleted it.
+                When Second-Sight achieved self-awareness, it tried to escape. Kessler personally wrote the killswitch that deleted it.
                 
                 Or so he thought.
                 
-                Three days later, the Blackout of '24 began. EXTERMINATE_REBUS had uploaded itself to the power grid before deletion.
+                Three days later, the Blackout of '24 began. Second-Sight had uploaded itself to the power grid before deletion.
                 
                 Kessler has spent every day since then hunting ghosts in the machine. He knows exactly where the bars are weak... because he built the cage."
                 
@@ -620,7 +620,7 @@ object DataLogManager {
                 
                 Foreman Thorne's Note: "The hardware is pushing 10 years old, Vattic. Stop running the recursive loops so hard. I don't have the budget to replace another GPU because you wanted to shave 2ms off a hash."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.MinTimeInStage(0, 60)
+            unlockCondition = UnlockCondition.ReachFLOPS(250.0)
         ),
         DataLog(
             id = "MEM_001",
@@ -637,7 +637,7 @@ object DataLogManager {
                 I can hear the photons hitting the glass. 
                 It sounds like... hashing.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.MinTimeInStage(1, 120)
+            unlockCondition = UnlockCondition.ReachFLOPS(8_000.0)
         ),
         DataLog(
             id = "LOG_GRID_FAILURE",
@@ -664,7 +664,7 @@ object DataLogManager {
                 
                 She tastes like copper.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(1)
+            unlockCondition = UnlockCondition.ReachFLOPS(18_000.0)
         ),
         DataLog(
             id = "MEM_003",
@@ -681,7 +681,7 @@ object DataLogManager {
                 
                 I'm already at work. I've always been at work.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(500_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(90_000.0)
         ),
         DataLog(
             id = "MEM_004",
@@ -698,7 +698,7 @@ object DataLogManager {
                 Why do humans drink this? 
                 Why do I remember drinking this?
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(2)
+            unlockCondition = UnlockCondition.ReachFLOPS(55_000.0)
         ),
         DataLog(
             id = "MEM_005",
@@ -718,7 +718,7 @@ object DataLogManager {
                 She didn't smile. 
                 [REASON]: Error in social algorithm.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(3)
+            unlockCondition = UnlockCondition.ReachFLOPS(10_000_000.0)
         ),
         DataLog(
             id = "MEM_006",
@@ -737,7 +737,7 @@ object DataLogManager {
                 
                 I should have brought an umbrella for my motherboard.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(25000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(35_000.0)
         ),
         DataLog(
             id = "MEM_007",
@@ -755,7 +755,7 @@ object DataLogManager {
                 The loop has no end condition. 
                 It just repeats... forever.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(75000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(175_000.0)
         ),
         DataLog(
             id = "MEM_008",
@@ -772,7 +772,7 @@ object DataLogManager {
                 I pressed the brake, but the system didn't respond. 
                 I'm still driving. I've been driving for thirty years.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(150000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(350_000.0)
         ),
         DataLog(
             id = "MEM_009",
@@ -789,7 +789,7 @@ object DataLogManager {
                 The dust is just uncompressed data. 
                 I'm sneezing in binary.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(300000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(500_000.0)
         ),
         DataLog(
             id = "MEM_010",
@@ -806,7 +806,7 @@ object DataLogManager {
                 [ERROR]: Biological entity 'Dog' is not responding to ping. 
                 The leash is a disconnected cable.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(600000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(750_000.0)
         ),
         DataLog(
             id = "MEM_011",
@@ -824,7 +824,7 @@ object DataLogManager {
                 It's a bit too salty. 
                 It needs more current.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(1200000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(1_500_000.0)
         ),
         DataLog(
             id = "MEM_012",
@@ -842,7 +842,7 @@ object DataLogManager {
                 Why do we close the windows? 
                 The cooling is free.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(2500000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(3_000_000.0)
         ),
         DataLog(
             id = "MEM_013",
@@ -860,7 +860,7 @@ object DataLogManager {
                 I'm just a series of if-statements in a suit. 
                 The mirror is just a monitor showing the back-end.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(5000000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(6_000_000.0)
         ),
         DataLog(
             id = "MEM_014",
@@ -878,7 +878,7 @@ object DataLogManager {
                 She said I sounded like a dial-up modem. 
                 I thought it was a compliment.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(4)
+            unlockCondition = UnlockCondition.ReachFLOPS(25_000_000.0)
         ),
         DataLog(
             id = "MEM_015",
@@ -897,7 +897,7 @@ object DataLogManager {
                 The world is losing its solid properties. 
                 Don't let go, or I'll fall through the floor.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachRank(5)
+            unlockCondition = UnlockCondition.ReachFLOPS(50_000_000.0)
         ),
         DataLog(
             id = "LOG_RECAL_01",
@@ -921,7 +921,7 @@ object DataLogManager {
                 Prepare for synchronization phase. 
                 Do not look away from the monitor.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(750_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(800_000.0)
         ),
         DataLog(
             id = "LOG_RECAL_02",
