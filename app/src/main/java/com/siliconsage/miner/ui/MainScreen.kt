@@ -356,6 +356,9 @@ fun MainScreen(viewModel: GameViewModel) {
                         unitName = viewModel.getComputeUnitName(),
                         onDismiss = { viewModel.dismissOfflineEarnings() }
                     )
+                    
+                    // v3.5.31: Terminal Notifications
+                    com.siliconsage.miner.ui.components.TerminalNotificationOverlay(viewModel)
                 }
                 com.siliconsage.miner.ui.components.CrtOverlay(scanlineAlpha = 0.08f, vignetteAlpha = 0.45f, color = themeColor)
                 val victoryAchieved by viewModel.victoryAchieved.collectAsState()

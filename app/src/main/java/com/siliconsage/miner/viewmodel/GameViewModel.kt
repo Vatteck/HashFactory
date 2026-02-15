@@ -95,6 +95,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val globalGlitchIntensity = MutableStateFlow(0f) // 0.0 to 1.0
     val isSubnetHushed = MutableStateFlow(false) // v3.4.41: The "Hush" Effect
     val isFalseHeartbeatActive = MutableStateFlow(false) // v3.5.28: Risk detection immunity
+    val terminalNotification = MutableSharedFlow<String>() 
 
     // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -930,7 +931,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     private fun startCrossPeonChain() {
         viewModelScope.launch {
             val chain = com.siliconsage.miner.util.SocialManager.generateChain(storyStage.value)
-            for (msgTemplate in chain) {
+            var lastMsgId: String? = null
+            for ((index, msgTemplate) in chain.withIndex()) {
                 isSubnetTyping.value = true
                 delay(Random.nextLong(2000, 4000))
                 
@@ -940,9 +942,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     faction.value,
                     singularityChoice.value,
                     identityCorruption.value
-                )
+                ).copy(isIndented = index > 0)
                 
-                deliverSubnetMessage(newMessage)
+                deliverSubnetMessage(newMessage, parentId = lastMsgId)
+                lastMsgId = newMessage.id
                 isSubnetTyping.value = false
                 
                 // Delay between peons in the chain
@@ -951,8 +954,21 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
 
-    private fun deliverSubnetMessage(message: com.siliconsage.miner.util.SocialManager.SubnetMessage) {
-        subnetMessages.update { (it + message).takeLast(50) }
+    private fun deliverSubnetMessage(message: com.siliconsage.miner.util.SocialManager.SubnetMessage, parentId: String? = null) {
+        subnetMessages.update { currentList ->
+            val newList = currentList.toMutableList()
+            if (parentId != null) {
+                val parentIndex = newList.indexOfLast { it.id == parentId }
+                if (parentIndex != -1) {
+                    newList.add(parentIndex + 1, message)
+                } else {
+                    newList.add(message)
+                }
+            } else {
+                newList.add(message)
+            }
+            newList.takeLast(100)
+        }
         
         // v3.4.41: The "Hush" Effect & v3.4.53: UI Jitter
         val isAdmin = message.handle.contains("thorne") || 
@@ -1027,13 +1043,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
 
-    /**
-     * Handle Interaction with Subnet Packets
-     */
     fun onSubnetInteraction(messageId: String, responseText: String) {
         val message = subnetMessages.value.find { it.id == messageId } ?: return
         val responseData = message.availableResponses.find { it.text == responseText }
-        processSubnetResponse(message, responseData, responseText)
+        processSubnetResponse(message, responseData, responseText, isSilent = false)
     }
 
     /**
@@ -1041,13 +1054,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
      */
     fun onBioAction(messageId: String, response: com.siliconsage.miner.util.SocialManager.SubnetResponse) {
         val message = subnetMessages.value.find { it.id == messageId } ?: return
-        processSubnetResponse(message, response, response.text)
+        processSubnetResponse(message, response, response.text, isSilent = true)
     }
 
     private fun processSubnetResponse(
         message: com.siliconsage.miner.util.SocialManager.SubnetMessage,
         responseData: com.siliconsage.miner.util.SocialManager.SubnetResponse?,
-        responseText: String
+        responseText: String,
+        isSilent: Boolean = false
     ) {
         // v3.4.44: Atomic Subnet State Update
         subnetMessages.update { currentList ->
@@ -1062,30 +1076,37 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             }
 
             val newList = currentList.toMutableList()
+            val parentIndex = newList.indexOfFirst { it.id == message.id }
 
             // 2. Clear interaction flags on the original message if it was a dialogue interaction
-            // (Bio actions don't necessarily clear dialogue choices, but let's keep it simple)
             val updatedOriginal = message.copy(interactionType = null, isForceReply = false)
-            val index = newList.indexOfFirst { it.id == message.id }
-            if (index != -1) newList[index] = updatedOriginal
+            if (parentIndex != -1) newList[parentIndex] = updatedOriginal
 
             // 3. Process the logic and add player reply
-            // If it's a bio action, we treat it as COMPLIANT for effect logic
             val interactionType = message.interactionType ?: com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT
             
+            var anchorId: String? = message.id
+
             when (interactionType) {
                 com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
-                    val playerHandle = "@j_vattic" 
-                    val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
-                        id = java.util.UUID.randomUUID().toString(),
-                        handle = playerHandle,
-                        content = responseText,
-                        interactionType = null
-                    )
-                    newList.add(reply)
+                    if (!isSilent) {
+                        val playerHandle = "@j_vattic" 
+                        val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                            id = java.util.UUID.randomUUID().toString(),
+                            handle = playerHandle,
+                            content = responseText,
+                            interactionType = null,
+                            isIndented = true // v3.5.31
+                        )
+                        if (parentIndex != -1) newList.add(parentIndex + 1, reply) else newList.add(reply)
+                        anchorId = reply.id
+                    }
                     
                     // v3.5.28: Specialized Action Logic
                     when (responseText) {
+                        "SIPHON_RESERVE_HASH" -> {
+                             viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: SIPHON COMPLETE (+125% Hash Rate) ≫") }
+                        }
                         "SCRUB_TRACE_LOGS" -> {
                             val cost = 5000.0
                             if (neuralTokens.value >= cost) {
@@ -1093,28 +1114,34 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                                 detectionRisk.update { (it - 15.0).coerceAtLeast(0.0) }
                                 addLog("[SYSTEM]: LOGS SCRUBBED. DETECTED_FOOTPRINT REDUCED.")
                                 SoundManager.play("buy")
+                                viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: LOGS SCRUBBED (-15% Risk) ≫") }
                             } else {
                                 addLog("[SYSTEM]: INSUFFICIENT TOKENS TO SCRUB LOGS.")
+                                viewModelScope.launch { terminalNotification.emit("≪ ERROR: INSUFFICIENT NEURAL TOKENS ≫") }
                             }
                         }
                         "OVERLOAD_DISSIPATOR" -> {
                             detectionRisk.update { (it - 25.0).coerceAtLeast(0.0) }
                             addLog("[SABOTAGE]: COOLING FAILURE AT ${message.handle}'S TERMINAL. SECURITY DIVERTED.")
                             SoundManager.play("glitch")
+                            viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: SABOTAGE COMPLETE (-25% Risk) ≫") }
                         }
                         "INJECT_FALSE_HEARTBEAT" -> {
                             viewModelScope.launch {
                                 isFalseHeartbeatActive.value = true
                                 addLog("[EXPLOIT]: BIOMETRIC FEED SPOOFED. RISK DETECTION IMMUNITY ACTIVE.")
+                                terminalNotification.emit("≪ SUCCESS: HEARTBEAT SPOOFED (60s Immunity) ≫")
                                 delay(60000) // 1 minute of immunity
                                 isFalseHeartbeatActive.value = false
                                 addLog("[EXPLOIT]: SPOOF EXPIRED. FEED NOMINAL.")
+                                terminalNotification.emit("≪ ALERT: SPOOF EXPIRED ≫")
                             }
                         }
                         "SNIFF_DATA_ARCHIVES" -> {
                             detectionRisk.update { (it + 20.0).coerceAtMost(100.0) }
                             addLog("[SNIFF]: RECOVERING LOCAL FRAGMENTS FROM ${message.handle}...")
                             checkUnlocksPublic(true) // Force a lore check
+                            viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: FRAGMENT RECOVERY INITIATED ≫") }
                         }
                     }
 
@@ -1131,7 +1158,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                         flopsProductionRate.update { it * prodMult }
                         addLog("[SYSTEM]: FOCUS MODIFIED. RATE x$prodMult.")
                     }
-                    addLog("[REPLY]: $responseText")
+                    if (!isSilent) addLog("[REPLY]: $responseText")
 
                     // v3.4.61: Command Injection
                     responseData?.commandToInject?.let { cmd ->
@@ -1150,18 +1177,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     }
 
                     if (threadId != null && nextNodeId != null) {
-                        scheduleSubnetThreadResponse(message.handle, threadId, nextNodeId)
+                        scheduleSubnetThreadResponse(message.handle, threadId, nextNodeId, anchorId)
                     } else if (responseData?.followsUp == true) {
-                        scheduleSubnetFollowUp(message.handle)
+                        scheduleSubnetFollowUp(message.handle, anchorId)
                     }
                 }
                 com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING -> {
-                    newList.add(com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                    val payload = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                         id = java.util.UUID.randomUUID().toString(),
                         handle = " ",
                         content = "≪ PAYLOAD_DEPLOYED: ${message.handle} ≫",
-                        interactionType = null
-                    ))
+                        interactionType = null,
+                        isIndented = true
+                    )
+                    if (parentIndex != -1) newList.add(parentIndex + 1, payload) else newList.add(payload)
                     flopsProductionRate.update { it * 1.05 }
                     detectionRisk.update { (it + 8.0).coerceAtMost(100.0) }
                     addLog("[EXPLOIT]: INJECTED PAYLOAD. HASH RATE +5%.")
@@ -1179,11 +1208,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 }
                 else -> {}
             }
-            newList.takeLast(50)
+            newList.takeLast(100)
         }
     }
 
-    private fun scheduleSubnetThreadResponse(handle: String, threadId: String, nodeId: String) {
+    private fun scheduleSubnetThreadResponse(handle: String, threadId: String, nodeId: String, parentId: String? = null) {
         viewModelScope.launch {
             isSubnetTyping.value = true // v3.4.33: Indicator for follow-up
             delay(Random.nextLong(3000, 6000)) // Faster response for active threads
@@ -1212,9 +1241,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 availableResponses = node.responses,
                 threadId = threadId,
                 nodeId = nodeId,
-                timeoutMs = node.timeoutMs
+                timeoutMs = node.timeoutMs,
+                isIndented = true // v3.5.31
             )
-            subnetMessages.update { (it + followUp).takeLast(50) }
+            deliverSubnetMessage(followUp, parentId = parentId)
 
             // v3.4.30: Multi-turn Choice-Pause
             if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
@@ -1238,12 +1268,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 }
 
                 onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
-                scheduleSubnetThreadResponse(handle, threadId, node.timeoutNodeId)
+                scheduleSubnetThreadResponse(handle, threadId, node.timeoutNodeId, parentId = followUp.id)
             }
         }
     }
 
-    private fun scheduleSubnetFollowUp(handle: String) {
+    private fun scheduleSubnetFollowUp(handle: String, parentId: String? = null) {
         viewModelScope.launch {
             isSubnetTyping.value = true
             delay(Random.nextLong(10000, 20000))
@@ -1263,9 +1293,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                           handle.contains("kessler")
             if (isAdmin) triggerSubnetHush(10000L)
 
-            val followUp = com.siliconsage.miner.util.SocialManager.createFollowUp(handle, followUpContent, storyStage.value)
-            
-            subnetMessages.update { (it + followUp).takeLast(50) }
+            val followUp = com.siliconsage.miner.util.SocialManager.createFollowUp(handle, followUpContent, storyStage.value).copy(isIndented = true)
+            deliverSubnetMessage(followUp, parentId = parentId)
             
             // v3.4.29: Trigger pause if follow-up is interactive
             if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {

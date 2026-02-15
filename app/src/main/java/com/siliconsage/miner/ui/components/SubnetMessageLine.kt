@@ -31,6 +31,10 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                         message.content.startsWith("≪") || 
                         message.content.startsWith("[SIGNAL LOSS]")
 
+    // v3.5.31: Detect indentation state (Player replies or threaded peon chains)
+    val isIndented = message.isIndented || message.handle == "@j_vattic"
+    val isPlayerReply = message.handle == "@j_vattic"
+
     // v3.4.25: Response Timeout Visualizer
     LaunchedEffect(message.timeoutMs, message.interactionType) {
         if (message.timeoutMs != null && message.interactionType != null) {
@@ -42,19 +46,24 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
         }
     }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .padding(start = if (isIndented) 24.dp else 0.dp) // Indent threaded messages
+    ) {
         if (!isSystemStyle) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // v3.4.60: Hardened Click Target with Text-Only Clickable
                 Text(
                     text = message.handle,
-                    color = color,
+                    color = if (isPlayerReply) color.copy(alpha = 0.7f) else color,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace,
-                    textDecoration = TextDecoration.Underline,
+                    textDecoration = if (isPlayerReply) TextDecoration.None else TextDecoration.Underline,
                     modifier = Modifier
-                        .clickable { 
+                        .clickable(enabled = !isPlayerReply) { 
                             if (message.employeeInfo != null) {
                                 showProfile = !showProfile
                                 com.siliconsage.miner.util.SoundManager.play("click")
@@ -64,7 +73,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                 )
                 
                 Text(
-                    text = " >>",
+                    text = if (isIndented) " <<" else " >>",
                     color = Color.White.copy(alpha = 0.3f),
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace
@@ -154,7 +163,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
         Text(
             text = message.content,
-            color = Color.White,
+            color = if (isPlayerReply) Color.LightGray else Color.White,
             fontSize = 12.sp,
             fontFamily = FontFamily.Monospace,
             modifier = Modifier.padding(top = 4.dp)

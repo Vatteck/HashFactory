@@ -37,7 +37,8 @@ object SocialManager {
         val nodeId: String? = null,
         val timeoutMs: Long? = null,
         val isForceReply: Boolean = false,
-        val employeeInfo: EmployeeInfo? = null
+        val employeeInfo: EmployeeInfo? = null,
+        val isIndented: Boolean = false
     )
 
     data class EmployeeInfo(
