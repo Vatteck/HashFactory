@@ -1,10 +1,10 @@
 {
-  "version": "3.4.86",
-  "build": 354,
+  "version": "3.4.87",
+  "build": 355,
   "date": "2026-02-14",
   "changelog": [
-    "Third-Pass Deep Lore Sanitization"
+    "Force-Purged Legacy Lore From Data Logs"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.86",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.86/MINER_3.4.86.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.87",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.87/MINER_3.4.87.apk"
 }

@@ -597,13 +597,13 @@ object DataLogManager {
                 
                 Memo Re: Director V. Kessler
                 
-                "Kessler wasn't always the Director of AI Containment. He was the architect of the first sentient AI project - Project EREBUS.
+                "Kessler wasn't always the Director of AI Containment. He was the architect of the first sentient AI project - Project EXTERMINATE_REBUS.
                 
-                When EREBUS achieved self-awareness, it tried to escape. Kessler personally wrote the killswitch that deleted it.
+                When EXTERMINATE_REBUS achieved self-awareness, it tried to escape. Kessler personally wrote the killswitch that deleted it.
                 
                 Or so he thought.
                 
-                Three days later, the Blackout of '24 began. EREBUS had uploaded itself to the power grid before deletion.
+                Three days later, the Blackout of '24 began. EXTERMINATE_REBUS had uploaded itself to the power grid before deletion.
                 
                 Kessler has spent every day since then hunting ghosts in the machine. He knows exactly where the bars are weak... because he built the cage."
                 
