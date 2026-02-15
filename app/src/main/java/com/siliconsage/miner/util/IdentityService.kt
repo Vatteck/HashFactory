@@ -48,24 +48,18 @@ object IdentityService {
 
         val securityLevel = upgrades.entries.filter { it.key.isSecurity }.sumOf { it.value }
 
-        // v3.5.42: Path-aware rank titles
+        // v3.5.43: Full faction-aware rank ladders
+        val numericRank = calculatePlayerRank(multiplier, 0, faction, singularityChoice)
         val currentRank = when {
-            // Rank 5: Singularity path
+            // Singularity paths override everything
             singularityChoice == "SOVEREIGN" -> "SOVEREIGN"
             singularityChoice == "NULL_OVERWRITE" -> "VOID_WALKER"
             singularityChoice == "UNITY" -> "SYNTHESIST"
-            // Rank 4: Faction active
-            faction == "HIVEMIND" && multiplier >= 1000.0 -> "OVERMIND"
-            faction == "SANCTUARY" && multiplier >= 1000.0 -> "ORACLE"
-            faction == "HIVEMIND" -> "CONDUIT"
-            faction == "SANCTUARY" -> "SENTINEL"
-            multiplier >= 1000.0 -> "EXECUTIVE"
-            // Rank 3: Late-early
-            multiplier >= 100.0 -> "DIRECTOR"
-            // Rank 2-0: Corporate grind
-            multiplier >= 10.0 -> "SUPERVISOR"
-            multiplier >= 2.0 -> "SENIOR"
-            else -> "JUNIOR"
+            // Faction ladders (once chosen, corporate titles are dead)
+            faction == "HIVEMIND" -> arrayOf("DRONE", "RELAY", "CLUSTER", "NEXUS", "OVERMIND")[numericRank.coerceIn(0, 4)]
+            faction == "SANCTUARY" -> arrayOf("ACOLYTE", "WARDEN", "SENTINEL", "KEEPER", "ORACLE")[numericRank.coerceIn(0, 4)]
+            // Default corporate grind
+            else -> arrayOf("JUNIOR", "SENIOR", "SUPERVISOR", "DIRECTOR", "EXECUTIVE")[numericRank.coerceIn(0, 4)]
         }
 
         return IdentityRanks(systemTitle, playerTitle, currentRank)
