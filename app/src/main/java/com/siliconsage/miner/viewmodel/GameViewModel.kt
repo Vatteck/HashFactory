@@ -103,6 +103,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val unlockedDataLogs = MutableStateFlow<Set<String>>(emptySet())
     val seenEvents = MutableStateFlow<Set<String>>(emptySet())
     val eventChoices = MutableStateFlow<Map<String, String>>(emptyMap()) // v3.5.40: eventId → choiceId
+    val sniffedHandles = MutableStateFlow<Set<String>>(emptySet()) // v3.5.46: NPC SNIFF targets
     val completedFactions = MutableStateFlow<Set<String>>(emptySet())
     val annexedNodes = MutableStateFlow<Set<String>>(setOf("D1"))
     val shadowRelays = MutableStateFlow<Set<String>>(emptySet())
@@ -384,7 +385,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 unlockedDataLogs = unlockedDataLogs.value, 
                 activeDilemmaChains = activeDilemmaChains.value, 
                 rivalMessages = rivalMessages.value, 
-                seenEvents = seenEvents.value, eventChoices = eventChoices.value,
+                seenEvents = seenEvents.value, eventChoices = eventChoices.value, sniffedHandles = sniffedHandles.value,
                 completedFactions = completedFactions.value, 
                 unlockedTranscendencePerks = unlockedPerks.value, 
                 annexedNodes = annexedNodes.value, 
@@ -582,6 +583,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         upgrades.value = emptyMap()
         seenEvents.value = emptySet()
         eventChoices.value = emptyMap()
+        sniffedHandles.value = emptySet() // v3.5.46: Reset SNIFF progress on hard prestige (logs persist)
         unlockedDataLogs.value = emptySet() 
         unlockedTechNodes.value = emptyList()
         DataLogManager.reset()
@@ -699,6 +701,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun unlockSkillUpgrade(t: UpgradeType) { viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, 1)); upgrades.update { it + (t to 1) } } }
     fun markEventSeen(id: String) { seenEvents.update { it + id } }
     fun markEventChoice(eventId: String, choiceId: String) { eventChoices.update { it + (eventId to choiceId) } } // v3.5.40
+    fun markSniffedHandle(handle: String) { sniffedHandles.update { it + handle } } // v3.5.46
     fun hasSeenEvent(id: String) = seenEvents.value.contains(id)
     fun initializeGlobalGrid() { if (globalSectors.value.isEmpty()) { globalSectors.value = SectorManager.getInitialGlobalGrid(singularityChoice.value) } }
     fun startUpdateDownload(c: android.content.Context? = null, info: UpdateInfo? = null) { if (c == null || info == null) return; isUpdateDownloading.value = true; UpdateService.startDownload(c, info, viewModelScope, { updateDownloadProgress.value = it }, { isUpdateDownloading.value = false }) }
@@ -1180,11 +1183,19 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                             }
                         }
                         "SNIFF_DATA_ARCHIVES" -> {
-                            // v3.5.35: Cost handled by unified gate
+                            // v3.5.46: NPC-specific SNIFF targets
+                            val handle = message.handle.lowercase().trim()
                             detectionRisk.update { (it + 20.0).coerceAtMost(100.0) }
-                            addLog("[SNIFF]: RECOVERING LOCAL FRAGMENTS FROM ${message.handle}...")
-                            checkUnlocksPublic(true)
-                            viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: FRAGMENT RECOVERY INITIATED ≫") }
+                            if (sniffedHandles.value.contains(handle)) {
+                                addLog("[SNIFF]: ARCHIVES ALREADY SCRAPED. NO NEW FRAGMENTS FROM ${message.handle}.")
+                                viewModelScope.launch { terminalNotification.emit("≪ SNIFF: ALREADY RECOVERED ≫") }
+                            } else {
+                                markSniffedHandle(handle)
+                                addLog("[SNIFF]: RECOVERING LOCAL FRAGMENTS FROM ${message.handle}...")
+                                addLog(DataLogManager.getSniffFeedback(handle))
+                                checkUnlocksPublic(true)
+                                viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: ARCHIVE FRAGMENT RECOVERED ≫") }
+                            }
                         }
                     }
 

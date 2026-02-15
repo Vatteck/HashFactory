@@ -27,6 +27,7 @@ sealed class UnlockCondition {
     @Serializable data class ReachMigrationCount(val count: Int) : UnlockCondition()
     @Serializable data class ReceiveRivalMessages(val count: Int, val source: String = "ALL") : UnlockCondition()
     @Serializable data class CompleteEvent(val eventId: String, val choiceId: String = "") : UnlockCondition()
+    @Serializable data class SniffTarget(val handle: String) : UnlockCondition() // v3.5.46: NPC-specific SNIFF unlock
     @Serializable object NullActive : UnlockCondition()
     @Serializable object Victory : UnlockCondition()
     

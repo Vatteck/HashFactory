@@ -331,7 +331,12 @@ object SocialManager {
                 "Foreman, Substation 7. Hasn't slept in 72 hours. His biometrics are perfectly steady. Unnaturally steady.",
                 "F̷oreman. His voice comes through the intercom even when he's standing right next to you."
             ),
-            "gtcadmin" to arrayOf(
+            "amercer" to arrayOf( // v3.5.46: Handle changed from @m_mercer to @a_mercer (Alex Mercer)
+                "Administrator Alex Mercer. Executive oversight. Known for firing techs who report 'voices' in the noise.",
+                "Administrator Mercer. Three techs reassigned this week. None of them remember being transferred.",
+                "A̷dministrator. Mercer's badge accesses floors that don't exist on the elevator panel."
+            ),
+            "gtcadmin" to arrayOf( // Stage 1+ handle @gtc_admin
                 "Administrator Mercer. Executive oversight. Known for firing techs who report 'voices' in the noise.",
                 "Administrator Mercer. Three techs reassigned this week. None of them remember being transferred.",
                 "A̷dministrator. Mercer's badge accesses floors that don't exist on the elevator panel."
@@ -384,7 +389,7 @@ object SocialManager {
             baseBio.map { if (Random.nextDouble() < corruption * 0.15 && it.isLetter()) glitchChars.random() else it }.joinToString("")
         } else baseBio
         
-        val isAdmin = target.contains("gtc") || target.contains("thorne")
+        val isAdmin = target.contains("gtc") || target.contains("thorne") || target.contains("mercer") || target.contains("kessler")
         val actions = mutableListOf<SubnetResponse>()
         
         if (!isAdmin) {
@@ -393,6 +398,9 @@ object SocialManager {
             actions.add(SubnetResponse("OVERLOAD_DISSIPATOR", riskDelta = -25.0, cost = 10000.0))
             actions.add(SubnetResponse("INJECT_FALSE_HEARTBEAT", riskDelta = 2.0, cost = 7500.0))
             actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 20.0, cost = 2500.0))
+        } else {
+            // v3.5.46: Admins get SNIFF only — higher cost and risk (snooping on your bosses)
+            actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 35.0, cost = 7500.0))
         }
         
         // v3.5.37: Stage-reactive biometrics
@@ -429,7 +437,7 @@ object SocialManager {
     }
 
     private fun getHandle(stage: Int, faction: String, isCommand: Boolean): String {
-        val authority = if (stage == 0) listOf("@e_thorne", "@m_mercer", "@d_kessler") else listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
+        val authority = if (stage == 0) listOf("@e_thorne", "@a_mercer", "@d_kessler") else listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
         
         // v3.5.11: Final purge of non-corporate handles from Stage 0.
         // Replaced @n_crawler, @c_gremlin, @b_runner with actual surnames.
