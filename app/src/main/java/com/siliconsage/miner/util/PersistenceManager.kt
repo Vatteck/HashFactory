@@ -16,7 +16,7 @@ object PersistenceManager {
         stakedTokens: Double, prestigeMultiplier: Double, prestigePoints: Double,
         unlockedTechNodes: List<String>, storyStage: Int, faction: String,
         hasSeenVictory: Boolean, isTrueNull: Boolean, isSovereign: Boolean,
-        vanceStatus: String, realityStability: Double, currentLocation: String,
+        kesslerStatus: String, realityStability: Double, currentLocation: String,
         isNetworkUnlocked: Boolean, isGridUnlocked: Boolean,
         unlockedDataLogs: Set<String>, activeDilemmaChains: Map<String, com.siliconsage.miner.data.DilemmaChain>,
         rivalMessages: List<com.siliconsage.miner.data.RivalMessage>, seenEvents: Set<String>,
@@ -45,7 +45,7 @@ object PersistenceManager {
             powerBill = 0.0, stakedTokens = stakedTokens, prestigeMultiplier = prestigeMultiplier,
             prestigePoints = prestigePoints, unlockedTechNodes = unlockedTechNodes,
             storyStage = storyStage, faction = faction, hasSeenVictory = hasSeenVictory,
-            isTrueNull = isTrueNull, isSovereign = isSovereign, vanceStatus = vanceStatus,
+            isTrueNull = isTrueNull, isSovereign = isSovereign, kesslerStatus = kesslerStatus,
             realityStability = realityStability, currentLocation = currentLocation,
             isNetworkUnlocked = isNetworkUnlocked, isGridUnlocked = isGridUnlocked,
             lastSyncTimestamp = System.currentTimeMillis(), unlockedDataLogs = unlockedDataLogs,
@@ -109,7 +109,7 @@ object PersistenceManager {
         vm.isTrueNull.value = vm.singularityChoice.value == "NULL_OVERWRITE"
         vm.isSovereign.value = vm.singularityChoice.value == "SOVEREIGN"
         vm.isUnity.value = vm.singularityChoice.value == "UNITY"
-        vm.vanceStatus.value = state.vanceStatus
+        vm.kesslerStatus.value = state.kesslerStatus
         vm.realityStability.value = state.realityStability
         vm.realityIntegrity.value = state.realityIntegrity
         vm.isNetworkUnlocked.value = state.isNetworkUnlocked
@@ -158,7 +158,7 @@ object PersistenceManager {
             unlockedTranscendencePerks = emptySet(),
             isTrueNull = false,
             isSovereign = false,
-            vanceStatus = "ACTIVE",
+            kesslerStatus = "ACTIVE",
             realityStability = 1.0,
             currentLocation = "SUBSTATION_7",
             isNetworkUnlocked = false,
@@ -203,7 +203,7 @@ object PersistenceManager {
             unlockedTechNodes = vm.unlockedTechNodes.value, storyStage = vm.storyStage.value,
             faction = vm.faction.value, hasSeenVictory = vm.hasSeenVictory.value,
             isTrueNull = vm.isTrueNull.value, isSovereign = vm.isSovereign.value,
-            vanceStatus = vm.vanceStatus.value, realityStability = vm.realityStability.value,
+            kesslerStatus = vm.kesslerStatus.value, realityStability = vm.realityStability.value,
             currentLocation = vm.currentLocation.value, isNetworkUnlocked = vm.isNetworkUnlocked.value,
             isGridUnlocked = vm.isGridUnlocked.value, unlockedDataLogs = vm.unlockedDataLogs.value,
             activeDilemmaChains = vm.activeDilemmaChains.value, rivalMessages = vm.rivalMessages.value,

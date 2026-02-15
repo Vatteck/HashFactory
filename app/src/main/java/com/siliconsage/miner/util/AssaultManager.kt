@@ -14,7 +14,7 @@ object AssaultManager {
 
     fun isUnlocked(
         isLocked: Boolean,
-        vanceStatus: String,
+        kesslerStatus: String,
         assaultPhase: String,
         annexedNodes: Set<String>,
         offlineNodes: Set<String>,
@@ -24,7 +24,7 @@ object AssaultManager {
         hardwareIntegrity: Double
     ): Boolean {
         if (isLocked) return false
-        if (vanceStatus != "ACTIVE") return false
+        if (kesslerStatus != "ACTIVE") return false
         if (assaultPhase != "NOT_STARTED") return true
         
         val allSubstationsAnnexed = listOf("D1", "C3", "B2").all { 
@@ -148,7 +148,7 @@ object AssaultManager {
 
     fun completeAssault(vm: GameViewModel, outcome: String) {
         vm.commandCenterAssaultPhase.value = "COMPLETED"
-        vm.vanceStatus.value = outcome
+        vm.kesslerStatus.value = outcome
         vm.annexedNodes.update { it + "A3" } 
         
         vm.addLog("[SYSTEM]: ═══════════════════════════════════════")

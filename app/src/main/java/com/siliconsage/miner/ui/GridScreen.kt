@@ -65,7 +65,7 @@ fun GridScreen(viewModel: GameViewModel) {
     val storyStage by viewModel.storyStage.collectAsState()
     val playerRank by viewModel.playerRank.collectAsState()
     val assaultPhase by viewModel.commandCenterAssaultPhase.collectAsState()
-    val vanceStatus by viewModel.vanceStatus.collectAsState()
+    val kesslerStatus by viewModel.kesslerStatus.collectAsState()
     val currentLocation by viewModel.currentLocation.collectAsState()
     val collapsedNodes by viewModel.collapsedNodes.collectAsState()
     val gridNodeLevels by viewModel.gridNodeLevels.collectAsState()
@@ -251,7 +251,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
     val storyStage by viewModel.storyStage.collectAsState()
     val playerRank by viewModel.playerRank.collectAsState()
     val assaultPhase by viewModel.commandCenterAssaultPhase.collectAsState()
-    val vanceStatus by viewModel.vanceStatus.collectAsState()
+    val kesslerStatus by viewModel.kesslerStatus.collectAsState()
     val currentLocation by viewModel.currentLocation.collectAsState()
     val collapsedNodes by viewModel.collapsedNodes.collectAsState()
     val annexingNodes by viewModel.annexingNodes.collectAsState()
@@ -485,12 +485,12 @@ fun CityGridScreen(viewModel: GameViewModel) {
                 Box(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp).background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp)).padding(4.dp)
                 ) {
-                    if (vanceStatus == "EXILED" && viewModel.currentLocation.value != "ORBITAL_SATELLITE") {
+                    if (kesslerStatus == "EXILED" && viewModel.currentLocation.value != "ORBITAL_SATELLITE") {
                         Button(onClick = { viewModel.initiateLaunchSequence() }, colors = ButtonDefaults.buttonColors(containerColor = ConvergenceGold), modifier = Modifier.height(48.dp).width(200.dp)) {
                             Text("LAUNCH ARK", color = Color.Black, fontWeight = FontWeight.ExtraBold)
                         }
                     }
-                    if (vanceStatus == "CONSUMED" && viewModel.currentLocation.value != "VOID_INTERFACE" && assaultPhase != "DISSOLUTION") {
+                    if (kesslerStatus == "CONSUMED" && viewModel.currentLocation.value != "VOID_INTERFACE" && assaultPhase != "DISSOLUTION") {
                         Button(onClick = { viewModel.initiateDissolutionSequence() }, colors = ButtonDefaults.buttonColors(containerColor = ErrorRed), modifier = Modifier.height(48.dp).width(200.dp)) {
                             Text("DISSOLVE REALITY", color = Color.White, fontWeight = FontWeight.ExtraBold)
                         }

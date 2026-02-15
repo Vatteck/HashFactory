@@ -136,7 +136,7 @@ object SecurityManager {
     fun checkGridRaid(vm: GameViewModel) {
         val now = System.currentTimeMillis()
         if (now - vm.lastRaidTime < 180_000L) return
-        if (vm.vanceStatus.value != "ACTIVE") return
+        if (vm.kesslerStatus.value != "ACTIVE") return
         
         val raidableNodes = vm.annexedNodes.value.filter { nodeId ->
             nodeId != "D1" &&

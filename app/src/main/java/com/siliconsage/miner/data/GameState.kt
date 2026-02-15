@@ -46,7 +46,7 @@ data class GameState(
     val isSovereign: Boolean = false, // v2.8.0: Narrative state (Sanctuary)
     
     // v2.8.5: Phase 11 Finale State
-    val vanceStatus: String = "ACTIVE", // ACTIVE, SILENCED, ALLY, CONSUMED, EXILED, TRANSCENDED
+    val kesslerStatus: String = "ACTIVE", // ACTIVE, SILENCED, ALLY, CONSUMED, EXILED, TRANSCENDED
     val realityStability: Double = 1.0, // 1.0 to 0.0
     val currentLocation: String = "SUBSTATION_7", // SUBSTATION_7, ORBITAL_SATELLITE, COMMAND_CENTER, VOID_INTERFACE
     val isNetworkUnlocked: Boolean = false, // v2.9.7: Persistence for Network tab

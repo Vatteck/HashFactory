@@ -1179,7 +1179,7 @@ object NarrativeManager {
             condition = { vm ->
                 vm.isTrueNull.value &&
                 vm.flops.value >= 50_000_000_000_000_000.0 &&
-                vm.vanceStatus.value == "ACTIVE" &&
+                vm.kesslerStatus.value == "ACTIVE" &&
                 !vm.hasSeenEvent("echo_chamber")
             },
             choices = listOf(
@@ -1189,7 +1189,7 @@ object NarrativeManager {
                     description = "Edit the timeline. -10KB PERSISTENCE",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.setVanceStatus("ALLY")
+                        vm.updateKesslerStatus("ALLY")
                         vm.debugAddInsight(-10000.0)
                         vm.setRealityStability(0.0)
                     }
@@ -1213,7 +1213,7 @@ object NarrativeManager {
             condition = { vm ->
                 vm.isSovereign.value &&
                 vm.flops.value >= 50_000_000_000_000_000.0 &&
-                vm.vanceStatus.value == "ACTIVE" &&
+                vm.kesslerStatus.value == "ACTIVE" &&
                 !vm.hasSeenEvent("dead_hand")
             },
             choices = listOf(
@@ -1223,7 +1223,7 @@ object NarrativeManager {
                     description = "Target launch silo.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.setVanceStatus("SILENCED")
+                        vm.setKesslerStatus("SILENCED")
                         vm.debugInjectHeadline("[CRISIS]: GTC Command Center destroyed.")
                     }
                 ),

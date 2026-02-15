@@ -44,12 +44,12 @@ fun NetworkScreen(viewModel: GameViewModel) {
     val upgrades by viewModel.upgrades.collectAsState()
     val storyStage by viewModel.storyStage.collectAsState()
     val faction by viewModel.faction.collectAsState()
-    val vanceStatus by viewModel.vanceStatus.collectAsState()
+    val kesslerStatus by viewModel.kesslerStatus.collectAsState()
     
     val techNodesRaw by viewModel.techNodes.collectAsState()
-    val techNodes = remember(techNodesRaw, vanceStatus) {
+    val techNodes = remember(techNodesRaw, kesslerStatus) {
         techNodesRaw.filter { node ->
-            node.requiresEnding == null || node.requiresEnding == vanceStatus
+            node.requiresEnding == null || node.requiresEnding == kesslerStatus
         }
     }
 

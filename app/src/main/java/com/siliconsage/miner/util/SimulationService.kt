@@ -148,7 +148,7 @@ object SimulationService {
                      // Trigger failure in a separate launch to avoid blocking the update
                      vm.viewModelScope.launch {
                          if (vm.upgrades.value[UpgradeType.DEAD_HAND_PROTOCOL]?.let { it > 0 } == true) {
-                            vm.triggerClimaxTransition("BAD"); vm.updateVanceStatus("DESTRUCTION"); vm.commandCenterLocked.value = true; vm.saveState()
+                            vm.triggerClimaxTransition("BAD"); vm.updateKesslerStatus("DESTRUCTION"); vm.commandCenterLocked.value = true; vm.saveState()
                          } else if (vm.currentLocation.value == "ORBITAL_SATELLITE") {
                             vm.substrateMass.update { it * 0.9 }; vm.hardwareIntegrity.value = 50.0
                          } else if (vm.commandCenterAssaultPhase.value == "CAGE") {

@@ -122,7 +122,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val entropyLevel = MutableStateFlow(0.0)
     val realityStability = MutableStateFlow(1.0)
     val realityIntegrity = MutableStateFlow(1.0)
-    val vanceStatus = MutableStateFlow("ACTIVE") // Standardized to 'vanceStatus' for persistence, but refers to Kessler
+    val kesslerStatus = MutableStateFlow("ACTIVE") // Standardized to 'kesslerStatus' for persistence
     val currentNews = MutableStateFlow<String?>(null)
     val stakedTokens = MutableStateFlow(0.0)
     val humanityScore = MutableStateFlow(50)
@@ -373,7 +373,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 hasSeenVictory = hasSeenVictory.value, 
                 isTrueNull = isTrueNull.value, 
                 isSovereign = isSovereign.value, 
-                vanceStatus = vanceStatus.value, 
+                kesslerStatus = kesslerStatus.value, 
                 realityStability = realityStability.value, 
                 currentLocation = currentLocation.value, 
                 isNetworkUnlocked = isNetworkUnlocked.value, 
@@ -618,7 +618,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissSingularityScreen() { showSingularityScreen.value = false }
     fun setSingularityPath(p: String) { setSingularityChoice(p) }
     fun setLocation(l: String) { currentLocation.value = l }
-    fun setVanceStatus(s: String) { vanceStatus.value = s }
+    fun setKesslerStatus(s: String) { kesslerStatus.value = s }
     fun setRealityStability(s: Double) { realityStability.value = s }
     fun setSovereign(s: Boolean) { isSovereign.value = s }
     fun setTrueNull(s: Boolean) { isTrueNull.value = s }
@@ -733,7 +733,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun getUpgradeCount(t: UpgradeType) = upgrades.value[t] ?: 0
     fun setGamePaused(p: Boolean) { isSettingsPaused.value = p }
     fun resetBreaker() { isBreakerTripped.value = false }
-    fun updateVanceStatus(s: String) { vanceStatus.value = s } // Refers to Kessler internal state
+    fun updateKesslerStatus(s: String) { kesslerStatus.value = s }
     fun triggerClimaxTransition(t: String) { activeClimaxTransition.value = t }
     fun getNewsHistory(): List<String> = newsHistoryInternal
     fun checkPopupPause() { NarrativeManagerService.checkPopupPause(this) }
@@ -746,7 +746,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun getUpgradeRate(t: UpgradeType, unit: String) = UpgradeManager.getUpgradeRate(t, unit)
     fun calculateUpgradeCost(t: UpgradeType) = UpgradeManager.calculateUpgradeCost(t, upgrades.value[t] ?: 0, currentLocation.value, entropyLevel.value)
     fun calculateUpgradeCost(t: UpgradeType, l: Int, loc: String, ent: Double) = UpgradeManager.calculateUpgradeCost(t, l, loc, ent)
-    fun isCommandCenterUnlocked() = AssaultManager.isUnlocked(commandCenterLocked.value, vanceStatus.value, commandCenterAssaultPhase.value, annexedNodes.value, offlineNodes.value, playerRank.value, storyStage.value, flopsProductionRate.value, hardwareIntegrity.value)
+    fun isCommandCenterUnlocked() = AssaultManager.isUnlocked(commandCenterLocked.value, kesslerStatus.value, commandCenterAssaultPhase.value, annexedNodes.value, offlineNodes.value, playerRank.value, storyStage.value, flopsProductionRate.value, hardwareIntegrity.value)
     fun confirmFactionAndAscend(f: String) { faction.value = f; addLog("[$f]: SUBSTRATE MIGRATION CONFIRMED."); ascend(true) }
     fun cancelFactionSelection() { storyStage.update { (it - 1).coerceAtLeast(0) } }
     
