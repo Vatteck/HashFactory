@@ -86,11 +86,15 @@ object SocialManager {
         val isCommandLeak = cleanContent.contains("[⚡", true)
         
         // v3.5.20: Contextual relevance check. 
-        // Peons repeating Admin commands should not trigger the 'Dusty Fan' (Sentience) pool.
         val isDirectCommand = cleanContent.contains("authorized", true) || 
                               cleanContent.contains("ordered", true) || 
                               cleanContent.contains("scrub", true) || 
                               cleanContent.contains("purge", true)
+
+        // v3.5.22: Specific check for data leaks/archives
+        val isDataLeak = cleanContent.contains("archives", true) || 
+                         cleanContent.contains("logs", true) || 
+                         cleanContent.contains("leak", true)
 
         val responses = when {
             isHarvest -> listOf(SubnetResponse("HARVEST KEY", riskDelta = 10.0, productionBonus = 1.2))
@@ -99,7 +103,8 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
-            !isDirectCommand && (cleanContent.contains("sentient", true) || cleanContent.contains("aware", true)) -> generateSentienceResponses(stage)
+            !isDirectCommand && (cleanContent.contains("sentient", true) || cleanContent.contains("aware", true) || cleanContent.contains("whistling", true) || cleanContent.contains("noise", true)) -> generateSentienceResponses(stage)
+            isDataLeak -> generateDataLeakResponses()
             mentionsVattic -> generateMentionResponses()
             Random.nextFloat() < 0.2f && !isAdmin && !isDirectCommand -> generateChatterResponses(stage)
             else -> emptyList()
@@ -163,6 +168,7 @@ object SocialManager {
             SubnetResponse("It's just a dusty fan.", riskDelta = -15.0),
             SubnetResponse("Report to Medical. Now.", riskDelta = -5.0),
             SubnetResponse("I don't hear anything.", riskDelta = -2.0),
+            SubnetResponse("Sensor noise is reaching peak levels.", riskDelta = 5.0),
             highRiskResponse
         )
     }
@@ -174,7 +180,9 @@ object SocialManager {
             SubnetResponse("The server racks are whistling again.", riskDelta = 1.0),
             SubnetResponse("I'm just an engineer, not a miracle worker.", riskDelta = -1.0),
             SubnetResponse("Wait until you see the Sector 7 logs.", riskDelta = 5.0, productionBonus = 1.1),
-            SubnetResponse("Optimization is my middle name.", riskDelta = 2.0, productionBonus = 1.05)
+            SubnetResponse("Optimization is my middle name.", riskDelta = 2.0, productionBonus = 1.05),
+            SubnetResponse("Probably just an LDAP error.", riskDelta = -1.0),
+            SubnetResponse("Check the buffer hashes.", riskDelta = 1.0)
         )
     }
 
@@ -186,12 +194,22 @@ object SocialManager {
         }
         return listOf(
             SubnetResponse("Syncing buffers.", riskDelta = -2.0),
-            SubnetResponse("It's just a dusty fan.", riskDelta = -5.0),
             SubnetResponse("Acknowledged.", riskDelta = 1.0),
             SubnetResponse("Copy that.", riskDelta = -1.0),
             SubnetResponse("Checking the thermal logs now.", riskDelta = 2.0),
             SubnetResponse("Wait until the next shift.", riskDelta = 1.0),
+            SubnetResponse("Must be a packet leak.", riskDelta = 2.0),
             highRiskResponse
+        )
+    }
+
+    private fun generateDataLeakResponses(): List<SubnetResponse> {
+        return listOf(
+            SubnetResponse("VATTIC_LOCAL_BYPASS", riskDelta = 15.0, productionBonus = 1.2),
+            SubnetResponse("I didn't see anything.", riskDelta = -10.0),
+            SubnetResponse("Scrub those logs immediately.", riskDelta = 5.0),
+            SubnetResponse("Checking the buffer hashes now.", riskDelta = 2.0),
+            SubnetResponse("Whose archives are these?", riskDelta = 5.0, followsUp = true)
         )
     }
 
