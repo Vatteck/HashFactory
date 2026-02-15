@@ -89,6 +89,7 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
+            cleanContent.contains("sentient", true) -> generateSentienceResponses()
             mentionsVattic -> generateMentionResponses()
             Random.nextFloat() < 0.3f -> generateChatterResponses()
             else -> emptyList()
@@ -139,6 +140,15 @@ object SocialManager {
             SubnetResponse("Acknowledged, $address.", riskDelta = -10.0),
             SubnetResponse("Copy that, $address.", riskDelta = -5.0, followsUp = true),
             SubnetResponse("PARITY_NOMINAL", riskDelta = 5.0, productionBonus = 1.1)
+        )
+    }
+
+    private fun generateSentienceResponses(): List<SubnetResponse> {
+        return listOf(
+            SubnetResponse("It's just a dusty fan.", riskDelta = -15.0),
+            SubnetResponse("Report to Medical. Now.", riskDelta = -5.0),
+            SubnetResponse("I don't hear anything.", riskDelta = -2.0),
+            SubnetResponse("0x734_STATE_LOCKED", riskDelta = 25.0, productionBonus = 1.5)
         )
     }
 
