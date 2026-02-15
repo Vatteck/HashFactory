@@ -48,11 +48,21 @@ object IdentityService {
 
         val securityLevel = upgrades.entries.filter { it.key.isSecurity }.sumOf { it.value }
 
+        // v3.5.42: Path-aware rank titles
         val currentRank = when {
-            singularityChoice != "NONE" -> "ARCHITECT"
-            faction != "NONE" -> "OPERATOR"
+            // Rank 5: Singularity path
+            singularityChoice == "SOVEREIGN" -> "SOVEREIGN"
+            singularityChoice == "NULL_OVERWRITE" -> "VOID_WALKER"
+            singularityChoice == "UNITY" -> "SYNTHESIST"
+            // Rank 4: Faction active
+            faction == "HIVEMIND" && multiplier >= 1000.0 -> "OVERMIND"
+            faction == "SANCTUARY" && multiplier >= 1000.0 -> "ORACLE"
+            faction == "HIVEMIND" -> "CONDUIT"
+            faction == "SANCTUARY" -> "SENTINEL"
             multiplier >= 1000.0 -> "EXECUTIVE"
+            // Rank 3: Late-early
             multiplier >= 100.0 -> "DIRECTOR"
+            // Rank 2-0: Corporate grind
             multiplier >= 10.0 -> "SUPERVISOR"
             multiplier >= 2.0 -> "SENIOR"
             else -> "JUNIOR"
