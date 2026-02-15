@@ -486,6 +486,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             legacyMultipliers = heuristicEfficiency.value - 1.0
         )
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
+        playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
         systemTitle.value = if (storyStage.value >= 4) "VATTECK: ONLINE" else "VATTIC_ENGINEER: ONLINE"
         playerTitle.value = ids.player
         playerRankTitle.value = ids.rank

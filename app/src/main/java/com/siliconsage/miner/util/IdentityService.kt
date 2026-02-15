@@ -60,4 +60,23 @@ object IdentityService {
 
         return IdentityRanks(systemTitle, playerTitle, currentRank)
     }
+
+    /**
+     * v3.5.41: Numeric player rank derived from game progression.
+     * Mirrors the title ladder (JUNIOR=0 → ARCHITECT=5).
+     * Used by AssaultManager, SecurityManager, NarrativeManager, etc.
+     */
+    fun calculatePlayerRank(
+        multiplier: Double,
+        storyStage: Int,
+        faction: String,
+        singularityChoice: String
+    ): Int = when {
+        singularityChoice != "NONE" -> 5                     // ARCHITECT
+        faction != "NONE" || multiplier >= 1000.0 -> 4       // EXECUTIVE / OPERATOR
+        storyStage >= 2 || multiplier >= 100.0 -> 3          // DIRECTOR
+        multiplier >= 10.0 -> 2                              // SUPERVISOR
+        storyStage >= 1 || multiplier >= 2.0 -> 1            // SENIOR
+        else -> 0                                            // JUNIOR
+    }
 }
