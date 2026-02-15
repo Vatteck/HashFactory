@@ -888,7 +888,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // v3.5.37: 5% chance to trigger a branching thread tree
             if (Random.nextFloat() < 0.05f) {
                 val threadMsg = com.siliconsage.miner.util.SocialManager.generateThreadStarter(
-                    storyStage.value, identityCorruption.value
+                    storyStage.value, identityCorruption.value, faction.value
                 )
                 if (threadMsg != null) {
                     isSubnetTyping.value = true
@@ -959,7 +959,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     // v3.4.53: Cross-Peon Dialogue Chains
     private fun startCrossPeonChain() {
         viewModelScope.launch {
-            val chain = com.siliconsage.miner.util.SocialManager.generateChain(storyStage.value)
+            val chain = com.siliconsage.miner.util.SocialManager.generateChain(storyStage.value, faction.value)
             var lastMsgId: String? = null
             for ((index, msgTemplate) in chain.withIndex()) {
                 isSubnetTyping.value = true
