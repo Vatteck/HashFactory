@@ -51,9 +51,11 @@ object IdentityService {
         val currentRank = when {
             singularityChoice != "NONE" -> "ARCHITECT"
             faction != "NONE" -> "OPERATOR"
-            securityLevel > 0 -> "SEC-$securityLevel"
-            multiplier >= 100.0 -> "INTEL"
-            else -> "SEC-0"
+            multiplier >= 1000.0 -> "EXECUTIVE"
+            multiplier >= 100.0 -> "DIRECTOR"
+            multiplier >= 10.0 -> "SUPERVISOR"
+            multiplier >= 2.0 -> "SENIOR"
+            else -> "JUNIOR"
         }
 
         return IdentityRanks(systemTitle, playerTitle, currentRank)

@@ -33,6 +33,12 @@ object MarketManager {
         
         vm.updateNews(headline)
         
+        // v3.5.12: Action Reactions - 20% chance for peons to react to the news
+        if (Random.nextDouble() < 0.20) {
+            val cleanHeadline = headline.substringBefore("[").trim()
+            vm.triggerSubnetReaction("NEWS", cleanHeadline)
+        }
+        
         val result = parseHeadline(headline)
         
         if (result.triggerGlitch) {

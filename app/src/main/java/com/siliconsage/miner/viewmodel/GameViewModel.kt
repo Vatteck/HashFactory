@@ -886,6 +886,44 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
 
+    // v3.5: Action Reactions - Triggered specifically by game events
+    fun triggerSubnetReaction(type: String, metadata: String = "") {
+        if (isSubnetHushed.value) return 
+
+        viewModelScope.launch {
+            isSubnetTyping.value = true
+            delay(Random.nextLong(1000, 2500)) // Faster reaction than idle chatter
+
+            val template = when (type) {
+                "ANNEXATION" -> listOf(
+                    "Did the grid just cough? Sector $metadata just went pitch black.",
+                    "Thorne's gonna kill someone. We just lost the handshake with Node $metadata.",
+                    "Anyone else see that spike on the thermal logs? $metadata is drawing 400% power.",
+                    "≪ ALERT: NODE $metadata DEREFERENCED BY EXTERNAL PROCESS ≫",
+                    "I was midway through a packet-sort at $metadata and the terminal just... evaporated."
+                ).random()
+                "NEWS" -> listOf(
+                    "Did you guys see the news? '$metadata'. Thorne's gonna be a nightmare today.",
+                    "The ticker is going crazy: '$metadata'. This grid is falling apart.",
+                    "Anyone else worried about that headline? '$metadata'. Sector 7 feels cursed.",
+                    "Corporate is spinning '$metadata' again. Don't believe the filters.",
+                    "Vattic, look at the wire: '$metadata'. TheCouncil is watching us."
+                ).random()
+                else -> "≪ UNKNOWN_SIGNAL_DETECTED ≫"
+            }
+
+            val newMessage = com.siliconsage.miner.util.SocialManager.generateMessageFromTemplate(
+                template,
+                storyStage.value,
+                faction.value,
+                singularityChoice.value,
+                identityCorruption.value
+            )
+
+            deliverSubnetMessage(newMessage)
+        }
+    }
+
     // v3.4.53: Cross-Peon Dialogue Chains
     private fun startCrossPeonChain() {
         viewModelScope.launch {
@@ -1018,7 +1056,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             // 3. Process the logic and add player reply
             when (message.interactionType) {
                 com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
-                    val playerHandle = if (storyStage.value >= 4) "VATTECK" else "@jvattic"
+                    val playerHandle = if (storyStage.value >= 2) "@j_vattic" else "@j_vattic" // Standardized v3.5.17
                     val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                         id = java.util.UUID.randomUUID().toString(),
                         handle = playerHandle,
@@ -1031,6 +1069,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     val prodMult = responseData?.productionBonus ?: 1.0
 
                     detectionRisk.update { (it + riskChange).coerceIn(0.0, 100.0) }
+                    
+                    // v3.5.17: Gain Corporate Reputation for replying (Stage 0 only)
+                    if (storyStage.value == 0) {
+                        prestigePoints.update { it + 5.0 }
+                    }
+
                     if (prodMult != 1.0) {
                         flopsProductionRate.update { it * prodMult }
                         addLog("[SYSTEM]: FOCUS MODIFIED. RATE x$prodMult.")

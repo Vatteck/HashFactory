@@ -173,8 +173,8 @@ object HeadlineManager {
 
             return when {
                 isUnity -> unityHeadlines.random()
-                isTrueNull || location == "VOID_INTERFACE" -> nullHeadlines.random()
-                isSovereign || location == "ORBITAL_SATELLITE" -> arkHeadlines.random()
+                isTrueNull || location == "VOID_INTERFACE" || location == "QUANTUM_FOAM" || location == "THE_UNWRITTEN" -> nullHeadlines.random()
+                isSovereign || location == "ORBITAL_SATELLITE" || location == "LUNAR_ORBIT" || location == "MARTIAN_UPLINK" -> arkHeadlines.random()
                 stage == 0 -> stage0Headlines.random()
                 stage == 1 -> vatticHeadlines.random()
                 stage == 2 -> factionHeadlines.random()

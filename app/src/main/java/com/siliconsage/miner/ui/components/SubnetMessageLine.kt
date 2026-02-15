@@ -26,6 +26,11 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
     val countdown = remember { mutableStateOf(0L) }
     var showProfile by remember(message.id) { mutableStateOf(false) }
     
+    // v3.5.7: Detect system-style messages that shouldn't show a handle header
+    val isSystemStyle = message.content.startsWith("[PRIVATE_LEAK]") || 
+                        message.content.startsWith("≪") || 
+                        message.content.startsWith("[SIGNAL LOSS]")
+
     // v3.4.25: Response Timeout Visualizer
     LaunchedEffect(message.timeoutMs, message.interactionType) {
         if (message.timeoutMs != null && message.interactionType != null) {
@@ -38,41 +43,43 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
     }
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            // v3.4.60: Hardened Click Target with Text-Only Clickable
-            Text(
-                text = message.handle,
-                color = color,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.ExtraBold,
-                fontFamily = FontFamily.Monospace,
-                textDecoration = TextDecoration.Underline,
-                modifier = Modifier
-                    .clickable { 
-                        if (message.employeeInfo != null) {
-                            showProfile = !showProfile
-                            com.siliconsage.miner.util.SoundManager.play("click")
-                        }
-                    }
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
-            )
-            
-            Text(
-                text = " >>",
-                color = Color.White.copy(alpha = 0.3f),
-                fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace
-            )
-            
-            if (message.interactionType != null && message.timeoutMs != null) {
-                Spacer(modifier = Modifier.weight(1f))
+        if (!isSystemStyle) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // v3.4.60: Hardened Click Target with Text-Only Clickable
                 Text(
-                    text = "[${countdown.value / 1000}s]",
-                    color = com.siliconsage.miner.ui.theme.ErrorRed,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = message.handle,
+                    color = color,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontFamily = FontFamily.Monospace,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .clickable { 
+                            if (message.employeeInfo != null) {
+                                showProfile = !showProfile
+                                com.siliconsage.miner.util.SoundManager.play("click")
+                            }
+                        }
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                )
+                
+                Text(
+                    text = " >>",
+                    color = Color.White.copy(alpha = 0.3f),
+                    fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace
                 )
+                
+                if (message.interactionType != null && message.timeoutMs != null) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "[${countdown.value / 1000}s]",
+                        color = com.siliconsage.miner.ui.theme.ErrorRed,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
             }
         }
 

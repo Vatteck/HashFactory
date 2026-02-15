@@ -271,7 +271,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val humanity by viewModel.humanityScore.collectAsState()
     val speedLevel by viewModel.clickSpeedLevel.collectAsState()
 
-    val user = if (stage >= 2) "vatteck" else "jvattic"
+    val user = if (stage >= 2) "vatteck" else "j_vattic"
     val host = when (location) {
         "ORBITAL_SATELLITE" -> "ark"
         "VOID_INTERFACE" -> "void"
@@ -541,11 +541,11 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1f)) {
-            // Overclock overridden as "DRINK COFFEE"
-            val coffeeInjectedColor = if (voltage > 50) Color(0xFF6F4E37) else primaryColor
+            // v3.5.4: Removed coffee color leak from Sell button entirely. 
+            // The gaslight is reserved for Overclock/Purge only.
             ExchangeSection(
                 rate = conversionRate, 
-                color = coffeeInjectedColor, 
+                color = primaryColor, 
                 unitName = viewModel.getComputeUnitName(), 
                 currencyName = viewModel.getCurrencyName(), 
                 onExchange = { 

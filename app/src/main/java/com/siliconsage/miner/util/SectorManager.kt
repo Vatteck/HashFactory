@@ -47,6 +47,10 @@ object SectorManager {
         completed.forEach { coord ->
             vm.annexedNodes.update { it + coord }
             vm.addLogPublic("[SYSTEM]: ANNEXATION AT $coord COMPLETE. NODE ONLINE.")
+            
+            // v3.5: Action Reactions - Trigger Subnet chatter on annexation
+            vm.triggerSubnetReaction("ANNEXATION", coord)
+
             SoundManager.play("victory")
             vm.refreshProductionRates() // Update bonuses
             vm.saveStatePublic()

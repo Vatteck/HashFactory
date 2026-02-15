@@ -11,6 +11,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Coffee
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.DeviceThermostat
 import com.siliconsage.miner.ui.ResourceDisplay
@@ -194,7 +197,7 @@ fun HeaderSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTECK // THREAT: ABYSSAL" else "${playerRank} // ${playerTitle}".uppercase(), 
+                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTECK // THREAT: ABYSSAL" else "${playerTitle} // ${playerRank}".uppercase(), 
                         color = Color.White.copy(alpha = 0.5f * droopAlpha), 
                         fontSize = 8.sp, 
                         fontWeight = FontWeight.Bold, 
@@ -250,7 +253,7 @@ fun HeaderSection(
                         singularityChoice == "SOVEREIGN" -> "SOV"
                         isTrueNull -> "GAPS"
                         isSovereign -> "WALL"
-                        else -> "SEC"
+                        else -> "DEF"
                     }
 
                     Text(
@@ -344,7 +347,11 @@ fun HeaderSection(
                         0, 1 -> "DRINK COFFEE"
                         else -> "OVERCLOCK"
                     }
-                    Icon(Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(overclockText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
+                    val overclockIcon = when (storyStage) {
+                        0, 1 -> Icons.Default.Coffee
+                        else -> Icons.Default.DeviceThermostat
+                    }
+                    Icon(overclockIcon, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(overclockText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
                 }
                 Button(
                     onClick = onPurge, 
@@ -357,12 +364,12 @@ fun HeaderSection(
                     shape = RoundedCornerShape(4.dp), 
                     border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)
                 ) { 
-                    val buttonText = when (storyStage) {
-                        0, 1 -> "TAKE A BREATH"
-                        2 -> "SCRUB O2"
-                        else -> "PURGE HEAT"
+                    val (buttonText, buttonIcon) = when (storyStage) {
+                        0, 1 -> "TAKE A BREATH" to Icons.Default.Air
+                        2 -> "SCRUB O2" to Icons.Default.Air
+                        else -> "PURGE HEAT" to Icons.Default.DeviceThermostat
                     }
-                    Text(buttonText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
+                    Icon(buttonIcon, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(buttonText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
                 }
             }
             Canvas(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray.copy(alpha = 0.2f), RoundedCornerShape(1.dp)).clip(RoundedCornerShape(1.dp))) {
