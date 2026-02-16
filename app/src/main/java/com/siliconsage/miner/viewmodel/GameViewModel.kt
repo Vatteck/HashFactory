@@ -1356,7 +1356,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                           handle.contains("kessler")
             if (isAdmin) triggerSubnetHush(10000L)
 
-            val followUp = com.siliconsage.miner.util.SocialManager.createFollowUp(handle, followUpContent, storyStage.value).copy(isIndented = true)
+            val followUp = com.siliconsage.miner.util.SocialManager.createFollowUp(handle, followUpContent, storyStage.value, faction.value).copy(isIndented = true)
             deliverSubnetMessage(followUp, parentId = parentId)
             
             // v3.4.29: Trigger pause if follow-up is interactive

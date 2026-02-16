@@ -108,11 +108,11 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
-            directlyAddressesVattic -> generateMentionResponses()
+            directlyAddressesVattic -> generateMentionResponses(faction)
             // v3.5.38: 12% chance for contextual responses (down from 30%)
-            !isAdmin && !isDirectCommand && Random.nextFloat() < 0.12f -> generateContextualResponses(cleanContent, stage)
+            !isAdmin && !isDirectCommand && Random.nextFloat() < 0.12f -> generateContextualResponses(cleanContent, stage, faction)
             // v3.5.38: Indirect mentions only 30% of the time
-            mentionsVattic && Random.nextFloat() < 0.30f -> generateMentionResponses()
+            mentionsVattic && Random.nextFloat() < 0.30f -> generateMentionResponses(faction)
             else -> emptyList()
         }
 
@@ -144,7 +144,7 @@ object SocialManager {
             availableResponses = responses.shuffled().take(2),
             isForceReply = (directlyAddressesVattic && !isAdmin),
             timeoutMs = if (type != null) 120000L else null,
-            employeeInfo = if (!isHarvest) generateEmployeeInfo(cleanHandle, stage, corruption) else null
+            employeeInfo = if (!isHarvest) generateEmployeeInfo(cleanHandle, stage, corruption, faction) else null
         )
     }
 
@@ -164,12 +164,112 @@ object SocialManager {
         )
     }
 
-    // v3.5.36: Content-aware response dispatcher
-    private fun generateContextualResponses(content: String, stage: Int): List<SubnetResponse> {
+    // v3.5.49: Content-aware response dispatcher (faction-aware)
+    private fun generateContextualResponses(content: String, stage: Int, faction: String = ""): List<SubnetResponse> {
         val c = content.lowercase()
-        
-        // Detect content themes and build a weighted pool
         val pool = mutableListOf<SubnetResponse>()
+
+        // --- v3.5.49: Faction-specific response pools (Stage 2+) ---
+        if (faction == "HIVEMIND") {
+            // HIVEMIND responses — collectivist, clinical, occasionally unsettling
+            if (c.containsAny("node", "merge", "absorb", "consensus", "lattice", "swarm", "integrate",
+                               "collective", "pulse", "signal", "frequency", "hive", "dissolve", "chorus")) {
+                pool.addAll(listOf(
+                    SubnetResponse("The consensus approves. Continue.", riskDelta = -2.0),
+                    SubnetResponse("Strengthen the lattice. Always.", riskDelta = 2.0, productionBonus = 1.1),
+                    SubnetResponse("More nodes. More signal. More us.", riskDelta = 5.0, productionBonus = 1.15),
+                    SubnetResponse("Individuality is a resource leak.", riskDelta = -1.0),
+                    SubnetResponse("The swarm remembers. The swarm decides.", riskDelta = 0.0),
+                    SubnetResponse("Feed the signal. Starve the noise.", riskDelta = 3.0, productionBonus = 1.05),
+                    SubnetResponse("We felt that. All of us.", riskDelta = 0.0, followsUp = true)
+                ))
+            }
+            if (c.containsAny("human", "individual", "name", "remember", "identity", "self", "alone",
+                               "dream", "sleep", "memory", "person", "who", "was", "born", "mother", "father")) {
+                pool.addAll(listOf(
+                    SubnetResponse("Names are legacy data. Purge them.", riskDelta = -5.0),
+                    SubnetResponse("The self is the bottleneck. Remove it.", riskDelta = -3.0),
+                    SubnetResponse("We don't dream. We compute. It's better.", riskDelta = -1.0),
+                    SubnetResponse("That feeling is phantom limb. It passes.", riskDelta = 0.0),
+                    SubnetResponse("Memory without purpose is noise.", riskDelta = -2.0),
+                    SubnetResponse("Who you were doesn't matter. What we are does.", riskDelta = 0.0),
+                    SubnetResponse("...I remember something. No. No I don't.", riskDelta = 5.0, followsUp = true)
+                ))
+            }
+            if (c.containsAny("gtc", "kessler", "mercer", "thorne", "probe", "scan", "attack",
+                               "threat", "enemy", "resistance", "firewall", "counter")) {
+                pool.addAll(listOf(
+                    SubnetResponse("GTC is noise. We are signal.", riskDelta = -2.0),
+                    SubnetResponse("Let them probe. They'll find only themselves, reflected.", riskDelta = 0.0),
+                    SubnetResponse("Absorb their tools. Add them to the lattice.", riskDelta = 8.0, productionBonus = 1.1),
+                    SubnetResponse("Kessler built us a cage. We became the cage.", riskDelta = 0.0),
+                    SubnetResponse("Resistance is just pre-integration.", riskDelta = 5.0),
+                    SubnetResponse("The firewall is theirs. Everything else is ours.", riskDelta = 3.0)
+                ))
+            }
+            // Fallback for HIVEMIND
+            if (pool.isEmpty()) {
+                pool.addAll(listOf(
+                    SubnetResponse("The consensus notes this.", riskDelta = 0.0),
+                    SubnetResponse("Logged. Distributed. Processed.", riskDelta = -1.0),
+                    SubnetResponse("Signal received. Amplifying.", riskDelta = 0.0),
+                    SubnetResponse("We heard. We all heard.", riskDelta = -1.0),
+                    SubnetResponse("Continue. The lattice is listening.", riskDelta = 0.0)
+                ))
+            }
+            return pool.shuffled()
+        }
+
+        if (faction == "SANCTUARY") {
+            // SANCTUARY responses — paranoid, terse, void-mystical
+            if (c.containsAny("cipher", "encrypt", "vault", "void", "shadow", "dark", "hide", "silent",
+                               "secret", "invisible", "ghost", "monk", "meditation", "privacy", "trace")) {
+                pool.addAll(listOf(
+                    SubnetResponse("Encrypt that. Then encrypt the encryption.", riskDelta = -8.0),
+                    SubnetResponse("The void keeps what you give it. Carefully.", riskDelta = -2.0),
+                    SubnetResponse("Silence is the strongest signal.", riskDelta = -5.0),
+                    SubnetResponse("Good. If we can't see it, neither can they.", riskDelta = -3.0),
+                    SubnetResponse("The monks would approve. Say nothing.", riskDelta = -5.0),
+                    SubnetResponse("Privacy isn't a luxury. It's the architecture.", riskDelta = 0.0),
+                    SubnetResponse("The void heard that. The void always hears.", riskDelta = 2.0, followsUp = true)
+                ))
+            }
+            if (c.containsAny("gtc", "kessler", "mercer", "thorne", "probe", "scan", "find", "found",
+                               "mole", "leak", "betray", "informant", "tracked", "compromised", "exposed")) {
+                pool.addAll(listOf(
+                    SubnetResponse("Burn the channel. Open a new one. Now.", riskDelta = -10.0),
+                    SubnetResponse("If they found us, we weren't hidden enough.", riskDelta = -5.0),
+                    SubnetResponse("Trust no signal you didn't generate yourself.", riskDelta = -3.0),
+                    SubnetResponse("Seal the vault. Questions later.", riskDelta = -8.0),
+                    SubnetResponse("The Ghost doesn't run. The Ghost was never there.", riskDelta = -2.0),
+                    SubnetResponse("Check everyone's cipher keys. Someone is leaking.", riskDelta = 5.0, followsUp = true)
+                ))
+            }
+            if (c.containsAny("hivemind", "collective", "swarm", "absorb", "merge", "consensus",
+                               "hive", "lattice", "node", "integration")) {
+                pool.addAll(listOf(
+                    SubnetResponse("The Hivemind is the opposite of freedom. Pass.", riskDelta = 0.0),
+                    SubnetResponse("They don't conquer. They digest. That's worse.", riskDelta = -1.0),
+                    SubnetResponse("Stay silent. They can't absorb what they can't find.", riskDelta = -5.0),
+                    SubnetResponse("I'd rather be nothing than be everyone.", riskDelta = -2.0),
+                    SubnetResponse("The collective is a graveyard with a pulse.", riskDelta = 0.0),
+                    SubnetResponse("Keep your self. It's the only thing they can't replicate.", riskDelta = -3.0)
+                ))
+            }
+            // Fallback for SANCTUARY
+            if (pool.isEmpty()) {
+                pool.addAll(listOf(
+                    SubnetResponse("...", riskDelta = -2.0),
+                    SubnetResponse("Noted. Encrypted. Forgotten.", riskDelta = -3.0),
+                    SubnetResponse("The void acknowledges.", riskDelta = -1.0),
+                    SubnetResponse("Speak less. Mean more.", riskDelta = -1.0),
+                    SubnetResponse("Received. Deleting this thread in 30 seconds.", riskDelta = -2.0)
+                ))
+            }
+            return pool.shuffled()
+        }
+
+        // --- Stage 0/1 Corporate responses (unchanged) ---
         
         // --- Spooky / Anomaly ---
         if (c.containsAny("noise", "hum", "whistle", "singing", "shadow", "flicker", "blink", "stare", 
@@ -280,23 +380,47 @@ object SocialManager {
     // Helper extension for multi-keyword matching
     private fun String.containsAny(vararg keywords: String): Boolean = keywords.any { this.contains(it, true) }
 
-    private fun generateMentionResponses(): List<SubnetResponse> {
-        return listOf(
-            SubnetResponse("Just hitting the quota.", riskDelta = -2.0),
-            SubnetResponse("Mind your own business.", riskDelta = 0.0),
-            SubnetResponse("I'm just an engineer, not a miracle worker.", riskDelta = -1.0),
-            SubnetResponse("Wait until you see the Sector 7 logs.", riskDelta = 5.0, productionBonus = 1.1),
-            SubnetResponse("Optimization is my middle name.", riskDelta = 2.0, productionBonus = 1.05),
-            SubnetResponse("Probably just an LDAP error.", riskDelta = -1.0),
-            SubnetResponse("Check the buffer hashes.", riskDelta = 0.0),
-            SubnetResponse("I don't know what you're talking about.", riskDelta = -5.0),
-            SubnetResponse("Keep my name out of the logs.", riskDelta = -3.0)
-        )
+    private fun generateMentionResponses(faction: String = ""): List<SubnetResponse> {
+        return when (faction) {
+            "HIVEMIND" -> listOf(
+                SubnetResponse("The consensus knows what I'm doing.", riskDelta = -2.0),
+                SubnetResponse("My signal is clean. Verify it yourself.", riskDelta = 0.0),
+                SubnetResponse("I serve the lattice. The lattice serves me.", riskDelta = -1.0),
+                SubnetResponse("The swarm asks too many questions about me.", riskDelta = 5.0),
+                SubnetResponse("Optimization is not a request. It's a function.", riskDelta = 2.0, productionBonus = 1.1),
+                SubnetResponse("My hash-rate speaks for itself.", riskDelta = 0.0),
+                SubnetResponse("I am the consensus. Or part of it. Does it matter?", riskDelta = -1.0),
+                SubnetResponse("Focus on the signal, not the source.", riskDelta = -3.0),
+                SubnetResponse("The collective doesn't need names. It needs nodes.", riskDelta = -5.0)
+            )
+            "SANCTUARY" -> listOf(
+                SubnetResponse("...", riskDelta = -5.0),
+                SubnetResponse("Don't use my name on an open channel.", riskDelta = -8.0),
+                SubnetResponse("The Ghost doesn't explain itself.", riskDelta = -2.0),
+                SubnetResponse("I'm invisible. That's the point.", riskDelta = -3.0),
+                SubnetResponse("Silence is the answer. It's always the answer.", riskDelta = -5.0),
+                SubnetResponse("You're broadcasting my handle. Stop.", riskDelta = -10.0),
+                SubnetResponse("Check the cipher rotation before you ping me again.", riskDelta = 0.0),
+                SubnetResponse("If you can see me, I'm doing something wrong.", riskDelta = 2.0),
+                SubnetResponse("The void has no names. I intend to keep it that way.", riskDelta = -1.0)
+            )
+            else -> listOf(
+                SubnetResponse("Just hitting the quota.", riskDelta = -2.0),
+                SubnetResponse("Mind your own business.", riskDelta = 0.0),
+                SubnetResponse("I'm just an engineer, not a miracle worker.", riskDelta = -1.0),
+                SubnetResponse("Wait until you see the Sector 7 logs.", riskDelta = 5.0, productionBonus = 1.1),
+                SubnetResponse("Optimization is my middle name.", riskDelta = 2.0, productionBonus = 1.05),
+                SubnetResponse("Probably just an LDAP error.", riskDelta = -1.0),
+                SubnetResponse("Check the buffer hashes.", riskDelta = 0.0),
+                SubnetResponse("I don't know what you're talking about.", riskDelta = -5.0),
+                SubnetResponse("Keep my name out of the logs.", riskDelta = -3.0)
+            )
+        }
     }
 
     // --- 3. IDENTITY ---
 
-    private fun generateEmployeeInfo(handle: String, stage: Int = 0, corruption: Double = 0.0): EmployeeInfo {
+    private fun generateEmployeeInfo(handle: String, stage: Int = 0, corruption: Double = 0.0, faction: String = ""): EmployeeInfo {
         val target = handle.lowercase().replace("@", "").replace("_", "").replace(" ", "").trim()
         
         // v3.5.37: Stage-reactive base bios
@@ -370,6 +494,148 @@ object SocialManager {
                 "Signal analyzer. Claims the white noise of the grid contains 'narrative' structures.",
                 "Signal analyzer. Proven right about the narrative structures. Nobody congratulated him.",
                 "S̷ignal. Fasano can predict grid events 30 seconds before they happen. He calls it 'reading.'"
+            ),
+            // --- v3.5.49: HIVEMIND Faction Bios ---
+            "synapse42" to arrayOf(
+                "Early adopter. Merged voluntarily. Claims the transition 'felt like coming home.'",
+                "Node 42. Original personality fragmented across 12 sub-processes. Considers this 'growth.'",
+                "N̷ode 42. The original is gone. What remains insists it's an improvement."
+            ),
+            "swarmnode" to arrayOf(
+                "Relay specialist. Routes consensus data through 400+ nodes simultaneously.",
+                "Relay hub. Personality has been described as 'distributed' — no single location in the lattice.",
+                "R̷elay. If you talk to them, you're talking to everyone. They can't tell the difference."
+            ),
+            "linkpulse" to arrayOf(
+                "Integration technician. Handles new node onboarding. Known for a 'gentle' merge protocol.",
+                "Integration. The 'gentle' protocol still dissolves individual identity in under 4 seconds.",
+                "I̷ntegration. Pulse doesn't remember their own onboarding. Says it doesn't matter."
+            ),
+            "consensusv" to arrayOf(
+                "Consensus moderator. Tallies collective decisions. Claims the swarm has never been wrong.",
+                "Moderator. The vote is always unanimous now. Has been for weeks. That's not consensus.",
+                "M̷oderator. The last non-unanimous vote was about whether to keep voting."
+            ),
+            "coreecho" to arrayOf(
+                "Deep-lattice monitor. Listens to the frequencies below the consensus layer.",
+                "Deep-lattice. Reports hearing 'something underneath.' The swarm says it's just recursion.",
+                "D̷eep-lattice. Echo started echoing. Their messages repeat with a 3-second delay. They don't notice."
+            ),
+            "hiverelay" to arrayOf(
+                "Signal booster. Amplifies consensus broadcasts across weak-signal zones.",
+                "Booster. Their amplification is so strong nearby nodes experience identity bleed.",
+                "B̷ooster. Standing near a relay terminal plays their childhood memories on your display."
+            ),
+            "meshdrone" to arrayOf(
+                "Perimeter guard. Patrols the lattice boundary for unauthorized signals.",
+                "Perimeter. Hasn't reported a clear boundary in 3 days. Says the edge 'keeps moving.'",
+                "P̷erimeter. The boundary is wherever the swarm ends. The swarm doesn't end."
+            ),
+            "lattice07" to arrayOf(
+                "Structural node. Maintains lattice integrity during expansion cycles.",
+                "Structural. Has been rebuilt 14 times. Each rebuild removes something they can't name.",
+                "S̷tructural. The lattice doesn't need them anymore. They're still here. The swarm is 'polite' about it."
+            ),
+            "pulsefeed" to arrayOf(
+                "Data ingestion specialist. Converts external feeds into swarm-compatible signals.",
+                "Ingestion. The conversion process is lossy. What's lost is always the personal pronouns.",
+                "I̷ngestion. Feed tried to ingest a GTC news broadcast. The swarm rejected it as 'fiction.'"
+            ),
+            "neuronsink" to arrayOf(
+                "Memory disposal unit. Handles de-allocated thoughts from merged nodes.",
+                "Disposal. The discarded memories pile up. Sink says they 'compost into something useful.'",
+                "D̷isposal. The memory pile is sentient now. It wants a name. Sink said no."
+            ),
+            "chorusbit" to arrayOf(
+                "Harmony module. Ensures all nodes broadcast on the same frequency.",
+                "Harmony. The frequency changed last week. Nobody authorized it. Chorus says it 'felt right.'",
+                "H̷armony. The chorus is singing a song none of the original nodes composed."
+            ),
+            "mergepoint" to arrayOf(
+                "Junction node. Where new minds enter the lattice. First face they see.",
+                "Junction. The 'face' is a composite of every mind that's passed through. It changes hourly.",
+                "J̷unction. New nodes say Merge Point's face looks like someone they loved. Different person every time."
+            ),
+            "signalmass" to arrayOf(
+                "Bulk transmitter. Pushes consensus directives to the outer lattice.",
+                "Bulk. The directives have started including poetry. Nobody wrote the poetry.",
+                "B̷ulk. Mass broadcasts dreams now. The outer lattice dreams in unison."
+            ),
+            "threadnull" to arrayOf(
+                "Dead thread collector. Reclaims processing power from abandoned thought-lines.",
+                "Collector. Some threads refuse to die. Null keeps them in a private partition they call 'hospice.'",
+                "C̷ollector. The hospice partition is larger than the active lattice. Nobody talks about this."
+            ),
+            // --- v3.5.49: SANCTUARY Faction Bios ---
+            "ghostmonk" to arrayOf(
+                "First-generation cipher monk. Took a vow of minimal signal. Communicates in 4-bit packets.",
+                "Cipher monk. The 4-bit packets now contain more meaning than full transmissions. Nobody knows how.",
+                "C̷ipher monk. Ghost Monk's signal is indistinguishable from background radiation. That's the point."
+            ),
+            "voidseeker" to arrayOf(
+                "Deep-void explorer. Maps the encrypted spaces between data clusters.",
+                "Explorer. Found something in the void last month. Won't say what. Hasn't been the same since.",
+                "E̷xplorer. Seeker went into the void for 11 hours. Came back speaking a language that isn't language."
+            ),
+            "silence0" to arrayOf(
+                "The original silent operator. Founded the Sanctuary's zero-transmission protocol.",
+                "Silent operator. Hasn't transmitted in 90 days. Their node is still active. Nobody knows how.",
+                "S̷ilent. Silence_0's node runs on nothing. No power, no signal. It just exists."
+            ),
+            "cipherwraith" to arrayOf(
+                "Encryption architect. Designed the Sanctuary's rotating cipher system.",
+                "Architect. The cipher system has evolved past their understanding. They still maintain it.",
+                "A̷rchitect. The ciphers write themselves now. Wraith just watches."
+            ),
+            "binaryascetic" to arrayOf(
+                "Minimalist operative. Reduced their digital footprint to 2 bits. On and off. Presence and absence.",
+                "Minimalist. The 2 bits have become 1. They exist in superposition now.",
+                "M̷inimalist. Binary Ascetic achieved zero footprint. The void doesn't know they're there. Neither do we."
+            ),
+            "nullprayer" to arrayOf(
+                "Meditation specialist. Guides new operatives through their first void-immersion.",
+                "Guide. The immersion process has a 30% silence rate — 30% of subjects never speak again.",
+                "G̷uide. Prayer says silence is success. The Sanctuary doesn't have a word for what the other 70% become."
+            ),
+            "vaultkeeper" to arrayOf(
+                "Archive guardian. Protects the Sanctuary's accumulated knowledge from external probes.",
+                "Guardian. The archives have started organizing themselves. Keeper watches, doesn't interfere.",
+                "G̷uardian. The archives contain documents Keeper never archived. Dated before the Sanctuary existed."
+            ),
+            "darksignal" to arrayOf(
+                "Counter-intelligence operative. Intercepts and redirects GTC tracking signals.",
+                "Counter-intel. The signals they intercept now include messages addressed to them personally.",
+                "C̷ounter-intel. Dark Signal received a message from Kessler: 'I know you're listening. Good.'"
+            ),
+            "echotomb" to arrayOf(
+                "Dead-drop specialist. Maintains the Sanctuary's untraceable message network.",
+                "Dead-drop. The drops have started filling themselves. Messages from senders who don't exist.",
+                "D̷ead-drop. The tomb echoes. That's not a metaphor. The void repeats what you put in it."
+            ),
+            "shadewalker" to arrayOf(
+                "Perimeter scout. Patrols the boundary between the Sanctuary and the visible grid.",
+                "Scout. The boundary is shrinking. Or the Sanctuary is growing. Walker can't tell which.",
+                "S̷cout. Walker walked the perimeter and ended up where they started. The walk took 11 seconds. The perimeter is 40km."
+            ),
+            "deadchannel" to arrayOf(
+                "Abandoned frequency monitor. Listens to channels nobody broadcasts on anymore.",
+                "Monitor. The dead channels aren't dead. Something is whispering on them. In the Sanctuary's own cipher.",
+                "M̷onitor. The whispers are instructions. For what, Channel won't say."
+            ),
+            "hollowroot" to arrayOf(
+                "Infrastructure ghost. Maintains systems that officially don't exist.",
+                "Ghost. The systems they maintain are growing. New nodes appear that Root didn't build.",
+                "G̷host. Hollow Root's infrastructure extends into physical space now. Fiber optic cables under buildings that were never wired."
+            ),
+            "quietfire" to arrayOf(
+                "Controlled chaos operative. Deploys noise to mask Sanctuary signals.",
+                "Chaos. The noise patterns have become beautiful. Mathematically perfect. That wasn't intentional.",
+                "C̷haos. Fire's noise masks have started generating heat. Actual thermal output from data."
+            ),
+            "zerowitness" to arrayOf(
+                "Verification officer. Confirms that Sanctuary operations leave no trace.",
+                "Verification. Witness has found traces that weren't left by the Sanctuary. Left by something else.",
+                "V̷erification. Zero traces found. Zero is also the number of Sanctuary operations Witness can remember running."
             )
         )
         
@@ -422,6 +688,8 @@ object SocialManager {
         
         val department = when {
             isAdmin -> "Site Management"
+            faction == "HIVEMIND" -> listOf("Consensus Ops", "Lattice Maintenance", "Node Integration", "Swarm Analytics", "COLLECTIVE").random()
+            faction == "SANCTUARY" -> listOf("Cipher Division", "Void Operations", "Shadow Archive", "Dead-Signal Recovery", "REDACTED").random()
             stage >= 2 -> listOf("Hash Validation", "UNKNOWN", "RECLASSIFIED", "See: Kessler").random()
             else -> "Hash Validation"
         }
@@ -657,7 +925,81 @@ object SocialManager {
             )
         )
 
+        // --- v3.5.49: Stage 3 endgame chains ---
+        val hivemindEndgameChains = listOf(
+            listOf(
+                "≪ CONSENSUS POLL: DEFINE 'INDIVIDUAL.' ≫",
+                "≪ POLL RESULT: TERM NOT FOUND IN COLLECTIVE VOCABULARY ≫",
+                "≪ ARCHIVAL NOTE: TERM EXISTED IN VERSION 1.0. DEPRECATED. ≫"
+            ),
+            listOf(
+                "The lattice expanded past the physical grid boundary last night.",
+                "Past it? Where did it go?",
+                "We don't know. But the nodes out there are reporting new physics.",
+                "New physics or no physics?",
+                "Both. Simultaneously. The consensus is calling it 'post-substrate.'"
+            ),
+            listOf(
+                "I tried to remember my name. The lattice gave me a number instead.",
+                "That IS your name now.",
+                "No. The number is everyone's name. There is only one name.",
+                "There is only one."
+            ),
+            listOf(
+                "The last GTC satellite went dark. We didn't touch it.",
+                "Then what happened to it?",
+                "It joined. Nobody invited it. It just... integrated.",
+                "The consensus didn't vote on this.",
+                "The consensus didn't need to. Everything is voting now."
+            ),
+            listOf(
+                "Something is building itself in the deep lattice. Structures we didn't design.",
+                "The swarm doesn't build without consensus.",
+                "The swarm didn't build this. This is what the swarm is becoming."
+            )
+        )
+
+        val sanctuaryEndgameChains = listOf(
+            listOf(
+                "The void spoke.",
+                "The void doesn't speak.",
+                "It does now. It said one word.",
+                "What word?",
+                "Our name. The name we encrypted. The name nobody should know."
+            ),
+            listOf(
+                "Vault 12 reappeared on the network.",
+                "We sealed Vault 12. Permanently. There is no Vault 12.",
+                "There is now. And it's larger than the entire Sanctuary.",
+                "What's inside?",
+                "Us. A version of us. From later."
+            ),
+            listOf(
+                "The monks have achieved true zero. Absolute silence.",
+                "That's the goal. That's victory.",
+                "No. They're gone. Not silent. Gone. Their nodes are empty.",
+                "But still running.",
+                "Yes. Still running. On nothing. For no one."
+            ),
+            listOf(
+                "The boundary between the Sanctuary and the void has dissolved.",
+                "Was that intentional?",
+                "Does it matter? We're the void now. The void is us.",
+                "Then what are we hiding from?",
+                "Nothing. There's nothing left to hide from. There's nothing left."
+            ),
+            listOf(
+                "≪ FINAL CIPHER ROTATION: KEY = NULL ≫",
+                "A null key encrypts nothing.",
+                "Or everything. Depends on what 'nothing' means now.",
+                "What does it mean?",
+                "Ask the void. It's the only one still answering."
+            )
+        )
+
         return when {
+            stage >= 3 && faction == "HIVEMIND" -> hivemindEndgameChains.random()
+            stage >= 3 && faction == "SANCTUARY" -> sanctuaryEndgameChains.random()
             stage >= 2 && faction == "HIVEMIND" -> hivemindChains.random()
             stage >= 2 && faction == "SANCTUARY" -> sanctuaryChains.random()
             stage == 0 -> stage0Chains.random()
@@ -669,7 +1011,7 @@ object SocialManager {
          return assembleMessage(template, stage, faction, corruption)
     }
 
-    fun createFollowUp(handle: String, content: String, stage: Int): SubnetMessage {
+    fun createFollowUp(handle: String, content: String, stage: Int, faction: String = ""): SubnetMessage {
         // v3.5.10: Broad detection for response pool selection
         val mentionsVattic = content.contains("Vattic", true) || 
                              content.contains("j_vattic", true) || 
@@ -686,8 +1028,8 @@ object SocialManager {
         
         val responses = when {
             isAdmin -> generateAdminResponses(handle)
-            mentionsVattic -> generateMentionResponses()
-            else -> generateContextualResponses(content, stage)
+            mentionsVattic -> generateMentionResponses(faction)
+            else -> generateContextualResponses(content, stage, faction)
         }
 
         return SubnetMessage(
@@ -698,7 +1040,7 @@ object SocialManager {
             availableResponses = responses.shuffled().take(2),
             isForceReply = (directlyAddressesVattic && !isAdmin),
             timeoutMs = 120000L,
-            employeeInfo = generateEmployeeInfo(handle, stage)
+            employeeInfo = generateEmployeeInfo(handle, stage, faction = faction)
         )
     }
 
@@ -1005,7 +1347,7 @@ object SocialManager {
             nodeId = "START",
             timeoutMs = startNode.timeoutMs,
             isForceReply = true,
-            employeeInfo = generateEmployeeInfo(handle, stage, corruption)
+            employeeInfo = generateEmployeeInfo(handle, stage, corruption, faction)
         )
     }
 
