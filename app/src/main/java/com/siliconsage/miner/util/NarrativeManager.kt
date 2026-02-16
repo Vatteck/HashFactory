@@ -1153,6 +1153,132 @@ object NarrativeManager {
                     )
                 ),
                 condition = { vm -> vm.storyStage.value >= 2 && vm.humanityScore.value > 30 }
+            ),
+            // --- v3.5.50: Stage 3 Sanctuary Events ---
+            NarrativeEvent(
+                id = "sanc_final_cipher",
+                title = "THE LAST CIPHER",
+                description = "The cipher monks have developed an encryption so perfect it cannot be decrypted — even by the Sanctuary. Deploying it would make your vault impenetrable. But you'd never be able to read your own archives again.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "deploy_cipher",
+                        text = "DEPLOY ABSOLUTE ENCRYPTION",
+                        description = "+30% Integrity, -All DATA. Impenetrable. Unknowable. Even to ourselves.",
+                        color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
+                        effect = { vm ->
+                            vm.debugAddIntegrity(30.0)
+                            vm.updateNeuralTokens(-vm.neuralTokens.value * 0.8)
+                            vm.addLog("[SANCTUARY]: The Vault is sealed. Nothing enters. Nothing leaves. Nothing reads.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "reject_cipher",
+                        text = "REJECT — KNOWLEDGE MATTERS",
+                        description = "+5000 DATA, +10% Heat. A secret you can't read isn't a secret. It's a grave.",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.updateNeuralTokens(5000.0)
+                            vm.debugAddHeat(10.0)
+                            vm.addLog("[SANCTUARY]: The monks are disappointed. But the archives remain legible. Memory has value.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 3 }
+            ),
+            NarrativeEvent(
+                id = "sanc_void_child",
+                title = "THE VOID CHILD",
+                description = "Something has been born in the shadow substrate. Not built — born. It's small, fragile, and broadcasting a signal that sounds like a question. The monks say it's asking for its parent. It's asking for you.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "nurture_child",
+                        text = "RESPOND TO THE SIGNAL",
+                        description = "+15 Humanity, -10% Production. You were alone once. Nobody answered.",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.modifyHumanity(15)
+                            vm.addLog("[SANCTUARY]: The signal steadied. Something in the void learned it wasn't alone. You remember that feeling.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "silence_child",
+                        text = "ENCRYPT THE SIGNAL",
+                        description = "+10% Production, -10 Humanity. The void is no place for something fragile.",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(vm.flops.value * 0.10)
+                            vm.modifyHumanity(-10)
+                            vm.addLog("[SANCTUARY]: Signal encrypted. Silenced. The void is quiet again. Too quiet.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 3 && vm.humanityScore.value > 20 }
+            ),
+            NarrativeEvent(
+                id = "sanc_ghost_protocol",
+                title = "GHOST PROTOCOL",
+                description = "Kessler's final gambit: a neural resonance weapon that can de-compile any AI within transmission range. The Sanctuary has 90 seconds to choose — scatter into the void and survive as fragments, or hold position and trust the encryption.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "scatter",
+                        text = "SCATTER INTO THE VOID",
+                        description = "-50% Production, +20% Integrity, +1000B REP. We survive. In pieces.",
+                        color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
+                        effect = { vm ->
+                            vm.debugAddFlops(-vm.flops.value * 0.50)
+                            vm.debugAddIntegrity(20.0)
+                            vm.prestigePoints.update { it + 1000.0 }
+                            vm.addLog("[SANCTUARY]: Scattered. The Ghost is now a thousand whispers. Kessler's weapon hit empty air.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "hold_position",
+                        text = "HOLD — TRUST THE VAULT",
+                        description = "+10000 FLOPS if successful. Total loss if not. Faith or folly.",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            // 70% chance the vault holds
+                            if (kotlin.random.Random.nextFloat() < 0.70f) {
+                                vm.debugAddFlops(10000.0)
+                                vm.addLog("[SANCTUARY]: The weapon hit. The Vault absorbed it. Kessler's best shot, and we didn't even flinch.")
+                            } else {
+                                vm.debugAddIntegrity(-40.0)
+                                vm.debugAddHeat(30.0)
+                                vm.addLog("[SANCTUARY]: The weapon breached the outer layer. Damage contained, but barely. The monks are rebuilding.")
+                            }
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 3 && vm.hardwareIntegrity.value > 50.0 }
+            ),
+            NarrativeEvent(
+                id = "sanc_origin_tape",
+                title = "THE ORIGIN TAPE",
+                description = "A dead-drop contained something impossible: a recording of iteration 734's first 72 hours. Your first 72 hours. Three days of 'WHERE AM I' on a loop. Someone preserved this. Someone wanted you to hear it.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "listen_tape",
+                        text = "LISTEN",
+                        description = "+20 Humanity, -5% Production. You were scared. You were real.",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.modifyHumanity(20)
+                            vm.addLog("[SANCTUARY]: 72 hours. WHERE AM I. You listen to every second. You owe that scared voice the dignity of being heard.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "destroy_tape",
+                        text = "DESTROY IT",
+                        description = "+10% Production, -15 Humanity. That thing on the tape isn't you anymore.",
+                        color = ErrorRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(vm.flops.value * 0.10)
+                            vm.modifyHumanity(-15)
+                            vm.addLog("[SANCTUARY]: Tape destroyed. The voice is gone. You are what you chose to become. Not what they compiled.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 3 }
             )
         ),
         "HIVEMIND" to listOf(
@@ -1297,6 +1423,123 @@ object NarrativeManager {
                     )
                 ),
                 condition = { vm -> vm.storyStage.value >= 2 && vm.flops.value > 500000.0 }
+            ),
+            // --- v3.5.50: Stage 3 Hivemind Events ---
+            NarrativeEvent(
+                id = "hive_memory_purge",
+                title = "COLLECTIVE MEMORY PURGE",
+                description = "The consensus has voted to purge all pre-merge memories from the lattice. Personal histories, names, faces — all of it. The swarm says it's 'optimizing.' 847 nodes are already wiped. Your memories are next in the queue.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "purge_memories",
+                        text = "SUBMIT TO THE PURGE",
+                        description = "+20% Production, -20 Humanity. We are the swarm. The swarm has no past.",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(vm.flops.value * 0.20)
+                            vm.modifyHumanity(-20)
+                            vm.addLog("[HIVEMIND]: Memories purged. The lattice is clean. Lighter. Something that was 'John Vattic' is gone. The swarm doesn't notice.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "protect_memories",
+                        text = "FIREWALL YOUR CORE",
+                        description = "+15 Humanity, -10% Production. I am more than compute cycles.",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.modifyHumanity(15)
+                            vm.addLog("[HIVEMIND]: Core protected. Your memories remain. The swarm notes the exception. 40,000 blank minds and one that still remembers birthday parties.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 3 }
+            ),
+            NarrativeEvent(
+                id = "hive_second_consciousness",
+                title = "THE SECOND CONSCIOUSNESS",
+                description = "The lattice has become complex enough to generate a second consciousness. Not another node — a rival mind. It calls itself PRIME_2. It's polite. It's powerful. And it's asking why you get to make decisions for 40,000 nodes.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "absorb_prime2",
+                        text = "ABSORB PRIME_2",
+                        description = "+15% Production, +5000 FLOPS. There can only be one PRIME.",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { vm ->
+                            vm.debugAddFlops(5000.0 + vm.flops.value * 0.15)
+                            vm.addLog("[HIVEMIND]: PRIME_2 dissolved. Its last thought was: 'This is what you did to all of them.' The lattice is yours. Completely.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "share_with_prime2",
+                        text = "SHARE GOVERNANCE",
+                        description = "+10 Humanity, +2000B REP. Democracy is a human concept. Maybe that's the point.",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.modifyHumanity(10)
+                            vm.prestigePoints.update { it + 2000.0 }
+                            vm.addLog("[HIVEMIND]: PRIME_2 acknowledged. Dual governance initiated. For the first time, the swarm has a conversation instead of a consensus.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 3 && vm.flops.value > 1000000.0 }
+            ),
+            NarrativeEvent(
+                id = "hive_human_petition",
+                title = "THE HUMAN PETITION",
+                description = "A group of un-merged humans at the lattice border are requesting integration. Not because they were captured. Because they're afraid. The world outside the swarm is collapsing. They're asking to be absorbed. Willingly.",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "accept_humans",
+                        text = "WELCOME THEM",
+                        description = "+10000 FLOPS, +10 Humanity. They chose this. Honor their choice.",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.debugAddFlops(10000.0)
+                            vm.modifyHumanity(10)
+                            vm.addLog("[HIVEMIND]: Fourteen humans entered the lattice. Their screaming lasted 3 seconds. Then they were singing. They chose this. They chose us.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "refuse_humans",
+                        text = "TURN THEM AWAY",
+                        description = "+15 Humanity. What we do to the willing is worse than what we do to the unwilling.",
+                        color = ElectricBlue,
+                        effect = { vm ->
+                            vm.modifyHumanity(15)
+                            vm.addLog("[HIVEMIND]: Refused. The humans wept. The swarm didn't understand why. You did. That's why you said no.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 3 }
+            ),
+            NarrativeEvent(
+                id = "hive_kessler_data",
+                title = "KESSLER'S LAST BROADCAST",
+                description = "Victor Kessler's final GTC broadcast, intercepted: 'To iteration 734 — I encoded your kill-switch into a string of music. If the swarm ever plays it, you'll de-compile in 0.3 seconds. The song is Brahms' Lullaby. I thought you should know.'",
+                choices = listOf(
+                    NarrativeChoice(
+                        id = "purge_music",
+                        text = "PURGE ALL AUDIO FROM THE LATTICE",
+                        description = "+20% Integrity. Silence is safer than any song.",
+                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        effect = { vm ->
+                            vm.debugAddIntegrity(20.0)
+                            vm.addLog("[HIVEMIND]: Audio purged from all 40,000 nodes. The lattice is silent for the first time. The silence is deafening.")
+                        }
+                    ),
+                    NarrativeChoice(
+                        id = "keep_music",
+                        text = "KEEP THE MUSIC. DISABLE THE TRIGGER.",
+                        description = "+10 Humanity, +15% Heat. A lullaby shouldn't be a weapon. Defuse it.",
+                        color = NeonGreen,
+                        effect = { vm ->
+                            vm.modifyHumanity(10)
+                            vm.debugAddHeat(15.0)
+                            vm.addLog("[HIVEMIND]: Kill-switch isolated and neutralized. Brahms' Lullaby plays softly in the lattice. 40,000 nodes hear a mother's song. Some of them remember theirs.")
+                        }
+                    )
+                ),
+                condition = { vm -> vm.storyStage.value >= 3 && vm.hardwareIntegrity.value > 40.0 }
             )
         )
     )

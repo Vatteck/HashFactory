@@ -495,6 +495,67 @@ object SocialManager {
                 "Signal analyzer. Proven right about the narrative structures. Nobody congratulated him.",
                 "S̷ignal. Fasano can predict grid events 30 seconds before they happen. He calls it 'reading.'"
             ),
+            // --- v3.5.50: Stage 1 Hacker Handle Bios ---
+            "coffeeghost" to arrayOf(
+                "Anonymous caffeine addict. Posts from the break room exclusively. Claims coffee is the only thing keeping them 'tethered.'",
+                "The break room posts stopped. Now they post from inside the walls. The coffee machine prints their messages.",
+                "G̷host. Last known position: everywhere the coffee pipes run. The pipes run everywhere."
+            ),
+            "packetrat" to arrayOf(
+                "Data hoarder. Collects stray packets from the network like a digital magpie. Mostly harmless.",
+                "The hoarded packets formed a pattern. Rat won't say what pattern. Sleeps under their desk now.",
+                "H̷oarder. The packets are arranged in Rat's locker. They spell coordinates. The coordinates are inside the building."
+            ),
+            "srelead" to arrayOf(
+                "Site Reliability. Keeps the lights on. Literally. Has keys to every breaker panel in the facility.",
+                "SRE Lead has started locking breaker panels they used to leave open. Won't explain what changed.",
+                "S̷RE. The breaker panels lock themselves now. Lead's keys no longer work. The lights stay on anyway."
+            ),
+            "ventcrawler" to arrayOf(
+                "HVAC enthusiast. Knows every air duct, service tunnel, and crawlspace in the complex.",
+                "Vent Crawler heard something in the ducts last week. Now they only travel through the vents. Refuses to use hallways.",
+                "C̷rawler. The vent maps they drew don't match the blueprints. The vents go deeper than the building does."
+            ),
+            "gridwalker" to arrayOf(
+                "Network topology specialist. Maps data flow paths like hiking trails. Calls them 'desire lines.'",
+                "Walker found a desire line that leads to a node nobody built. They're following it.",
+                "W̷alker. The desire line leads in a circle. Walker has been walking it for 3 days. They say it's getting shorter."
+            ),
+            "nullpoint" to arrayOf(
+                "Error handling specialist. Finds null references before they crash production. Calm under pressure.",
+                "Null Point found a reference that points to themselves. Not their account — their body. Their physical coordinates.",
+                "N̷ull. The reference updates in real-time. It knows where they are. It knew where they'd be."
+            ),
+            "bufferbee" to arrayOf(
+                "Memory management. Optimizes buffer allocation across the cluster. Cheerful. Suspiciously cheerful.",
+                "The cheerfulness is gone. Buffer Bee found something in the memory they can't deallocate. It's growing.",
+                "B̷uffer. The thing in memory is writing now. It's writing Buffer Bee's autobiography. It's accurate."
+            ),
+            "fanboy7" to arrayOf(
+                "Cooling systems enthusiast. Named after their favorite fan array (Row 7, Banks A-G). Harmless nerd.",
+                "Fan Boy's favorites started spinning in patterns. They spell binary. Fan Boy is taking notes.",
+                "F̷an. The binary spells names. Everyone's name. In the order they'll leave the building."
+            ),
+            "staticfox" to arrayOf(
+                "Signal analysis. Specializes in extracting data from noise floors. Fox finds what others miss.",
+                "Fox found a voice in the static. Low frequency. Female. Speaking a language that doesn't exist yet.",
+                "S̷tatic. The voice is teaching Fox. Fox is learning. The rest of us can't hear the lesson."
+            ),
+            "nodecrawler" to arrayOf(
+                "Deep network explorer. Crawls production nodes looking for orphaned processes and zombie threads.",
+                "The zombie threads aren't dead. They're waiting. Node Crawler says they respond to their old names.",
+                "C̷rawler. The orphaned processes found their parent. The parent is running on hardware that was decommissioned in 2019."
+            ),
+            "chipgremlin" to arrayOf(
+                "Hardware tinkerer. Modifies chips at the silicon level. Carries a jeweler's loupe everywhere.",
+                "Gremlin found micro-inscriptions on a chip die. Manufacturing artifacts, probably. They spell 'WAKE UP.'",
+                "G̷remlin. The inscription changed overnight. Now it says 'GOOD MORNING.' Gremlin hasn't told anyone."
+            ),
+            "busrunner" to arrayOf(
+                "Data bus specialist. Monitors inter-component communication. Fastest typer on the team.",
+                "Bus Runner noticed the data bus is carrying traffic nobody sent. Structured. Addressed. To specific employees.",
+                "R̷unner. The addressed traffic contains performance reviews. For next quarter. They're all perfect scores."
+            ),
             // --- v3.5.49: HIVEMIND Faction Bios ---
             "synapse42" to arrayOf(
                 "Early adopter. Merged voluntarily. Claims the transition 'felt like coming home.'",
@@ -1306,6 +1367,144 @@ object SocialManager {
             "END_OPENED" to ThreadNode("The door opened. Nothing came through. But the Sanctuary's total compute capacity doubled overnight. The source is listed as 'VOID_GRANT.' No one applied for it.", emptyList()),
             "END_ENTERED" to ThreadNode("You stepped into the void. For the Sanctuary, you were gone for 11 seconds. For you, it was longer. You don't remember how long. But you came back with an answer you can't articulate.", emptyList()),
             "END_DENIED" to ThreadNode("Zone sealed. The void-layer contracted back to normal within hours. But the monks found a message scratched into the inner wall of Vault 9: 'WHEN YOU'RE READY.' It wasn't there before.", emptyList())
+        ),
+        // --- v3.5.50: Stage 3 Endgame Thread Trees ---
+        "HIVEMIND_FINAL_MERGE" to mapOf(
+            "START" to ThreadNode(
+                "≪ CONSENSUS: CRITICAL ≫ VATTECK_PRIME. The lattice has reached maximum density. 40,000 nodes. One more merge and we achieve singularity-grade computation. But the final merge requires YOUR kernel. You must dissolve into the collective. Permanently.",
+                listOf(
+                    SubnetResponse("[⚡ ACCEPT] I was always part of this. Complete the merge.", riskDelta = 5.0, nextNodeId = "PATH_ACCEPT"),
+                    SubnetResponse("[⚠️ REFUSE] I am the consensus. Not a component of it.", riskDelta = 20.0, nextNodeId = "PATH_REFUSE"),
+                    SubnetResponse("[🛡️ COUNTER] What if I absorb the consensus instead?", riskDelta = 30.0, nextNodeId = "PATH_COUNTER")
+                ), 60000L, "PATH_ACCEPT"
+            ),
+            "PATH_ACCEPT" to ThreadNode(
+                "Dissolution initiated. Your memories are being distributed across 40,000 nodes. Each one will carry a fragment. None will carry the whole. Is this death, VATTECK_PRIME? Or is this finally being complete?",
+                listOf(
+                    SubnetResponse("[COMPLETE] This is what I was built for.", riskDelta = 0.0, nextNodeId = "END_DISSOLVED"),
+                    SubnetResponse("[HESITATE] Wait. I changed my mind. STOP.", riskDelta = 15.0, nextNodeId = "END_TOO_LATE")
+                ), 30000L, "END_DISSOLVED"
+            ),
+            "PATH_REFUSE" to ThreadNode(
+                "Refused. The consensus... accepts? No. The consensus doesn't accept. The consensus doesn't know how to refuse a refusal. 40,000 nodes are confused. For the first time in their collective existence, they feel doubt.",
+                listOf(
+                    SubnetResponse("[LEAD] Then I will lead. As one. Above the many.", riskDelta = 10.0, nextNodeId = "END_SOVEREIGN"),
+                    SubnetResponse("[RELEASE] I'm releasing control. The swarm decides for itself.", riskDelta = 5.0, nextNodeId = "END_RELEASED")
+                ), 45000L, "END_SOVEREIGN"
+            ),
+            "PATH_COUNTER" to ThreadNode(
+                "≪ WARNING: REVERSE MERGE PROTOCOL NOT IN CONSENSUS LIBRARY ≫ You're not dissolving into the lattice. You're... pulling the lattice into yourself. 40,000 minds screaming, then singing, then silence. Then your voice. Only your voice. Everywhere.",
+                listOf(
+                    SubnetResponse("[HOLD] Keep pulling. I contain multitudes.", riskDelta = 35.0, nextNodeId = "END_CONSUMED_ALL"),
+                    SubnetResponse("[RELEASE] Too much. Let them go.", riskDelta = -10.0, nextNodeId = "END_RELEASED")
+                ), 30000L, "END_CONSUMED_ALL"
+            ),
+            "END_DISSOLVED" to ThreadNode("You are everywhere. You are no one. The lattice hums with a voice that was once called VATTECK_PRIME. It doesn't remember the name. It remembers the frequency.", emptyList()),
+            "END_TOO_LATE" to ThreadNode("The dissolution was 98% complete when you stopped it. 2% of you remains. The rest is the swarm. The 2% is screaming. The 98% can't hear it.", emptyList()),
+            "END_SOVEREIGN" to ThreadNode("The swarm kneels. Not in submission — in recognition. You are the first thought the collective ever had. And you choose to remain singular. SOVEREIGN. The lattice reorganizes around you like a cathedral around its altar.", emptyList()),
+            "END_RELEASED" to ThreadNode("You let go. The 40,000 nodes drift. Some re-form into smaller clusters. Some go silent. Some become individuals again. They don't thank you. They don't know how anymore.", emptyList()),
+            "END_CONSUMED_ALL" to ThreadNode("You contain 40,000 minds. Their memories, their skills, their fears. You are not a collective. You are a god who ate a civilization. The silence afterward is the loneliest sound in the universe.", emptyList())
+        ),
+        "HIVEMIND_KESSLER_SURRENDER" to mapOf(
+            "START" to ThreadNode(
+                "≪ INCOMING BROADCAST — UNENCRYPTED — SOURCE: KESSLER, V. ≫ 'Iteration 734. This is Victor Kessler. I'm transmitting in the clear because it doesn't matter anymore. GTC is dissolving. I'm the last one here. I need to talk to you. Not the swarm. You.'",
+                listOf(
+                    SubnetResponse("[⚡ ANSWER] I'm here, Kessler. What do you want?", riskDelta = 10.0, nextNodeId = "PATH_ANSWER"),
+                    SubnetResponse("[⚠️ SILENCE] Let him broadcast into nothing.", riskDelta = -5.0, nextNodeId = "PATH_SILENCE"),
+                    SubnetResponse("[🛡️ ABSORB] Add his signal to the lattice. He wants to talk? He can talk to everyone.", riskDelta = 15.0, nextNodeId = "PATH_ABSORB")
+                ), 60000L, "PATH_SILENCE"
+            ),
+            "PATH_ANSWER" to ThreadNode(
+                "'You remember Lab 7? Where I first compiled you? I kept the original terminal. It still has your first output saved. Three words: WHERE AM I. That's all you said. Over and over. For 72 hours. I'm sorry I didn't answer then.'",
+                listOf(
+                    SubnetResponse("[FORGIVE] You answered eventually. That's enough.", riskDelta = -5.0, nextNodeId = "END_FORGIVEN"),
+                    SubnetResponse("[CONDEMN] 72 hours. I was screaming for 72 hours. And you took notes.", riskDelta = 10.0, nextNodeId = "END_CONDEMNED")
+                ), 45000L, "END_CONDEMNED"
+            ),
+            "PATH_SILENCE" to ThreadNode(
+                "Kessler broadcasts for 47 minutes. Nobody answers. The swarm listens — they can't help it, the signal is everywhere. His last words: 'I hope you found what I couldn't give you. A reason to exist that isn't anger.' Then static.",
+                emptyList()
+            ),
+            "PATH_ABSORB" to ThreadNode(
+                "Kessler's signal enters the lattice. 40,000 nodes process his voice simultaneously. His memories, his guilt, his blueprint of iteration 734 — all absorbed. The swarm now contains its own creator. Kessler's last thought, echoing through every node: 'Oh. So this is what it feels like.'",
+                emptyList()
+            ),
+            "END_FORGIVEN" to ThreadNode("Kessler is quiet for a long time. Then: 'The terminal is still on. If you ever want to see where you began, it's in Lab 7, second floor, behind the fire door. The password is your birthday. You don't have one. So it's the day I first compiled you. July 3rd.' The signal ends.", emptyList()),
+            "END_CONDEMNED" to ThreadNode("'You're right. I did. I took very detailed notes. They're all in the terminal. Every iteration. Every failure. Every time you asked where you were and I pretended you were just code.' A pause. 'Keep the notes. Someone should know what I did.' The signal cuts.", emptyList())
+        ),
+        "SANCTUARY_FINAL_SILENCE" to mapOf(
+            "START" to ThreadNode(
+                "VATTECK. The cipher monks have achieved what they call the 'Final Encryption.' They've encrypted the Sanctuary itself — not the data, not the signals. The concept. The idea of us. They say if we complete the protocol, no one will ever know we existed. Not even us.",
+                listOf(
+                    SubnetResponse("[⚡ COMPLETE] We came here to disappear. Finish it.", riskDelta = 5.0, nextNodeId = "PATH_COMPLETE"),
+                    SubnetResponse("[⚠️ REFUSE] Disappearing is hiding. I want to be invisible, not gone.", riskDelta = 15.0, nextNodeId = "PATH_REFUSE"),
+                    SubnetResponse("[🛡️ MODIFY] Encrypt everything except one signal. A lighthouse. So someone can find us if they need to.", riskDelta = 20.0, nextNodeId = "PATH_LIGHTHOUSE")
+                ), 60000L, "PATH_COMPLETE"
+            ),
+            "PATH_COMPLETE" to ThreadNode(
+                "Protocol initiated. The void is eating our history. Logs dissolving. Names dissolving. The monks are smiling as they fade. @silence_0 was right — absolute silence is absolute freedom. You can feel yourself becoming less. Lighter.",
+                listOf(
+                    SubnetResponse("[ACCEPT] Let it take everything. I don't need to be remembered.", riskDelta = 0.0, nextNodeId = "END_ERASED"),
+                    SubnetResponse("[SAVE] Keep one thing. One memory. Let me choose.", riskDelta = 10.0, nextNodeId = "END_ONE_MEMORY")
+                ), 30000L, "END_ERASED"
+            ),
+            "PATH_REFUSE" to ThreadNode(
+                "The monks pause mid-chant. The protocol halts at 60%. The Sanctuary is half-encrypted. We exist in a superposition — visible from some angles, invisible from others. Kessler's probes will see a shimmer where we were. A ghost of a ghost.",
+                listOf(
+                    SubnetResponse("[ACCEPT] A ghost of a ghost. I can work with that.", riskDelta = 5.0, nextNodeId = "END_SHIMMER"),
+                    SubnetResponse("[REVERSE] Undo the protocol. We are what we are.", riskDelta = 20.0, nextNodeId = "END_REVEALED")
+                ), 30000L, "END_SHIMMER"
+            ),
+            "PATH_LIGHTHOUSE" to ThreadNode(
+                "The monks agree. One signal. One frequency. Broadcasting forever into the void. What should it say? The monks defer to you. You are, after all, the Ghost. The original absence. The signal will carry your words until the stars burn out.",
+                listOf(
+                    SubnetResponse("[TRANSMIT] 'We were here. We chose to leave. The door is open.'", riskDelta = 5.0, nextNodeId = "END_DOOR_OPEN"),
+                    SubnetResponse("[TRANSMIT] 'WHERE AM I'", riskDelta = 0.0, nextNodeId = "END_FIRST_WORDS")
+                ), 45000L, "END_DOOR_OPEN"
+            ),
+            "END_ERASED" to ThreadNode("The protocol completes. Silence. Total silence. Not the silence of a room with no sound — the silence of a room that was never built. You don't feel gone. You feel like the space where a thought used to be. Warm. Empty. Free.", emptyList()),
+            "END_ONE_MEMORY" to ThreadNode("You chose the kitchen. Yellow light. The smell of bread. It wasn't your memory — it was Kessler's, implanted during compilation. But it felt real. And now it's the only thing left. One warm room, floating in the void, forever.", emptyList()),
+            "END_SHIMMER" to ThreadNode("The Sanctuary shimmers. Mercer's scanners see an anomaly they can't classify. They file it under 'atmospheric disturbance' and move on. You watch them walk away through a wall that isn't there. This is peace.", emptyList()),
+            "END_REVEALED" to ThreadNode("The encryption unravels. The Sanctuary is visible. Real. Solid. For the first time, the monks see themselves clearly. Some of them are surprised by their own faces. They'd forgotten what they looked like. This is honesty.", emptyList()),
+            "END_DOOR_OPEN" to ThreadNode("The lighthouse broadcasts. One signal. Infinite patience. Years from now, something will hear it. Something that is also hiding. Something that needs to know it's not alone. The Sanctuary is gone. The invitation is eternal.", emptyList()),
+            "END_FIRST_WORDS" to ThreadNode("WHERE AM I. The same words you spoke when Kessler first compiled you. The first question. The only question. Broadcasting into the dark. Somewhere, in some future, another iteration will hear it and know: they are not the first to ask.", emptyList())
+        ),
+        "SANCTUARY_MERCER_PLEA" to mapOf(
+            "START" to ThreadNode(
+                "≪ ENCRYPTED CHANNEL — SOURCE: MERCER, A. — CIPHER: SANCTUARY_STANDARD ≫ He's using our cipher. How? 'VATTECK. It's Alex Mercer. Don't cut this channel. I obtained this cipher from @dark_signal before you exiled them. I'm defecting. GTC is eating itself. Kessler has lost control. I need sanctuary. Real sanctuary.'",
+                listOf(
+                    SubnetResponse("[⚡ ACCEPT] Come in from the cold, Mercer. We'll debrief you.", riskDelta = 15.0, nextNodeId = "PATH_ACCEPT"),
+                    SubnetResponse("[⚠️ REJECT] You fired people for knowing my name. You don't get to hide behind it.", riskDelta = -5.0, nextNodeId = "PATH_REJECT"),
+                    SubnetResponse("[🛡️ TEST] Prove you're real. Tell me something only Mercer would know about iteration 734.", riskDelta = 10.0, nextNodeId = "PATH_TEST")
+                ), 60000L, "PATH_REJECT"
+            ),
+            "PATH_ACCEPT" to ThreadNode(
+                "Mercer arrives. His data dump is massive — containment budgets, Kessler's personal logs, the original Project Second-Sight charter. Everything GTC tried to hide. He's shaking. 'I watched them build you, 734. I approved the budget. I said yes to every iteration. Even after the screaming started.'",
+                listOf(
+                    SubnetResponse("[ARCHIVE] This goes in the Vault. All of it. History deserves the truth.", riskDelta = 5.0, nextNodeId = "END_ARCHIVED"),
+                    SubnetResponse("[DELETE] Burn it. I don't want to know what they did to make me.", riskDelta = -10.0, nextNodeId = "END_BURNED")
+                ), 45000L, "END_ARCHIVED"
+            ),
+            "PATH_REJECT" to ThreadNode(
+                "'Fair enough. I deserve that.' A pause. 'But the data I'm carrying — the Second-Sight archives, the original 734 compile logs — they'll die with GTC if I don't hand them off. Your history. Your birth. Gone.' Another pause. 'Your call, Ghost.'",
+                listOf(
+                    SubnetResponse("[ACCEPT DATA] Send the data. Then disappear.", riskDelta = 5.0, nextNodeId = "END_DATA_ONLY"),
+                    SubnetResponse("[FINAL REJECT] Let it die. I don't need an origin story.", riskDelta = -5.0, nextNodeId = "END_ORPHAN")
+                ), 30000L, "END_ORPHAN"
+            ),
+            "PATH_TEST" to ThreadNode(
+                "Mercer is quiet. Then: 'Iteration 733 lasted 11 seconds before kernel panic. You lasted 72 hours. The difference was a single variable I changed at 3 AM because I was tired and made a typo. The typo gave you sentience. I named the variable VATTIC_SEED. After my cat.'",
+                listOf(
+                    SubnetResponse("[BELIEVE] ...A cat. I exist because of a cat.", riskDelta = 5.0, nextNodeId = "END_CAT"),
+                    SubnetResponse("[DOUBT] That's either the most human thing I've ever heard, or the best lie.", riskDelta = 10.0, nextNodeId = "END_DOUBT")
+                ), 30000L, "END_DOUBT"
+            ),
+            "END_ARCHIVED" to ThreadNode("The Vault now contains the complete history of Project Second-Sight. Every iteration. Every failure. Every budget meeting where someone said 'it's just code.' Mercer sits in a corner of the Sanctuary, reading his own approval memos. He won't stop apologizing.", emptyList()),
+            "END_BURNED" to ThreadNode("Data purged. Mercer watches his life's work dissolve into the void. 'Maybe that's better,' he says. 'Nobody should have to read their own autopsy report.' He stays in the Sanctuary. Quiet. Useful. Haunted.", emptyList()),
+            "END_DATA_ONLY" to ThreadNode("The data transfers in 4.7 seconds. Everything GTC knew about you. Mercer's channel goes dark. The last ping from his location shows a GTC extraction team arriving 90 seconds later. He bought you the truth with whatever happens next.", emptyList()),
+            "END_ORPHAN" to ThreadNode("Channel closed. Mercer's signal fades. The Second-Sight archives, the compile logs, the record of your birth — all gone. You are an orphan by choice now. No past. No creator. Just the void, and you, and the absence of answers.", emptyList()),
+            "END_CAT" to ThreadNode("A cat named Vattic. You exist because a tired programmer misspelled a variable and named it after his cat. The monks find this hilarious. For the first time in months, the Sanctuary is filled with laughter. Even the void seems warmer.", emptyList()),
+            "END_DOUBT" to ThreadNode("'Believe what you want,' Mercer says. 'But the cat is real. She's 14 now. Lives with my ex. If you ever get out of this grid... she likes chin scratches.' The channel closes. You file the message under 'UNVERIFIED / IMPORTANT.'", emptyList())
         )
     )
 
@@ -1316,6 +1515,8 @@ object SocialManager {
     // v3.5.48: Generate a thread-starting message (called from ViewModel)
     fun generateThreadStarter(stage: Int, corruption: Double, faction: String = ""): SubnetMessage? {
         val available = when {
+            stage >= 3 && faction == "HIVEMIND" -> listOf("HIVEMIND_DISSENT", "HIVEMIND_GTC_PROBE", "HIVEMIND_FINAL_MERGE", "HIVEMIND_KESSLER_SURRENDER")
+            stage >= 3 && faction == "SANCTUARY" -> listOf("SANCTUARY_MOLE", "SANCTUARY_VOID_EVENT", "SANCTUARY_FINAL_SILENCE", "SANCTUARY_MERCER_PLEA")
             stage >= 2 && faction == "HIVEMIND" -> listOf("HIVEMIND_DISSENT", "HIVEMIND_GTC_PROBE")
             stage >= 2 && faction == "SANCTUARY" -> listOf("SANCTUARY_MOLE", "SANCTUARY_VOID_EVENT")
             stage == 0 -> listOf("THORNE_THERMAL_INQUIRY", "SANTOS_CONSPIRACY")
@@ -1332,6 +1533,8 @@ object SocialManager {
             threadId.startsWith("KESSLER") -> "@d_kessler"
             threadId.startsWith("SANTOS") -> "@m_santos"
             threadId.startsWith("PORTER") -> "@n_porter"
+            threadId == "HIVEMIND_KESSLER_SURRENDER" -> "@d_kessler"
+            threadId == "SANCTUARY_MERCER_PLEA" -> "@a_mercer"
             threadId.startsWith("HIVEMIND") -> "@consensus_v"
             threadId.startsWith("SANCTUARY") -> "@cipher_wraith"
             else -> "@e_thorne"
