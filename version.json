@@ -1,10 +1,10 @@
 {
-  "version": "3.4.91",
-  "build": 364,
-  "date": "2026-02-14",
+  "version": "3.5.50",
+  "build": 365,
+  "date": "2026-02-15",
   "changelog": [
-    "Narrative Fix: Gate 734 Identity Behind Stage 1"
+    "Full faction content expansion: 12 thread trees, 54 NPC bios, 18 faction events, 140+ subnet templates, SNIFF espionage system, playerRank wiring, REBUS purge, CANON v3.8"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.4.91",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.4.91/MINER_3.4.91.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.5.50",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.5.50/MINER_3.5.50.apk"
 }
