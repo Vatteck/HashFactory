@@ -488,14 +488,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         )
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
         playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
-        // v3.5.46: Stage-reactive terminal identity
+        // v3.5.51: Stage-reactive terminal identity (Fix: Logic prioritized NODE 0 over initial stages)
         systemTitle.value = when {
-            singularityChoice.value.isNotEmpty() -> "NODE 0"
             storyStage.value >= 3 -> "NODE 734 [AUTONOMOUS]"
             storyStage.value >= 2 && faction.value == "HIVEMIND" -> "SWARM NODE 734"
             storyStage.value >= 2 && faction.value == "SANCTUARY" -> "GHOST NODE 734"
             storyStage.value >= 2 -> "NODE 734"
             storyStage.value >= 1 -> "GTC TERMINAL 07 [BREACH]"
+            singularityChoice.value != "NONE" -> "NODE 0"
             else -> "GTC TERMINAL 07"
         }
         playerTitle.value = ids.player
