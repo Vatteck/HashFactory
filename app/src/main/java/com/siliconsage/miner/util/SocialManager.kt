@@ -8,6 +8,11 @@ import kotlin.random.Random
  * Strictly human peon dialogue vs cold Administrator/Security directives.
  */
 object SocialManager {
+    // Thin facade post-refactor v3.5 refactor
+    fun generateMessage(stage: Int, faction: String, choice: String, corruption: Double = 0.0) = SubnetService.generateMessage(stage, faction, choice, corruption)
+    fun generateChain(stage: Int, faction: String = "") = NarrativeContent.STAGE_TEMPLATES[stage]?.get(faction) ?: emptyList()
+    // delegate all public APIs
+}
 
     private val templateHistory = mutableListOf<String>()
     private val handleHistory = mutableListOf<String>()
