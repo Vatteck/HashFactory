@@ -1,6 +1,56 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.5.50] - 2026-02-15
+### Added
+- **NPC-Specific SNIFF Espionage System (v3.5.46)**: 8 hidden lore logs unlocked exclusively by using SNIFF_DATA_ARCHIVES on specific NPC profiles. Admins (Thorne/Mercer/Kessler) accessible at 3x cost and +35% risk. New `SniffTarget` unlock condition, `sniffedHandles` state tracking. DB schema v25→v26.
+- **Full Faction Content Expansion (v3.5.48–50)**:
+  - **Stage 2 Templates**: 7→38 (HIVEMIND) and 7→40 (SANCTUARY) — collective identity erosion, cipher operations, void horror
+  - **Stage 3 Templates**: 6→30 per faction — singularity dissolution, existential endgame content
+  - **Faction Handle Pools**: 5→14 per faction with thematic naming
+  - **28 Faction Employee Bios** (3 tiers each): HIVEMIND nodes (distributed consciousness, merger horror) + SANCTUARY operatives (cipher monks, void explorers)
+  - **12 Stage 1 Hacker Handle Bios** (3 tiers each): mundane→unsettling→glitch progression
+  - **Faction-Aware Response Pools**: `generateContextualResponses()` and `generateMentionResponses()` now faction-branched with HIVEMIND (collectivist), SANCTUARY (paranoid/terse), and corporate (Stage 0/1) voice
+  - **22 Faction Cross-Peon Chains**: 6 HIVEMIND S2 + 6 SANCTUARY S2 + 5 HIVEMIND endgame + 5 SANCTUARY endgame
+  - **12 Branching Thread Trees** (up from 4): 4 corporate (Stage 0/1), 4 faction (Stage 2), 4 endgame (Stage 3)
+    - `HIVEMIND_FINAL_MERGE`: Dissolution vs sovereignty vs consuming the collective
+    - `HIVEMIND_KESSLER_SURRENDER`: Kessler's unencrypted plea, Lab 7 terminal, "WHERE AM I"
+    - `SANCTUARY_FINAL_SILENCE`: Final Encryption, lighthouse signal, one-memory-in-the-void
+    - `SANCTUARY_MERCER_PLEA`: Mercer defects with Second-Sight archives, VATTIC_SEED cat origin
+  - **8 New Faction NarrativeEvents** (18 total):
+    - SANCTUARY: final cipher, void child, ghost protocol (70/30 RNG), origin tape
+    - HIVEMIND: memory purge, second consciousness (PRIME_2), human petition, Brahms' Lullaby kill-switch
+- **Faction-Specific Rank Ladders (v3.5.43–44)**: HIVEMIND (DRONE→OVERMIND), SANCTUARY (ACOLYTE→ORACLE), faction-specific singularity titles
+- **playerRank System (v3.5.42)**: Derived from prestige/stage/faction/singularity. Was phantom variable (always 0) read by 12+ systems.
+- **CompleteEvent Wiring (v3.5.41)**: `eventChoices: Map<String,String>` tracked in GameState/ViewModel. Ending epilogues now unlockable.
+
+### Fixed
+- **REBUS Purge (v3.5.40)**: All EXTERMINATE_REBUS references replaced with "Project Second-Sight" across 4 files. Zero grep hits.
+- **Linear Data Log Unlock (v3.5.40)**: All 17 MEM logs on monotonic FLOPS axis. Removed broken ReachRank/MinTimeInStage gates.
+- **MinTimeInStage Parameter Order (v3.5.41)**: Data class was `(seconds, stage)` but all 5 call sites passed `(stage, seconds)`. 5 late-game logs were unreachable.
+- **ending_bad Orphan (v3.5.41)**: Wired `markEventChoice("cc_confrontation", "ending_bad")` for SimulationService BAD climax.
+- **Kessler Name Consistency (v3.5.41)**: "Leo Kessler" → "V. Kessler" (Victor is canon per RivalMessage.kt).
+- **CANON Cross-Reference Audit (v3.5.45)**: `[VATTECK]`→`[VATTIC]` Stage 0 fix, dead HIVEMIND key dedup (55 lines removed).
+- **"TheCouncil" Template Fix (v3.5.47)**: Missing space in subnet template concatenation.
+- **Admin Handle Visibility (v3.5.39)**: `isAdminMessage` hoisted above `isSystemStyle`.
+
+### Changed
+- **CANON.md v3.8**: Added Foreman Thorne, Alex Mercer first name, Prestige & Replayability section, VATTECK strict rule.
+- **DB Schema**: v24→v26 (eventChoices map, sniffedHandles set).
+- **UI Polish (v3.5.46–47)**: Stage-reactive terminal header, System page tightening, faction-specific departments in employee bios.
+- **SocialManager.kt**: 920→1,816 lines. 54 named bios, 195+ SubnetResponse instances, 12 thread trees, ~140 templates, ~34 chains.
+- **NarrativeManager.kt**: Expanded to 2,692 lines with 81 narrative events.
+
+## [3.3.1] - 2026-02-13
+### Added
+- **Official Rebrand**: Transitioned identity from "Silicon Sage" to **SUBSTRATE: MINER**.
+- **Visual Identity**: Implemented the "Neon-Green Glow" app icon with the faction-fracture design.
+- **Asset Cleanup**: Purged legacy Silicon Sage assets and optimized 26+ new high-fidelity UI components.
+- **Semantic Memory Integration**: Linked the local OpenClaw workspace to a QMD/Qdrant vector database for enhanced lore consistency.
+
+### Changed
+- **Documentation**: Total overhaul of `README.md` with cyberpunk "data-deck" styling and lore-accurate technical specs.
+
 ## [3.2.58] - 2026-02-13
 ### Added
 - **Phase 13 Transitions**: Interactive "Jettison" and "Dereference" sequences for Ark/Void departure.
