@@ -64,16 +64,16 @@ fun DilemmaOverlay(
                 
                 @OptIn(ExperimentalLayoutApi::class)
                 FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center, // v3.5.54.5: Center aligned
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.spacedBy(12.dp), // Increased spacing
                     maxItemsInEachRow = if (validChoices.size > 2) 2 else 3
                 ) {
                     validChoices.forEach { choice ->
                         NarrativeOption(
                             choice = choice,
                             onSelect = { onChoice(choice) },
-                            modifier = Modifier.padding(horizontal = 4.dp).defaultMinSize(minWidth = 120.dp)
+                            modifier = Modifier.padding(4.dp).defaultMinSize(minWidth = 140.dp) // Dynamic padding via margin + larger min width
                         )
                     }
                 }

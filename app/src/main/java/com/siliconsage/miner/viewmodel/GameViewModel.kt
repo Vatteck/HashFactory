@@ -558,6 +558,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         refreshProductionRates() 
     }
     fun purgeHeat() {
+        if (isPurgingHeat.value) {
+            stopPurgeHeat()
+            return
+        }
+
         if (isJettisonAvailable.value) {
             isJettisonAvailable.value = false
             return
