@@ -65,7 +65,7 @@ fun DilemmaOverlay(
                 @OptIn(ExperimentalLayoutApi::class)
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.Center, // v3.5.54.5: Center aligned
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     maxItemsInEachRow = if (validChoices.size > 2) 2 else 3
                 ) {
@@ -73,7 +73,7 @@ fun DilemmaOverlay(
                         NarrativeOption(
                             choice = choice,
                             onSelect = { onChoice(choice) },
-                            modifier = Modifier.weight(1f, fill = false).minWidth(120.dp)
+                            modifier = Modifier.padding(horizontal = 4.dp).defaultMinSize(minWidth = 120.dp)
                         )
                     }
                 }

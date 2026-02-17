@@ -436,10 +436,9 @@ fun HeaderSection(
                     shape = RoundedCornerShape(4.dp), 
                     border = BorderStroke(1.dp, if (isPurging) ErrorRed else Color.DarkGray)
                 ) { 
-                    val (buttonText, buttonIcon) = when {
-                        isPurging -> "CANCEL PURGE" to Icons.Default.Air
-                        storyStage <= 1 -> "TAKE A BREATH" to Icons.Default.Air
-                        storyStage == 2 -> "SCRUB O2" to Icons.Default.Air
+                    val (buttonText, buttonIcon) = when (storyStage) {
+                        0, 1 -> "TAKE A BREATH" to Icons.Default.Air
+                        2 -> "SCRUB O2" to Icons.Default.Air
                         else -> "PURGE HEAT" to Icons.Default.DeviceThermostat
                     }
                     Icon(buttonIcon, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(buttonText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 

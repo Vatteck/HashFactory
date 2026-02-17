@@ -91,7 +91,15 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             val corruption by viewModel.identityCorruption.collectAsState()
-            Box(modifier = Modifier.weight(1f).clickable { viewModel.setTerminalMode("IO") }) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(if (mode == "IO") primaryColor.copy(alpha = 0.15f) else Color.DarkGray.copy(alpha = 0.1f), TechnicalCornerShape(8f))
+                    .border(1.dp, if (mode == "IO") primaryColor.copy(alpha = 0.5f) else Color.Transparent, TechnicalCornerShape(8f))
+                    .clickable { viewModel.setTerminalMode("IO") }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 CyberHeader(
                     text = "I/O",
                     color = if (mode == "IO") primaryColor else Color.Gray,
@@ -99,7 +107,15 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                     isGlitched = mode == "IO" && corruption > 0.4
                 )
             }
-            Box(modifier = Modifier.weight(1f).clickable { viewModel.setTerminalMode("SUBNET") }) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(if (mode == "SUBNET") primaryColor.copy(alpha = 0.15f) else Color.DarkGray.copy(alpha = 0.1f), TechnicalCornerShape(8f))
+                    .border(1.dp, if (mode == "SUBNET") primaryColor.copy(alpha = 0.5f) else Color.Transparent, TechnicalCornerShape(8f))
+                    .clickable { viewModel.setTerminalMode("SUBNET") }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 CyberHeader(
                     text = "SUBNET",
                     color = if (mode == "SUBNET") primaryColor else Color.Gray,
@@ -112,7 +128,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                         color = ErrorRed, 
                         fontSize = 10.sp, 
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterEnd)
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 8.dp)
                     )
                 }
             }
