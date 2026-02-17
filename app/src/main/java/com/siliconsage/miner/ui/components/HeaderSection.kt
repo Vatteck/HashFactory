@@ -43,6 +43,7 @@ import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ConvergenceGold
 import com.siliconsage.miner.viewmodel.GameViewModel
+import kotlin.random.Random
 
 @Composable
 fun HeaderSection(
@@ -95,7 +96,12 @@ fun HeaderSection(
     }
 
     Box(
-        modifier = modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.9f), RoundedCornerShape(4.dp)).graphicsLayer { clip = false }.drawBehind {
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.Black.copy(alpha = 0.9f), TechnicalCornerShape(16f))
+            .border(BorderStroke(1.dp, color.copy(alpha = 0.3f)), TechnicalCornerShape(16f))
+            .graphicsLayer { clip = false }
+            .drawBehind {
                 val w = this.size.width; val h = this.size.height; val flickerAlpha = flickerAlphaState.value
                 val timeMillis = System.currentTimeMillis() % 10000000L
                 val globalTime = timeMillis.toDouble() / 1000.0
@@ -104,15 +110,49 @@ fun HeaderSection(
                 val currentPower = powerState.value
                 val currentMax = maxPowerState.value
                 val currentHeat = currentHeatState.value
-                
+
+                // v3.5.54: Segmented Power Rails with Spark Logic
                 val railW = 4.dp.toPx()
                 val pwrFactor = (currentPower / currentMax).coerceIn(0.0, 1.0).toFloat()
                 val railH = h * pwrFactor
-                val railColor = if (pwrFactor > 0.9f) ErrorRed else Color(0xFFFFD700).copy(alpha = 0.6f)
-                drawRect(color = railColor.copy(alpha = 0.1f), topLeft = Offset(0f, 0f), size = Size(railW, h)) 
-                drawRect(color = railColor, topLeft = Offset(0f, h - railH), size = Size(railW, railH)) 
-                drawRect(color = railColor.copy(alpha = 0.1f), topLeft = Offset(w - railW, 0f), size = Size(railW, h)) 
-                drawRect(color = railColor, topLeft = Offset(w - railW, h - railH), size = Size(railW, railH)) 
+                val segmentCount = 12
+                val segmentH = h / segmentCount
+                
+                // Draw Base Rails (Background)
+                drawRect(color = Color.DarkGray.copy(alpha = 0.1f), topLeft = Offset(0f, 0f), size = Size(railW, h))
+                drawRect(color = Color.DarkGray.copy(alpha = 0.1f), topLeft = Offset(w - railW, 0f), size = Size(railW, h))
+
+                // Draw Active Segments
+                for (i in 0 until segmentCount) {
+                    val yPos = h - (i + 1) * segmentH
+                    val segmentCenterY = yPos + segmentH / 2
+                    val isActive = (segmentCount - i).toFloat() / segmentCount <= pwrFactor
+                    
+                    if (isActive) {
+                        val railColor = if (pwrFactor > 0.9f) ErrorRed else Color(0xFFFFD700).copy(alpha = 0.8f)
+                        drawRect(
+                            color = railColor.copy(alpha = flickerAlpha),
+                            topLeft = Offset(0f, yPos + 1.dp.toPx()),
+                            size = Size(railW, segmentH - 2.dp.toPx())
+                        )
+                        drawRect(
+                            color = railColor.copy(alpha = flickerAlpha),
+                            topLeft = Offset(w - railW, yPos + 1.dp.toPx()),
+                            size = Size(railW, segmentH - 2.dp.toPx())
+                        )
+                        
+                        // Spark Particles at Threshold
+                        if (pwrFactor > 0.95f && Random.nextFloat() > 0.92f) {
+                            val sparkX = if (Random.nextBoolean()) railW else w - railW
+                            val sparkSize = Random.nextFloat() * 3.dp.toPx()
+                            drawCircle(
+                                color = Color.White,
+                                radius = sparkSize,
+                                center = Offset(sparkX + (Random.nextFloat() - 0.5f) * 10f, segmentCenterY)
+                            )
+                        }
+                    }
+                }
 
                 val ledSize = 2.dp.toPx(); val ledGap = 4.dp.toPx(); val ledStep = ledSize + ledGap; val ledCount = (w / ledStep).toInt()
                 val overclockMult = if (isOverclocked) 1.5f else 1.0f
@@ -120,6 +160,7 @@ fun HeaderSection(
                 
                 val bloomPoints = mutableListOf<Offset>(); val bloomColors = mutableListOf<Color>()
                 
+                // v3.5.54: Enhanced Gourier Ripple with Ghost Fragments
                 for (i in 0 until ledCount) {
                     val x = i * ledStep + (ledGap / 2f); val posFactor = i.toFloat() / ledCount
                     var ledBaseCol = color
@@ -137,6 +178,9 @@ fun HeaderSection(
                         if (isBreachActive) return if (Math.sin(globalTime * 15.0 + i * 0.4 + row * Math.PI).toFloat() > 0) 1f else 0.1f
                         if (isAuditActive) return if (((globalTime * 12.0).toInt() + (if (i % 2 == 0) 0 else 1) + row) % 2 == 0) 0.8f else 0.2f
                         
+                        // Ghost Fragments (v3.5.54)
+                        if (corruption > 0.5 && Random.nextFloat() > 0.998f) return 1.0f
+
                         val rowSpeed = if (row == 0) 1.0 else 0.73205081
                         val rowOffset = if (row == 0) 0.0 else 123.456
                         val t = (globalTime + rowOffset) * activitySpeedBase * rowSpeed
