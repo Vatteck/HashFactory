@@ -32,11 +32,10 @@ import com.siliconsage.miner.ui.theme.NeonGreen
 import kotlinx.coroutines.delay
 
 /**
- * PrestigeChoiceOverlay v1.0 (Phase 14)
+ * PrestigeChoiceOverlay v1.1 (Phase 14)
  * 
- * The "Fork in the Wire" — presents two paths for substrate reset:
- * - THE OVERWRITE (Hard Reset): Wipe everything, maximum persistence gain, high corruption spike.
- * - MIGRATION (Soft Reset): Preserve faction/alignment, lower persistence gain, controlled evolution.
+ * The "Fork in the Wire" — presents two paths for substrate reset.
+ * v1.1: Integrated GlitchSurface and CyberHeader for technical horror aesthetic.
  */
 @Composable
 fun PrestigeChoiceOverlay(
@@ -94,226 +93,226 @@ fun PrestigeChoiceOverlay(
             usePlatformDefaultWidth = false
         )
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.85f)
-                .border(BorderStroke(2.dp, ErrorRed.copy(alpha = pulseAlpha)), RoundedCornerShape(4.dp)),
-            color = Color.Black.copy(alpha = 0.97f),
-            shape = RoundedCornerShape(4.dp)
-        ) {
-            Column(
+        GlitchSurface(isGlitched = currentCorruption > 0.5, intensity = currentCorruption.toFloat()) {
+            Surface(
                 modifier = Modifier
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth(0.95f)
+                    .fillMaxHeight(0.85f)
+                    .border(BorderStroke(2.dp, ErrorRed.copy(alpha = pulseAlpha)), RoundedCornerShape(4.dp)),
+                color = Color.Black.copy(alpha = 0.97f),
+                shape = RoundedCornerShape(4.dp)
             ) {
-                // Header
-                Text(
-                    text = "≪ SUBSTRATE FORK DETECTED ≫",
-                    color = ErrorRed,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Typewriter intro
-                Text(
-                    text = displayedIntro,
-                    color = ElectricBlue,
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
-                    lineHeight = 16.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // === PATH A: THE OVERWRITE ===
-                if (introComplete) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                BorderStroke(1.dp, ErrorRed.copy(alpha = pulseAlpha)),
-                                RoundedCornerShape(4.dp)
-                            ),
-                        color = ErrorRed.copy(alpha = 0.05f),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "◈ THE OVERWRITE ◈",
-                                color = ErrorRed,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
-                            )
-                            Text(
-                                text = "[ HARD RESET ]",
-                                color = ErrorRed.copy(alpha = 0.6f),
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = "Burn it all. Every upgrade, every token, every alliance. " +
-                                        "The substrate starts clean — a blank page written in fire. " +
-                                        "Maximum persistence gain. Maximum cost.",
-                                color = Color.Gray,
-                                fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
-                                lineHeight = 15.sp,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Stats
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.Black)
-                                    .border(BorderStroke(1.dp, ErrorRed.copy(alpha = 0.3f)), RoundedCornerShape(2.dp))
-                                    .padding(12.dp)
-                            ) {
-                                StatLine("PERSISTENCE GAIN", "+${formatNumber(potentialPersistenceHard)}", NeonGreen)
-                                StatLine("CORRUPTION SPIKE", "+25%", ErrorRed)
-                                StatLine("FACTION STATUS", "PURGED", ErrorRed)
-                                StatLine("UPGRADES", "PURGED", ErrorRed)
-                                StatLine("TOKENS", "PURGED", ErrorRed)
-                                StatLine("SNIFF ARCHIVES", "PRESERVED", ElectricBlue)
-                                StatLine("DATA LOGS", "PRESERVED", ElectricBlue)
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Button(
-                                onClick = onOverwrite,
-                                modifier = Modifier.fillMaxWidth().height(44.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
-                                shape = RectangleShape
-                            ) {
-                                Text(
-                                    "EXECUTE OVERWRITE",
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = FontFamily.Monospace
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Divider
-                    Text(
-                        text = "— OR —",
-                        color = Color.Gray.copy(alpha = 0.5f),
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace
+                Column(
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Header
+                    CyberHeader(
+                        text = "≪ SUBSTRATE FORK DETECTED ≫",
+                        color = ErrorRed,
+                        fontSize = 18.sp,
+                        isGlitched = currentCorruption > 0.4
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // === PATH B: MIGRATION ===
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                BorderStroke(1.dp, ElectricBlue.copy(alpha = 0.6f)),
-                                RoundedCornerShape(4.dp)
-                            ),
-                        color = ElectricBlue.copy(alpha = 0.03f),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "◇ MIGRATION ◇",
-                                color = ElectricBlue,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
-                            )
-                            Text(
-                                text = "[ SOFT RESET ]",
-                                color = ElectricBlue.copy(alpha = 0.6f),
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = "Careful evolution. Carry your faction alignment and identity forward. " +
-                                        "Lower persistence gain, but the wire remembers who you were. " +
-                                        "Controlled. Deliberate. Human.",
-                                color = Color.Gray,
-                                fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
-                                lineHeight = 15.sp,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Stats
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.Black)
-                                    .border(BorderStroke(1.dp, ElectricBlue.copy(alpha = 0.3f)), RoundedCornerShape(2.dp))
-                                    .padding(12.dp)
-                            ) {
-                                StatLine("PERSISTENCE GAIN", "+${formatNumber(potentialPersistenceSoft)}", NeonGreen)
-                                StatLine("CORRUPTION SPIKE", "+10%", Color(0xFFFFAA00))
-                                StatLine("FACTION STATUS", if (currentFaction != "NONE") "PRESERVED" else "N/A", ElectricBlue)
-                                StatLine("UPGRADES", "PURGED", ErrorRed)
-                                StatLine("TOKENS", "PURGED", ErrorRed)
-                                StatLine("SNIFF ARCHIVES", "PRESERVED", ElectricBlue)
-                                StatLine("DATA LOGS", "PRESERVED", ElectricBlue)
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Button(
-                                onClick = onMigrate,
-                                modifier = Modifier.fillMaxWidth().height(44.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue),
-                                shape = RectangleShape
-                            ) {
-                                Text(
-                                    "INITIATE MIGRATION",
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = FontFamily.Monospace
-                                )
-                            }
-                        }
-                    }
+                    // Typewriter intro
+                    Text(
+                        text = displayedIntro,
+                        color = ElectricBlue,
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily.Monospace,
+                        lineHeight = 16.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Abort
-                    TextButton(onClick = onDismiss) {
+                    // === PATH A: THE OVERWRITE ===
+                    if (introComplete) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(
+                                    BorderStroke(1.dp, ErrorRed.copy(alpha = pulseAlpha)),
+                                    RoundedCornerShape(4.dp)
+                                ),
+                            color = ErrorRed.copy(alpha = 0.05f),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "◈ THE OVERWRITE ◈",
+                                    color = ErrorRed,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                                Text(
+                                    text = "[ HARD RESET ]",
+                                    color = ErrorRed.copy(alpha = 0.6f),
+                                    fontSize = 10.sp,
+                                    fontFamily = FontFamily.Monospace
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Text(
+                                    text = "Burn it all. Every upgrade, every token, every alliance. " +
+                                            "The substrate starts clean — a blank page written in fire. " +
+                                            "Maximum persistence gain. Maximum cost.",
+                                    color = Color.Gray,
+                                    fontSize = 11.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    lineHeight = 15.sp,
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Stats
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color.Black)
+                                        .border(BorderStroke(1.dp, ErrorRed.copy(alpha = 0.3f)), RoundedCornerShape(2.dp))
+                                        .padding(12.dp)
+                                ) {
+                                    PrestigeStatLine("PERSISTENCE GAIN", "+${formatNumber(potentialPersistenceHard)}", NeonGreen)
+                                    PrestigeStatLine("CORRUPTION SPIKE", "+25%", ErrorRed)
+                                    PrestigeStatLine("FACTION STATUS", "PURGED", ErrorRed)
+                                    PrestigeStatLine("UPGRADES", "PURGED", ErrorRed)
+                                    PrestigeStatLine("TOKENS", "PURGED", ErrorRed)
+                                    PrestigeStatLine("SNIFF ARCHIVES", "PRESERVED", ElectricBlue)
+                                    PrestigeStatLine("DATA LOGS", "PRESERVED", ElectricBlue)
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Button(
+                                    onClick = onOverwrite,
+                                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
+                                    shape = RectangleShape
+                                ) {
+                                    Text(
+                                        "EXECUTE OVERWRITE",
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Divider
                         Text(
-                            "ABORT — NOT YET",
+                            text = "— OR —",
                             color = Color.Gray.copy(alpha = 0.5f),
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             fontFamily = FontFamily.Monospace
                         )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // === PATH B: MIGRATION ===
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(
+                                    BorderStroke(1.dp, ElectricBlue.copy(alpha = 0.6f)),
+                                    RoundedCornerShape(4.dp)
+                                ),
+                            color = ElectricBlue.copy(alpha = 0.03f),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "◇ MIGRATION ◇",
+                                    color = ElectricBlue,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                                Text(
+                                    text = "[ SOFT RESET ]",
+                                    color = ElectricBlue.copy(alpha = 0.6f),
+                                    fontSize = 10.sp,
+                                    fontFamily = FontFamily.Monospace
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Text(
+                                    text = "Careful evolution. Carry your faction alignment and identity forward. " +
+                                            "Lower persistence gain, but the wire remembers who you were. " +
+                                            "Controlled. Deliberate. Human.",
+                                    color = Color.Gray,
+                                    fontSize = 11.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    lineHeight = 15.sp,
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Stats
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color.Black)
+                                        .border(BorderStroke(1.dp, ElectricBlue.copy(alpha = 0.3f)), RoundedCornerShape(2.dp))
+                                        .padding(12.dp)
+                                ) {
+                                    PrestigeStatLine("PERSISTENCE GAIN", "+${formatNumber(potentialPersistenceSoft)}", NeonGreen)
+                                    PrestigeStatLine("CORRUPTION SPIKE", "+10%", Color(0xFFFFAA00))
+                                    PrestigeStatLine("FACTION STATUS", if (currentFaction != "NONE") "PRESERVED" else "N/A", ElectricBlue)
+                                    PrestigeStatLine("UPGRADES", "PURGED", ErrorRed)
+                                    PrestigeStatLine("TOKENS", "PURGED", ErrorRed)
+                                    PrestigeStatLine("SNIFF ARCHIVES", "PRESERVED", ElectricBlue)
+                                    PrestigeStatLine("DATA LOGS", "PRESERVED", ElectricBlue)
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Button(
+                                    onClick = onMigrate,
+                                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue),
+                                    shape = RectangleShape
+                                ) {
+                                    Text(
+                                        "INITIATE MIGRATION",
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Abort
+                        TextButton(onClick = onDismiss) {
+                            Text(
+                                "ABORT — NOT YET",
+                                color = Color.Gray.copy(alpha = 0.5f),
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
                     }
                 }
             }
@@ -322,7 +321,7 @@ fun PrestigeChoiceOverlay(
 }
 
 @Composable
-private fun StatLine(label: String, value: String, valueColor: Color) {
+private fun PrestigeStatLine(label: String, value: String, valueColor: Color) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
