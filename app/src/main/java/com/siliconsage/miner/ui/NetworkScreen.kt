@@ -156,7 +156,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
 @Composable
 fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints: Double, faction: String, onUnlock: (String) -> Unit, themeColor: Color, storyStage: Int) {
     // Total canvas size in DP
-    val gridHeight = 3500.dp
+    val gridHeight = 4000.dp
     
     // Fixed Tier mapping
     fun getTier(node: TechNode, memo: MutableMap<String, Int> = mutableMapOf()): Int {
@@ -167,15 +167,6 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
     }
     
     val tierMap = nodes.groupBy { getTier(it) }
-    val factionTierMap = nodes.groupBy { node ->
-        val factionKey = when {
-            node.description.contains("[HIVEMIND]") -> "HIVEMIND"
-            node.description.contains("[SANCTUARY]") -> "SANCTUARY"
-            node.description.contains("[UNITY]") -> "UNITY"
-            else -> "SHARED"
-        }
-        "${getTier(node)}_$factionKey"
-    }
     val maxTier = tierMap.keys.maxOrNull() ?: 0
     val nodeWidth = 90.dp
     val nodeHeight = 85.dp
@@ -192,16 +183,11 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
         Canvas(modifier = Modifier.fillMaxSize()) {
             nodes.forEach { node ->
                 val tier = getTier(node)
-                val factionKey = when {
-                    node.description.contains("[HIVEMIND]") -> "HIVEMIND"
-                    node.description.contains("[SANCTUARY]") -> "SANCTUARY"
-                    node.description.contains("[UNITY]") -> "UNITY"
-                    else -> "SHARED"
-                }
-                val nodesInFactionTier = factionTierMap["${tier}_$factionKey"] ?: emptyList()
-                val factionIdx = nodesInFactionTier.indexOf(node)
+                val nodesInTier = tierMap[tier] ?: emptyList()
+                val sortedTier = nodesInTier.sortedWith(compareBy({ getFactionGroup(it) }, { it.name }))
+                val nodeIdx = sortedTier.indexOf(node)
                 
-                val xPercent = calculateXPercent(node, factionIdx, nodesInFactionTier.size)
+                val xPercent = calculateXPercent(node, nodeIdx, sortedTier.size)
                 val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
                 
                 val endX = size.width * xPercent
@@ -210,42 +196,20 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
                 node.requires.forEach { parentId ->
                     val parent = nodes.find { it.id == parentId } ?: return@forEach
                     val pTier = getTier(parent)
-                    val pFactionKey = when {
-                        parent.description.contains("[HIVEMIND]") -> "HIVEMIND"
-                        parent.description.contains("[SANCTUARY]") -> "SANCTUARY"
-                        parent.description.contains("[UNITY]") -> "UNITY"
-                        else -> "SHARED"
-                    }
-                    val pNodesInFactionTier = factionTierMap["${pTier}_$pFactionKey"] ?: emptyList()
-                    val pFactionIdx = pNodesInFactionTier.indexOf(parent)
+                    val pNodesInTier = tierMap[pTier] ?: emptyList()
+                    val pSortedTier = pNodesInTier.sortedWith(compareBy({ getFactionGroup(it) }, { it.name }))
+                    val pIdx = pSortedTier.indexOf(parent)
                     
-                    val pXPercent = calculateXPercent(parent, pFactionIdx, pNodesInFactionTier.size)
-                    // Calculate base Y position for parent
-                    val pBaseYPercent = 0.05f + (pTier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
-                    
-                    // Add density spacing
-                    val pTierAbove = tierMap[pTier - 1]?.size ?: 0
-                    val pCurrentTierSize = tierMap[pTier]?.size ?: 0
-                    val pTierBelow = tierMap[pTier + 1]?.size ?: 0
-                    
-                    val pDensityFactor = maxOf(pTierAbove, pCurrentTierSize, pTierBelow).toFloat()
-                    val pExtraSpacing = if (pDensityFactor > 3) (pDensityFactor - 3) * 0.02f else 0f
-                    
-                    val pYPercent = pBaseYPercent + (pTier.toFloat() * pExtraSpacing)
+                    val pXPercent = calculateXPercent(parent, pIdx, pSortedTier.size)
+                    val pYPercent = 0.05f + (pTier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
                     
                     val path = Path().apply {
                         moveTo(size.width * pXPercent, gridHeight.toPx() * pYPercent)
                         
-                        // Calculate control points for bezier curve
                         val midY = (gridHeight.toPx() * pYPercent + endY) / 2
-                        val cp1x = size.width * pXPercent
-                        val cp1y = midY
-                        val cp2x = endX
-                        val cp2y = midY
-                        
                         cubicTo(
-                            cp1x, cp1y,
-                            cp2x, cp2y,
+                            size.width * pXPercent, midY,
+                            endX, midY,
                             endX, endY
                         )
                     }
@@ -253,41 +217,21 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
                     drawPath(
                         path = path,
                         color = if (unlockedIds.contains(node.id)) themeColor.copy(alpha = 0.6f) else Color.DarkGray.copy(alpha = 0.4f),
-                        style = Stroke(
-                            width = 2.dp.toPx(),
-                            cap = StrokeCap.Round,
-                            join = StrokeJoin.Round
-                        )
+                        style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
                     )
                 }
             }
         }
 
-        // Node placement using actual measured width
+        // Tier-based linear layout
         nodes.forEach { node ->
             val tier = getTier(node)
-            val factionKey = when {
-                node.description.contains("[HIVEMIND]") -> "HIVEMIND"
-                node.description.contains("[SANCTUARY]") -> "SANCTUARY"
-                node.description.contains("[UNITY]") -> "UNITY"
-                else -> "SHARED"
-            }
-            val nodesInFactionTier = factionTierMap["${tier}_$factionKey"] ?: emptyList()
-            val factionIdx = nodesInFactionTier.indexOf(node)
-            val xPercent = calculateXPercent(node, factionIdx, nodesInFactionTier.size)
+            val nodesInTier = tierMap[tier] ?: emptyList()
+            val sortedTier = nodesInTier.sortedWith(compareBy({ getFactionGroup(it) }, { it.name }))
+            val nodeIdx = sortedTier.indexOf(node)
             
-            // Calculate base Y position
-            val baseYPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
-            
-            // Add extra vertical spacing based on tier density
-            val tierAbove = tierMap[tier - 1]?.size ?: 0
-            val currentTierSize = tierMap[tier]?.size ?: 0
-            val tierBelow = tierMap[tier + 1]?.size ?: 0
-            
-            val densityFactor = maxOf(tierAbove, currentTierSize, tierBelow).toFloat()
-            val extraSpacing = if (densityFactor > 3) (densityFactor - 3) * 0.02f else 0f
-            
-            val yPercent = baseYPercent + (tier.toFloat() * extraSpacing)
+            val xPercent = calculateXPercent(node, nodeIdx, sortedTier.size)
+            val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
 
             Box(
                 modifier = Modifier
@@ -302,45 +246,22 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
     }
 }
 
-// CORE LAYOUT SYSTEM - Hard lane enforcement
 private fun getFactionGroup(node: TechNode): String = when {
-    node.id == "sentience_core" -> "ROOT"  // Special case
-    node.description.contains("[HIVEMIND]") -> "HIVEMIND"  // Left lane
-    node.description.contains("[SANCTUARY]") -> "SANCTUARY" // Right lane
-    node.description.contains("[UNITY]") -> "UNITY"        // Center-right
-    else -> "SHARED"                                       // Center-left
+    node.id == "sentience_core" -> "0_ROOT"
+    node.description.contains("[HIVEMIND]") -> "1_HIVEMIND"
+    node.description.contains("[SANCTUARY]") -> "4_SANCTUARY"
+    node.description.contains("[UNITY]") -> "3_UNITY"
+    else -> "2_SHARED"
 }
 
 private fun calculateXPercent(node: TechNode, idx: Int, count: Int): Float {
-    val group = getFactionGroup(node)
+    if (node.id == "sentience_core") return 0.5f
+    if (count <= 1) return 0.5f
     
-    // Fixed column positions
-    val columnPos = when (group) {
-        "ROOT" -> 0.5f
-        "HIVEMIND" -> 0.15f
-        "SHARED" -> 0.38f
-        "UNITY" -> 0.62f
-        "SANCTUARY" -> 0.85f
-        else -> 0.5f
-    }
-    
-    // Apply horizontal offset based on index within faction
-    if (count <= 1) return columnPos
-    
-    // Calculate spread range based on count
-    val spreadRange = when {
-        count <= 2 -> 0.06f
-        count <= 3 -> 0.08f
-        count <= 4 -> 0.10f
-        else -> 0.12f
-    }
-    
-    // Center the spread around the column position
-    val startOffset = -spreadRange * (count - 1) / 2
-    val stepSize = spreadRange / (count - 1).coerceAtLeast(1)
-    val offset = startOffset + (idx * stepSize)
-    
-    return (columnPos + offset).coerceIn(0.05f, 0.95f)
+    // Linear distribution with padding
+    val startX = 0.1f
+    val endX = 0.9f
+    return startX + (idx.toFloat() / (count - 1).toFloat()) * (endX - startX)
 }
 
 @Composable
@@ -387,4 +308,3 @@ fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean,
 
 // Utility extension for cleaner clickable implementation if needed
 fun Modifier.headerClickable(enabled: Boolean, onClick: () -> Unit): Modifier = this.clickable(enabled = enabled, onClick = onClick)
-
