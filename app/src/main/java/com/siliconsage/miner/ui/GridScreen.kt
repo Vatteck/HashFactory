@@ -763,16 +763,39 @@ fun NodeMeshScreen(
             val maxHeight = maxHeight
             
             // Draw Mesh Lines (Simple center-out for Void, Chain for Orbit)
+            val infiniteTransition = rememberInfiniteTransition(label = "mesh_ping")
+            val pingAnim by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(tween(3000, easing = LinearEasing), RepeatMode.Restart),
+                label = "ping"
+            )
+
             Canvas(modifier = Modifier.fillMaxSize()) {
                 locations.forEach { start ->
                     locations.forEach { end ->
                         if (start.id != end.id && (start.id == "V0" || start.id == "O1" || Random.nextFloat() > 0.8f)) {
+                            val startOff = Offset(start.x * size.width, start.y * size.height)
+                            val endOff = Offset(end.x * size.width, end.y * size.height)
+                            
+                            // Base Connection
                             drawLine(
-                                color = themeColor.copy(alpha = 0.2f),
-                                start = Offset(start.x * size.width, start.y * size.height),
-                                end = Offset(end.x * size.width, end.y * size.height),
+                                color = themeColor.copy(alpha = 0.1f),
+                                start = startOff,
+                                end = endOff,
                                 strokeWidth = 1.dp.toPx(),
                                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                            )
+
+                            // v3.5.54.9: Data Surge "Ping"
+                            val pingPos = Offset(
+                                x = startOff.x + (endOff.x - startOff.x) * pingAnim,
+                                y = startOff.y + (endOff.y - startOff.y) * pingAnim
+                            )
+                            drawCircle(
+                                color = themeColor.copy(alpha = 0.4f),
+                                radius = 2.dp.toPx(),
+                                center = pingPos
                             )
                         }
                     }
