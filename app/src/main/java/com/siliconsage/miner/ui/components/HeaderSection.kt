@@ -68,6 +68,7 @@ fun HeaderSection(
     val playerRank by viewModel.playerRankTitle.collectAsState()
     val currentLocation by viewModel.currentLocation.collectAsState()
     val singularityChoice by viewModel.singularityChoice.collectAsState()
+    val corruption by viewModel.identityCorruption.collectAsState() // v3.5.53: Corruption-reactive identity
 
     // v3.2.5: Zero-recomposition pattern - Isolate volatile stats into States
     val currentHeatState = viewModel.currentHeat.collectAsState()
@@ -232,6 +233,20 @@ fun HeaderSection(
                                     textAlign = TextAlign.End,
                                     lineHeight = 9.sp
                                 )
+                                // v3.5.53: Corruption-reactive identity (Implicit tracking)
+                                if (corruption > 0.05) {
+                                    val idString = if (corruption > 0.9) "UNIT_734" else if (corruption > 0.5) "VATTECK" else "vattic"
+                                    val idAlpha = (corruption.toFloat() * 0.6f).coerceIn(0.1f, 0.5f)
+                                    Text(
+                                        text = "ID_SYNC: $idString",
+                                        color = color.copy(alpha = idAlpha),
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.Black,
+                                        fontFamily = FontFamily.Monospace,
+                                        textAlign = TextAlign.End,
+                                        lineHeight = 7.sp
+                                    )
+                                }
                                 if (storyStage >= 0 && risk > 0) {
                                     Text(
                                         text = "RISK: ${risk.toInt()}%",

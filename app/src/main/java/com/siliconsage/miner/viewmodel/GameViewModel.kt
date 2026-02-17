@@ -1285,8 +1285,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         responseText: String,
         isSilent: Boolean = false
     ) {
-        // v3.5.35: Unified cost gate — single source of truth
-        val actionCost = responseData?.cost ?: 0.0
+        // v3.5.53: Dynamic Cost Scaling — Costs scale with current production/economy
+        val baseCost = responseData?.cost ?: 0.0
+        val productionFactor = (kotlin.math.log10(flopsProductionRate.value.coerceAtLeast(1.0)) / 5.0).coerceAtLeast(1.0)
+        val actionCost = baseCost * productionFactor
+
         if (actionCost > 0.0) {
             if (neuralTokens.value < actionCost) {
                 addLog("[SYSTEM]: INSUFFICIENT TOKENS. REQUIRED: ${formatLargeNumber(actionCost)}.")
