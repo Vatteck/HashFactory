@@ -24,7 +24,9 @@ object SimulationService {
 
     fun purgeHeat(vm: GameViewModel) {
         if (vm.isPurgingHeat.value) {
-            vm.stopPurgeHeat()
+            vm.isPurgingHeat.value = false
+            vm.addLog("[SYSTEM]: Thermal purge aborted.")
+            vm.refreshProductionRates()
             return
         }
         
