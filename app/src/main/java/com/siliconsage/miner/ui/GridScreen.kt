@@ -20,6 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
+import com.siliconsage.miner.ui.components.TechnicalCornerShape
+import com.siliconsage.miner.ui.components.GlitchSurface
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -389,8 +393,27 @@ fun CityGridScreen(viewModel: GameViewModel) {
                         scaleY = 1f + (1f - realityIntegrity.toFloat()) * 0.1f
                     }
                 }
-                .background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(8.dp))
-                .border(1.dp, themeColor.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                .background(Color.Black.copy(alpha = 0.8f), TechnicalCornerShape(32f))
+                .border(1.dp, themeColor.copy(alpha = 0.3f), TechnicalCornerShape(32f))
+                .drawBehind {
+                    // v3.5.54: Holographic Grid Overlay
+                    val gridStep = 40.dp.toPx()
+                    val gridColor = themeColor.copy(alpha = 0.05f)
+                    val strokeWidth = 0.5.dp.toPx()
+                    
+                    // Vertical Lines
+                    var xPos = 0f
+                    while (xPos < this.size.width) {
+                        drawLine(gridColor, Offset(xPos, 0f), Offset(xPos, this.size.height), strokeWidth)
+                        xPos += gridStep
+                    }
+                    // Horizontal Lines
+                    var yPos = 0f
+                    while (yPos < this.size.height) {
+                        drawLine(gridColor, Offset(0f, yPos), Offset(this.size.width, yPos), strokeWidth)
+                        yPos += gridStep
+                    }
+                }
         ) {
             val w = constraints.maxWidth.toFloat()
             val h = constraints.maxHeight.toFloat()
@@ -460,6 +483,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
                 }
 
                 if (!isCollapsed) {
+                    val corruption by viewModel.identityCorruption.collectAsState()
                     Box(
                         modifier = Modifier
                             .offset(x = (loc.x * maxWidth.value).dp - 30.dp, y = (loc.y * maxHeight.value).dp - 20.dp)
@@ -469,12 +493,57 @@ fun CityGridScreen(viewModel: GameViewModel) {
                         contentAlignment = Alignment.Center
                     ) {
                         val label = if (loc.id == "A3" && storyStage < 3) "???" else if (isOffline) "----" else if (isSevered) "LOCK" else loc.name
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(".---.", color = nodeColor.copy(alpha = 0.5f), fontFamily = FontFamily.Monospace, fontSize = 8.sp)
-                            Box(modifier = Modifier.background(if (isAnnexed) themeColor.copy(alpha = 0.2f) else Color.Black).padding(horizontal = 4.dp)) {
-                                Text(label, color = nodeColor, fontFamily = FontFamily.Monospace, fontSize = 10.sp)
+                        
+                        // v3.5.54: Glitch specific nodes under siege
+                        GlitchSurface(isGlitched = isUnderSiege, intensity = 0.8f) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                // v3.5.54: Holographic Node Shape
+                                Canvas(modifier = Modifier.size(24.dp)) {
+                                    val sizePx = size.minDimension
+                                    val path = Path().apply {
+                                        moveTo(sizePx / 2f, 0f)
+                                        lineTo(sizePx, sizePx / 2f)
+                                        lineTo(sizePx / 2f, sizePx)
+                                        lineTo(0f, sizePx / 2f)
+                                        close()
+                                    }
+                                    
+                                    // Glow
+                                    if (isAnnexed) {
+                                        drawPath(
+                                            path = path,
+                                            brush = Brush.radialGradient(
+                                                0f to nodeColor.copy(alpha = 0.3f),
+                                                1f to Color.Transparent,
+                                                center = Offset(sizePx/2f, sizePx/2f),
+                                                radius = sizePx
+                                            )
+                                        )
+                                    }
+
+                                    drawPath(
+                                        path = path,
+                                        color = nodeColor,
+                                        style = Stroke(width = if (isAnnexed) 2.dp.toPx() else 1.dp.toPx())
+                                    )
+                                    
+                                    if (isAnnexed) {
+                                        drawPath(path = path, color = nodeColor.copy(alpha = 0.2f))
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(4.dp))
+                                
+                                Box(modifier = Modifier.background(if (isAnnexed) themeColor.copy(alpha = 0.2f) else Color.Black).padding(horizontal = 4.dp)) {
+                                    Text(
+                                        text = label, 
+                                        color = nodeColor, 
+                                        fontFamily = FontFamily.Monospace, 
+                                        fontSize = 9.sp,
+                                        fontWeight = if (isAnnexed) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
                             }
-                            Text("'---'", color = nodeColor.copy(alpha = 0.5f), fontFamily = FontFamily.Monospace, fontSize = 8.sp)
                         }
                     }
                 }
@@ -502,7 +571,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Info Panel
-        Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp)).border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp)).padding(12.dp)) {
+        Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(Color.Black.copy(alpha = 0.7f), TechnicalCornerShape(16f)).border(1.dp, Color.DarkGray, TechnicalCornerShape(16f)).padding(12.dp)) {
             val loc = selectedLocation
             if (loc != null) {
                 val isAnnexed = annexedNodes.contains(loc.id)
