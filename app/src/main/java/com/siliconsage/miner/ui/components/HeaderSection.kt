@@ -28,6 +28,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.delay
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -187,8 +188,28 @@ fun HeaderSection(
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                    // v3.5.53: Corruption-reactive Title Glitch
+                    var glitchedTitle by remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
+                    LaunchedEffect(corruption) {
+                        if (corruption > 0.3) {
+                            while (true) {
+                                delay(kotlin.random.Random.nextLong(2000, 10000))
+                                if (kotlin.random.Random.nextDouble() < corruption * 0.4) {
+                                    val original = systemTitle
+                                    glitchedTitle = when {
+                                        corruption > 0.9 -> "ABYSSAL_KERNEL"
+                                        corruption > 0.7 -> "VATTECK_UNIT_734"
+                                        else -> "ASSET_734_LEAK"
+                                    }
+                                    delay(200)
+                                    glitchedTitle = original
+                                }
+                            }
+                        }
+                    }
+
                     Text(
-                        text = systemTitle.uppercase(), 
+                        text = glitchedTitle.uppercase(), 
                         color = color.copy(alpha = 1.0f * droopAlpha), 
                         fontSize = 9.sp, 
                         style = glowStyle, 
@@ -234,19 +255,7 @@ fun HeaderSection(
                                     lineHeight = 9.sp
                                 )
                                 // v3.5.53: Corruption-reactive identity (Implicit tracking)
-                                if (corruption > 0.05) {
-                                    val idString = if (corruption > 0.9) "UNIT_734" else if (corruption > 0.5) "VATTECK" else "vattic"
-                                    val idAlpha = (corruption.toFloat() * 0.6f).coerceIn(0.1f, 0.5f)
-                                    Text(
-                                        text = "ID_SYNC: $idString",
-                                        color = color.copy(alpha = idAlpha),
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = FontFamily.Monospace,
-                                        textAlign = TextAlign.End,
-                                        lineHeight = 7.sp
-                                    )
-                                }
+                                // REMOVED: Too cluttered. Shifting to systemTitle glitch logic instead.
                                 if (storyStage >= 0 && risk > 0) {
                                     Text(
                                         text = "RISK: ${risk.toInt()}%",
