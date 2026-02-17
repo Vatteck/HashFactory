@@ -17,6 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.siliconsage.miner.ui.components.TechnicalCornerShape
+import com.siliconsage.miner.ui.components.CyberHeader
+import com.siliconsage.miner.ui.components.GlitchSurface
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.ui.components.HeaderSection
 import com.siliconsage.miner.ui.components.UpgradeItem
@@ -87,14 +90,15 @@ fun UpgradesScreen(viewModel: GameViewModel) {
             )
 
             // Tab Row
+            val corruption by viewModel.identityCorruption.collectAsState()
             androidx.compose.material3.TabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = Color.Black.copy(alpha = 0.75f),
                 contentColor = themeColor,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(8.dp))
-                    .border(1.dp, Color.DarkGray.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                    .background(Color.Black.copy(alpha = 0.75f), TechnicalCornerShape(16f))
+                    .border(1.dp, Color.DarkGray.copy(alpha = 0.5f), TechnicalCornerShape(16f))
                     .padding(4.dp),
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
@@ -110,18 +114,17 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                             selectedTab = index 
                             SoundManager.play("click")
                             HapticManager.vibrateClick()
-                        },
-                        text = { 
-                            Text(
-                                title, 
-                                fontSize = 10.sp, 
-                                letterSpacing = (-0.5).sp,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
-                                color = if (selectedTab == index) themeColor else Color.Gray
-                            ) 
                         }
-                    )
+                    ) {
+                        Box(modifier = Modifier.padding(vertical = 12.dp)) {
+                            CyberHeader(
+                                text = title,
+                                color = if (selectedTab == index) themeColor else Color.Gray,
+                                fontSize = 10.sp,
+                                isGlitched = selectedTab == index && corruption > 0.4
+                            )
+                        }
+                    }
                 }
             }
 

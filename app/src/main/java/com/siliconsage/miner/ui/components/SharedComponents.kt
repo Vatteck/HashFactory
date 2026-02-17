@@ -28,6 +28,7 @@ import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.NeonGreen
 
 import androidx.compose.foundation.layout.FlowRow
+import com.siliconsage.miner.ui.components.TechnicalCornerShape
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
@@ -45,7 +46,7 @@ import com.siliconsage.miner.util.FormatUtils
 fun StatPill(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color) {
     Surface(
         color = color.copy(alpha = 0.12f),
-        shape = RoundedCornerShape(4.dp),
+        shape = TechnicalCornerShape(8f),
         border = BorderStroke(1.dp, color.copy(alpha = 0.5f)),
         modifier = Modifier.padding(2.dp)
     ) {
@@ -110,11 +111,11 @@ fun UpgradeItem(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .background(cardGradient, RoundedCornerShape(8.dp))
+            .background(cardGradient, TechnicalCornerShape(16f))
             .border(
                 width = if (isGhost) 1.5.dp else 1.dp,
                 brush = Brush.horizontalGradient(listOf(primaryColor.copy(alpha=0.6f), primaryColor.copy(alpha=0.1f), primaryColor.copy(alpha=0.6f))),
-                shape = RoundedCornerShape(8.dp)
+                shape = TechnicalCornerShape(16f)
             )
             .clickable(interactionSource = interactionSource, indication = null) { onBuy(type) }
             .padding(14.dp)
