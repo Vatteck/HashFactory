@@ -81,7 +81,8 @@ fun HeaderSection(
     val integrityState = viewModel.hardwareIntegrity.collectAsState()
     
     val infiniteTransition = rememberInfiniteTransition(label = "kinetic_hud")
-    val flickerAlphaState = infiniteTransition.animateFloat(0.7f, 1.0f, infiniteRepeatable(tween(100, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "voltage_droop")
+    // v3.5.54.3: Stabilized voltage droop (less flickering, more steady pulse)
+    val flickerAlphaState = infiniteTransition.animateFloat(0.9f, 1.0f, infiniteRepeatable(tween(800, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "voltage_droop")
 
     val manualClickFlow = viewModel.manualClickEvent
     val joltAnim = remember { Animatable(0f) }
@@ -131,13 +132,15 @@ fun HeaderSection(
                     
                     if (isActive) {
                         val railColor = if (pwrFactor > 0.9f) ErrorRed else Color(0xFFFFD700).copy(alpha = 0.8f)
+                        // v3.5.54.3: Smoother segment alpha (less intense flickering)
+                        val segmentAlpha = if (pwrFactor > 0.95f) flickerAlpha else 0.85f
                         drawRect(
-                            color = railColor.copy(alpha = flickerAlpha),
+                            color = railColor.copy(alpha = segmentAlpha),
                             topLeft = Offset(0f, yPos + 1.dp.toPx()),
                             size = Size(railW, segmentH - 2.dp.toPx())
                         )
                         drawRect(
-                            color = railColor.copy(alpha = flickerAlpha),
+                            color = railColor.copy(alpha = segmentAlpha),
                             topLeft = Offset(w - railW, yPos + 1.dp.toPx()),
                             size = Size(railW, segmentH - 2.dp.toPx())
                         )

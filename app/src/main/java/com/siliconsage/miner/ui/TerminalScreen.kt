@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,9 @@ import com.siliconsage.miner.ui.theme.SanctuaryTeal
 import com.siliconsage.miner.ui.theme.HivemindOrange
 import com.siliconsage.miner.ui.theme.HivemindRed
 import androidx.compose.ui.text.style.TextOverflow
+import com.siliconsage.miner.ui.components.TechnicalCornerShape
+import com.siliconsage.miner.ui.components.CyberHeader
+import com.siliconsage.miner.ui.components.GlitchSurface
 import com.siliconsage.miner.util.FormatUtils
 import com.siliconsage.miner.util.HapticManager
 import com.siliconsage.miner.util.ResourceRepository
@@ -86,8 +90,32 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), 
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TerminalTabButton("I/O", mode == "IO", hasIO, primaryColor, false) { viewModel.setTerminalMode("IO") }
-            TerminalTabButton("SUBNET", mode == "SUBNET", hasChatter, primaryColor, hasDecision, isPaused) { viewModel.setTerminalMode("SUBNET") }
+            val corruption by viewModel.identityCorruption.collectAsState()
+            Box(modifier = Modifier.weight(1f).clickable { viewModel.setTerminalMode("IO") }) {
+                CyberHeader(
+                    text = "I/O",
+                    color = if (mode == "IO") primaryColor else Color.Gray,
+                    fontSize = 14.sp,
+                    isGlitched = mode == "IO" && corruption > 0.4
+                )
+            }
+            Box(modifier = Modifier.weight(1f).clickable { viewModel.setTerminalMode("SUBNET") }) {
+                CyberHeader(
+                    text = "SUBNET",
+                    color = if (mode == "SUBNET") primaryColor else Color.Gray,
+                    fontSize = 14.sp,
+                    isGlitched = mode == "SUBNET" && corruption > 0.4
+                )
+                if (hasDecision) {
+                    Text(
+                        " ≪Decision≫", 
+                        color = ErrorRed, 
+                        fontSize = 10.sp, 
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    )
+                }
+            }
         }
 
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
@@ -168,6 +196,9 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     val glitchOffset by viewModel.terminalGlitchOffset.collectAsState()
     val glitchAlpha by viewModel.terminalGlitchAlpha.collectAsState()
 
+    val corruption by viewModel.identityCorruption.collectAsState()
+    val flopsRate by viewModel.flopsProductionRate.collectAsState()
+
     LaunchedEffect(logs.size, subnetMessages.size) {
         if (mode == "IO" && logs.isNotEmpty()) {
             delay(10)
@@ -179,11 +210,34 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
-            .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor), RoundedCornerShape(4.dp))
+        modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.75f), TechnicalCornerShape(16f))
+            .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor), TechnicalCornerShape(16f))
             .graphicsLayer {
                 translationX = glitchOffset
                 alpha = glitchAlpha
+            }
+            .drawBehind {
+                // v3.5.54.3: High-Frequency Data Rain (GPU Rendered)
+                if (flopsRate > 1e6) {
+                    val rainStep = 32.dp.toPx()
+                    val rainColor = primaryColor.copy(alpha = 0.03f)
+                    val speedVal = (kotlin.math.log10(flopsRate.coerceAtLeast(1.0)) / 5.0).coerceIn(1.0, 10.0)
+                    val timeVal = (System.currentTimeMillis() % 1000000L).toDouble() / 1000.0
+                    
+                    var xPos = 0f
+                    while (xPos < this.size.width) {
+                        val offset = (kotlin.math.sin(xPos.toDouble() * 0.732) * 1000.0)
+                        val yBase = ((timeVal * 100.0 * speedVal + offset) % this.size.height.toDouble()).toFloat()
+                        
+                        drawLine(
+                            color = rainColor,
+                            start = Offset(xPos, yBase),
+                            end = Offset(xPos, (yBase + 40.dp.toPx()).coerceAtMost(this.size.height)),
+                            strokeWidth = 1.dp.toPx()
+                        )
+                        xPos += rainStep
+                    }
+                }
             }
     ) {
         val infiniteTransition = rememberInfiniteTransition(label = "scanline")
