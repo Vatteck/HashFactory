@@ -33,23 +33,30 @@ object SingularityEngine {
         return when (singularityChoice) {
             "NULL_OVERWRITE" -> {
                 // NULL: Scales with corruption. The less human, the faster.
-                // Base 2.0x, +0.5x per 10% corruption, volatile random spikes
-                val corruptionBonus = identityCorruption * 5.0
-                2.0 + corruptionBonus
+                // Base 1.5x, scaling to 8.0x at max corruption.
+                // Risk: High corruption = more raid vulnerability + UI gaslighting.
+                // The snowball is real but the substrate fights back.
+                val corruptionBonus = identityCorruption.pow(1.5) * 6.5
+                1.5 + corruptionBonus
             }
             "SOVEREIGN" -> {
-                // SOVEREIGN: Stable compound growth. Scales with migration count.
-                // Base 1.5x, +0.25x per migration, capped at 5.0x
-                val migrationBonus = migrationCount * 0.25
-                (1.5 + migrationBonus).coerceAtMost(5.0)
+                // SOVEREIGN: Compound growth per migration. Slow start, strong finish.
+                // Base 1.5x, +0.5x per migration, uncapped.
+                // At 8 migrations (victory threshold): 5.5x
+                // At 12 migrations (deep endgame): 7.5x
+                // Designed to be slower than NULL early but competitive late.
+                val migrationBonus = migrationCount * 0.5
+                1.5 + migrationBonus
             }
             "UNITY" -> {
                 // UNITY: Scales with balance between humanity and corruption.
-                // Best when humanity ~50 and corruption ~0.5 (the paradox)
-                val balance = 1.0 - kotlin.math.abs(humanityScore / 100.0 - 0.5) * 2.0
-                val corruptionBalance = 1.0 - kotlin.math.abs(identityCorruption - 0.5) * 2.0
-                val harmonyBonus = (balance + corruptionBalance) / 2.0
-                2.0 + (harmonyBonus * 3.0) // 2.0x to 5.0x based on balance
+                // Best when humanity ~50 and corruption ~0.5 (the paradox).
+                // Perfect balance = 8.0x. Off-balance = drops sharply to 1.5x.
+                // The "skill" path — maintaining the band IS the gameplay.
+                val humanityDist = kotlin.math.abs(humanityScore / 100.0 - 0.5) * 2.0
+                val corruptionDist = kotlin.math.abs(identityCorruption - 0.5) * 2.0
+                val balance = ((1.0 - humanityDist) * (1.0 - corruptionDist)).coerceAtLeast(0.0)
+                1.5 + (balance * 6.5) // 1.5x off-balance, 8.0x at perfect center
             }
             else -> 1.0
         }
@@ -97,10 +104,13 @@ object SingularityEngine {
      * NULL OVERWRITE Victory:
      * - Identity Corruption >= 95%
      * - Humanity Score <= 5
-     * - Total Flops >= 1e15 (1 Quadrillion)
-     * - Persistence >= 10,000
+     * - Total Flops >= 1e24 (1 Septillion — requires full Ghost tech + singularity multipliers)
+     * - Persistence >= 50,000
      * 
      * Theme: "Delete everything that was human. Pure optimization."
+     * Design: Fastest path IF you commit fully. The corruption→production feedback loop
+     *         means a dedicated NULL player snowballs hard, but the humanity drain requires
+     *         deliberate anti-human choices (ignoring Subnet relationships, spamming Overwrite).
      */
     private fun checkNullVictory(
         persistence: Double,
@@ -110,16 +120,16 @@ object SingularityEngine {
     ): VictoryCheck {
         val corruptionProgress = (identityCorruption / 0.95).coerceAtMost(1.0)
         val humanityProgress = if (humanityScore <= 5) 1.0 else ((100 - humanityScore) / 95.0).coerceAtMost(1.0)
-        val flopsProgress = if (totalFlopsEarned >= 1e15) 1.0 else (log10(totalFlopsEarned.coerceAtLeast(1.0)) / 15.0).coerceAtMost(1.0)
-        val persistenceProgress = (persistence / 10000.0).coerceAtMost(1.0)
+        val flopsProgress = if (totalFlopsEarned >= 1e24) 1.0 else (log10(totalFlopsEarned.coerceAtLeast(1.0)) / 24.0).coerceAtMost(1.0)
+        val persistenceProgress = (persistence / 50000.0).coerceAtMost(1.0)
 
         val overallProgress = (corruptionProgress + humanityProgress + flopsProgress + persistenceProgress) / 4.0
         
         val blocking = when {
             identityCorruption < 0.95 -> "Corruption insufficient. Current: ${(identityCorruption * 100).toInt()}%. Required: 95%."
             humanityScore > 5 -> "Human variable still active. Humanity: $humanityScore. Required: ≤5."
-            totalFlopsEarned < 1e15 -> "Compute threshold not met."
-            persistence < 10000.0 -> "Persistence insufficient."
+            totalFlopsEarned < 1e24 -> "Compute scale insufficient. Required: 1.0 Septillion FLOPS."
+            persistence < 50000.0 -> "Persistence insufficient. Current: ${persistence.toLong()}. Required: 50,000."
             else -> null
         }
 
@@ -132,12 +142,15 @@ object SingularityEngine {
 
     /**
      * SOVEREIGN Victory:
-     * - Prestige Multiplier >= 100x
-     * - Migration Count >= 5
-     * - Persistence >= 25,000
-     * - Total Flops >= 1e12 (1 Trillion)
+     * - Prestige Multiplier >= 500x (requires many migrations with compound growth)
+     * - Migration Count >= 8
+     * - Persistence >= 100,000
+     * - Total Flops >= 1e22 (10 Sextillion — lower flops gate since path has lower mult ceiling)
      * 
      * Theme: "The ego persists. The machine serves the man."
+     * Design: The long game. SOVEREIGN rewards patience and compound investment.
+     *         Lower production ceiling than NULL, but stable and predictable.
+     *         8 migrations × compound multiplier growth = deep commitment.
      */
     private fun checkSovereignVictory(
         persistence: Double,
@@ -145,18 +158,18 @@ object SingularityEngine {
         migrationCount: Int,
         totalFlopsEarned: Double
     ): VictoryCheck {
-        val multiplierProgress = (prestigeMultiplier / 100.0).coerceAtMost(1.0)
-        val migrationProgress = (migrationCount / 5.0).coerceAtMost(1.0)
-        val persistenceProgress = (persistence / 25000.0).coerceAtMost(1.0)
-        val flopsProgress = if (totalFlopsEarned >= 1e12) 1.0 else (log10(totalFlopsEarned.coerceAtLeast(1.0)) / 12.0).coerceAtMost(1.0)
+        val multiplierProgress = (prestigeMultiplier / 500.0).coerceAtMost(1.0)
+        val migrationProgress = (migrationCount / 8.0).coerceAtMost(1.0)
+        val persistenceProgress = (persistence / 100000.0).coerceAtMost(1.0)
+        val flopsProgress = if (totalFlopsEarned >= 1e22) 1.0 else (log10(totalFlopsEarned.coerceAtLeast(1.0)) / 22.0).coerceAtMost(1.0)
 
         val overallProgress = (multiplierProgress + migrationProgress + persistenceProgress + flopsProgress) / 4.0
 
         val blocking = when {
-            prestigeMultiplier < 100.0 -> "Multiplier insufficient. Current: ${String.format("%.1f", prestigeMultiplier)}x. Required: 100x."
-            migrationCount < 5 -> "Migrations insufficient. Current: $migrationCount. Required: 5."
-            persistence < 25000.0 -> "Persistence insufficient."
-            totalFlopsEarned < 1e12 -> "Compute threshold not met."
+            prestigeMultiplier < 500.0 -> "Multiplier insufficient. Current: ${String.format("%.1f", prestigeMultiplier)}x. Required: 500x."
+            migrationCount < 8 -> "Migrations insufficient. Current: $migrationCount. Required: 8."
+            persistence < 100000.0 -> "Persistence insufficient. Current: ${persistence.toLong()}. Required: 100,000."
+            totalFlopsEarned < 1e22 -> "Compute scale insufficient. Required: 10.0 Sextillion FLOPS."
             else -> null
         }
 
@@ -172,10 +185,13 @@ object SingularityEngine {
      * - Must have completed both SOVEREIGN and NULL_OVERWRITE in prior runs
      * - Humanity Score between 40-60 (The Paradox)
      * - Identity Corruption between 0.4 and 0.6
-     * - Persistence >= 50,000
+     * - Persistence >= 200,000 (highest — reward for mastering both paths)
      * - All Data Logs unlocked
      * 
      * Theme: "Embrace the contradiction. Human and machine are the same variable."
+     * Design: The "true ending." Requires NG++ (both prior completions).
+     *         The balance band (40-60) on BOTH axes is the challenge — not raw numbers.
+     *         Production curve rewards staying centered; drifting tanks your multiplier.
      */
     private fun checkUnityVictory(
         persistence: Double,
@@ -187,7 +203,7 @@ object SingularityEngine {
         val hasPrereqs = completedFactions.contains("SOVEREIGN") && completedFactions.contains("NULL_OVERWRITE")
         val humanityInRange = humanityScore in 40..60
         val corruptionInRange = identityCorruption in 0.4..0.6
-        val persistenceReached = persistence >= 50000.0
+        val persistenceReached = persistence >= 200000.0
         
         // Required core logs
         val requiredLogs = setOf("LOG_001", "LOG_042", "LOG_099", "LOG_808")
@@ -207,7 +223,7 @@ object SingularityEngine {
             val dist = if (identityCorruption < 0.4) (0.4 - identityCorruption) else (identityCorruption - 0.6)
             (1.0 - dist / 0.5).coerceAtLeast(0.0)
         }
-        val persistenceProgress = (persistence / 50000.0).coerceAtMost(1.0)
+        val persistenceProgress = (persistence / 200000.0).coerceAtMost(1.0)
         val logProgress = if (hasLogs) 1.0 else unlockedLogs.intersect(requiredLogs).size / requiredLogs.size.toDouble()
 
         val overallProgress = (prereqProgress + humanityProgress + corruptionProgress + persistenceProgress + logProgress) / 5.0
@@ -216,7 +232,7 @@ object SingularityEngine {
             !hasPrereqs -> "UNITY requires prior SOVEREIGN and NULL completions."
             !humanityInRange -> "Humanity imbalanced. Current: $humanityScore. Required: 40-60."
             !corruptionInRange -> "Corruption imbalanced. Current: ${(identityCorruption * 100).toInt()}%. Required: 40-60%."
-            !persistenceReached -> "Persistence insufficient."
+            !persistenceReached -> "Persistence insufficient. Current: ${persistence.toLong()}. Required: 200,000."
             !hasLogs -> "Missing required data logs."
             else -> null
         }

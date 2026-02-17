@@ -35,7 +35,28 @@ object SecurityManager {
         
         // Stage 2+ Logic: Detection Risk vs Security Level
         if (stage >= 2 && !isRaid) { // v3.3.16: Suppress risk growth during active raid
-            val drift = (0.2 + (vm.flopsProductionRate.value / 1e6).coerceIn(0.0, 5.0))
+            // v3.5.52: Path-aware risk drift. NULL players generate heat proportional to their greed.
+            val baseDrift = 0.2 + (vm.flopsProductionRate.value / 1e6).coerceIn(0.0, 5.0)
+            val drift = when (vm.singularityChoice.value) {
+                "NULL_OVERWRITE" -> {
+                    // NULL: Uncapped drift scaled by corruption. At 95% corruption, drift is ~3x base.
+                    // The snowball cuts both ways — more production = more GTC attention.
+                    val corruptionMult = 1.0 + (vm.identityCorruption.value * 2.0)
+                    baseDrift * corruptionMult
+                }
+                "SOVEREIGN" -> {
+                    // SOVEREIGN: Slightly reduced drift. The machine is disciplined.
+                    baseDrift * 0.85
+                }
+                "UNITY" -> {
+                    // UNITY: Drift scales inversely with balance. Perfect balance = 60% drift. Off-balance = 120%.
+                    val humanityDist = kotlin.math.abs(vm.humanityScore.value / 100.0 - 0.5) * 2.0
+                    val corruptionDist = kotlin.math.abs(vm.identityCorruption.value - 0.5) * 2.0
+                    val imbalance = ((humanityDist + corruptionDist) / 2.0).coerceIn(0.0, 1.0)
+                    baseDrift * (0.6 + imbalance * 0.6)
+                }
+                else -> baseDrift
+            }
             val recovery = (secLevel * 0.1).coerceIn(0.05, 10.0)
             
             vm.detectionRisk.update { (it + drift - recovery).coerceIn(0.0, 100.0) }
