@@ -23,7 +23,10 @@ object SimulationService {
     }
 
     fun purgeHeat(vm: GameViewModel) {
-        if (vm.isPurgingHeat.value) return
+        if (vm.isPurgingHeat.value) {
+            vm.stopPurgeHeat()
+            return
+        }
         
         val currentFlops = vm.flops.value
         val isBreathe = vm.isBreatheMode.value
