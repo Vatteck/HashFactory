@@ -259,33 +259,40 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
     }
 }
 
+// CORE LAYOUT SYSTEM - Hard lane enforcement
+private fun getFactionGroup(node: TechNode): String = when {
+    node.id == "sentience_core" -> "ROOT"  // Special case
+    node.description.contains("[HIVEMIND]") -> "HIVEMIND"  // Left lane
+    node.description.contains("[SANCTUARY]") -> "SANCTUARY" // Right lane
+    node.description.contains("[UNITY]") -> "UNITY"        // Center-right
+    else -> "SHARED"                                       // Center-left
+}
+
 private fun calculateXPercent(node: TechNode, idx: Int, count: Int): Float {
-    // idx/count are within the FULL tier — we need faction-local index for spacing
-    return when {
-        node.id == "sentience_core" -> 0.5f
-        node.description.contains("[HIVEMIND]") -> {
-            // Left lane: 0.10 – 0.35, evenly spaced
-            val laneStart = 0.10f; val laneEnd = 0.35f
-            if (count <= 1) (laneStart + laneEnd) / 2f
-            else laneStart + (idx.toFloat() / (count - 1).toFloat().coerceAtLeast(1f)) * (laneEnd - laneStart)
+    val group = getFactionGroup(node)
+    return when (group) {
+        "ROOT" -> 0.5f // Exact center
+        "HIVEMIND" -> {
+            // Hard left lane: 0.05-0.25
+            if (count <= 1) 0.15f 
+            else 0.05f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.20f
         }
-        node.description.contains("[SANCTUARY]") -> {
-            // Right lane: 0.65 – 0.90, evenly spaced
-            val laneStart = 0.65f; val laneEnd = 0.90f
-            if (count <= 1) (laneStart + laneEnd) / 2f
-            else laneStart + (idx.toFloat() / (count - 1).toFloat().coerceAtLeast(1f)) * (laneEnd - laneStart)
+        "SHARED" -> {
+            // Center-left lane: 0.25-0.45
+            if (count <= 1) 0.35f
+            else 0.25f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.20f
         }
-        node.description.contains("[UNITY]") -> {
-            // Center lane: 0.35 – 0.65
-            val laneStart = 0.35f; val laneEnd = 0.65f
-            if (count <= 1) 0.5f
-            else laneStart + (idx.toFloat() / (count - 1).toFloat().coerceAtLeast(1f)) * (laneEnd - laneStart)
+        "UNITY" -> {
+            // Center-right lane: 0.55-0.75
+            if (count <= 1) 0.65f
+            else 0.55f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.20f
         }
-        else -> {
-            // General/shared nodes: center band 0.25 – 0.75
-            if (count <= 1) 0.5f
-            else 0.25f + (idx.toFloat() / (count - 1).toFloat()) * 0.5f
+        "SANCTUARY" -> {
+            // Hard right lane: 0.75-0.95
+            if (count <= 1) 0.85f
+            else 0.75f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.20f
         }
+        else -> 0.5f // Fallback
     }
 }
 
