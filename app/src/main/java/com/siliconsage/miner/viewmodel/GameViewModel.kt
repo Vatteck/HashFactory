@@ -585,6 +585,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun stopPurgeHeat() {
         isPurgingHeat.value = false
         addLog("[SYSTEM]: Thermal purge aborted.")
+        refreshProductionRates()
     }
     
     fun collapseSubstation() {

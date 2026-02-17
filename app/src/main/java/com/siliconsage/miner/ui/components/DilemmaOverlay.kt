@@ -73,7 +73,10 @@ fun DilemmaOverlay(
                         NarrativeOption(
                             choice = choice,
                             onSelect = { onChoice(choice) },
-                            modifier = Modifier.padding(4.dp).defaultMinSize(minWidth = 140.dp) // Dynamic padding via margin + larger min width
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .defaultMinSize(minWidth = 140.dp)
+                                .padding(8.dp) // v3.5.54.7: Extra dynamic internal padding
                         )
                     }
                 }
