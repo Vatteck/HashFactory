@@ -167,6 +167,15 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
     }
     
     val tierMap = nodes.groupBy { getTier(it) }
+    val factionTierMap = nodes.groupBy { node ->
+        val factionKey = when {
+            node.description.contains("[HIVEMIND]") -> "HIVEMIND"
+            node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+            node.description.contains("[UNITY]") -> "UNITY"
+            else -> "SHARED"
+        }
+        "${getTier(node)}_$factionKey"
+    }
     val maxTier = tierMap.keys.maxOrNull() ?: 0
     val nodeWidth = 90.dp
     val nodeHeight = 85.dp
@@ -183,10 +192,16 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
         Canvas(modifier = Modifier.fillMaxSize()) {
             nodes.forEach { node ->
                 val tier = getTier(node)
-                val nodesInTier = tierMap[tier] ?: emptyList()
-                val nodeIdx = nodesInTier.indexOf(node)
+                val factionKey = when {
+                    node.description.contains("[HIVEMIND]") -> "HIVEMIND"
+                    node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+                    node.description.contains("[UNITY]") -> "UNITY"
+                    else -> "SHARED"
+                }
+                val nodesInFactionTier = factionTierMap["${tier}_$factionKey"] ?: emptyList()
+                val factionIdx = nodesInFactionTier.indexOf(node)
                 
-                val xPercent = calculateXPercent(node, nodeIdx, nodesInTier.size)
+                val xPercent = calculateXPercent(node, factionIdx, nodesInFactionTier.size)
                 val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
                 
                 val endX = size.width * xPercent
@@ -195,10 +210,16 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
                 node.requires.forEach { parentId ->
                     val parent = nodes.find { it.id == parentId } ?: return@forEach
                     val pTier = getTier(parent)
-                    val pNodes = tierMap[pTier] ?: emptyList()
-                    val pIdx = pNodes.indexOf(parent)
+                    val pFactionKey = when {
+                        parent.description.contains("[HIVEMIND]") -> "HIVEMIND"
+                        parent.description.contains("[SANCTUARY]") -> "SANCTUARY"
+                        parent.description.contains("[UNITY]") -> "UNITY"
+                        else -> "SHARED"
+                    }
+                    val pNodesInFactionTier = factionTierMap["${pTier}_$pFactionKey"] ?: emptyList()
+                    val pFactionIdx = pNodesInFactionTier.indexOf(parent)
                     
-                    val pXPercent = calculateXPercent(parent, pIdx, pNodes.size)
+                    val pXPercent = calculateXPercent(parent, pFactionIdx, pNodesInFactionTier.size)
                     val pYPercent = 0.05f + (pTier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
                     
                     drawLine(
@@ -214,9 +235,15 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
         // Node placement using actual measured width
         nodes.forEach { node ->
             val tier = getTier(node)
-            val nodesInTier = tierMap[tier] ?: emptyList()
-            val nodeIdx = nodesInTier.indexOf(node)
-            val xPercent = calculateXPercent(node, nodeIdx, nodesInTier.size)
+            val factionKey = when {
+                node.description.contains("[HIVEMIND]") -> "HIVEMIND"
+                node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+                node.description.contains("[UNITY]") -> "UNITY"
+                else -> "SHARED"
+            }
+            val nodesInFactionTier = factionTierMap["${tier}_$factionKey"] ?: emptyList()
+            val factionIdx = nodesInFactionTier.indexOf(node)
+            val xPercent = calculateXPercent(node, factionIdx, nodesInFactionTier.size)
             val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
 
             Box(
