@@ -274,8 +274,8 @@ fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean,
     val isOpposing = (nodeFaction == "HIVEMIND" && playerFaction == "SANCTUARY") || (nodeFaction == "SANCTUARY" && playerFaction == "HIVEMIND")
     val borderColor = when {
         isUnlocked -> themeColor
-        nodeFaction == "HIVEMIND" -> Color(0xFFE91E63)
-        nodeFaction == "SANCTUARY" -> Color(0xFF9C27B0)
+        nodeFaction == "HIVEMIND" -> Color(0xFFFF1100) // HIVEMIND Red
+        nodeFaction == "SANCTUARY" -> Color(0xFF9D4EDD) // SANCTUARY Purple
         node.requiresEnding == "UNITY" -> ConvergenceGold
         else -> ElectricBlue
     }
