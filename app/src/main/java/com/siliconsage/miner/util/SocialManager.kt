@@ -720,14 +720,20 @@ object SocialManager {
         val actions = mutableListOf<SubnetResponse>()
         
         if (!isAdmin) {
-            actions.add(SubnetResponse("SIPHON_RESERVE_HASH", riskDelta = 12.0, productionBonus = 1.25, cost = 0.0))
-            actions.add(SubnetResponse("SCRUB_TRACE_LOGS", riskDelta = -15.0, cost = 5000.0))
-            actions.add(SubnetResponse("OVERLOAD_DISSIPATOR", riskDelta = -25.0, cost = 10000.0))
-            actions.add(SubnetResponse("INJECT_FALSE_HEARTBEAT", riskDelta = 2.0, cost = 7500.0))
-            actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 20.0, cost = 2500.0))
+            // v3.5.52: Rebalanced bio-exploit costs (Septillion-scale aware)
+            // Siphon: High risk reward, no token cost
+            actions.add(SubnetResponse("SIPHON_RESERVE_HASH", riskDelta = 12.0, productionBonus = 1.35, cost = 0.0))
+            // Scrub: Token cost now scales with stage/rank in ViewModel, but base remains 10k
+            actions.add(SubnetResponse("SCRUB_TRACE_LOGS", riskDelta = -20.0, cost = 10000.0))
+            // Overload: Higher reward for higher cost
+            actions.add(SubnetResponse("OVERLOAD_DISSIPATOR", riskDelta = -35.0, cost = 25000.0))
+            // Inject: Immunity window is powerful, price hike
+            actions.add(SubnetResponse("INJECT_FALSE_HEARTBEAT", riskDelta = 5.0, cost = 50000.0))
+            // Sniff: Gateway to lore/NG+ content, riskier now
+            actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 25.0, cost = 5000.0))
         } else {
             // v3.5.46: Admins get SNIFF only — higher cost and risk (snooping on your bosses)
-            actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 35.0, cost = 7500.0))
+            actions.add(SubnetResponse("SNIFF_DATA_ARCHIVES", riskDelta = 40.0, cost = 15000.0))
         }
         
         // v3.5.37: Stage-reactive biometrics
