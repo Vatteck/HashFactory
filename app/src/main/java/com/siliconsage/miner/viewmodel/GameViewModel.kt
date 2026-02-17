@@ -576,6 +576,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
         SimulationService.purgeHeat(this)
     }
+
+    fun stopPurgeHeat() {
+        isPurgingHeat.value = false
+        addLog("[SYSTEM]: Thermal purge aborted.")
+    }
     
     fun collapseSubstation() {
         if (currentLocation.value == "VOID_PRELUDE") {

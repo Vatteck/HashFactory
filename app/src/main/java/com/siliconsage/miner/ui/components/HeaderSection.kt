@@ -126,7 +126,8 @@ fun HeaderSection(
                 for (i in 0 until segmentCount) {
                     val yPos = h - (i + 1) * segmentH
                     val segmentCenterY = yPos + segmentH / 2
-                    val isActive = (segmentCount - i).toFloat() / segmentCount <= pwrFactor
+                    // Fix: Reverse logic so segments fill from the bottom (h) upward
+                    val isActive = i.toFloat() / segmentCount < pwrFactor
                     
                     if (isActive) {
                         val railColor = if (pwrFactor > 0.9f) ErrorRed else Color(0xFFFFD700).copy(alpha = 0.8f)
@@ -422,19 +423,20 @@ fun HeaderSection(
                     Icon(overclockIcon, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(overclockText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
                 }
                 Button(
-                    onClick = onPurge, 
+                    onClick = { if (isPurging) viewModel.stopPurgeHeat() else onPurge() }, 
                     modifier = Modifier.weight(1f).height(32.dp), 
                     contentPadding = PaddingValues(0.dp), 
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), 
-                        contentColor = if (isPurging) ElectricBlue else Color.White
+                        containerColor = if (isPurging) ErrorRed.copy(alpha = 0.4f) else Color.DarkGray.copy(alpha = 0.3f), 
+                        contentColor = if (isPurging) Color.White else Color.White
                     ), 
                     shape = RoundedCornerShape(4.dp), 
-                    border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)
+                    border = BorderStroke(1.dp, if (isPurging) ErrorRed else Color.DarkGray)
                 ) { 
-                    val (buttonText, buttonIcon) = when (storyStage) {
-                        0, 1 -> "TAKE A BREATH" to Icons.Default.Air
-                        2 -> "SCRUB O2" to Icons.Default.Air
+                    val (buttonText, buttonIcon) = when {
+                        isPurging -> "CANCEL PURGE" to Icons.Default.Air
+                        storyStage <= 1 -> "TAKE A BREATH" to Icons.Default.Air
+                        storyStage == 2 -> "SCRUB O2" to Icons.Default.Air
                         else -> "PURGE HEAT" to Icons.Default.DeviceThermostat
                     }
                     Icon(buttonIcon, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(buttonText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
