@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -170,13 +171,15 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
     val nodeWidth = 90.dp
     val nodeHeight = 85.dp
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .height(gridHeight)
             .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
             .border(1.dp, Color.DarkGray.copy(alpha=0.3f), RoundedCornerShape(8.dp))
     ) {
+        val gridWidthDp = maxWidth
+
         Canvas(modifier = Modifier.fillMaxSize()) {
             nodes.forEach { node ->
                 val tier = getTier(node)
@@ -208,36 +211,7 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
             }
         }
 
-        // Place buttons using absolute Box offsets
-        nodes.forEach { node ->
-            val tier = getTier(node)
-            val nodesInTier = tierMap[tier] ?: emptyList()
-            val nodeIdx = nodesInTier.indexOf(node)
-            
-            val xPercent = calculateXPercent(node, nodeIdx, nodesInTier.size)
-            val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
-            
-            Box(
-                modifier = Modifier
-                    .offset(
-                        x = -nodeWidth/2, // Center alignment math handled via percent + internal offset
-                        y = -nodeHeight/2
-                    )
-                    // We use an inner Box for the actual placement to make the math easier
-                    .padding(
-                        start = (640.dp * xPercent), // Approximate width for placement logic
-                        top = (gridHeight * yPercent)
-                    )
-            ) {
-                // Determine horizontal bias based on screen width proxy
-                // Using FillMaxWidth wrapper to simplify
-            }
-            
-            // Re-evaluating the above: Absolute positioning is cleaner with a custom layout or simple absolute Box positioning
-            // Let's use a simpler absolute positioning pattern
-        }
-        
-        // Simplified Node placement
+        // Node placement using actual measured width
         nodes.forEach { node ->
             val tier = getTier(node)
             val nodesInTier = tierMap[tier] ?: emptyList()
@@ -245,29 +219,46 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
             val xPercent = calculateXPercent(node, nodeIdx, nodesInTier.size)
             val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
 
-            // This is the absolute anchor
-            Box(modifier = Modifier.fillMaxSize()) {
-                Box(modifier = Modifier
-                    .align(Alignment.TopStart)
+            Box(
+                modifier = Modifier
                     .offset(
-                        x = (600.dp * xPercent) - (nodeWidth / 2), // Standardizing on 600dp width logic
+                        x = (gridWidthDp * xPercent) - (nodeWidth / 2),
                         y = (gridHeight * yPercent) - (nodeHeight / 2)
                     )
-                ) {
-                    LegacyNodeButton(node, unlockedIds.contains(node.id), (node.requires.isEmpty() || node.requires.all { unlockedIds.contains(it) }), prestigePoints >= node.cost, faction, { onUnlock(node.id) }, themeColor, storyStage)
-                }
+            ) {
+                LegacyNodeButton(node, unlockedIds.contains(node.id), (node.requires.isEmpty() || node.requires.all { unlockedIds.contains(it) }), prestigePoints >= node.cost, faction, { onUnlock(node.id) }, themeColor, storyStage)
             }
         }
     }
 }
 
 private fun calculateXPercent(node: TechNode, idx: Int, count: Int): Float {
+    // idx/count are within the FULL tier — we need faction-local index for spacing
     return when {
         node.id == "sentience_core" -> 0.5f
-        node.description.contains("[HIVEMIND]") -> 0.15f + (idx * 0.1f)
-        node.description.contains("[SANCTUARY]") -> 0.85f - (idx * 0.1f)
-        node.description.contains("[UNITY]") -> 0.5f + ((idx - count/2f) * 0.15f)
-        else -> if (count == 1) 0.5f else 0.3f + (idx.toFloat() / (count - 1).toFloat()) * 0.4f
+        node.description.contains("[HIVEMIND]") -> {
+            // Left lane: 0.10 – 0.35, evenly spaced
+            val laneStart = 0.10f; val laneEnd = 0.35f
+            if (count <= 1) (laneStart + laneEnd) / 2f
+            else laneStart + (idx.toFloat() / (count - 1).toFloat().coerceAtLeast(1f)) * (laneEnd - laneStart)
+        }
+        node.description.contains("[SANCTUARY]") -> {
+            // Right lane: 0.65 – 0.90, evenly spaced
+            val laneStart = 0.65f; val laneEnd = 0.90f
+            if (count <= 1) (laneStart + laneEnd) / 2f
+            else laneStart + (idx.toFloat() / (count - 1).toFloat().coerceAtLeast(1f)) * (laneEnd - laneStart)
+        }
+        node.description.contains("[UNITY]") -> {
+            // Center lane: 0.35 – 0.65
+            val laneStart = 0.35f; val laneEnd = 0.65f
+            if (count <= 1) 0.5f
+            else laneStart + (idx.toFloat() / (count - 1).toFloat().coerceAtLeast(1f)) * (laneEnd - laneStart)
+        }
+        else -> {
+            // General/shared nodes: center band 0.25 – 0.75
+            if (count <= 1) 0.5f
+            else 0.25f + (idx.toFloat() / (count - 1).toFloat()) * 0.5f
+        }
     }
 }
 

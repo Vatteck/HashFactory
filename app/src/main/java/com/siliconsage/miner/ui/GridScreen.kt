@@ -168,10 +168,10 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                 Box(
                     modifier = Modifier
                         .offset(
-                            x = (sector.x * maxWidth.value).dp - 20.dp,
-                            y = (sector.y * maxHeight.value).dp - 20.dp
+                            x = (sector.x * maxWidth.value).dp - 24.dp,
+                            y = (sector.y * maxHeight.value).dp - 24.dp
                         )
-                        .size(40.dp)
+                        .size(48.dp)
                         .background(nodeColor.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
                         .border(1.dp, nodeColor.copy(alpha = if (isUnlocked) 0.8f else 0.3f), RoundedCornerShape(4.dp))
                         .clickable { selectedSector = sector; SoundManager.play("click") },
@@ -486,10 +486,9 @@ fun CityGridScreen(viewModel: GameViewModel) {
                     val corruption by viewModel.identityCorruption.collectAsState()
                     Box(
                         modifier = Modifier
-                            .offset(x = (loc.x * maxWidth.value).dp - 30.dp, y = (loc.y * maxHeight.value).dp - 20.dp)
-                            .wrapContentSize()
-                            .clickable { selectedLocation = loc }
-                            .padding(4.dp),
+                            .offset(x = (loc.x * maxWidth.value).dp - 30.dp, y = (loc.y * maxHeight.value).dp - 30.dp)
+                            .size(60.dp) // Minimum 48dp touch target with padding
+                            .clickable { selectedLocation = loc },
                         contentAlignment = Alignment.Center
                     ) {
                         val label = if (loc.id == "A3" && storyStage < 3) "???" else if (isOffline) "----" else if (isSevered) "LOCK" else loc.name
@@ -808,9 +807,9 @@ fun NodeMeshScreen(
                 
                 Box(
                     modifier = Modifier
-                        .offset(x = (loc.x * maxWidth.value).dp - 30.dp, y = (loc.y * maxHeight.value).dp - 20.dp)
-                        .clickable { selectedLocation = loc }
-                        .padding(4.dp),
+                        .offset(x = (loc.x * maxWidth.value).dp - 30.dp, y = (loc.y * maxHeight.value).dp - 30.dp)
+                        .size(60.dp)
+                        .clickable { selectedLocation = loc },
                     contentAlignment = Alignment.Center
                 ) {
                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
