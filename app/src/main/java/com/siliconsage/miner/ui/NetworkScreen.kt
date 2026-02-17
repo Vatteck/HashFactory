@@ -220,7 +220,18 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
                     val pFactionIdx = pNodesInFactionTier.indexOf(parent)
                     
                     val pXPercent = calculateXPercent(parent, pFactionIdx, pNodesInFactionTier.size)
-                    val pYPercent = 0.05f + (pTier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
+                    // Calculate base Y position for parent
+                    val pBaseYPercent = 0.05f + (pTier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
+                    
+                    // Add density spacing
+                    val pTierAbove = tierMap[pTier - 1]?.size ?: 0
+                    val pCurrentTierSize = tierMap[pTier]?.size ?: 0
+                    val pTierBelow = tierMap[pTier + 1]?.size ?: 0
+                    
+                    val pDensityFactor = maxOf(pTierAbove, pCurrentTierSize, pTierBelow).toFloat()
+                    val pExtraSpacing = if (pDensityFactor > 3) (pDensityFactor - 3) * 0.02f else 0f
+                    
+                    val pYPercent = pBaseYPercent + (pTier.toFloat() * pExtraSpacing)
                     
                     val path = Path().apply {
                         moveTo(size.width * pXPercent, gridHeight.toPx() * pYPercent)
@@ -264,7 +275,19 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
             val nodesInFactionTier = factionTierMap["${tier}_$factionKey"] ?: emptyList()
             val factionIdx = nodesInFactionTier.indexOf(node)
             val xPercent = calculateXPercent(node, factionIdx, nodesInFactionTier.size)
-            val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
+            
+            // Calculate base Y position
+            val baseYPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
+            
+            // Add extra vertical spacing based on tier density
+            val tierAbove = tierMap[tier - 1]?.size ?: 0
+            val currentTierSize = tierMap[tier]?.size ?: 0
+            val tierBelow = tierMap[tier + 1]?.size ?: 0
+            
+            val densityFactor = maxOf(tierAbove, currentTierSize, tierBelow).toFloat()
+            val extraSpacing = if (densityFactor > 3) (densityFactor - 3) * 0.02f else 0f
+            
+            val yPercent = baseYPercent + (tier.toFloat() * extraSpacing)
 
             Box(
                 modifier = Modifier
@@ -290,30 +313,34 @@ private fun getFactionGroup(node: TechNode): String = when {
 
 private fun calculateXPercent(node: TechNode, idx: Int, count: Int): Float {
     val group = getFactionGroup(node)
-    return when (group) {
-        "ROOT" -> 0.5f // Root node always dead center
-        "HIVEMIND" -> {
-            // Hard left lane: 0.0-0.25 (25% width)
-            if (count <= 1) 0.125f // Single node centers in lane
-            else 0.0f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.25f
-        }
-        "SHARED" -> {
-            // Center-left lane: 0.25-0.5 (25% width)
-            if (count <= 1) 0.375f // Single node centers in lane
-            else 0.25f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.25f
-        }
-        "UNITY" -> {
-            // Center-right lane: 0.5-0.75 (25% width)
-            if (count <= 1) 0.625f // Single node centers in lane
-            else 0.5f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.25f
-        }
-        "SANCTUARY" -> {
-            // Hard right lane: 0.75-1.0 (25% width)
-            if (count <= 1) 0.875f // Single node centers in lane
-            else 0.75f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.25f
-        }
-        else -> 0.5f // Fallback shouldn't happen
+    
+    // Fixed column positions
+    val columnPos = when (group) {
+        "ROOT" -> 0.5f
+        "HIVEMIND" -> 0.15f
+        "SHARED" -> 0.38f
+        "UNITY" -> 0.62f
+        "SANCTUARY" -> 0.85f
+        else -> 0.5f
     }
+    
+    // Apply horizontal offset based on index within faction
+    if (count <= 1) return columnPos
+    
+    // Calculate spread range based on count
+    val spreadRange = when {
+        count <= 2 -> 0.06f
+        count <= 3 -> 0.08f
+        count <= 4 -> 0.10f
+        else -> 0.12f
+    }
+    
+    // Center the spread around the column position
+    val startOffset = -spreadRange * (count - 1) / 2
+    val stepSize = spreadRange / (count - 1).coerceAtLeast(1)
+    val offset = startOffset + (idx * stepSize)
+    
+    return (columnPos + offset).coerceIn(0.05f, 0.95f)
 }
 
 @Composable
