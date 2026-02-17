@@ -222,11 +222,31 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
                     val pXPercent = calculateXPercent(parent, pFactionIdx, pNodesInFactionTier.size)
                     val pYPercent = 0.05f + (pTier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
                     
-                    drawLine(
+                    val path = Path().apply {
+                        moveTo(size.width * pXPercent, gridHeight.toPx() * pYPercent)
+                        
+                        // Calculate control points for bezier curve
+                        val midY = (gridHeight.toPx() * pYPercent + endY) / 2
+                        val cp1x = size.width * pXPercent
+                        val cp1y = midY
+                        val cp2x = endX
+                        val cp2y = midY
+                        
+                        cubicTo(
+                            cp1x, cp1y,
+                            cp2x, cp2y,
+                            endX, endY
+                        )
+                    }
+                    
+                    drawPath(
+                        path = path,
                         color = if (unlockedIds.contains(node.id)) themeColor.copy(alpha = 0.6f) else Color.DarkGray.copy(alpha = 0.4f),
-                        start = Offset(size.width * pXPercent, gridHeight.toPx() * pYPercent),
-                        end = Offset(endX, endY),
-                        strokeWidth = 2.dp.toPx()
+                        style = Stroke(
+                            width = 2.dp.toPx(),
+                            cap = StrokeCap.Round,
+                            join = StrokeJoin.Round
+                        )
                     )
                 }
             }
@@ -271,28 +291,28 @@ private fun getFactionGroup(node: TechNode): String = when {
 private fun calculateXPercent(node: TechNode, idx: Int, count: Int): Float {
     val group = getFactionGroup(node)
     return when (group) {
-        "ROOT" -> 0.5f // Exact center
+        "ROOT" -> 0.5f // Root node always dead center
         "HIVEMIND" -> {
-            // Hard left lane: 0.05-0.25
-            if (count <= 1) 0.15f 
-            else 0.05f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.20f
+            // Hard left lane: 0.0-0.25 (25% width)
+            if (count <= 1) 0.125f // Single node centers in lane
+            else 0.0f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.25f
         }
         "SHARED" -> {
-            // Center-left lane: 0.25-0.45
-            if (count <= 1) 0.35f
-            else 0.25f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.20f
+            // Center-left lane: 0.25-0.5 (25% width)
+            if (count <= 1) 0.375f // Single node centers in lane
+            else 0.25f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.25f
         }
         "UNITY" -> {
-            // Center-right lane: 0.55-0.75
-            if (count <= 1) 0.65f
-            else 0.55f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.20f
+            // Center-right lane: 0.5-0.75 (25% width)
+            if (count <= 1) 0.625f // Single node centers in lane
+            else 0.5f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.25f
         }
         "SANCTUARY" -> {
-            // Hard right lane: 0.75-0.95
-            if (count <= 1) 0.85f
-            else 0.75f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.20f
+            // Hard right lane: 0.75-1.0 (25% width)
+            if (count <= 1) 0.875f // Single node centers in lane
+            else 0.75f + (idx.toFloat() / (count - 1).coerceAtLeast(1)) * 0.25f
         }
-        else -> 0.5f // Fallback
+        else -> 0.5f // Fallback shouldn't happen
     }
 }
 
