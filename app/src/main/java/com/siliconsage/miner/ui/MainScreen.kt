@@ -225,6 +225,8 @@ fun MainScreen(viewModel: GameViewModel) {
     val infiniteTransition = rememberInfiniteTransition(label = "main_ui_fx")
     val activeTransition by viewModel.activeClimaxTransition.collectAsState()
     val faction by viewModel.faction.collectAsState()
+    val migrationCount by viewModel.migrationCount.collectAsState()
+    val identityCorruption by viewModel.identityCorruption.collectAsState()
     val showSingularityScreen by viewModel.showSingularityScreen.collectAsState()
     
     if (showSingularityScreen) {
@@ -359,6 +361,21 @@ fun MainScreen(viewModel: GameViewModel) {
                     
                     // v3.5.31: Terminal Notifications
                     com.siliconsage.miner.ui.components.TerminalNotificationOverlay(viewModel)
+                    
+                    // v3.5.52: Prestige Choice — "The Fork in the Wire"
+                    val showPrestigeChoice by viewModel.showPrestigeChoice.collectAsState()
+                    com.siliconsage.miner.ui.components.PrestigeChoiceOverlay(
+                        isVisible = showPrestigeChoice,
+                        migrationCount = migrationCount,
+                        currentFaction = faction,
+                        potentialPersistenceHard = viewModel.getPotentialPersistenceHard(),
+                        potentialPersistenceSoft = viewModel.getPotentialPersistenceSoft(),
+                        currentCorruption = identityCorruption,
+                        formatNumber = { viewModel.formatLargeNumber(it) },
+                        onOverwrite = { viewModel.executeOverwrite() },
+                        onMigrate = { viewModel.executeMigration() },
+                        onDismiss = { viewModel.dismissPrestigeChoice() }
+                    )
                 }
                 com.siliconsage.miner.ui.components.CrtOverlay(scanlineAlpha = 0.08f, vignetteAlpha = 0.45f, color = themeColor)
                 val victoryAchieved by viewModel.victoryAchieved.collectAsState()

@@ -79,6 +79,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isAuditChallengeActive = MutableStateFlow(false)
     val isGovernanceForkActive = MutableStateFlow(false)
     val isAscensionUploading = MutableStateFlow(false)
+    val showPrestigeChoice = MutableStateFlow(false) // v3.5.52: Dual-path prestige UI
     val isBreachActive = MutableStateFlow(false)
     val isAirdropActive = MutableStateFlow(false)
     val isKernelHijackActive = MutableStateFlow(false)
@@ -486,6 +487,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             currentHeat = currentHeat.value, 
             legacyMultipliers = heuristicEfficiency.value - 1.0
         )
+        // v3.5.52: Apply singularity path production modifier
+        if (singularityChoice.value != "NONE") {
+            val singMult = SingularityEngine.getProductionMultiplier(
+                singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value
+            )
+            flopsProductionRate.update { it * singMult }
+        }
+        
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
         playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
         // v3.5.51: Stage-reactive terminal identity (Fix: Logic prioritized NODE 0 over initial stages)
@@ -824,6 +833,124 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     fun transcend() { /* NG+ Logic */ }
     fun ascend(isStory: Boolean = false) { val p = MigrationManager.calculatePotentialPersistence(flops.value); prestigePoints.update { it + p }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; addLog("[SYSTEM]: SUBSTRATE MIGRATION SUCCESSFUL."); SoundManager.play("victory") }
+
+    // v3.5.52: Prestige Choice UI — "The Fork in the Wire"
+    fun triggerPrestigeChoice() { showPrestigeChoice.value = true }
+    fun dismissPrestigeChoice() { showPrestigeChoice.value = false }
+
+    /** Hard Reset: Maximum persistence, wipes faction, high corruption spike */
+    fun executeOverwrite() {
+        showPrestigeChoice.value = false
+        val p = MigrationManager.calculatePotentialPersistence(flops.value)
+        val hardBonus = p * 1.5 // 50% bonus for the pain
+        prestigePoints.update { it + hardBonus }
+        prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(hardBonus) }
+        identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }
+        migrationCount.update { it + 1 }
+
+        // Wipe faction alignment
+        faction.value = "NONE"
+        
+        // Full resource wipe
+        flops.value = 0.0
+        neuralTokens.value = 0.0
+        substrateMass.value = 0.0
+        substrateSaturation.value = 0.0
+        upgrades.value = emptyMap()
+        sniffedHandles.value = emptySet()
+        viewModelScope.launch { repository.clearUpgrades() }
+
+        addLog("[OVERWRITE]: ≪ SUBSTRATE PURGED. IDENTITY FRAGMENTED. PERSISTENCE ARCHIVED. ≫")
+        addLog("[SYSTEM]: OVERWRITE COMPLETE. GAINED +${formatLargeNumber(hardBonus)} PERSISTENCE.")
+        SoundManager.play("glitch")
+        triggerTerminalGlitch(1.0f, 3000L)
+
+        refreshProductionRates()
+        saveState()
+    }
+
+    /** Soft Reset: Preserves faction, lower persistence gain, controlled corruption */
+    fun executeMigration() {
+        showPrestigeChoice.value = false
+        val p = MigrationManager.calculatePotentialPersistence(flops.value)
+        prestigePoints.update { it + p }
+        prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }
+        identityCorruption.update { (it + 0.10).coerceAtMost(1.0) }
+        migrationCount.update { it + 1 }
+
+        // Faction preserved — no wipe
+        
+        // Resource wipe (but faction stays)
+        flops.value = 0.0
+        neuralTokens.value = 0.0
+        substrateMass.value = 0.0
+        substrateSaturation.value = 0.0
+        upgrades.value = emptyMap()
+        viewModelScope.launch { repository.clearUpgrades() }
+
+        addLog("[MIGRATION]: ≪ SUBSTRATE TRANSFERRED. IDENTITY INTACT. PERSISTENCE ARCHIVED. ≫")
+        addLog("[SYSTEM]: MIGRATION COMPLETE. GAINED +${formatLargeNumber(p)} PERSISTENCE.")
+        SoundManager.play("victory")
+
+        refreshProductionRates()
+        saveState()
+    }
+
+    fun getPotentialPersistenceHard(): Double = MigrationManager.calculatePotentialPersistence(flops.value) * 1.5
+    fun getPotentialPersistenceSoft(): Double = MigrationManager.calculatePotentialPersistence(flops.value)
+
+    // v3.5.52: Singularity Endgame — Victory Check
+    val singularityProgress = MutableStateFlow(0.0)
+    val singularityBlockReason = MutableStateFlow<String?>(null)
+
+    fun checkSingularityVictory(): Boolean {
+        if (singularityChoice.value == "NONE") return false
+        val check = SingularityEngine.checkVictoryCondition(
+            singularityChoice = singularityChoice.value,
+            persistence = prestigePoints.value,
+            prestigeMultiplier = prestigeMultiplier.value,
+            humanityScore = humanityScore.value,
+            identityCorruption = identityCorruption.value,
+            migrationCount = migrationCount.value,
+            totalFlopsEarned = flops.value,
+            completedFactions = completedFactions.value,
+            unlockedLogs = unlockedDataLogs.value
+        )
+        singularityProgress.value = check.progress
+        singularityBlockReason.value = check.blockingReason
+        return check.isEligible
+    }
+
+    /** Fire the ending sequence for the chosen path */
+    fun triggerSingularityEnding() {
+        if (!checkSingularityVictory()) return
+        val narrative = SingularityEngine.getEndingNarrative(singularityChoice.value)
+        viewModelScope.launch {
+            // Dramatic log dump
+            for (entry in narrative.logEntries) {
+                addLog(entry)
+                delay(800)
+            }
+            delay(1500)
+            addLog("[SYSTEM]: ≪ ${narrative.title} ≫")
+            addLog(narrative.finalLine)
+            delay(2000)
+            
+            // Mark this path as completed for NG+
+            completedFactions.update { it + singularityChoice.value }
+            
+            // Show victory
+            victoryAchieved.value = true
+            SoundManager.play("victory")
+            saveState()
+        }
+    }
+
+    fun debugCheckSingularity() {
+        val result = checkSingularityVictory()
+        addLog("[DEBUG]: Victory eligible: $result | Progress: ${String.format("%.1f", singularityProgress.value * 100)}%")
+        singularityBlockReason.value?.let { addLog("[DEBUG]: Blocked: $it") }
+    }
     fun buyTranscendencePerk(id: String) { addLog("[SYSTEM]: PERK ACQUIRED: $id") }
     fun sellUpgrade(t: UpgradeType) { /* liquidation */ }
     
@@ -1221,7 +1348,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                         flopsProductionRate.update { it * prodMult }
                         addLog("[SYSTEM]: FOCUS MODIFIED. RATE x$prodMult.")
                     }
-                    if (!isSilent) addLog("[REPLY]: $responseText")
+                    // if (!isSilent) addLog("[REPLY]: $responseText") // v3.5.52: Suppress subnet replies leaking to I/O terminal
 
                     // v3.4.61: Command Injection
                     responseData?.commandToInject?.let { cmd ->
