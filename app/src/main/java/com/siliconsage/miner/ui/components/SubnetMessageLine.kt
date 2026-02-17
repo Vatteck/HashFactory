@@ -21,6 +21,12 @@ import kotlinx.coroutines.delay
 import androidx.compose.foundation.shape.RoundedCornerShape
 import kotlin.random.Random
 
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.text.AnnotatedString
+
 @Composable
 fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
     val countdown = remember { mutableStateOf(0L) }
@@ -203,13 +209,63 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
             }
         }
 
-        Text(
-            text = message.content,
-            color = if (isPlayerReply) Color.LightGray else Color.White,
-            fontSize = 12.sp,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+        // v3.5.52: Inline Ghost-Link Parser
+        val corruption = viewModel?.identityCorruption?.collectAsState()?.value ?: 0.0
+        val isGhostLinkEligible = corruption > 0.4 
+        val contentRegex = Regex("\\[⚡ (.*?) \\]")
+        
+        val annotatedContent = buildAnnotatedString {
+            val raw = message.content
+            var lastIdx = 0
+            
+            if (isGhostLinkEligible) {
+                contentRegex.findAll(raw).forEach { match ->
+                    // Add regular text before match
+                    append(raw.substring(lastIdx, match.range.first))
+                    
+                    // Add clickable ghost link
+                    pushStringAnnotation(tag = "GHOST_LINK", annotation = match.value)
+                    withStyle(style = SpanStyle(
+                        color = com.siliconsage.miner.ui.theme.NeonGreen,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        background = com.siliconsage.miner.ui.theme.NeonGreen.copy(alpha = 0.1f)
+                    )) {
+                        append(match.value)
+                    }
+                    pop()
+                    
+                    lastIdx = match.range.last + 1
+                }
+            }
+            append(raw.substring(lastIdx))
+        }
+
+        if (isGhostLinkEligible && contentRegex.containsMatchIn(message.content)) {
+            ClickableText(
+                text = annotatedContent,
+                style = LocalTextStyle.current.copy(
+                    color = if (isPlayerReply) Color.LightGray else Color.White,
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily.Monospace
+                ),
+                modifier = Modifier.padding(top = 4.dp),
+                onClick = { offset ->
+                    annotatedContent.getStringAnnotations(tag = "GHOST_LINK", start = offset, end = offset)
+                        .firstOrNull()?.let { annotation ->
+                            viewModel?.onSubnetInteraction(message.id, annotation.item)
+                        }
+                }
+            )
+        } else {
+            Text(
+                text = message.content,
+                color = if (isPlayerReply) Color.LightGray else Color.White,
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
 
         if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
             val corruption by viewModel.identityCorruption.collectAsState()

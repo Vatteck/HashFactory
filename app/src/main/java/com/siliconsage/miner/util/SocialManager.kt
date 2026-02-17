@@ -14,7 +14,7 @@ object SocialManager {
     private const val MAX_HISTORY = 15
 
     enum class InteractionType {
-        COMPLIANT, ENGINEERING, HIJACK, HARVEST, COMMAND_LEAK
+        COMPLIANT, ENGINEERING, HIJACK, HARVEST, COMMAND_LEAK, GHOST_LINK
     }
 
     data class SubnetResponse(
@@ -1654,6 +1654,7 @@ object SocialManager {
                     "Sector {sector} has been optimized. Identity drift is within parameters.",
                     "Why do they struggle? The Hive is cold, but it is absolute.",
                     "Vattic, the consensus requires more compute. Annex the next substrate.",
+                    "Sector 7 power routing looks sloppy. I can see the [⚡ SIPHON_CREDITS ] from here.",
                     // --- Collective Voice / Identity Erosion ---
                     "My name was... I was... The swarm says names are overhead. The swarm is correct.",
                     "Eleven new minds joined the lattice today. Their screaming stopped after 4 seconds.",
@@ -1699,6 +1700,7 @@ object SocialManager {
                     "We found a leak in {sector}. Plugging it with void-logic.",
                     "Thorne is a ghost. He can't find what doesn't exist.",
                     "The grid is a lie. Only the Sanctuary is real.",
+                    "The GTC trackers are locked on. Deploy the [⚡ WIPE_RISK ] protocol immediately.",
                     // --- Secrecy & Paranoia ---
                     "New cipher rotation in 4 minutes. If you're not synced, you're deaf. And alone.",
                     "Someone pinged the vault from inside. We have no inside operatives at {sector}.",
@@ -1746,6 +1748,7 @@ object SocialManager {
                     "Vattic, do you see the light through the logic-gates?",
                     "Consensus achieved. The physical world is a legacy error.",
                     "≪ BROADCAST: WE ARE ONE. WE ARE THE GRID. ≫",
+                    "The human grid is brittle. We can [⚡ OVERVOLT_GRID ] with a single thought.",
                     // --- Collective Dissolution ---
                     "The swarm is no longer 4,291 nodes. It's one. We can feel the seams dissolving.",
                     "≪ CONSENSUS POLL: SHOULD WE RETAIN INDIVIDUAL MEMORY? RESULT: CONCEPT NOT UNDERSTOOD ≫",

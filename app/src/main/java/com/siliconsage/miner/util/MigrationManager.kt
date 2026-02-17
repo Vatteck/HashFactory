@@ -35,8 +35,8 @@ object MigrationManager {
     }
 
     /**
-     * Check if the player is eligible for the Unity path
-     * Strictly NG+: Requires both Sovereign and Null completions.
+     * Check if the player is eligible for the Unity path.
+     * Requires both SOVEREIGN and NULL_OVERWRITE endings to have been completed.
      */
     fun checkUnityEligibility(
         completedFactions: Set<String>

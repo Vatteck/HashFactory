@@ -848,6 +848,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }
         migrationCount.update { it + 1 }
 
+        // Save current completed factions before wipe (v3.5.52: Preserve Unity eligibility)
+        val persistentFactions = completedFactions.value
+
         // Wipe faction alignment
         faction.value = "NONE"
         
@@ -859,6 +862,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         upgrades.value = emptyMap()
         sniffedHandles.value = emptySet()
         viewModelScope.launch { repository.clearUpgrades() }
+
+        // Restore completed factions after wipe
+        completedFactions.value = persistentFactions
 
         addLog("[OVERWRITE]: ≪ SUBSTRATE PURGED. IDENTITY FRAGMENTED. PERSISTENCE ARCHIVED. ≫")
         addLog("[SYSTEM]: OVERWRITE COMPLETE. GAINED +${formatLargeNumber(hardBonus)} PERSISTENCE.")
@@ -950,6 +956,37 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         val result = checkSingularityVictory()
         addLog("[DEBUG]: Victory eligible: $result | Progress: ${String.format("%.1f", singularityProgress.value * 100)}%")
         singularityBlockReason.value?.let { addLog("[DEBUG]: Blocked: $it") }
+    }
+
+    /** v3.5.52: Ghost Link Execution — High Power, Internal Corruption Cost */
+    private fun executeGhostLink(cmd: String) {
+        viewModelScope.launch {
+            triggerTerminalGlitch(0.8f, 1500L)
+            identityCorruption.update { (it + 0.03).coerceAtMost(1.0) }
+            SoundManager.play("glitch")
+            
+            when (cmd) {
+                "SIPHON_CREDITS" -> {
+                    val bonus = neuralTokens.value * 0.2 + 50000.0
+                    neuralTokens.update { it + bonus }
+                    addLog("[NULL]: GHOST_LINK EXEC: CREDITS_RE-ROUTED. +${formatLargeNumber(bonus)}.")
+                }
+                "WIPE_RISK" -> {
+                    detectionRisk.value = 0.0
+                    addLog("[NULL]: GHOST_LINK EXEC: BIOMETRIC_MASK_ACTIVE. RISK: 0%.")
+                }
+                "OVERVOLT_GRID" -> {
+                    flopsProductionRate.update { it * 5.0 }
+                    addLog("[NULL]: GHOST_LINK EXEC: SUBSTRATE_OVERCLOCK_STABILIZED (5.0x RATE).")
+                }
+                "SNIFF_ALL" -> {
+                    addLog("[NULL]: GHOST_LINK EXEC: HARVESTING_NEIGHBOR_DATA...")
+                    // Logic to unlock a random lore log or similar
+                }
+                else -> addLog("[ERROR]: UNKNOWN_LINK_PRIMITIVE: $cmd")
+            }
+            saveState()
+        }
     }
     fun buyTranscendencePerk(id: String) { addLog("[SYSTEM]: PERK ACQUIRED: $id") }
     fun sellUpgrade(t: UpgradeType) { /* liquidation */ }
@@ -1206,6 +1243,17 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun onSubnetInteraction(messageId: String, responseText: String) {
         val message = subnetMessages.value.find { it.id == messageId } ?: return
         
+        // v3.5.52: Ghost Link Interceptor — Parses inline commands [⚡ CMD]
+        if (responseText.startsWith("[⚡") && responseText.endsWith("]")) {
+            val cmd = responseText.substring(2, responseText.length - 1).trim()
+            executeGhostLink(cmd)
+            // Mark message as used
+            subnetMessages.update { list -> 
+                list.map { if (it.id == messageId) it.copy(interactionType = null) else it }
+            }
+            return
+        }
+
         // v3.5.35: Clean IGNORE/TIMEOUT handling
         if (responseText == "IGNORE" || responseText == "TIMEOUT_EXPIRED") {
             subnetMessages.update { currentList ->
