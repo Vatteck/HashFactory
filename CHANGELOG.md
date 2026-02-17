@@ -1,6 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.7.1] - 2026-02-17
+### Fixed
+- **Tech Tree Layout Overhaul**: 
+    - Resolved catastrophic node overlaps in high-density tiers by switching to a tiered linear layout.
+    - Standardized node spacing across the full width to prevent stacking.
+    - Restored faction-specific node colors (HIVEMIND: Red, SANCTUARY: Purple) for better branch visibility.
+    - Implemented smooth Bezier curves for tech tree connections to reduce visual clutter.
+- **Grid Screen Hitboxes**: Enforced a 48dp minimum touch target (Android standard) across all grid nodes, making interaction reliable on high-DPI displays (Pixel Fold).
+- **Purge Heat Toggle**: Fixed a logic bug in `SimulationService.kt` where passive generation could overwhelm cooling; net cooling is now guaranteed during the active purge state.
+- **Narrative Event Sync**: Fixed a faction-specific ID mismatch (`null_manifestation` vs `memory_leak`) that caused recurring popup loops for HIVEMIND players.
+- **UI Theme Continuity**: Implemented `getThemeColorForFaction()` to ensure the UI dynamically updates to match the current faction choice post-singularity.
+
+### Changed
+- **CANON.md v3.9**: Refined prestige terminology (Migration vs. Overwrite) and unified narrative bridge mechanics.
+- **ADB Infrastructure**: Updated default bridge port to support dynamic wireless debugging on the Pixel Fold.
+
 ## [3.5.50] - 2026-02-15
 ### Added
 - **NPC-Specific SNIFF Espionage System (v3.5.46)**: 8 hidden lore logs unlocked exclusively by using SNIFF_DATA_ARCHIVES on specific NPC profiles. Admins (Thorne/Mercer/Kessler) accessible at 3x cost and +35% risk. New `SniffTarget` unlock condition, `sniffedHandles` state tracking. DB schema v25→v26.
