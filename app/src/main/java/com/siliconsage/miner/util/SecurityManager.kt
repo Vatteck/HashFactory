@@ -18,11 +18,13 @@ object SecurityManager {
     private var isBreachInProgress = false
     private var breachSeverity = 1.0 
     private var internalLastRaidTime = 0L
+    private var lastWarnedThreshold = 0 // v3.6.4: Track risk warning thresholds
 
     fun reset() {
         isBreachInProgress = false
         breachSeverity = 1.0
         internalLastRaidTime = 0L
+        lastWarnedThreshold = 0
         SoundManager.stop("alarm")
     }
 
@@ -39,9 +41,9 @@ object SecurityManager {
             val baseDrift = 0.2 + (vm.flopsProductionRate.value / 1e6).coerceIn(0.0, 5.0)
             val drift = when (vm.singularityChoice.value) {
                 "NULL_OVERWRITE" -> {
-                    // NULL: Uncapped drift scaled by corruption. At 95% corruption, drift is ~3x base.
-                    // The snowball cuts both ways — more production = more GTC attention.
-                    val corruptionMult = 1.0 + (vm.identityCorruption.value * 2.0)
+                    // v3.6.4: NULL drift capped at 2x base. High-corruption is punishing but not unwinnable.
+                    // At 95% corruption, drift is ~2x base (~10.4 max). Recovery cap is 15, so high-DEF players can outpace it.
+                    val corruptionMult = (1.0 + (vm.identityCorruption.value * 2.0)).coerceAtMost(2.0)
                     baseDrift * corruptionMult
                 }
                 "SOVEREIGN" -> {
@@ -57,19 +59,40 @@ object SecurityManager {
                 }
                 else -> baseDrift
             }
-            val recovery = (secLevel * 0.1).coerceIn(0.05, 10.0)
+            // v3.6.4: Tripled security payoff. secLevel 50 now fully neutralizes max drift.
+            val recovery = (secLevel * 0.3).coerceIn(0.1, 15.0)
             
             vm.detectionRisk.update { (it + drift - recovery).coerceIn(0.0, 100.0) }
+
+            // v3.6.4: Threshold warnings — give the player a narrative lead-up before breach fires
+            val newRisk = vm.detectionRisk.value
+            if (newRisk >= 90.0 && lastWarnedThreshold < 90) {
+                lastWarnedThreshold = 90
+                vm.addLogPublic("[GTC]: ALERT: Substation 7 signature CRITICAL. Enforcement teams on standby.")
+                vm.addLogPublic("[SYS-LOG]: EXPOSURE_LEVEL: IMMINENT_BREACH. Recommend immediate countermeasures.")
+            } else if (newRisk >= 75.0 && lastWarnedThreshold < 75) {
+                lastWarnedThreshold = 75
+                vm.addLogPublic("[SYS-LOG]: GTC proximity sensors flagging anomalous compute patterns. Exposure: ELEVATED.")
+            } else if (newRisk < 50.0 && lastWarnedThreshold > 0) {
+                lastWarnedThreshold = 0 // Reset so warnings can fire again next cycle
+            }
             
             // Siege trigger: If risk hits 100% and we aren't already fighting
-            if (vm.detectionRisk.value >= 100.0 && !isBreachInProgress && !vm.isBreachActive.value && !isRaid) {
+            // v3.5.52: Only trigger raids if grid is unlocked
+            if (vm.detectionRisk.value >= 100.0 && !isBreachInProgress && !vm.isBreachActive.value && !isRaid && vm.isGridUnlocked.value) {
                 vm.addLogPublic("[SYS-LOG]: SECURITY_EXPOSURE_CRITICAL. Log cleansing failed.")
                 triggerGridKillerBreach(vm)
                 vm.detectionRisk.value = 50.0 // Reset to 50 on trigger
+            } else if (vm.detectionRisk.value >= 100.0 && !vm.isGridUnlocked.value) {
+                // v3.6.4: Grid not unlocked yet — bleed off excess risk so it doesn't stack up invisibly
+                vm.detectionRisk.value = 95.0
             }
         }
 
-        if (stage < 2 || isBreachInProgress || isRaid) return
+        if (stage < 3 || isBreachInProgress || isRaid) return
+
+        // v3.5.52: Don't trigger raids if grid isn't unlocked yet
+        if (!vm.isGridUnlocked.value) return
 
         if (vm.unlockedPerks.value.contains("gtc_backdoor") && Random.nextDouble() < 0.25) {
             vm.addLogPublic("[SYSTEM]: GTC Backdoor active. Breach attempt suppressed.")

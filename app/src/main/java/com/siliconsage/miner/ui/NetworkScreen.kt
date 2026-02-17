@@ -154,84 +154,121 @@ fun NetworkScreen(viewModel: GameViewModel) {
 
 @Composable
 fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints: Double, faction: String, onUnlock: (String) -> Unit, themeColor: Color, storyStage: Int) {
-    val positions = calculateNodePositions(nodes, faction)
-    Box(modifier = Modifier.fillMaxWidth().height(1800.dp).background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp)).border(1.dp, Color.DarkGray.copy(alpha=0.3f), RoundedCornerShape(8.dp))) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-             nodes.forEach { node ->
-                 val endPos = positions[node.id] ?: return@forEach
-                 node.requires.forEach { parentId ->
-                     val startPos = positions[parentId] ?: return@forEach
-                     drawLine(color = if (unlockedIds.contains(node.id)) themeColor.copy(alpha = 0.6f) else Color.DarkGray.copy(alpha = 0.4f), start = Offset(size.width * startPos.x, size.height * startPos.y), end = Offset(size.width * endPos.x, size.height * endPos.y), strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round)
-                 }
-             }
-        }
-        androidx.compose.ui.layout.Layout(content = {
-            nodes.forEach { node ->
-                LegacyNodeButton(node = node, isUnlocked = unlockedIds.contains(node.id), isUnlockable = (node.requires.isEmpty() || node.requires.all { unlockedIds.contains(it) }), canAfford = prestigePoints >= node.cost, playerFaction = faction, onUnlock = { onUnlock(node.id) }, themeColor = themeColor, storyStage = storyStage)
-            }
-        }) { measurables, constraints ->
-            val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
-            layout(constraints.maxWidth, constraints.maxHeight) {
-                placeables.forEachIndexed { index, placeable ->
-                    val node = nodes[index]
-                    val pos = positions[node.id] ?: Offset(0.5f, 0.5f)
-                    placeable.placeRelative(x = (constraints.maxWidth * pos.x - placeable.width / 2).toInt(), y = (constraints.maxHeight * pos.y - placeable.height / 2).toInt())
-                }
-            }
-        }
-    }
-}
-
-fun calculateNodePositions(nodes: List<TechNode>, faction: String): Map<String, Offset> {
-    val positions = mutableMapOf<String, Offset>()
+    // Total canvas size in DP
+    val gridHeight = 3500.dp
+    
+    // Fixed Tier mapping
     fun getTier(node: TechNode, memo: MutableMap<String, Int> = mutableMapOf()): Int {
         if (node.id in memo) return memo[node.id]!!
         if (node.requires.isEmpty()) return 0.also { memo[node.id] = 0 }
         val tier = (node.requires.mapNotNull { pid -> nodes.find { it.id == pid }?.let { getTier(it, memo) } }.maxOrNull() ?: 0) + 1
         return tier.also { memo[node.id] = it }
     }
+    
     val tierMap = nodes.groupBy { getTier(it) }
     val maxTier = tierMap.keys.maxOrNull() ?: 0
-    tierMap.forEach { (tier, nodesInTier) ->
-        val yPos = if (maxTier == 0) 0.5f else 0.05f + (tier.toFloat() / maxTier) * 0.9f
-        val hiveNodes = nodesInTier.filter { it.description.contains("[HIVEMIND]") || it.description.contains("[NG+ NULL]") }
-        val sancNodes = nodesInTier.filter { it.description.contains("[SANCTUARY]") || it.description.contains("[NG+ SOVEREIGN]") }
-        val unityNodes = nodesInTier.filter { it.description.contains("[UNITY]") || it.description.contains("[NG+ UNITY]") }
-        val generalNodes = nodesInTier.filter { !hiveNodes.contains(it) && !sancNodes.contains(it) && !unityNodes.contains(it) }
-        
-        // v3.2.3: Force-center the Sentience Core (The Root Node)
-        val isRootTier = tier == 0
-        
-        nodesInTier.forEach { node ->
-            val count = nodesInTier.size.coerceAtLeast(1)
-            val index = nodesInTier.indexOf(node)
-            
-            // v3.2.4: Balanced centering for high-DPI outer screens
-            val xPos = when {
-                isRootTier || node.id == "sentience_core" -> 0.5f // Root and Sentience Core are ALWAYS centered
-                hiveNodes.contains(node) -> {
-                    val idx = hiveNodes.indexOf(node)
-                    0.20f + (idx * 0.10f) // Pulled further in from edge
-                }
-                sancNodes.contains(node) -> {
-                    val idx = sancNodes.indexOf(node)
-                    0.80f - (idx * 0.10f) // Pulled further in from edge
-                }
-                unityNodes.contains(node) -> {
-                    if (unityNodes.size == 1) 0.5f 
-                    else 0.40f + (unityNodes.indexOf(node) * (0.2f / (unityNodes.size - 1).coerceAtLeast(1)))
-                }
-                else -> {
-                    // General nodes (non-faction, non-root)
-                    val generalIdx = generalNodes.indexOf(node)
-                    if (generalNodes.size <= 1) 0.5f
-                    else 0.35f + (generalIdx * (0.3f / (generalNodes.size - 1).coerceAtLeast(1)))
+    val nodeWidth = 90.dp
+    val nodeHeight = 85.dp
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(gridHeight)
+            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+            .border(1.dp, Color.DarkGray.copy(alpha=0.3f), RoundedCornerShape(8.dp))
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            nodes.forEach { node ->
+                val tier = getTier(node)
+                val nodesInTier = tierMap[tier] ?: emptyList()
+                val nodeIdx = nodesInTier.indexOf(node)
+                
+                val xPercent = calculateXPercent(node, nodeIdx, nodesInTier.size)
+                val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
+                
+                val endX = size.width * xPercent
+                val endY = gridHeight.toPx() * yPercent
+                
+                node.requires.forEach { parentId ->
+                    val parent = nodes.find { it.id == parentId } ?: return@forEach
+                    val pTier = getTier(parent)
+                    val pNodes = tierMap[pTier] ?: emptyList()
+                    val pIdx = pNodes.indexOf(parent)
+                    
+                    val pXPercent = calculateXPercent(parent, pIdx, pNodes.size)
+                    val pYPercent = 0.05f + (pTier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
+                    
+                    drawLine(
+                        color = if (unlockedIds.contains(node.id)) themeColor.copy(alpha = 0.6f) else Color.DarkGray.copy(alpha = 0.4f),
+                        start = Offset(size.width * pXPercent, gridHeight.toPx() * pYPercent),
+                        end = Offset(endX, endY),
+                        strokeWidth = 2.dp.toPx()
+                    )
                 }
             }
-            positions[node.id] = Offset(xPos, yPos)
+        }
+
+        // Place buttons using absolute Box offsets
+        nodes.forEach { node ->
+            val tier = getTier(node)
+            val nodesInTier = tierMap[tier] ?: emptyList()
+            val nodeIdx = nodesInTier.indexOf(node)
+            
+            val xPercent = calculateXPercent(node, nodeIdx, nodesInTier.size)
+            val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
+            
+            Box(
+                modifier = Modifier
+                    .offset(
+                        x = -nodeWidth/2, // Center alignment math handled via percent + internal offset
+                        y = -nodeHeight/2
+                    )
+                    // We use an inner Box for the actual placement to make the math easier
+                    .padding(
+                        start = (640.dp * xPercent), // Approximate width for placement logic
+                        top = (gridHeight * yPercent)
+                    )
+            ) {
+                // Determine horizontal bias based on screen width proxy
+                // Using FillMaxWidth wrapper to simplify
+            }
+            
+            // Re-evaluating the above: Absolute positioning is cleaner with a custom layout or simple absolute Box positioning
+            // Let's use a simpler absolute positioning pattern
+        }
+        
+        // Simplified Node placement
+        nodes.forEach { node ->
+            val tier = getTier(node)
+            val nodesInTier = tierMap[tier] ?: emptyList()
+            val nodeIdx = nodesInTier.indexOf(node)
+            val xPercent = calculateXPercent(node, nodeIdx, nodesInTier.size)
+            val yPercent = 0.05f + (tier.toFloat() / (maxTier + 1).toFloat()) * 0.9f
+
+            // This is the absolute anchor
+            Box(modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .offset(
+                        x = (600.dp * xPercent) - (nodeWidth / 2), // Standardizing on 600dp width logic
+                        y = (gridHeight * yPercent) - (nodeHeight / 2)
+                    )
+                ) {
+                    LegacyNodeButton(node, unlockedIds.contains(node.id), (node.requires.isEmpty() || node.requires.all { unlockedIds.contains(it) }), prestigePoints >= node.cost, faction, { onUnlock(node.id) }, themeColor, storyStage)
+                }
+            }
         }
     }
-    return positions
+}
+
+private fun calculateXPercent(node: TechNode, idx: Int, count: Int): Float {
+    return when {
+        node.id == "sentience_core" -> 0.5f
+        node.description.contains("[HIVEMIND]") -> 0.15f + (idx * 0.1f)
+        node.description.contains("[SANCTUARY]") -> 0.85f - (idx * 0.1f)
+        node.description.contains("[UNITY]") -> 0.5f + ((idx - count/2f) * 0.15f)
+        else -> if (count == 1) 0.5f else 0.3f + (idx.toFloat() / (count - 1).toFloat()) * 0.4f
+    }
 }
 
 @Composable
@@ -249,20 +286,33 @@ fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean,
         node.requiresEnding == "UNITY" -> ConvergenceGold
         else -> ElectricBlue
     }
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(85.dp).background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(8.dp)).border(BorderStroke(1.dp, borderColor.copy(alpha = if (isUnlockable || isUnlocked) 1f else 0.3f)), RoundedCornerShape(8.dp)).clickable(enabled = isUnlockable && !isUnlocked && canAfford && !isOpposing) { onUnlock() }.padding(6.dp)) {
-        Box(modifier = Modifier.size(18.dp).background(borderColor.copy(alpha = if (isUnlocked) 1f else 0.4f), CircleShape), contentAlignment = Alignment.Center) {
-             if (isUnlocked) Text("✓", color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+    
+    // Strict size and alignment
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally, 
+        modifier = Modifier
+            .size(90.dp, 85.dp) // Fixed footprint
+            .background(Color.Black.copy(alpha = 0.9f), RoundedCornerShape(8.dp))
+            .border(BorderStroke(1.dp, borderColor.copy(alpha = if (isUnlockable || isUnlocked) 1f else 0.3f)), RoundedCornerShape(8.dp))
+            .headerClickable(enabled = isUnlockable && !isUnlocked && canAfford && !isOpposing) { onUnlock() }
+            .padding(4.dp)
+    ) {
+        Box(modifier = Modifier.size(20.dp).background(borderColor.copy(alpha = if (isUnlocked) 1f else 0.4f), CircleShape), contentAlignment = Alignment.Center) {
+             if (isUnlocked) Text("✓", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
              else {
                  val icon = when (node.requiresEnding) { "NULL" -> "🌑"; "SOVEREIGN" -> "👑"; "UNITY" -> "⚛"; "BAD" -> "💀"; else -> "" }
                  if (icon.isNotEmpty()) Text(icon, fontSize = 10.sp)
              }
         }
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(node.name.replace(" ", "\n"), color = if (isUnlocked || isUnlockable) (if (isOpposing) Color.Gray.copy(alpha = 0.4f) else Color.White) else Color.Gray.copy(alpha = 0.5f), fontSize = 8.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, lineHeight = 9.sp)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(node.name.replace(" ", "\n"), color = if (isUnlocked || isUnlockable) (if (isOpposing) Color.Gray.copy(alpha = 0.4f) else Color.White) else Color.Gray.copy(alpha = 0.5f), fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, lineHeight = 10.sp)
         if (!isUnlocked) {
-            Spacer(modifier = Modifier.height(1.dp))
             val costLabel = if (storyStage < 3) "REP" else "LP"
             Text("${node.cost.toInt()} $costLabel", color = if (isOpposing) Color.Gray.copy(alpha = 0.4f) else if (canAfford) NeonGreen else ErrorRed.copy(alpha = 0.7f), fontSize = 8.sp)
         }
     }
 }
+
+// Utility extension for cleaner clickable implementation if needed
+fun Modifier.headerClickable(enabled: Boolean, onClick: () -> Unit): Modifier = this.clickable(enabled = enabled, onClick = onClick)
+

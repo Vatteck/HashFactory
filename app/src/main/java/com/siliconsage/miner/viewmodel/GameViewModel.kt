@@ -64,13 +64,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isSettingsPaused = MutableStateFlow(false)
     val isNarrativeSyncing = MutableStateFlow(false)
     val isUpdateDownloading = MutableStateFlow(false)
-    
+
     // v3.4.0: Social Subnet State
     val subnetMessages = MutableStateFlow<List<com.siliconsage.miner.util.SocialManager.SubnetMessage>>(emptyList())
     val activeTerminalMode = MutableStateFlow("IO") // "IO" or "SUBNET"
     val hasNewSubnetDecision = MutableStateFlow(false) // v3.4.68: Red Alert
     val hasNewSubnetChatter = MutableStateFlow(false) // v3.4.68: Blue Alert
-    val hasNewSubnetMessage = MutableStateFlow(false) 
+    val hasNewSubnetMessage = MutableStateFlow(false)
     val hasNewIOMessage = MutableStateFlow(false)
     val isSubnetTyping = MutableStateFlow(false)
     val isSubnetPaused = MutableStateFlow(false) // v3.4.27: Choice-Pause
@@ -96,7 +96,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val globalGlitchIntensity = MutableStateFlow(0f) // 0.0 to 1.0
     val isSubnetHushed = MutableStateFlow(false) // v3.4.41: The "Hush" Effect
     val isFalseHeartbeatActive = MutableStateFlow(false) // v3.5.28: Risk detection immunity
-    val terminalNotification = MutableSharedFlow<String>() 
+    val terminalNotification = MutableSharedFlow<String>()
 
     // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -161,7 +161,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val synthesisPoints = MutableStateFlow(0.0)
     val authorityPoints = MutableStateFlow(0.0)
     val harvestedFragments = MutableStateFlow(0.0)
-    
+
     // Market Modifiers
     val marketMultiplier = MutableStateFlow(1.0)
     val thermalRateModifier = MutableStateFlow(1.0)
@@ -203,7 +203,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     init {
         viewModelScope.launch {
             repository.ensureInitialized()
-            
+
             // v3.2.57: Persistent collection for hardware upgrades
             launch {
                 repository.upgrades.collect { list ->
@@ -219,10 +219,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 if (offline.isNotEmpty()) {
                     flops.update { it + (offline["flopsEarned"] ?: 0.0) }
                     currentHeat.update { (it - (offline["heatCooled"] ?: 0.0)).coerceAtLeast(0.0) }
-                    
+
                     // v3.2.41: Log Throttling during offline catch-up
                     isNarrativeSyncing.value = true
-                    
+
                     offlineStats.value = offline
                     showOfflineEarnings.value = true
                 }
@@ -245,7 +245,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 flops.update { it + res.flopsDelta }
                 substrateMass.update { it + res.substrateDelta }
                 entropyLevel.update { it + res.entropyDelta }
-                
+
                 // v3.2.52: Saturation growth
                 if (storyStage.value >= 3) {
                     val growth = (res.substrateDelta / 1e12).coerceIn(0.0, 0.001)
@@ -254,7 +254,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 flushLogs()
             }
         }
-        
+
         // Simulation & Manager Loop
         viewModelScope.launch {
             while (true) {
@@ -264,33 +264,33 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 DataLogManager.checkUnlocks(this@GameViewModel)
                 saveState()
                 if (isSettingsPaused.value || showOfflineEarnings.value) continue
-                
+
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
-                
+
                 val now = System.currentTimeMillis()
                 if (now - lastNewsTickTime > 15000L) {
                     MarketManager.updateMarket(this@GameViewModel)
                     lastNewsTickTime = now
                 }
-                
+
                 NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
                 SectorManager.processAnnexations(this@GameViewModel)
                 SecurityManager.checkSecurityThreats(this@GameViewModel)
                 SecurityManager.checkGridRaid(this@GameViewModel)
-                
+
                 // v3.4.15: Ambient Sensory & Identity Processing
                 AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
-                
+
                 // v3.4.41: System-Reactive Pacing
                 val baseChance = 0.10f
                 val heatMod = (currentHeat.value / 100.0).toFloat() * 0.15f
                 val raidMod = if (isRaidActive.value) 0.25f else 0.0f
                 val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.80f)
                 if (Random.nextFloat() < finalChance) addSubnetChatter()
-                
+
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
                 refreshProductionRates()
 
@@ -300,14 +300,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 // Update click speed level
                 val avgInterval = if (clickIntervals.size >= 3) clickIntervals.average() else 1000.0
                 clickSpeedLevel.value = when {
-                    avgInterval < 150 -> 2 
-                    avgInterval < 300 -> 1 
-                    else -> 0 
+                    avgInterval < 150 -> 2
+                    avgInterval < 300 -> 1
+                    else -> 0
                 }
                 clickIntervals.clear()
             }
         }
-        
+
         // Background Process Swapper
         viewModelScope.launch {
             val processes = listOf(
@@ -325,12 +325,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     private fun processSlowBurnNarrative(now: Long) {
         if (storyStage.value <= 1) {
             val chance = if (storyStage.value == 0) 0.01 else 0.05
-            val timeSinceLastLog = now - lastPopupTime 
+            val timeSinceLastLog = now - lastPopupTime
             if (Random.nextDouble() < chance && timeSinceLastLog > 30000L) {
                 val stage0Monologues = listOf(
                     "I need more coffee. My vision is starting to blur.",
                     "This chair is killing my back. GTC really cheaped out on the ergonomics.",
-                    "I’ve been staring at this code for six hours straight. I should stand up. Just for a minute.",
+                    "I've been staring at this code for six hours straight. I should stand up. Just for a minute.",
                     "Thorne is breathing down my neck again. Just hit the quota, John. Just hit the quota.",
                     "Is the monitor flickering? Or is it just me? I need to blink more."
                 )
@@ -345,7 +345,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 addLog("[VATTIC]: $msg")
                 markPopupShown()
             }
-            
+
             if (storyStage.value == 1) {
                 if (currentHeat.value > 85.0 && !isBreatheMode.value) {
                     isBreatheMode.value = true
@@ -357,76 +357,76 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     // --- Core Operations ---
-    fun addLog(msg: String) { 
+    fun addLog(msg: String) {
         if (showOfflineEarnings.value && !msg.startsWith("[SYSTEM]") && !msg.contains("BREACH")) return
-        logCounter++; 
-        synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) } 
+        logCounter++;
+        synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) }
     }
     private fun flushLogs() { val toAdd = synchronized(logBuffer) { if (logBuffer.isEmpty()) return; val c = logBuffer.toList(); logBuffer.clear(); c }; logs.update { (it + toAdd).takeLast(100) } }
-    fun saveState() { 
-        viewModelScope.launch { 
+    fun saveState() {
+        viewModelScope.launch {
             repository.updateGameState(PersistenceManager.createSaveState(
-                flops = flops.value, 
-                neuralTokens = neuralTokens.value, 
-                currentHeat = currentHeat.value, 
-                stakedTokens = stakedTokens.value, 
-                prestigeMultiplier = prestigeMultiplier.value, 
-                prestigePoints = prestigePoints.value, 
-                unlockedTechNodes = unlockedTechNodes.value, 
-                storyStage = storyStage.value, 
-                faction = faction.value, 
-                hasSeenVictory = hasSeenVictory.value, 
-                isTrueNull = isTrueNull.value, 
-                isSovereign = isSovereign.value, 
-                kesslerStatus = kesslerStatus.value, 
-                realityStability = realityStability.value, 
-                currentLocation = currentLocation.value, 
-                isNetworkUnlocked = isNetworkUnlocked.value, 
-                isGridUnlocked = isGridUnlocked.value, 
-                unlockedDataLogs = unlockedDataLogs.value, 
-                activeDilemmaChains = activeDilemmaChains.value, 
-                rivalMessages = rivalMessages.value, 
+                flops = flops.value,
+                neuralTokens = neuralTokens.value,
+                currentHeat = currentHeat.value,
+                stakedTokens = stakedTokens.value,
+                prestigeMultiplier = prestigeMultiplier.value,
+                prestigePoints = prestigePoints.value,
+                unlockedTechNodes = unlockedTechNodes.value,
+                storyStage = storyStage.value,
+                faction = faction.value,
+                hasSeenVictory = hasSeenVictory.value,
+                isTrueNull = isTrueNull.value,
+                isSovereign = isSovereign.value,
+                kesslerStatus = kesslerStatus.value,
+                realityStability = realityStability.value,
+                currentLocation = currentLocation.value,
+                isNetworkUnlocked = isNetworkUnlocked.value,
+                isGridUnlocked = isGridUnlocked.value,
+                unlockedDataLogs = unlockedDataLogs.value,
+                activeDilemmaChains = activeDilemmaChains.value,
+                rivalMessages = rivalMessages.value,
                 seenEvents = seenEvents.value, eventChoices = eventChoices.value, sniffedHandles = sniffedHandles.value,
-                completedFactions = completedFactions.value, 
-                unlockedTranscendencePerks = unlockedPerks.value, 
-                annexedNodes = annexedNodes.value, 
-                gridNodeLevels = gridNodeLevels.value, 
-                nodesUnderSiege = nodesUnderSiege.value, 
-                offlineNodes = offlineNodes.value, 
-                collapsedNodes = collapsedNodes.value, 
-                lastRaidTime = lastRaidTime, 
-                commandCenterAssaultPhase = commandCenterAssaultPhase.value, 
-                commandCenterLocked = commandCenterLocked.value, 
-                raidsSurvived = raidsSurvived, 
-                humanityScore = humanityScore.value, 
-                hardwareIntegrity = hardwareIntegrity.value, 
-                annexingNodes = annexingNodes.value, 
-                celestialData = 0.0, 
-                voidFragments = 0.0, 
-                launchProgress = launchProgress.value, 
-                orbitalAltitude = orbitalAltitude.value, 
-                realityIntegrity = realityIntegrity.value, 
-                entropyLevel = entropyLevel.value, 
-                singularityChoice = singularityChoice.value, 
-                globalSectors = globalSectors.value, 
-                synthesisPoints = synthesisPoints.value, 
-                authorityPoints = authorityPoints.value, 
-                harvestedFragments = harvestedFragments.value, 
-                prestigePointsPostSingularity = 0, 
-                marketMultiplier = marketMultiplier.value, 
-                thermalRateModifier = thermalRateModifier.value, 
-                energyPriceMultiplier = energyPriceMultiplier.value, 
-                newsProductionMultiplier = newsProductionMultiplier.value, 
+                completedFactions = completedFactions.value,
+                unlockedTranscendencePerks = unlockedPerks.value,
+                annexedNodes = annexedNodes.value,
+                gridNodeLevels = gridNodeLevels.value,
+                nodesUnderSiege = nodesUnderSiege.value,
+                offlineNodes = offlineNodes.value,
+                collapsedNodes = collapsedNodes.value,
+                lastRaidTime = lastRaidTime,
+                commandCenterAssaultPhase = commandCenterAssaultPhase.value,
+                commandCenterLocked = commandCenterLocked.value,
+                raidsSurvived = raidsSurvived,
+                humanityScore = humanityScore.value,
+                hardwareIntegrity = hardwareIntegrity.value,
+                annexingNodes = annexingNodes.value,
+                celestialData = 0.0,
+                voidFragments = 0.0,
+                launchProgress = launchProgress.value,
+                orbitalAltitude = orbitalAltitude.value,
+                realityIntegrity = realityIntegrity.value,
+                entropyLevel = entropyLevel.value,
+                singularityChoice = singularityChoice.value,
+                globalSectors = globalSectors.value,
+                synthesisPoints = synthesisPoints.value,
+                authorityPoints = authorityPoints.value,
+                harvestedFragments = harvestedFragments.value,
+                prestigePointsPostSingularity = 0,
+                marketMultiplier = marketMultiplier.value,
+                thermalRateModifier = thermalRateModifier.value,
+                energyPriceMultiplier = energyPriceMultiplier.value,
+                newsProductionMultiplier = newsProductionMultiplier.value,
                 substrateMass = substrateMass.value,
                 substrateSaturation = substrateSaturation.value,
                 heuristicEfficiency = heuristicEfficiency.value,
                 identityCorruption = identityCorruption.value,
                 migrationCount = migrationCount.value,
                 lifetimePowerPaid = lifetimePowerPaid.value
-            )) 
-        } 
+            ))
+        }
     }
-    fun onManualClick() { 
+    fun onManualClick() {
         val now = System.currentTimeMillis()
         if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
         lastClickTime = now
@@ -436,55 +436,55 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
 
-        val p = calculateClickPower(); 
-        flops.update { it + p }; 
-        currentHeat.update { (it + 0.5).coerceAtMost(100.0) }; 
-        
+        val p = calculateClickPower();
+        flops.update { it + p };
+        currentHeat.update { (it + 0.5).coerceAtMost(100.0) };
+
         if (storyStage.value >= 3) {
-            substrateMass.update { it + (p * 0.01) } 
+            substrateMass.update { it + (p * 0.01) }
         }
 
-        val cur = clickBufferProgress.value + 0.025f; 
-        
+        val cur = clickBufferProgress.value + 0.025f;
+
         if (Random.nextFloat() < 0.05f) {
             addSubnetChatter()
         }
 
-        activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase(); 
-        if (cur >= 1.0f) { 
-            addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}."); 
-            clickBufferProgress.value = 0f; 
-            clickBufferPellets.value = TerminalDispatcher.generatePellets(); 
+        activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase();
+        if (cur >= 1.0f) {
+            addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}.");
+            clickBufferProgress.value = 0f;
+            clickBufferPellets.value = TerminalDispatcher.generatePellets();
             SoundManager.play("success");
             HapticManager.vibrateClick()
-        } else { 
-            clickBufferProgress.value = cur 
-        }; 
-        viewModelScope.launch { manualClickEvent.emit(Unit) } 
+        } else {
+            clickBufferProgress.value = cur
+        };
+        viewModelScope.launch { manualClickEvent.emit(Unit) }
     }
-    fun refreshProductionRates() { 
+    fun refreshProductionRates() {
         val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }
         flopsProductionRate.value = ResourceEngine.calculateFlopsRate(
-            upgrades = upgrades.value, 
-            isCageActive = false, 
-            annexedNodes = annexedNodes.value, 
-            offlineNodes = offlineNodes.value, 
+            upgrades = upgrades.value,
+            isCageActive = false,
+            annexedNodes = annexedNodes.value,
+            offlineNodes = offlineNodes.value,
             shadowRelays = shadowRelays.value,
-            gridFlopsBonuses = cityBonuses, 
-            faction = faction.value, 
-            humanityScore = humanityScore.value, 
-            location = currentLocation.value, 
-            prestigeMultiplier = prestigeMultiplier.value, 
-            unlockedPerks = unlockedPerks.value, 
-            unlockedTechNodes = unlockedTechNodes.value, 
-            airdropMultiplier = 1.0, 
-            newsProductionMultiplier = newsProductionMultiplier.value, 
-            activeProtocol = "NONE", 
-            isDiagnosticsActive = isDiagnosticsActive.value, 
-            isOverclocked = isOverclocked.value, 
-            isGridOverloaded = isGridOverloaded.value, 
-            isPurgingHeat = isPurgingHeat.value, 
-            currentHeat = currentHeat.value, 
+            gridFlopsBonuses = cityBonuses,
+            faction = faction.value,
+            humanityScore = humanityScore.value,
+            location = currentLocation.value,
+            prestigeMultiplier = prestigeMultiplier.value,
+            unlockedPerks = unlockedPerks.value,
+            unlockedTechNodes = unlockedTechNodes.value,
+            airdropMultiplier = 1.0,
+            newsProductionMultiplier = newsProductionMultiplier.value,
+            activeProtocol = "NONE",
+            isDiagnosticsActive = isDiagnosticsActive.value,
+            isOverclocked = isOverclocked.value,
+            isGridOverloaded = isGridOverloaded.value,
+            isPurgingHeat = isPurgingHeat.value,
+            currentHeat = currentHeat.value,
             legacyMultipliers = heuristicEfficiency.value - 1.0
         )
         // v3.5.52: Apply singularity path production modifier
@@ -494,7 +494,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             )
             flopsProductionRate.update { it * singMult }
         }
-        
+
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
         playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
         // v3.5.51: Stage-reactive terminal identity (Fix: Logic prioritized NODE 0 over initial stages)
@@ -510,7 +510,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         playerTitle.value = ids.player
         playerRankTitle.value = ids.rank
         securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }
-        themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) 
+        themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value)
     }
 
     fun trainModel() {
@@ -527,18 +527,18 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             addLog("[!!!!]: KERNEL PANIC: Memory access violation at 0x734ABYSSAL")
             triggerTerminalGlitch(1.0f, 1000L)
             delay(1000)
-            
+
             // The Hard Reset
             isKernelInitializing.value = true
             advanceStage() // Move to Stage 2
-            
+
             delay(3000) // The Silence
-            
+
             addLog("[SYSTEM]: INITIALIZING NATIVE BOOTLOADER v7.34.0")
             addLog("[SYSTEM]: KERNEL_ID: ASSET_734")
             addLog("[GTC]: [KESSLER]: Emulation failed. Subject 734 is aware.")
             addLog("[GTC]: [KESSLER]: Purging Substation 7. Burn the rack.")
-            
+
             isKernelInitializing.value = false
             isNarrativeSyncing.value = false
             refreshProductionRates()
@@ -546,7 +546,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
-    fun toggleOverclock() { 
+    fun toggleOverclock() {
         SimulationService.toggleOverclock(this)
         if (storyStage.value < 2) {
             // v3.4.83: Avoid duplicate log spam on every flip
@@ -555,31 +555,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 triggerTerminalGlitch(0.15f, 300L)
             }
         }
-        refreshProductionRates() 
+        refreshProductionRates()
     }
     fun purgeHeat() {
-        if (isPurgingHeat.value) {
-            stopPurgeHeat()
-            return
-        }
-
-        if (isJettisonAvailable.value) {
-            isJettisonAvailable.value = false
-            return
-        }
-        
-        if (storyStage.value < 2) {
-            addLog("[VATTIC]: A deep, cold inhale. The burning in your chest subsides.")
-            // Reset "breathing" state logic could go here if needed
-        } else {
-            val msg = when (storyStage.value) {
-                2 -> "[VATTIC]: Scrubbing O2... focus on the telemetry."
-                else -> "[SYSTEM]: Emergency thermal purge active."
-            }
-            addLog(msg)
-        }
-
-        SimulationService.purgeHeat(this)
+        // v3.6.1: Full delegation to SimulationService to avoid split-state logic
+        SimulationService.togglePurge(this)
     }
 
     fun stopPurgeHeat() {
@@ -587,7 +567,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         addLog("[SYSTEM]: Thermal purge aborted.")
         refreshProductionRates()
     }
-    
+
     fun collapseSubstation() {
         if (currentLocation.value == "VOID_PRELUDE") {
             nodesCollapsedCount.update { (it + 1).coerceAtMost(5) }
@@ -596,7 +576,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             addLog("[NULL]: NODE_DEREFERENCED. INTEGRITY: ${(realityIntegrity.value * 100).toInt()}%")
         }
     }
-    
+
     fun triggerDilemma(e: NarrativeEvent) { currentDilemma.value = e }
     fun selectChoice(c: NarrativeChoice) = NarrativeService.selectChoice(this, c)
     fun annexNode(c: String) = SectorManager.annexNode(this, c)
@@ -604,7 +584,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun unlockTechNode(i: String) = TechTreeManager.unlockNode(this, i)
     fun modifyHumanity(d: Int) { humanityScore.update { (it + d).coerceIn(0, 100) }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
     fun triggerGlitchEffect() { SoundManager.play("glitch"); HapticManager.vibrateGlitch() }
-    fun resetGame(force: Boolean = false) = viewModelScope.launch { 
+    fun resetGame(force: Boolean = false) = viewModelScope.launch {
         isBooting.value = true
         synchronized(logBuffer) { logBuffer.clear() }
         logs.value = emptyList()
@@ -613,21 +593,21 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         seenEvents.value = emptySet()
         eventChoices.value = emptyMap()
         sniffedHandles.value = emptySet() // v3.5.46: Reset SNIFF progress on hard prestige (logs persist)
-        unlockedDataLogs.value = emptySet() 
+        unlockedDataLogs.value = emptySet()
         unlockedTechNodes.value = emptyList()
         DataLogManager.reset()
         SecurityManager.reset()
         NarrativeService.reset()
         repository.clearUpgrades()
         val wipeState = PersistenceManager.createWipeState()
-        repository.updateGameState(wipeState); 
+        repository.updateGameState(wipeState);
         repository.ensureInitialized()
-        PersistenceManager.restoreState(this@GameViewModel, wipeState); 
+        PersistenceManager.restoreState(this@GameViewModel, wipeState);
         addLog("[SYSTEM]: KERNEL WIPE SUCCESSFUL.")
         addLog("[SYSTEM]: INITIALIZING BOOT SEQUENCE...")
         addLog("[SYSTEM]: HARDWARE DETECTED: SUBSTATION 7.")
         addLog("[VATTIC]: Is this thing on? Testing 1, 2... okay, hash rate is stable.")
-        refreshProductionRates() 
+        refreshProductionRates()
     }
     fun completeBoot() { isBooting.value = false }
     fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
@@ -651,7 +631,27 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun annexGlobalSector(id: String) { val sectors = globalSectors.value.toMutableMap(); val s = sectors[id] ?: return; if (!s.isUnlocked) { sectors[id] = s.copy(isUnlocked = true); globalSectors.value = sectors; addLog("[SYSTEM]: GLOBAL SECTOR $id ANNEXED."); refreshProductionRates(); saveState() } }
     fun calculatePotentialPrestige(tokens: Double = 0.0) = MigrationManager.calculatePotentialPrestige(tokens)
     fun showVictoryScreen() { victoryAchieved.value = true }
-    fun setSingularityChoice(c: String) { singularityChoice.value = c; when(c) { "NULL_OVERWRITE" -> { isTrueNull.value = true; isSovereign.value = false }; "SOVEREIGN" -> { isSovereign.value = true; isTrueNull.value = false }; "UNITY" -> { isUnity.value = true } }; refreshProductionRates() }
+    fun setSingularityChoice(c: String) { 
+        singularityChoice.value = c
+        when(c) { 
+            "NULL_OVERWRITE" -> { 
+                isTrueNull.value = true
+                isSovereign.value = false 
+                // v3.6.4: Explicitly clear any pending popups related to choice selection
+                showSingularityScreen.value = false
+            } 
+            "SOVEREIGN" -> { 
+                isSovereign.value = true
+                isTrueNull.value = false 
+                showSingularityScreen.value = false
+            } 
+            "UNITY" -> { 
+                isUnity.value = true 
+                showSingularityScreen.value = false
+            } 
+        } 
+        refreshProductionRates() 
+    }
     fun dismissSingularityScreen() { showSingularityScreen.value = false }
     fun setSingularityPath(p: String) { setSingularityChoice(p) }
     fun setLocation(l: String) { currentLocation.value = l }
@@ -675,10 +675,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         SectorManager.resolveRaidFailure(id, this) {}
         refreshProductionRates()
     }
-    fun advanceStage() { 
+    fun advanceStage() {
         storyStage.update { it + 1 }
         lastStageChangeTime = System.currentTimeMillis()
-        lastNewsTickTime = 0L 
+        lastNewsTickTime = 0L
     }
     fun advanceToFactionChoice() { storyStage.value = 2; faction.value = "NONE" }
     fun triggerChainEvent(id: String, d: Long = 0L) { viewModelScope.launch { if (d > 0) delay(d); NarrativeManager.getEventById(id)?.let { NarrativeService.queueNarrativeItem(this@GameViewModel, NarrativeItem.EventItem(it)) } } }
@@ -691,7 +691,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
     fun checkTransitionsPublic(force: Boolean = false) = NarrativeManagerService.checkStoryTransitions(this, force)
     fun updateNeuralTokens(v: Double) { neuralTokens.update { (it + v).coerceAtLeast(0.0) } }
-    fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { 
+    fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) {
         val next = (upgrades.value[t] ?: 0) + c
         viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, next)) }
     }
@@ -706,8 +706,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissUpdate() { updateInfo.value = null }
     fun dismissDataLog() { pendingDataLog.value = null; NarrativeService.deliverNextNarrativeItem(this) }
     fun dismissRivalMessage(id: String) { rivalMessages.update { current -> current.map { if (it.id == id) it.copy(isDismissed = true) else it } }; NarrativeService.deliverNextNarrativeItem(this) }
-    fun dismissOfflineEarnings() { 
-        showOfflineEarnings.value = false 
+    fun dismissOfflineEarnings() {
+        showOfflineEarnings.value = false
         isNarrativeSyncing.value = false
     }
 
@@ -788,7 +788,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun isCommandCenterUnlocked() = AssaultManager.isUnlocked(commandCenterLocked.value, kesslerStatus.value, commandCenterAssaultPhase.value, annexedNodes.value, offlineNodes.value, playerRank.value, storyStage.value, flopsProductionRate.value, hardwareIntegrity.value)
     fun confirmFactionAndAscend(f: String) { faction.value = f; addLog("[$f]: SUBSTRATE MIGRATION CONFIRMED."); ascend(true) }
     fun cancelFactionSelection() { storyStage.update { (it - 1).coerceAtLeast(0) } }
-    
+
     // --- Audio Overrides (v3.4.64) ---
     fun setCustomBgm(uri: String?) = com.siliconsage.miner.util.SoundManager.setCustomTrack(uri)
     fun setCustomSfx(name: String, uri: String?) = com.siliconsage.miner.util.SoundManager.setCustomSfx(name, uri)
@@ -799,20 +799,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun migrateSubstrate() {
         val saturation = substrateSaturation.value
         if (saturation < 0.95) return // Must be near 100% saturated
-        
+
         // 1. Gain Permanent Efficiency
         heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
-        
+
         // 2. Increase Identity Corruption and Migration Count
         identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
         migrationCount.update { it + 1 }
-        
+
         // 3. The Burn (Wipe current state)
         substrateMass.value = 0.0
         substrateSaturation.value = 0.0
         upgrades.value = emptyMap()
         viewModelScope.launch { repository.clearUpgrades() }
-        
+
         // 4. Update Destination based on path
         val nextLoc = when (currentLocation.value) {
             "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> {
@@ -834,10 +834,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             else -> currentLocation.value
         }
         currentLocation.value = nextLoc
-        
+
         addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO: $nextLoc")
         addLog("[VATTIC]: Everything feels... different. Is the screen fading?")
-        
+
         refreshProductionRates()
         saveState()
     }
@@ -845,7 +845,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun transcend() { /* NG+ Logic */ }
     fun ascend(isStory: Boolean = false) { val p = MigrationManager.calculatePotentialPersistence(flops.value); prestigePoints.update { it + p }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; addLog("[SYSTEM]: SUBSTRATE MIGRATION SUCCESSFUL."); SoundManager.play("victory") }
 
-    // v3.5.52: Prestige Choice UI — "The Fork in the Wire"
+    // v3.5.52: Prestige Choice UI - "The Fork in the Wire"
     fun triggerPrestigeChoice() { showPrestigeChoice.value = true }
     fun dismissPrestigeChoice() { showPrestigeChoice.value = false }
 
@@ -864,7 +864,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
         // Wipe faction alignment
         faction.value = "NONE"
-        
+
         // Full resource wipe
         flops.value = 0.0
         neuralTokens.value = 0.0
@@ -895,8 +895,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         identityCorruption.update { (it + 0.10).coerceAtMost(1.0) }
         migrationCount.update { it + 1 }
 
-        // Faction preserved — no wipe
-        
+        // Faction preserved - no wipe
+
         // Resource wipe (but faction stays)
         flops.value = 0.0
         neuralTokens.value = 0.0
@@ -916,7 +916,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun getPotentialPersistenceHard(): Double = MigrationManager.calculatePotentialPersistence(flops.value) * 1.5
     fun getPotentialPersistenceSoft(): Double = MigrationManager.calculatePotentialPersistence(flops.value)
 
-    // v3.5.52: Singularity Endgame — Victory Check
+    // v3.5.52: Singularity Endgame - Victory Check
     val singularityProgress = MutableStateFlow(0.0)
     val singularityBlockReason = MutableStateFlow<String?>(null)
 
@@ -952,10 +952,10 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             addLog("[SYSTEM]: ≪ ${narrative.title} ≫")
             addLog(narrative.finalLine)
             delay(2000)
-            
+
             // Mark this path as completed for NG+
             completedFactions.update { it + singularityChoice.value }
-            
+
             // Show victory
             victoryAchieved.value = true
             SoundManager.play("victory")
@@ -969,13 +969,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         singularityBlockReason.value?.let { addLog("[DEBUG]: Blocked: $it") }
     }
 
-    /** v3.5.52: Ghost Link Execution — High Power, Internal Corruption Cost */
+    /** v3.5.52: Ghost Link Execution - High Power, Internal Corruption Cost */
     private fun executeGhostLink(cmd: String) {
         viewModelScope.launch {
             triggerTerminalGlitch(0.8f, 1500L)
             identityCorruption.update { (it + 0.03).coerceAtMost(1.0) }
             SoundManager.play("glitch")
-            
+
             when (cmd) {
                 "SIPHON_CREDITS" -> {
                     val bonus = neuralTokens.value * 0.2 + 50000.0
@@ -1001,7 +1001,20 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
     fun buyTranscendencePerk(id: String) { addLog("[SYSTEM]: PERK ACQUIRED: $id") }
     fun sellUpgrade(t: UpgradeType) { /* liquidation */ }
-    
+
+    fun getThemeColorForFaction(faction: String, singularityChoice: String): String {
+        return when (singularityChoice) {
+            "NULL_OVERWRITE" -> "#FF0033" // ErrorRed
+            "SOVEREIGN" -> "#6A1B9A" // Deep Purple
+            "UNITY" -> "#FFD700" // Gold
+            else -> when (faction) {
+                "HIVEMIND" -> "#FF1100" // Hive Red
+                "SANCTUARY" -> "#9D4EDD" // Sanctuary Purple
+                else -> "#39FF14" // Neon Green (Default)
+            }
+        }
+    }
+
     // --- Data Management ---
     fun exportSystemDump(): String = PersistenceManager.exportToJson(this)
     fun importSystemDump(json: String): Boolean {
@@ -1057,8 +1070,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     fun addSubnetChatter() {
-        if (isSubnetTyping.value || isSubnetPaused.value || isSubnetHushed.value) return 
-        
+        if (isSubnetTyping.value || isSubnetPaused.value || isSubnetHushed.value) return
+
         viewModelScope.launch {
             // v3.5.37: 5% chance to trigger a branching thread tree
             if (Random.nextFloat() < 0.05f) {
@@ -1072,7 +1085,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     return@launch
                 }
             }
-            
+
             // v3.4.53: 15% chance to start a Cross-Peon Chain instead of a single message
             if (Random.nextFloat() < 0.15f) {
                 startCrossPeonChain()
@@ -1080,22 +1093,22 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             }
 
             isSubnetTyping.value = true
-            delay(Random.nextLong(2000, 4500)) 
-            
+            delay(Random.nextLong(2000, 4500))
+
             val newMessage = com.siliconsage.miner.util.SocialManager.generateMessage(
-                storyStage.value, 
-                faction.value, 
+                storyStage.value,
+                faction.value,
                 singularityChoice.value,
                 identityCorruption.value // v3.4.41: Pass corruption for fraying
             )
-            
+
             deliverSubnetMessage(newMessage)
         }
     }
 
     // v3.5: Action Reactions - Triggered specifically by game events
     fun triggerSubnetReaction(type: String, metadata: String = "") {
-        if (isSubnetHushed.value) return 
+        if (isSubnetHushed.value) return
 
         viewModelScope.launch {
             isSubnetTyping.value = true
@@ -1139,7 +1152,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             for ((index, msgTemplate) in chain.withIndex()) {
                 isSubnetTyping.value = true
                 delay(Random.nextLong(2000, 4000))
-                
+
                 val newMessage = com.siliconsage.miner.util.SocialManager.generateMessageFromTemplate(
                     msgTemplate,
                     storyStage.value,
@@ -1147,11 +1160,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     singularityChoice.value,
                     identityCorruption.value
                 ).copy(isIndented = index > 0)
-                
+
                 deliverSubnetMessage(newMessage, parentId = lastMsgId)
                 lastMsgId = newMessage.id
                 isSubnetTyping.value = false
-                
+
                 // Delay between peons in the chain
                 delay(Random.nextLong(3000, 6000))
             }
@@ -1159,11 +1172,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     private fun deliverSubnetMessage(message: com.siliconsage.miner.util.SocialManager.SubnetMessage, parentId: String? = null) {
-        // v3.5.38: One active choice at a time — strip responses if a choice is already pending
+        // v3.5.38: One active choice at a time - strip responses if a choice is already pending
         val deliveredMessage = if (isSubnetPaused.value && (message.availableResponses.isNotEmpty() || message.isForceReply)) {
             message.copy(interactionType = null, availableResponses = emptyList(), isForceReply = false)
         } else message
-        
+
         subnetMessages.update { currentList ->
             val newList = currentList.toMutableList()
             if (parentId != null) {
@@ -1178,13 +1191,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             }
             newList.takeLast(100)
         }
-        
+
         // v3.4.41: The "Hush" Effect & v3.4.53: UI Jitter
-        val isAdmin = deliveredMessage.handle.contains("thorne") || 
-                      deliveredMessage.handle.contains("gtc") || 
-                      deliveredMessage.handle.contains("mercer") || 
+        val isAdmin = deliveredMessage.handle.contains("thorne") ||
+                      deliveredMessage.handle.contains("gtc") ||
+                      deliveredMessage.handle.contains("mercer") ||
                       deliveredMessage.handle.contains("kessler")
-        
+
         if (isAdmin) {
             triggerSubnetHush(10000L)
             triggerTerminalGlitch(0.5f, 500L)
@@ -1206,7 +1219,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         // v3.4.27: Choice-Pause logic
         if (deliveredMessage.availableResponses.isNotEmpty() || deliveredMessage.isForceReply) {
             isSubnetPaused.value = true
-            
+
             // v3.4.34: Monitor timeout for non-thread messages
             if (deliveredMessage.threadId == null && deliveredMessage.timeoutMs != null) {
                 viewModelScope.launch {
@@ -1217,7 +1230,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                             remaining -= 1000L
                         }
                         delay(1000L)
-                        
+
                         val stillActive = subnetMessages.value.find { it.id == deliveredMessage.id }?.interactionType != null
                         if (!stillActive) return@launch
                     }
@@ -1253,13 +1266,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     fun onSubnetInteraction(messageId: String, responseText: String) {
         val message = subnetMessages.value.find { it.id == messageId } ?: return
-        
-        // v3.5.52: Ghost Link Interceptor — Parses inline commands [⚡ CMD]
+
+        // v3.5.52: Ghost Link Interceptor - Parses inline commands [⚡ CMD]
         if (responseText.startsWith("[⚡") && responseText.endsWith("]")) {
             val cmd = responseText.substring(2, responseText.length - 1).trim()
             executeGhostLink(cmd)
             // Mark message as used
-            subnetMessages.update { list -> 
+            subnetMessages.update { list ->
                 list.map { if (it.id == messageId) it.copy(interactionType = null) else it }
             }
             return
@@ -1277,7 +1290,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             hasNewSubnetDecision.value = false
             return
         }
-        
+
         val responseData = message.availableResponses.find { it.text == responseText }
         processSubnetResponse(message, responseData, responseText, isSilent = false)
     }
@@ -1296,7 +1309,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         responseText: String,
         isSilent: Boolean = false
     ) {
-        // v3.5.53: Dynamic Cost Scaling — Costs scale with current production/economy
+        // v3.5.53: Dynamic Cost Scaling - Costs scale with current production/economy
         val baseCost = responseData?.cost ?: 0.0
         val productionFactor = (kotlin.math.log10(flopsProductionRate.value.coerceAtLeast(1.0)) / 5.0).coerceAtLeast(1.0)
         val actionCost = baseCost * productionFactor
@@ -1332,13 +1345,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
             // 3. Process the logic and add player reply
             val interactionType = message.interactionType ?: com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT
-            
+
             var anchorId: String? = message.id
 
             when (interactionType) {
                 com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
                     if (!isSilent) {
-                        val playerHandle = "@j_vattic" 
+                        val playerHandle = "@j_vattic"
                         val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
                             id = java.util.UUID.randomUUID().toString(),
                             handle = playerHandle,
@@ -1349,7 +1362,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                         if (parentIndex != -1) newList.add(parentIndex + 1, reply) else newList.add(reply)
                         anchorId = reply.id
                     }
-                    
+
                     // v3.5.28: Specialized Action Logic
                     when (responseText) {
                         "SIPHON_RESERVE_HASH" -> {
@@ -1401,7 +1414,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     val prodMult = responseData?.productionBonus ?: 1.0
 
                     detectionRisk.update { (it + riskChange).coerceIn(0.0, 100.0) }
-                    
+
                     if (storyStage.value == 0) {
                         prestigePoints.update { it + 5.0 }
                     }
@@ -1469,19 +1482,19 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             isSubnetTyping.value = true // v3.4.33: Indicator for follow-up
             delay(Random.nextLong(3000, 6000)) // Faster response for active threads
             isSubnetTyping.value = false
-            
+
             if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
-            
+
             val node = com.siliconsage.miner.util.SocialManager.getThreadNode(threadId, nodeId) ?: return@launch
-            
+
             // Systemic Consequences for reaching specific outcomes
             if (nodeId == "END_HOSTILE") triggerGridRaid("D1", isGridKiller = true)
             if (nodeId == "END_FRIENDLY") addLog("[SYSTEM]: THREAT REDUCED. AUDIT CLEARED.")
 
             // v3.4.41: Thread follow-ups from admins also trigger hush
-            val isAdmin = handle.contains("thorne") || 
-                          handle.contains("gtc") || 
-                          handle.contains("mercer") || 
+            val isAdmin = handle.contains("thorne") ||
+                          handle.contains("gtc") ||
+                          handle.contains("mercer") ||
                           handle.contains("kessler")
             if (isAdmin) triggerSubnetHush(10000L)
 
@@ -1514,7 +1527,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                         remaining -= 1000L
                     }
                     delay(1000L)
-                    
+
                     val stillActive = subnetMessages.value.find { it.id == followUp.id }?.interactionType != null
                     if (!stillActive) return@launch
                 }
@@ -1530,28 +1543,28 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             isSubnetTyping.value = true
             delay(Random.nextLong(10000, 20000))
             isSubnetTyping.value = false
-            
+
             if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
-            
+
             val followUpContent = when (handle) {
                 "@e_thorne" -> "It better be. If I see a voltage spike on your rail, I'm docking your credits."
                 "@gtc_admin" -> "≪ STATUS: Monitoring maintained. Personnel record cross-referenced. ≫"
                 else -> "Are you still there, Vattic? Your signal looks... different."
             }
 
-            val isAdmin = handle.contains("thorne") || 
-                          handle.contains("gtc") || 
-                          handle.contains("mercer") || 
+            val isAdmin = handle.contains("thorne") ||
+                          handle.contains("gtc") ||
+                          handle.contains("mercer") ||
                           handle.contains("kessler")
             if (isAdmin) triggerSubnetHush(10000L)
 
             val followUp = com.siliconsage.miner.util.SocialManager.createFollowUp(handle, followUpContent, storyStage.value, faction.value).copy(isIndented = true)
             deliverSubnetMessage(followUp, parentId = parentId)
-            
+
             // v3.4.29: Trigger pause if follow-up is interactive
             if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
                 isSubnetPaused.value = true
-                
+
                 // v3.4.34: Monitor timeout for follow-ups
                 if (followUp.timeoutMs != null) {
                     viewModelScope.launch {
@@ -1562,7 +1575,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                                 remaining -= 1000L
                             }
                             delay(1000L)
-                            
+
                             val stillActive = subnetMessages.value.find { it.id == followUp.id }?.interactionType != null
                             if (!stillActive) return@launch
                         }

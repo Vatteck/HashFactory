@@ -80,8 +80,11 @@ object ThermalEngine {
             if (isVoid) {
                 // Void Venting: Heat is gone, but it becomes Entropy
                 netChangeUnits -= (totalThermalBuffer * 0.15)
+            } else if (location == "ORBITAL_SATELLITE") {
+                // Orbital Purge: Gas/coolant ejection
+                netChangeUnits -= (totalThermalBuffer * 0.10)
             } else {
-                // Standard Purge
+                // Standard/Terrestrial Purge (Fans high/Air intake)
                 netChangeUnits -= (totalThermalBuffer * 0.05)
             }
         }

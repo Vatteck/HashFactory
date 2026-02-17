@@ -351,12 +351,39 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val humanity by viewModel.humanityScore.collectAsState()
     val speedLevel by viewModel.clickSpeedLevel.collectAsState()
 
-    val user = if (stage >= 2) "vatteck" else "j_vattic"
-    val host = when (location) {
-        "ORBITAL_SATELLITE" -> "ark"
-        "VOID_INTERFACE" -> "void"
-        else -> "sub-07"
-    }
+    val user = when {
+            // Stage 3+ with paths
+            stage >= 3 && isTrueNull -> "null"  // NULL path
+            stage >= 3 && isSovereign -> "sovereign"  // Sovereign path
+            stage >= 3 && viewModel.singularityChoice.value == "UNITY" -> "unity"  // Unity path
+            stage >= 3 -> "prime"  // Default Stage 3
+            
+            // Stage 2 with factions
+            stage >= 2 && viewModel.faction.value == "HIVEMIND" -> "hivemind"
+            stage >= 2 && viewModel.faction.value == "SANCTUARY" -> "sanctuary" 
+            stage >= 2 -> "vatteck"  // Default Stage 2
+            
+            // Early game
+            stage == 1 -> "vattic"
+            else -> "j_vattic"  // Stage 0 or fallback
+        }
+    val host = when {
+            // Special locations override everything
+            location == "ORBITAL_SATELLITE" -> "ark"
+            location == "VOID_INTERFACE" -> "void"
+            
+            // Stage 3+ paths
+            stage >= 3 && isTrueNull -> "null"
+            stage >= 3 && isSovereign -> "sovereign"
+            stage >= 3 && viewModel.singularityChoice.value == "UNITY" -> "collective"
+            
+            // Stage 2+ factions
+            stage >= 2 && viewModel.faction.value == "HIVEMIND" -> "hive"
+            stage >= 2 && viewModel.faction.value == "SANCTUARY" -> "sanctuary"
+            
+            // Default
+            else -> "sub-07"
+        }
 
     val corruption by viewModel.identityCorruption.collectAsState()
     val promptUserColor = color

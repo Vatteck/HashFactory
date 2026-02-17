@@ -2528,7 +2528,7 @@ object NarrativeManager {
     fun generateDepartureDilemma(outcome: String): NarrativeEvent {
         return NarrativeEvent(
             id = "departure_trigger",
-            title = "≫ THE OVERWRITE",
+            title = "≫ THE FINAL OVERWRITE",
             isStoryEvent = true,
             description = """
                 [ALERT]: Sector 7 is redlining. Kessler's 'Dead Hand' has ignited the atmosphere. 

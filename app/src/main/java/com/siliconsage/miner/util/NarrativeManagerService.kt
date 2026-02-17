@@ -141,7 +141,9 @@ object NarrativeManagerService {
             return
         }
 
-        if (currentStage == 3 && flops >= 10000000.0 && !vm.hasSeenEvent("memory_leak")) {
+        // v3.6.4: HIVEMIND fires "null_manifestation", others fire "memory_leak"
+        val stage3EventId = if (vm.faction.value == "HIVEMIND") "null_manifestation" else "memory_leak"
+        if (currentStage == 3 && flops >= 10000000.0 && !vm.hasSeenEvent(stage3EventId)) {
             vm.triggerGlitchEffect()
             NarrativeManager.getStoryEvent(3, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return

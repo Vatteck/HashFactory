@@ -22,39 +22,73 @@ object SimulationService {
         SoundManager.play("steam")
     }
 
-    fun purgeHeat(vm: GameViewModel) {
-        if (vm.isPurgingHeat.value) {
+    fun togglePurge(vm: GameViewModel) {
+        val currentIsPurging = vm.isPurgingHeat.value
+        
+        // 1. If already purging, just stop and return.
+        if (currentIsPurging) {
             vm.isPurgingHeat.value = false
             vm.addLog("[SYSTEM]: Thermal purge aborted.")
             vm.refreshProductionRates()
             return
         }
-        
-        val currentFlops = vm.flops.value
+
+        // 2. Logic for starting a purge
+        if (vm.isJettisonAvailable.value) {
+            vm.isJettisonAvailable.value = false
+            vm.addLog("[SYSTEM]: HEAT JETTISONED.")
+            return
+        }
+
+        // Narrative feedback
+        if (vm.storyStage.value < 2) {
+            vm.addLog("[VATTIC]: A deep, cold inhale. The burning in your chest subsides.")
+        } else {
+            val msg = when (vm.storyStage.value) {
+                2 -> "[VATTIC]: Scrubbing O2... focus on the telemetry."
+                else -> "[SYSTEM]: Emergency thermal purge active."
+            }
+            vm.addLog(msg)
+        }
+
+        // Validation check for non-breath mode
         val isBreathe = vm.isBreatheMode.value
-        
-        if (currentFlops <= 0.0 && !isBreathe) {
+        val currentFlops = vm.flops.value
+        if (!isBreathe && currentFlops <= 0.0) {
             vm.addLogPublic("[SYSTEM]: PURGE FAILED: ZERO HASH BUFFER DETECTED.")
             SoundManager.play("error")
             return
         }
 
         // v3.2.28: Dynamic Scaling Purge (No minimum floor)
-        // Formula: log10(flops + 1) normalized against 1e15 (Quadrillion) for max 95% reduction
-        val reduction = if (isBreathe) 15.0 // Flat breath boost
-                        else (kotlin.math.log10(currentFlops + 1.0) / 15.0 * 95.0).coerceIn(1.0, 95.0)
+        val reduction = if (isBreathe) {
+            15.0 // Flat breath boost
+        } else {
+            (kotlin.math.log10(currentFlops + 1.0) / 15.0 * 95.0).coerceIn(1.0, 95.0)
+        }
         
         vm.currentHeat.update { (it - reduction).coerceAtLeast(0.0) }
-        if (!isBreathe) vm.flops.value = 0.0 // NUCLEAR WIPE (Only if not breathing)
         
-        val logMsg = if (isBreathe) "[SYSTEM]: OXYGEN SCRUBBERS ACTIVE. HEAT -${String.format("%.1f", reduction)}%."
-                     else "[SYSTEM]: EMERGENCY PURGE: SACRIFICED ${vm.formatLargeNumber(currentFlops)} HASH. HEAT -${String.format("%.1f", reduction)}%."
+        if (!isBreathe) {
+            vm.flops.value = 0.0 // NUCLEAR WIPE (Only if not breathing)
+        }
+        
+        val logMsg = if (isBreathe) {
+            "[SYSTEM]: OXYGEN SCRUBBERS ACTIVE. HEAT -${String.format("%.1f", reduction)}%."
+        } else {
+            "[SYSTEM]: EMERGENCY PURGE: SACRIFICED ${vm.formatLargeNumber(currentFlops)} HASH. HEAT -${String.format("%.1f", reduction)}%."
+        }
         
         vm.addLogPublic(logMsg)
         
         vm.isPurgingHeat.value = true
         SoundManager.play("alarm")
         vm.refreshProductionRates()
+    }
+
+    fun purgeHeat(vm: GameViewModel) {
+        // Deprecated: redirected to togglePurge for consistency
+        togglePurge(vm)
     }
 
     fun accumulatePower(vm: GameViewModel) {
@@ -99,7 +133,16 @@ object SimulationService {
                 thermalRateModifier = vm.thermalRateModifier.value
             )
             results = heatResults
-            val nextHeat = (currentHeat + heatResults.percentChange).coerceIn(0.0, 100.0)
+            
+            // v3.6.2: Sustained cooling while purge is active (active fighting against generation)
+            var activeChange = heatResults.percentChange
+            if (vm.isPurgingHeat.value) {
+                activeChange -= 0.5
+                // v3.6.3: Ensure purge actually reduces heat if generation is too high
+                if (activeChange > -0.1) activeChange = -0.1 
+            }
+            
+            val nextHeat = (currentHeat + activeChange).coerceIn(0.0, 100.0)
             
             // v3.2.6: Auto-dismiss purge when cool
             if (vm.isPurgingHeat.value && nextHeat <= 0.0) {
@@ -150,16 +193,22 @@ object SimulationService {
             vm.hardwareIntegrity.update { currentIntegrity ->
                 val newIntegrity = (currentIntegrity - totalDecay).coerceAtLeast(0.0)
                 if (newIntegrity <= 0.0) {
-                     // Trigger failure in a separate launch to avoid blocking the update
-                     vm.viewModelScope.launch {
-                         if (vm.upgrades.value[UpgradeType.DEAD_HAND_PROTOCOL]?.let { it > 0 } == true) {
-                            vm.triggerClimaxTransition("BAD"); vm.updateKesslerStatus("DESTRUCTION"); vm.commandCenterLocked.value = true; vm.markEventChoice("cc_confrontation", "ending_bad"); vm.saveState()
-                         } else if (vm.currentLocation.value == "ORBITAL_SATELLITE") {
-                            vm.substrateMass.update { it * 0.9 }; vm.hardwareIntegrity.value = 50.0
-                         } else if (vm.commandCenterAssaultPhase.value == "CAGE") {
+                    vm.viewModelScope.launch {
+                        if (vm.upgrades.value[UpgradeType.DEAD_HAND_PROTOCOL]?.let { it > 0 } == true) {
+                            vm.triggerClimaxTransition("BAD")
+                            vm.updateKesslerStatus("DESTRUCTION")
+                            vm.commandCenterLocked.value = true
+                            vm.markEventChoice("cc_confrontation", "ending_bad")
+                            vm.saveState()
+                        } else if (vm.currentLocation.value == "ORBITAL_SATELLITE") {
+                            vm.substrateMass.update { it * 0.9 }
+                            vm.hardwareIntegrity.value = 50.0
+                        } else if (vm.commandCenterAssaultPhase.value == "CAGE") {
                             vm.failAssault("CORE INTEGRITY ZERO.", 0L)
-                         } else { vm.handleSystemFailure() }
-                     }
+                        } else {
+                            vm.handleSystemFailure()
+                        }
+                    }
                 }
                 newIntegrity
             }

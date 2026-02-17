@@ -267,7 +267,7 @@ fun HeaderSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTECK // THREAT: ABYSSAL" else "${playerTitle} // ${playerRank}".uppercase(), 
+                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // THREAT: ABYSSAL" else "${playerTitle} // ${playerRank}".uppercase(), 
                         color = Color.White.copy(alpha = 0.5f * droopAlpha), 
                         fontSize = 8.sp, 
                         fontWeight = FontWeight.Bold, 
@@ -304,22 +304,62 @@ fun HeaderSection(
                                 )
                                 // v3.5.53: Corruption-reactive identity (Implicit tracking)
                                 // REMOVED: Too cluttered. Shifting to systemTitle glitch logic instead.
-                                if (storyStage >= 0 && risk > 0) {
-                                    Text(
-                                        text = "RISK: ${risk.toInt()}%",
-                                        color = if (risk > 80) ErrorRed else color.copy(alpha = 0.4f),
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = FontFamily.Monospace,
-                                        textAlign = TextAlign.End,
-                                        lineHeight = 7.sp
-                                    )
-                                }
+                                                // v3.6.4: Risk display — always visible Stage 2+, color-graduated, pulses at 80%+
+                                    if (storyStage >= 2) {
+                                        val riskColor = when {
+                                            risk >= 90.0 -> ErrorRed
+                                            risk >= 75.0 -> Color(0xFFFF6600)
+                                            risk >= 50.0 -> Color(0xFFFFAA00)
+                                            risk >= 25.0 -> Color(0xFFCCCC00)
+                                            else -> color.copy(alpha = 0.5f)
+                                        }
+                                        val riskPulseAlpha by infiniteTransition.animateFloat(
+                                            initialValue = 0.5f, targetValue = 1.0f,
+                                            animationSpec = infiniteRepeatable(tween(if (risk >= 90.0) 250 else 600), RepeatMode.Reverse),
+                                            label = "riskPulse"
+                                        )
+                                        val riskAlpha = if (risk >= 80.0) riskPulseAlpha else 1.0f
+                                        Column(horizontalAlignment = Alignment.End) {
+                                            Text(
+                                                text = "RISK: ${risk.toInt()}%",
+                                                color = riskColor.copy(alpha = riskAlpha),
+                                                fontSize = 8.sp,
+                                                fontWeight = if (risk >= 75.0) FontWeight.Black else FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace,
+                                                textAlign = TextAlign.End,
+                                                lineHeight = 8.sp
+                                            )
+                                            // Micro risk bar
+                                            Box(
+                                                modifier = Modifier.width(36.dp).height(2.dp)
+                                                    .background(Color.DarkGray.copy(alpha = 0.4f), RoundedCornerShape(1.dp))
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxHeight()
+                                                        .width((36.dp * (risk / 100.0).toFloat()))
+                                                        .background(riskColor.copy(alpha = riskAlpha), RoundedCornerShape(1.dp))
+                                                )
+                                            }
+                                        }
+                                    }
                             }
                         }
                     }
 
-                    val secVal = if (currentLocation == "ORBITAL_SATELLITE") "${viewModel.orbitalAltitude.collectAsState().value.toInt()}KM" else if (currentLocation == "VOID_INTERFACE") String.format("%.1f", viewModel.entropyLevel.collectAsState().value) else viewModel.securityLevel.collectAsState().value.toString()
+                    val secLevel by viewModel.securityLevel.collectAsState()
+                    // v3.6.4: Replace raw integer with human-readable tier label
+                    val secVal = when {
+                        currentLocation == "ORBITAL_SATELLITE" -> "${viewModel.orbitalAltitude.collectAsState().value.toInt()}KM"
+                        currentLocation == "VOID_INTERFACE" -> String.format("%.1f", viewModel.entropyLevel.collectAsState().value)
+                        else -> when {
+                            secLevel >= 50 -> "HARDENED"
+                            secLevel >= 30 -> "HIGH"
+                            secLevel >= 15 -> "MODERATE"
+                            secLevel >= 5  -> "LOW"
+                            else           -> "MINIMAL"
+                        }
+                    }
                     val secLabel = when {
                         singularityChoice == "NULL_OVERWRITE" -> "NULL"
                         singularityChoice == "SOVEREIGN" -> "SOV"

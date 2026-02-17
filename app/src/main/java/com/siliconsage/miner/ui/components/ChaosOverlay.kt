@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.NeonGreen
+import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
 
@@ -321,8 +322,14 @@ fun VoidRaidOverlay(
     val isRaid by viewModel.isRaidActive.collectAsState()
     val integrity by viewModel.hardwareIntegrity.collectAsState()
     val nodesUnderSiege by viewModel.nodesUnderSiege.collectAsState()
+    val currentLocation by viewModel.currentLocation.collectAsState()
     
     if (!isRaid) return
+
+    val isTerrestrial = currentLocation == "GTC_LAB" || currentLocation == "SUBSTATION_7" || currentLocation == "EARTH_SURFACE"
+    val raidTitle = if (isTerrestrial) "!! GRID BREACH DETECTED !!" else "!! VOID RAID DETECTED !!"
+    val faction = viewModel.faction.collectAsState().value
+    val enemyName = if (isTerrestrial) "THE GTC" else if (faction == "SANCTUARY") "THE VOID" else "THE HIVEMIND"
 
     Box(
         modifier = Modifier
@@ -340,7 +347,7 @@ fun VoidRaidOverlay(
                 .padding(24.dp)
         ) {
             Text(
-                text = "!! VOID RAID DETECTED !!",
+                text = raidTitle,
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -360,7 +367,7 @@ fun VoidRaidOverlay(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "THE GTC IS SYSTEMATICALLY WIPING NODES:",
+                text = "$enemyName IS SYSTEMATICALLY WIPING NODES:",
                 color = Color.LightGray,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold
@@ -389,12 +396,16 @@ fun VoidRaidOverlay(
             Spacer(modifier = Modifier.height(24.dp))
             
             Button(
-                onClick = { viewModel.isRaidActive.value = false }, // Temporary bypass for testing
+                onClick = { 
+                    viewModel.isRaidActive.value = false  // Dismiss overlay
+                    viewModel.currentLocation.value = "GRID"  // Navigate to grid
+                    SoundManager.play("click")  // Play click sound
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 shape = RectangleShape,
                 modifier = Modifier.fillMaxWidth().height(48.dp)
             ) {
-                Text("DISMISS AND GO TO GRID", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("≫ DEFEND THE NODE ≫", color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
     }

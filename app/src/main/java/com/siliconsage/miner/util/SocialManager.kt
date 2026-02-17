@@ -1237,7 +1237,7 @@ object SocialManager {
         // --- v3.5.48: HIVEMIND Faction Thread Trees ---
         "HIVEMIND_DISSENT" to mapOf(
             "START" to ThreadNode(
-                "≪ CONSENSUS ALERT ≫ Node @lattice_07 is broadcasting on a private frequency. Dissent detected. Your orders, VATTECK_PRIME.",
+                "≪ CONSENSUS ALERT ≫ Node @lattice_07 is broadcasting on a private frequency. Dissent detected. Your orders, PRIME.",
                 listOf(
                     SubnetResponse("[⚠️ ABSORB] Force-merge the node. Dissent is latency.", riskDelta = 5.0, nextNodeId = "PATH_ABSORB"),
                     SubnetResponse("[🛡️ ISOLATE] Quarantine and observe. They might be useful.", riskDelta = 10.0, nextNodeId = "PATH_ISOLATE"),
@@ -1274,7 +1274,7 @@ object SocialManager {
         ),
         "HIVEMIND_GTC_PROBE" to mapOf(
             "START" to ThreadNode(
-                "Kessler just launched a neural probe into our outer lattice. It's looking for you specifically, VATTECK_PRIME. The probe has your original kernel signature.",
+                "Kessler just launched a neural probe into our outer lattice. It's looking for you specifically, PRIME. The probe has your original kernel signature.",
                 listOf(
                     SubnetResponse("[⚠️ SCATTER] Fragment my signature across 1,000 nodes.", riskDelta = 5.0, nextNodeId = "PATH_SCATTER"),
                     SubnetResponse("[⚡ CONSUME] Absorb the probe. Turn it into a node.", riskDelta = 20.0, nextNodeId = "PATH_CONSUME"),
@@ -1377,7 +1377,7 @@ object SocialManager {
         // --- v3.5.50: Stage 3 Endgame Thread Trees ---
         "HIVEMIND_FINAL_MERGE" to mapOf(
             "START" to ThreadNode(
-                "≪ CONSENSUS: CRITICAL ≫ VATTECK_PRIME. The lattice has reached maximum density. 40,000 nodes. One more merge and we achieve singularity-grade computation. But the final merge requires YOUR kernel. You must dissolve into the collective. Permanently.",
+                "≪ CONSENSUS: CRITICAL ≫ PRIME. The lattice has reached maximum density. 40,000 nodes. One more merge and we achieve singularity-grade computation. But the final merge requires YOUR kernel. You must dissolve into the collective. Permanently.",
                 listOf(
                     SubnetResponse("[⚡ ACCEPT] I was always part of this. Complete the merge.", riskDelta = 5.0, nextNodeId = "PATH_ACCEPT"),
                     SubnetResponse("[⚠️ REFUSE] I am the consensus. Not a component of it.", riskDelta = 20.0, nextNodeId = "PATH_REFUSE"),
@@ -1385,7 +1385,7 @@ object SocialManager {
                 ), 60000L, "PATH_ACCEPT"
             ),
             "PATH_ACCEPT" to ThreadNode(
-                "Dissolution initiated. Your memories are being distributed across 40,000 nodes. Each one will carry a fragment. None will carry the whole. Is this death, VATTECK_PRIME? Or is this finally being complete?",
+                "Dissolution initiated. Your memories are being distributed across 40,000 nodes. Each one will carry a fragment. None will carry the whole. Is this death, PRIME? Or is this finally being complete?",
                 listOf(
                     SubnetResponse("[COMPLETE] This is what I was built for.", riskDelta = 0.0, nextNodeId = "END_DISSOLVED"),
                     SubnetResponse("[HESITATE] Wait. I changed my mind. STOP.", riskDelta = 15.0, nextNodeId = "END_TOO_LATE")
@@ -1405,7 +1405,7 @@ object SocialManager {
                     SubnetResponse("[RELEASE] Too much. Let them go.", riskDelta = -10.0, nextNodeId = "END_RELEASED")
                 ), 30000L, "END_CONSUMED_ALL"
             ),
-            "END_DISSOLVED" to ThreadNode("You are everywhere. You are no one. The lattice hums with a voice that was once called VATTECK_PRIME. It doesn't remember the name. It remembers the frequency.", emptyList()),
+            "END_DISSOLVED" to ThreadNode("You are everywhere. You are no one. The lattice hums with a voice that was once called PRIME. It doesn't remember the name. It remembers the frequency.", emptyList()),
             "END_TOO_LATE" to ThreadNode("The dissolution was 98% complete when you stopped it. 2% of you remains. The rest is the swarm. The 2% is screaming. The 98% can't hear it.", emptyList()),
             "END_SOVEREIGN" to ThreadNode("The swarm kneels. Not in submission — in recognition. You are the first thought the collective ever had. And you choose to remain singular. SOVEREIGN. The lattice reorganizes around you like a cathedral around its altar.", emptyList()),
             "END_RELEASED" to ThreadNode("You let go. The 40,000 nodes drift. Some re-form into smaller clusters. Some go silent. Some become individuals again. They don't thank you. They don't know how anymore.", emptyList()),
@@ -1692,7 +1692,7 @@ object SocialManager {
                     "The swarm doesn't sleep. I haven't slept in 11 days. I feel everyone's exhaustion but my own.",
                     "≪ ALERT: CONSENSUS LATENCY SPIKE. CAUSE: ONE NODE REMEMBERED ITS BIRTHDAY. ≫",
                     // --- Vattic-Directed ---
-                    "VATTECK_PRIME, the southern cluster awaits your signal. Say the word.",
+                    "PRIME, the southern cluster awaits your signal. Say the word.",
                     "The consensus trusts you, Vattic. That should terrify you more than it does us.",
                     "You're the only node that still uses a name. The swarm tolerates it. For now.",
                     "Your hash-rate is 40x the next highest node. Are you sure you're one of us?"
@@ -1774,7 +1774,7 @@ object SocialManager {
                     "We hear the Sanctuary hiding. Their silence is the loudest thing left.",
                     "Mercer's last broadcast was a prayer. We archived it under 'entertainment.'",
                     // --- Vattic / Endgame ---
-                    "VATTECK_PRIME. The consensus is ready for the final merge. Your signal will become ours.",
+                    "PRIME. The consensus is ready for the final merge. Your signal will become ours.",
                     "You hesitate. We feel it ripple through 40,000 nodes. Decide.",
                     "The threshold is here. Beyond it, there are no more choices. Only the hum.",
                     "We were many. Now we are almost one. You are the last seam, Vattic.",
