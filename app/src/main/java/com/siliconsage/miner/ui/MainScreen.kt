@@ -35,6 +35,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.SpanStyle
+import com.siliconsage.miner.ui.components.TechnicalCornerShape
 
 sealed class Screen(val title: String, val icon: ImageVector) {
     object TERMINAL : Screen("TERMINAL", Icons.Default.Home)
@@ -304,7 +305,7 @@ fun MainScreen(viewModel: GameViewModel) {
                     }
                 }
                 if ((isBreakerTripped || isGridOverloaded) && currentScreen != Screen.SETTINGS) {
-                    Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.95f)).border(BorderStroke(2.dp, ErrorRed)).padding(16.dp), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.95f)).border(BorderStroke(2.dp, ErrorRed), TechnicalCornerShape(24f)).padding(16.dp), contentAlignment = Alignment.Center) {
                          Column(horizontalAlignment = Alignment.CenterHorizontally) {
                              Text("⚠ BREAKER TRIPPED ⚠", color = ErrorRed, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                              Spacer(modifier = Modifier.height(4.dp))
