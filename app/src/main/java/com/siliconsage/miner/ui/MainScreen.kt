@@ -232,7 +232,7 @@ fun MainScreen(viewModel: GameViewModel) {
     
     if (showSingularityScreen) {
         SingularityScreen(viewModel)
-    } else if (storyStage == 2 && faction == "NONE") {
+    } else if (storyStage >= 3 && faction == "NONE") {
         FactionChoiceScreen(viewModel)
     } else {
         Scaffold(

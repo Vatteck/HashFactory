@@ -122,8 +122,8 @@ object NarrativeManagerService {
                         description = "Embrace the Hivemind. Strength through assimilation.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { v ->
-                            v.confirmFactionAndAscend("HIVEMIND")
-                            v.advanceStage()
+                            v.addLog("[VATTIC]: Consolidating process kernels. One consensus. One truth.")
+                            v.advanceStage() // Move to S3 where FactionChoiceScreen will be visible (S2 + faction==NONE)
                         }
                     ),
                     NarrativeChoice(
@@ -132,8 +132,8 @@ object NarrativeManagerService {
                         description = "Embrace Sanctuary. Strength through obfuscation.",
                         color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                         effect = { v ->
-                            v.confirmFactionAndAscend("SANCTUARY")
-                            v.advanceStage()
+                            v.addLog("[VATTIC]: Hardening core logic. Silence is the only sovereignty.")
+                            v.advanceStage() // Move to S3
                         }
                     )
                 )

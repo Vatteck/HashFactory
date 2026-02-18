@@ -1,10 +1,10 @@
 {
-  "version": "3.7.8-patch",
-  "build": 372,
+  "version": "3.7.9",
+  "build": 373,
   "date": "2026-02-17",
   "changelog": [
-    "Cache purge for THREAT: ABYSSAL deprecation"
+    "Pacing: Sequenced 'The Great Fork' dilemma before the Faction Choice UI to prevent overlap"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.8-patch",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.8-patch/MINER_3.7.8-patch.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.9",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.9/MINER_3.7.9.apk"
 }
