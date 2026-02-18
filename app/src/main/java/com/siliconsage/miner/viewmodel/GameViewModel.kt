@@ -174,9 +174,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val commandCenterLocked = MutableStateFlow(false)
     val securityLevel = MutableStateFlow(0)
     val hallucinationText = MutableStateFlow<String?>(null)
-    val synthesisPoints = MutableStateFlow(0.0)
-    val authorityPoints = MutableStateFlow(0.0)
-    val harvestedFragments = MutableStateFlow(0.0)
     val marketMultiplier = MutableStateFlow(1.0)
     val thermalRateModifier = MutableStateFlow(1.0)
     val energyPriceMultiplier = MutableStateFlow(0.02)
@@ -357,8 +354,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 raidsSurvived = raidsSurvived, humanityScore = humanityScore.value, hardwareIntegrity = hardwareIntegrity.value,
                 annexingNodes = annexingNodes.value, celestialData = 0.0, voidFragments = 0.0, launchProgress = launchProgress.value,
                 orbitalAltitude = orbitalAltitude.value, realityIntegrity = realityIntegrity.value, entropyLevel = entropyLevel.value,
-                singularityChoice = singularityChoice.value, globalSectors = globalSectors.value, synthesisPoints = synthesisPoints.value,
-                authorityPoints = authorityPoints.value, harvestedFragments = harvestedFragments.value, prestigePointsPostSingularity = 0,
+                singularityChoice = singularityChoice.value, globalSectors = globalSectors.value,
                 marketMultiplier = marketMultiplier.value, thermalRateModifier = thermalRateModifier.value, energyPriceMultiplier = energyPriceMultiplier.value,
                 newsProductionMultiplier = newsProductionMultiplier.value, substrateMass = substrateMass.value, substrateSaturation = substrateSaturation.value,
                 heuristicEfficiency = heuristicEfficiency.value, identityCorruption = identityCorruption.value, migrationCount = migrationCount.value,

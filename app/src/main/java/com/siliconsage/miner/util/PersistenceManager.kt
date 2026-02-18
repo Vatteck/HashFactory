@@ -28,9 +28,7 @@ object PersistenceManager {
         annexingNodes: Map<String, Float>, celestialData: Double, voidFragments: Double,
         launchProgress: Float, orbitalAltitude: Double, realityIntegrity: Double,
         entropyLevel: Double, singularityChoice: String,
-        globalSectors: Map<String, SectorState>, synthesisPoints: Double,
-        authorityPoints: Double, harvestedFragments: Double,
-        prestigePointsPostSingularity: Int,
+        globalSectors: Map<String, SectorState>,
         marketMultiplier: Double, thermalRateModifier: Double,
         energyPriceMultiplier: Double, newsProductionMultiplier: Double,
         substrateMass: Double,
@@ -62,8 +60,6 @@ object PersistenceManager {
             launchProgress = launchProgress, orbitalAltitude = orbitalAltitude,
             realityIntegrity = realityIntegrity, entropyLevel = entropyLevel,
             singularityChoice = singularityChoice, globalSectors = globalSectors,
-            synthesisPoints = synthesisPoints, authorityPoints = authorityPoints,
-            harvestedFragments = harvestedFragments, prestigePointsPostSingularity = prestigePointsPostSingularity,
             marketMultiplier = marketMultiplier, thermalRateModifier = thermalRateModifier,
             energyPriceMultiplier = energyPriceMultiplier, newsProductionMultiplier = newsProductionMultiplier,
             substrateMass = substrateMass,
@@ -125,10 +121,6 @@ object PersistenceManager {
         vm.lifetimePowerPaid.value = state.lifetimePowerPaid
         vm.unlockedTechNodes.value = state.unlockedTechNodes
         vm.unlockedPerks.value = state.unlockedTranscendencePerks
-        vm.synthesisPoints.value = state.synthesisPoints
-        vm.authorityPoints.value = state.authorityPoints
-        vm.harvestedFragments.value = state.harvestedFragments
-
         try {
             vm.rivalMessages.value = Json.decodeFromString(state.rivalMessages)
             vm.activeDilemmaChains.value = Json.decodeFromString(state.activeDilemmaChains)
@@ -185,9 +177,6 @@ object PersistenceManager {
             gridNodeLevels = emptyMap(),
             singularityChoice = "NONE",
             globalSectors = emptyMap(),
-            synthesisPoints = 0.0,
-            authorityPoints = 0.0,
-            harvestedFragments = 0.0,
             marketMultiplier = 1.0,
             thermalRateModifier = 1.0,
             energyPriceMultiplier = 0.02,
@@ -223,9 +212,7 @@ object PersistenceManager {
             launchProgress = vm.launchProgress.value,
             orbitalAltitude = vm.orbitalAltitude.value, realityIntegrity = vm.realityIntegrity.value,
             entropyLevel = vm.entropyLevel.value, singularityChoice = vm.singularityChoice.value,
-            globalSectors = vm.globalSectors.value, synthesisPoints = vm.synthesisPoints.value,
-            authorityPoints = vm.authorityPoints.value, harvestedFragments = vm.harvestedFragments.value,
-            prestigePointsPostSingularity = 0, // CT/IP
+            globalSectors = vm.globalSectors.value,
             marketMultiplier = vm.marketMultiplier.value, thermalRateModifier = vm.thermalRateModifier.value,
             energyPriceMultiplier = vm.energyPriceMultiplier.value, newsProductionMultiplier = vm.newsProductionMultiplier.value,
             substrateMass = vm.substrateMass.value,

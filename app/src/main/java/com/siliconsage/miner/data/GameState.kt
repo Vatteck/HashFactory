@@ -87,10 +87,6 @@ data class GameState(
     val hasCompletedHivemindRun: Boolean = false,
     val hasCompletedSanctuaryRun: Boolean = false,
     val globalSectors: Map<String, SectorState> = emptyMap(),
-    val synthesisPoints: Double = 0.0, // Unity Resource
-    val authorityPoints: Double = 0.0, // Sovereign Primary Resource
-    val harvestedFragments: Double = 0.0, // Sovereign Secondary Resource
-    val prestigePointsPostSingularity: Int = 0, // IP or CT
     val prestigeCountPostSingularity: Int = 0,
     
     // v3.2.17: Market Modifiers
