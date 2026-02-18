@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.7.2] - 2026-02-17
+### Fixed
+- **Subnet Pacing Rebalance**:
+    - Reduced base idle chatter frequency by 70% (0.10f → 0.03f).
+    - Enforced a mandatory 45-second cooldown between subnet messages to prevent interaction stacking.
+    - Rebalanced heat and raid frequency modifiers for a more intentional narrative flow.
+- **High-Fidelity Decision Notifier**:
+    - Replaced the placeholder `<decision>` label with a pulsing, bordered `≪!≫` alert on the Subnet tab.
+    - Integrated dynamic glitch animations for the notifier based on kernel corruption levels.
+
 ## [3.7.1] - 2026-02-17
 ### Fixed
 - **Tech Tree Layout Overhaul**: 
