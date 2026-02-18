@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.util.SocialManager
+import com.siliconsage.miner.data.*
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,7 +31,7 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.text.AnnotatedString
 
 @Composable
-fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
+fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
     val countdown = remember { mutableStateOf(0L) }
     var showProfile by remember(message.id) { mutableStateOf(false) }
     
@@ -329,7 +330,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
 
                     // v3.5.37: Admin-aware button styling
                     val buttonAccent = when {
-                        message.interactionType == SocialManager.InteractionType.COMMAND_LEAK -> com.siliconsage.miner.ui.theme.ElectricBlue
+                        message.interactionType == InteractionType.COMMAND_LEAK -> com.siliconsage.miner.ui.theme.ElectricBlue
                         isAdminMessage -> com.siliconsage.miner.ui.theme.ErrorRed
                         else -> color
                     }
@@ -351,7 +352,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                         ) {
                             // v3.5.37: Admin prefix
                             val prefix = when {
-                                message.interactionType == SocialManager.InteractionType.COMMAND_LEAK -> ""
+                                message.interactionType == InteractionType.COMMAND_LEAK -> ""
                                 isAdminMessage -> "⚠ "
                                 else -> "≫ "
                             }
@@ -383,7 +384,7 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                 }
 
                 // v3.5.35: IGNORE available for all non-admin COMPLIANT messages (including force-reply from peons)
-                if (!isAdminMessage && message.interactionType == SocialManager.InteractionType.COMPLIANT) {
+                if (!isAdminMessage && message.interactionType == InteractionType.COMPLIANT) {
                     Button(
                         onClick = { viewModel.onSubnetInteraction(message.id, "IGNORE") },
                         modifier = Modifier.weight(0.6f).heightIn(min = 28.dp),

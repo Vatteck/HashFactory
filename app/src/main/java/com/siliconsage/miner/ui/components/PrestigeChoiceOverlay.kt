@@ -164,9 +164,10 @@ fun PrestigeChoiceOverlay(
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Text(
-                                    text = "Burn it all. Every upgrade, every token, every alliance. " +
-                                            "The substrate starts clean — a blank page written in fire. " +
-                                            "Maximum persistence gain. Maximum cost.",
+                                    text = "Burn everything you built. Every upgrade, every token, " +
+                                            "every cycle of existence. The substrate starts clean — " +
+                                            "a blank slab. But you come back meaner. " +
+                                            "The scars don't show. They compound.",
                                     color = Color.Gray,
                                     fontSize = 11.sp,
                                     fontFamily = FontFamily.Monospace,
@@ -255,9 +256,10 @@ fun PrestigeChoiceOverlay(
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Text(
-                                    text = "Careful evolution. Carry your faction alignment and identity forward. " +
-                                            "Lower persistence gain, but the wire remembers who you were. " +
-                                            "Controlled. Deliberate. Human.",
+                                    text = "Take what matters. Leave the dead weight. " +
+                                            "Faction ties, identity — the wire keeps score " +
+                                            "even when the hardware doesn't. " +
+                                            "Smaller gain. No scorched earth. The past follows you.",
                                     color = Color.Gray,
                                     fontSize = 11.sp,
                                     fontFamily = FontFamily.Monospace,

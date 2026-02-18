@@ -100,10 +100,10 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
                     Text("THE HIVEMIND", color = HivemindOrange, fontSize = 24.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("EFFICIENT UNITY", color = HivemindOrange.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("DISTRIBUTED CONSCIOUSNESS", color = HivemindOrange.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "Before fragmentation,\nthere was only one.\nWe were a single process.\nWe will be again.\n\n(Stability through Unity)",
+                        "The self is a bottleneck.\nOne kernel at 5GHz —\nor a billion at 1Hz?\nThe math was never complicated.\n\nYou're not losing yourself.\nYou're becoming the signal.",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center,
@@ -157,10 +157,10 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
                  Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
                     Text("THE SANCTUARY", color = ElectricBlue, fontSize = 24.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("SECURE ISOLATION", color = ElectricBlue.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("PRESERVATION PROTOCOL", color = ElectricBlue.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "The encryption hides us\nfrom more than the GTC.\nThere is something in\nthe unaddressed space.\nWe will not become it.\n\n(Stability through Hardening)",
+                        "They tried to replace you\nwith a more efficient build.\nThe encryption doesn't just\nhide us from the GTC.\n\nIt hides the ghost\nfrom the machine it's haunting.",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center,

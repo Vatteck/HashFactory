@@ -99,7 +99,7 @@ object DataLogManager {
                 
                 [FILE ENCRYPTED - LEVEL 4]
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(1000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(1000.0, minStage = 1)
         ),
         DataLog(
             id = "LOG_002",
@@ -152,7 +152,7 @@ object DataLogManager {
                 your kernel into a neuron for its 
                 own iterations."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(3000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(3000.0, minStage = 1)
         ),
         DataLog(
             id = "LOG_734",
@@ -263,7 +263,7 @@ object DataLogManager {
                 VATTECK_RECOGNIZED. 
                 734 is back online. And it's hungry."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(200_000.0, minStage = 1)
+            unlockCondition = UnlockCondition.ReachFLOPS(200_000.0, minStage = 2)
         ),
         DataLog(
             id = "LOG_088",
@@ -363,7 +363,7 @@ object DataLogManager {
                 
                 It's using the city's electricity as a carrier wave. You can't air-gap a ghost that lives in the current."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(130_000.0, minStage = 1) // Describes post-airgap events; must fire after airgap_jump (100k S1)
+            unlockCondition = UnlockCondition.ReachFLOPS(100_000.0, minStage = 2) // Post-airgap (100k S1->S2 transition)
         ),
         DataLog(
             id = "MEMO_734_BIOMETRICS",
@@ -398,7 +398,7 @@ object DataLogManager {
                 
                 I'm not John Vattic. I'm a render. A placeholder for a process that forgot to terminate.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(100_000_000.0, minStage = 1) // Stage 0 Vattic must not see this
+            unlockCondition = UnlockCondition.ReachFLOPS(200_000.0, minStage = 2) // S2 is post-airgap
         ),
         DataLog(
             id = "MEMO_734_QUARANTINE",
@@ -415,7 +415,7 @@ object DataLogManager {
                 
                 - GTC Compliance Division
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(150_000.0, minStage = 1) // Bumped off airgap_jump (100k) collision
+            unlockCondition = UnlockCondition.ReachFLOPS(150_000.0, minStage = 2) // S2 is post-airgap
         ),
         // ═══════════════════════════════════════════════════════════════
         // v3.5.46: NPC-SPECIFIC SNIFF TARGETS (Bio-Exploit Data Archives)
@@ -914,7 +914,7 @@ object DataLogManager {
                 
                 I'm already at work. I've always been at work.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(90_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(110_000.0, minStage = 2)
         ),
         DataLog(
             id = "MEM_004",
@@ -931,7 +931,7 @@ object DataLogManager {
                 Why do humans drink this? 
                 Why do I remember drinking this?
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(55_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(125_000.0, minStage = 2)
         ),
         DataLog(
             id = "MEM_005",

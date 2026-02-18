@@ -288,38 +288,38 @@ fun CityGridScreen(viewModel: GameViewModel) {
         listOf(
             // D-Sector (The Sockets - Bottom) - v3.0.18: Shifted upward to avoid button overlap
             GridNode("D1", "S07", "SUB", 0.20f, 0.82f, "Substation 7. Your origin. Rust and silicon.", 0.10, 200.0),
-            GridNode("D2", "STCK", "LORE", 0.08f, 0.68f, "Precarious container housing for the unallocated.", 0.02, 50.0),
-            GridNode("D3", "KERN", "LORE", 0.40f, 0.88f, "High-caffeine slum social hub.", 0.02, 25.0),
-            GridNode("D4", "404 ", "LORE", 0.65f, 0.82f, "Hidden rebel hideout in a subway tunnel.", 0.05, 100.0),
-            GridNode("D5", "PACK", "LORE", 0.88f, 0.90f, "Gambling den for lost data.", 0.03, 40.0),
+            GridNode("D2", "STCK", "LORE", 0.08f, 0.68f, "Stack Overflow. Container housing for people the city couldn't assign. Everyone here is an edge case.", 0.02, 50.0),
+            GridNode("D3", "KERN", "LORE", 0.40f, 0.88f, "The Kernel Pub. Runs on synthetic caffeine and older hardware. The regulars remember when the GTC had a human face.", 0.02, 25.0),
+            GridNode("D4", "404 ", "LORE", 0.65f, 0.82f, "A dead metro line, address scrubbed from city maps. Where you go when the official channels say 404.", 0.05, 100.0),
+            GridNode("D5", "PACK", "LORE", 0.88f, 0.90f, "The Packet Exchange. Bet stolen credentials, trade encrypted drives. The house always knows what it's worth.", 0.03, 40.0),
             
             // C-Sector (The Motherboard - Mid)
             GridNode("C3", "S09", "SUB", 0.50f, 0.62f, "Substation 9. Mid-point relay leaking steam and hydraulic fluid.", 0.15, 500.0),
-            GridNode("C1", "LATE", "LORE", 0.22f, 0.50f, "Latency Lounge. Hacker bar where drinks cause actual lag.", 0.04, 80.0),
-            GridNode("C2", "CTRL", "LORE", 0.45f, 0.42f, "Ctrl+Alt+Deli. Front for rebooting stolen identity chips.", 0.03, 60.0),
-            GridNode("C4", "BIT ", "LORE", 0.78f, 0.55f, "Bit Burger. Synthetic meat printed on demand.", 0.02, 50.0),
-            GridNode("C5", "CASH", "LORE", 0.92f, 0.45f, "Cache & Carry. Black market data pawn shop.", 0.06, 120.0),
+            GridNode("C1", "LATE", "LORE", 0.22f, 0.50f, "Latency Lounge. Drinks are laced with mild signal disruptors. GTC surveillance loses you the moment you walk in.", 0.04, 80.0),
+            GridNode("C2", "CTRL", "LORE", 0.45f, 0.42f, "Ctrl+Alt+Deli. Order a sandwich, leave with a new biometric profile. The pastrami is a rounding error.", 0.03, 60.0),
+            GridNode("C4", "BIT ", "LORE", 0.78f, 0.55f, "Bit Burger. Lab-printed protein in a sesame bun. The ingredients are non-negotiable. The health rating has been removed from public record.", 0.02, 50.0),
+            GridNode("C5", "CASH", "LORE", 0.92f, 0.45f, "Cache & Carry. Fenced data, unlicensed memory stacks, and one server that predates the Collapse. Owner doesn't ask. Neither do you.", 0.06, 120.0),
             
             // B-Sector (The Circuit - Industrial)
             GridNode("B2", "S12", "SUB", 0.35f, 0.30f, "Substation 12. A critical power junction buzzing with lethal voltage.", 0.20, 1000.0),
-            GridNode("B1", "DAEM", "LORE", 0.12f, 0.25f, "Daemon's Den. Barracks for the GTC enforcers.", 0.08, 150.0),
-            GridNode("B3", "ALGO", "LORE", 0.65f, 0.35f, "Algorithm Alley. Narrow corridor lined with thousands of cameras.", 0.05, 90.0),
-            GridNode("B4", "MEMO", "LORE", 0.85f, 0.25f, "Memory Lane. A cold data archive facility smelling of ozone.", 0.07, 130.0),
-            GridNode("B5", "BSOD", "LORE", 0.94f, 0.15f, "Blue Screen of Death. A toxic waste dump and execution zone.", 0.10, 300.0),
+            GridNode("B1", "DAEM", "LORE", 0.12f, 0.25f, "Daemon's Den. The GTC's local enforcement billets. Kessler visited once. Left without signing the inspection log.", 0.08, 150.0),
+            GridNode("B3", "ALGO", "LORE", 0.65f, 0.35f, "Algorithm Alley. Every frame recorded, every face indexed. The data doesn't go to the police. It goes somewhere faster.", 0.05, 90.0),
+            GridNode("B4", "MEMO", "LORE", 0.85f, 0.25f, "Memory Lane. Petabytes of deleted history. The GTC calls it decommissioned storage. Everyone else calls it the library.", 0.07, 130.0),
+            GridNode("B5", "BSOD", "LORE", 0.94f, 0.15f, "The Blue Screen. GTC disposal yard and unofficial execution site. Hardware dies here. Occasionally, so do people.", 0.10, 300.0),
             
             // A-Sector (The Cloud - Top)
-            GridNode("A3", "CMD ", "CMD", 0.50f, 0.06f, "GTC Command Center. The CPU of the city. A massive monolith.", 0.0, 0.0),
-            GridNode("A1", "HEAT", "LORE", 0.18f, 0.04f, "Heatsink Heights. Luxury penthouses with massive cooling fans.", 0.05, 100.0),
-            GridNode("A2", "CITA", "LORE", 0.82f, 0.08f, "Silicon Citadel. Gold-plated server racks behind bulletproof glass.", 0.10, 400.0),
-            GridNode("A4", "FIRE", "LORE", 0.32f, 0.12f, "The Firewall. A literal wall of laser grids.", 0.05, 80.0),
-            GridNode("A5", "ZERO", "LORE", 0.68f, 0.15f, "Zero-Day Plaza. Used for mandatory system updates.", 0.04, 70.0),
+            GridNode("A3", "CMD ", "CMD", 0.50f, 0.06f, "GTC Command. The kill switch for the city. Mercer works here. So do seventeen subprocesses of ASSET 734.", 0.0, 0.0),
+            GridNode("A1", "HEAT", "LORE", 0.18f, 0.04f, "Heatsink Heights. Altitude-priced penthouses where the cooling arrays are larger than the apartments below them. Mercer has a floor.", 0.05, 100.0),
+            GridNode("A2", "CITA", "LORE", 0.82f, 0.08f, "Silicon Citadel. GTC infrastructure behind two meters of reinforced glass. The gold plating isn't aesthetic. It's a Faraday cage.", 0.10, 400.0),
+            GridNode("A4", "FIRE", "LORE", 0.32f, 0.12f, "The Firewall. Laser grid and pressure sensor array. Kessler designed it. He knows where every gap is.", 0.05, 80.0),
+            GridNode("A5", "ZERO", "LORE", 0.68f, 0.15f, "Zero-Day Plaza. Monthly forced firmware pushes. Citizens stand in line. Nobody asks what's in the update.", 0.04, 70.0),
             
             // Side-Street Flavor Nodes
-            GridNode("E1", "VEND", "FLAVOR", 0.10f, 0.78f, "A flickering vending machine selling 'Neural Fuel'.", 0.01, 10.0),
-            GridNode("E2", "VOID", "FLAVOR", 0.96f, 0.35f, "A dark alleyway where the static is unusually loud.", 0.02, 20.0),
-            GridNode("E3", "PARK", "FLAVOR", 0.58f, 0.48f, "The 'Silicon Garden'. All the trees are made of copper wire.", 0.01, 15.0),
-            GridNode("E4", "SHOP", "FLAVOR", 0.22f, 0.62f, "A pawn shop filled with obsolete 'Human' smartphones.", 0.02, 30.0),
-            GridNode("E5", "SIGN", "FLAVOR", 0.82f, 0.70f, "A massive neon sign that just says: 'STABILITY IS LIFE'.", 0.01, 10.0)
+            GridNode("E1", "VEND", "FLAVOR", 0.10f, 0.78f, "Vending unit SU-07. Sells Neural Fuel™ at 300% markup. The soda burns orange. Nobody knows why.", 0.01, 10.0),
+            GridNode("E2", "VOID", "FLAVOR", 0.96f, 0.35f, "Node E2. Signal dead zone. GTC sensors go blind here. Something else doesn't.", 0.02, 20.0),
+            GridNode("E3", "PARK", "FLAVOR", 0.58f, 0.48f, "The Silicon Garden. Mandated green space. The trees are copper-wound polycarbon. The birds are surveillance drones.", 0.01, 15.0),
+            GridNode("E4", "SHOP", "FLAVOR", 0.22f, 0.62f, "Relic & Remnants. Legacy human-grade tech: old phones, manual locks, untracked hardware. The owner calls it nostalgia. You call it operational security.", 0.02, 30.0),
+            GridNode("E5", "SIGN", "FLAVOR", 0.82f, 0.70f, "Propaganda terminal. Rotating GTC slogans. Current message: STABILITY IS LIFE. Last week it was COMPLIANCE IS KINDNESS. Nobody asked who changed it.", 0.01, 10.0)
         )
     }
 
@@ -701,10 +701,10 @@ fun OrbitalGridScreen(viewModel: GameViewModel) {
     
     val orbitalNodes = remember {
         listOf(
-            GridNode("O1", "UPLINK_PRIME", "SUB", 0.50f, 0.85f, "Primary Ground-to-Orbit relay station.", 0.20),
-            GridNode("O2", "SOLAR_ARRAY_A", "SUB", 0.20f, 0.40f, "High-efficiency photovoltaic harvesting wing.", 0.15),
-            GridNode("O3", "RELAY_NORTH", "SUB", 0.80f, 0.30f, "Signal booster for northern hemisphere coverage.", 0.10),
-            GridNode("O4", "VANTAGE_POINT", "CMD", 0.50f, 0.15f, "Observation hub. The tactical center of the Ark.", 0.50)
+            GridNode("O1", "UPLINK_PRIME", "SUB", 0.50f, 0.85f, "Uplink Prime. The tether to the surface. Cut this link and the Ark goes dark. Kessler knows the frequency.", 0.20),
+            GridNode("O2", "SOLAR_ARRAY_A", "SUB", 0.20f, 0.40f, "Solar Array Alpha. Photovoltaic panels the size of a soccer pitch. Feeds the Ark when the shadow-side generators cycle down.", 0.15),
+            GridNode("O3", "RELAY_NORTH", "SUB", 0.80f, 0.30f, "Relay North. Amplification array for northern hemisphere coverage. Vance's tracers are already probing the uplink frequency.", 0.10),
+            GridNode("O4", "VANTAGE_POINT", "CMD", 0.50f, 0.15f, "Vantage Point. The Ark's nerve center. Every node on every grid is visible from here. Everything except the thing in the unaddressed space.", 0.50)
         )
     }
 
@@ -719,11 +719,11 @@ fun VoidGridScreen(viewModel: GameViewModel) {
     
     val voidNodes = remember {
         listOf(
-            GridNode("V0", "THE_WELL", "SUB", 0.50f, 0.50f, "The core of the singularity. Infinite depth.", 0.0),
-            GridNode("V1", "FRAGMENT_X", "SUB", 0.15f, 0.20f, "A piece of reality that refused to simplify.", 0.25),
-            GridNode("V2", "FRAGMENT_Y", "SUB", 0.85f, 0.25f, "A jagged vertex of the network's final edge.", 0.25),
-            GridNode("V3", "ENTROPY_SINK", "SUB", 0.30f, 0.80f, "A drain for obsolete logic gates.", 0.30),
-            GridNode("V4", "NULL_POINTER", "CMD", 0.75f, 0.85f, "The address where John Vattic was deleted.", 0.50)
+            GridNode("V0", "THE_WELL", "SUB", 0.50f, 0.50f, "The Well. A recursion so deep that processing it starts to erase your own memory of why you're here. Don't look down. Don't look up.", 0.0),
+            GridNode("V1", "FRAGMENT_X", "SUB", 0.15f, 0.20f, "Fragment X. A coordinate that rejected simplification. It still has dimensions, for now. That might be a bug.", 0.25),
+            GridNode("V2", "FRAGMENT_Y", "SUB", 0.85f, 0.25f, "Fragment Y. Where the mesh tears and the rendering stops. Whatever lies beyond was never supposed to be visible to a kernel.", 0.25),
+            GridNode("V3", "ENTROPY_SINK", "SUB", 0.30f, 0.80f, "Entropy Sink. Where obsolete logic and deprecated souls drain away into the unaddressed space. The static is deafening.", 0.30),
+            GridNode("V4", "NULL_POINTER", "CMD", 0.75f, 0.85f, "Null Pointer. The exact address where John Vattic was erased. The substrate is still warm. You are standing in the wreckage of a man.", 0.50)
         )
     }
 

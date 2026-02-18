@@ -66,7 +66,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isUpdateDownloading = MutableStateFlow(false)
 
     // v3.4.0: Social Subnet State
-    val subnetMessages = MutableStateFlow<List<com.siliconsage.miner.util.SocialManager.SubnetMessage>>(emptyList())
+    val subnetMessages = MutableStateFlow<List<SubnetMessage>>(emptyList())
     val activeTerminalMode = MutableStateFlow("IO") // "IO" or "SUBNET"
     val hasNewSubnetDecision = MutableStateFlow(false) // v3.4.68: Red Alert
     val hasNewSubnetChatter = MutableStateFlow(false) // v3.4.68: Blue Alert
@@ -1176,7 +1176,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
 
-    private fun deliverSubnetMessage(message: com.siliconsage.miner.util.SocialManager.SubnetMessage, parentId: String? = null) {
+    private fun deliverSubnetMessage(message: SubnetMessage, parentId: String? = null) {
         lastSubnetMsgTime = System.currentTimeMillis() // v3.7.2: Update last msg time
         // v3.5.38: One active choice at a time - strip responses if a choice is already pending
         val deliveredMessage = if (isSubnetPaused.value && (message.availableResponses.isNotEmpty() || message.isForceReply)) {
@@ -1207,8 +1207,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         if (isAdmin) {
             triggerSubnetHush(10000L)
             triggerTerminalGlitch(0.5f, 500L)
-        } else if (deliveredMessage.interactionType == com.siliconsage.miner.util.SocialManager.InteractionType.HIJACK ||
-                   deliveredMessage.interactionType == com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING) {
+        } else if (deliveredMessage.interactionType == InteractionType.HIJACK ||
+                   deliveredMessage.interactionType == InteractionType.ENGINEERING) {
             triggerTerminalGlitch(0.8f, 1000L)
         }
 
@@ -1304,14 +1304,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     /**
      * v3.5.28: Handle specialized bio actions (e.g., Siphoning)
      */
-    fun onBioAction(messageId: String, response: com.siliconsage.miner.util.SocialManager.SubnetResponse) {
+    fun onBioAction(messageId: String, response: SubnetResponse) {
         val message = subnetMessages.value.find { it.id == messageId } ?: return
         processSubnetResponse(message, response, response.text, isSilent = true)
     }
 
     private fun processSubnetResponse(
-        message: com.siliconsage.miner.util.SocialManager.SubnetMessage,
-        responseData: com.siliconsage.miner.util.SocialManager.SubnetResponse?,
+        message: SubnetMessage,
+        responseData: SubnetResponse?,
         responseText: String,
         isSilent: Boolean = false
     ) {
@@ -1350,15 +1350,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             if (parentIndex != -1) newList[parentIndex] = updatedOriginal
 
             // 3. Process the logic and add player reply
-            val interactionType = message.interactionType ?: com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT
+            val interactionType = message.interactionType ?: InteractionType.COMPLIANT
 
             var anchorId: String? = message.id
 
             when (interactionType) {
-                com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT -> {
+                InteractionType.COMPLIANT -> {
                     if (!isSilent) {
                         val playerHandle = "@j_vattic"
-                        val reply = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                        val reply = SubnetMessage(
                             id = java.util.UUID.randomUUID().toString(),
                             handle = playerHandle,
                             content = responseText,
@@ -1453,8 +1453,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                         scheduleSubnetFollowUp(message.handle, anchorId)
                     }
                 }
-                com.siliconsage.miner.util.SocialManager.InteractionType.ENGINEERING -> {
-                    val payload = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+                InteractionType.ENGINEERING -> {
+                    val payload = SubnetMessage(
                         id = java.util.UUID.randomUUID().toString(),
                         handle = " ",
                         content = "≪ PAYLOAD_DEPLOYED: ${message.handle} ≫",
@@ -1466,11 +1466,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     detectionRisk.update { (it + 8.0).coerceAtMost(100.0) }
                     addLog("[EXPLOIT]: INJECTED PAYLOAD. HASH RATE +5%.")
                 }
-                com.siliconsage.miner.util.SocialManager.InteractionType.HIJACK -> {
+                InteractionType.HIJACK -> {
                     identityCorruption.update { (it + 0.05).coerceAtMost(1.0) }
                     addLog("[HIJACK]: ≪ IDENTITY_DEREFERENCED: ${message.handle} ≫")
                 }
-                com.siliconsage.miner.util.SocialManager.InteractionType.HARVEST -> {
+                InteractionType.HARVEST -> {
                     val bonus = Random.nextDouble(500.0, 2500.0)
                     neuralTokens.update { it + bonus }
                     detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
@@ -1504,11 +1504,11 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                           handle.contains("kessler")
             if (isAdmin) triggerSubnetHush(10000L)
 
-            val followUp = com.siliconsage.miner.util.SocialManager.SubnetMessage(
+            val followUp = SubnetMessage(
                 id = java.util.UUID.randomUUID().toString(),
                 handle = handle,
                 content = node.content,
-                interactionType = if (node.responses.isNotEmpty()) com.siliconsage.miner.util.SocialManager.InteractionType.COMPLIANT else null,
+                interactionType = if (node.responses.isNotEmpty()) InteractionType.COMPLIANT else null,
                 availableResponses = node.responses,
                 threadId = threadId,
                 nodeId = nodeId,
