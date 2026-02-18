@@ -1,9 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [3.7.6] - 2026-02-17
+## [3.7.7] - 2026-02-17
 ### Fixed
-- **Narrative Sanitization**: Renamed `vattic_observer` process to `observer.exe` across the boot sequence, process swapper, and subnet chatter to prevent Stage 0 spoilers and improve immersion.
+- **UpgradeManager Cost Scaling**:
+    - Resolved a critical bug where the `multiplier` variable (used for VOID_INTERFACE entropy) was computed but never applied to the final cost.
+    - Assigned explicit, balanced base costs to all missing upgrade categories (High-tier cooling, Power grid, Power generators, and Security).
+    - Fixed a "flat-pricing" exploit where entire categories (e.g., NUCLEAR_REACTOR vs BASIC_FIREWALL) defaulted to 1000.0 NT/Mass.
+- **Narrative Sanitization**: Renamed `vattic_observer` process to `observer.exe` across the boot sequence, process swapper, and subnet chatter to prevent Stage 0 spoilers and improve immersion (v3.7.6).
 
 ## [3.7.2] - 2026-02-17
 ### Fixed

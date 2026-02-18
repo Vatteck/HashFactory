@@ -22,6 +22,7 @@ object UpgradeManager {
 
     fun calculateUpgradeCost(type: UpgradeType, level: Int, location: String, entropy: Double): Double {
         val base = when (type) {
+            // --- Computing Hardware ---
             UpgradeType.REFURBISHED_GPU -> 10.0
             UpgradeType.DUAL_GPU_RIG -> 100.0
             UpgradeType.MINING_ASIC -> 500.0
@@ -37,22 +38,54 @@ object UpgradeManager {
             UpgradeType.PLANETARY_COMPUTER -> 2500000000.0
             UpgradeType.DYSON_NANO_SWARM -> 10000000000.0
             UpgradeType.MATRIOSHKA_BRAIN -> 50000000000.0
-            
+
+            // --- Cooling (progressive tiers ~10x each step) ---
             UpgradeType.BOX_FAN -> 25.0
-            UpgradeType.AC_UNIT -> 150.0
-            UpgradeType.LIQUID_COOLING -> 1000.0
-            UpgradeType.INDUSTRIAL_CHILLER -> 5000.0
-            
+            UpgradeType.AC_UNIT -> 250.0
+            UpgradeType.LIQUID_COOLING -> 2000.0
+            UpgradeType.INDUSTRIAL_CHILLER -> 15000.0
+            UpgradeType.SUBMERSION_VAT -> 75000.0
+            UpgradeType.CRYOGENIC_CHAMBER -> 400000.0
+            UpgradeType.LIQUID_NITROGEN -> 2000000.0
+            UpgradeType.BOSE_CONDENSATE -> 12000000.0
+            UpgradeType.ENTROPY_REVERSER -> 80000000.0
+            UpgradeType.DIMENSIONAL_VENT -> 600000000.0
+
+            // --- Power Grid (capacity purchases) ---
+            UpgradeType.RESIDENTIAL_TAP -> 500.0
+            UpgradeType.INDUSTRIAL_FEED -> 5000.0
+            UpgradeType.SUBSTATION_LEASE -> 50000.0
+            UpgradeType.NUCLEAR_CORE -> 500000.0
+
+            // --- Power Generators ---
             UpgradeType.SOLAR_PANEL -> 300.0
             UpgradeType.WIND_TURBINE -> 1200.0
-            
+            UpgradeType.DIESEL_GENERATOR -> 8000.0
+            UpgradeType.GEOTHERMAL_BORE -> 60000.0
+            UpgradeType.NUCLEAR_REACTOR -> 500000.0
+            UpgradeType.FUSION_CELL -> 5000000.0
+            UpgradeType.ORBITAL_COLLECTOR -> 50000000.0
+            UpgradeType.DYSON_LINK -> 1000000000.0
+
+            // --- Efficiency ---
+            UpgradeType.GOLD_PSU -> 3000.0
+            UpgradeType.SUPERCONDUCTOR -> 25000.0
+            UpgradeType.AI_LOAD_BALANCER -> 150000.0
+
+            // --- Security (each tier ~5-8x previous) ---
+            UpgradeType.BASIC_FIREWALL -> 500.0
+            UpgradeType.IPS_SYSTEM -> 3500.0
+            UpgradeType.AI_SENTINEL -> 25000.0
+            UpgradeType.QUANTUM_ENCRYPTION -> 200000.0
+            UpgradeType.OFFGRID_BACKUP -> 1500000.0
+
             else -> 1000.0
         }
-        
-        var multiplier = level + 1.0
-        if (location == "VOID_INTERFACE") multiplier *= (1.0 + entropy * 0.1)
-        
-        return base * 1.15.pow(level.toDouble())
+
+        // VOID_INTERFACE entropy surcharge — applies on top of level scaling
+        val entropyMultiplier = if (location == "VOID_INTERFACE") (1.0 + entropy * 0.1) else 1.0
+
+        return base * 1.15.pow(level.toDouble()) * entropyMultiplier
     }
 
     private fun Double.pow(exp: Double) = Math.pow(this, exp)

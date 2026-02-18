@@ -1,10 +1,10 @@
 {
-  "version": "3.7.6",
-  "build": 369,
+  "version": "3.7.7",
+  "build": 370,
   "date": "2026-02-17",
   "changelog": [
-    "SS-v3.7.6: Renamed vattic_observer to observer.exe for narrative consistency"
+    "Rebalanced UpgradeManager cost scaling for cooling, power, and security"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.6",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.6/MINER_3.7.6.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.7",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.7/MINER_3.7.7.apk"
 }

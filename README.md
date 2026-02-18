@@ -10,7 +10,7 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/BUILD-v3.5.51-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
+[![Version](https://img.shields.io/badge/BUILD-v3.7.7-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
 [![Platform](https://img.shields.io/badge/PLATFORM-Android_7.0+-00b4d8?style=for-the-badge&labelColor=0a0a0a&logo=android&logoColor=00ff41)](#technical-specifications)&nbsp;
 [![Status](https://img.shields.io/badge/UPLINK-🟢_NOMINAL-00ff41?style=for-the-badge&labelColor=0a0a0a)](#)&nbsp;
 [![Kotlin](https://img.shields.io/badge/KOTLIN-2.0-7F52FF?style=for-the-badge&labelColor=0a0a0a&logo=kotlin&logoColor=7F52FF)](#technical-specifications)&nbsp;
@@ -407,7 +407,7 @@ $ ./MINER --start-shift
 
 `▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓`
 
-**`SUBSTRATE: MINER v3.5.50`** · `SYNC: 2026-02-15` · `KERNEL: 🟢 NOMINAL`
+**`SUBSTRATE: MINER v3.7.7`** · `SYNC: 2026-02-17` · `KERNEL: 🟢 NOMINAL`
 
 📟 **[Releases](https://github.com/Vatteck/SiliconSageAIMiner/releases)** · 💾 **[Source](https://github.com/Vatteck/SiliconSageAIMiner)**
 
