@@ -2,6 +2,8 @@ package com.siliconsage.miner.ui.components
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -168,39 +170,72 @@ fun SubnetMessageLine(message: SocialManager.SubnetMessage, color: Color, viewMo
                         modifier = Modifier.padding(top = 4.dp)
                     )
 
-                    // v3.5.28: Special Bio Actions
-                    info.specialActions.forEach { action ->
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = { viewModel?.onBioAction(message.id, action) },
-                            modifier = Modifier.fillMaxWidth().height(32.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue.copy(alpha = 0.1f) else Color.DarkGray.copy(alpha = 0.3f),
-                                contentColor = if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.White
-                            ),
-                            shape = RoundedCornerShape(2.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, (if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.Gray).copy(alpha = 0.5f))
+                    // v3.5.28: Special Bio Actions - Refactored for vertical space efficiency (v3.7.3)
+                    if (info.specialActions.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "≫ AVAILABLE_EXPLOITS:",
+                            color = color.copy(alpha = 0.7f),
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        // Use a wrapping row for compact action chips
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "≫ ${action.text}",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontFamily = FontFamily.Monospace
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                if (action.productionBonus > 1.0) Text("⚡", fontSize = 10.sp)
-                                if (action.riskDelta > 0) Text("⚠️", fontSize = 10.sp)
-                                if (action.riskDelta < 0) Text("🛡️", fontSize = 10.sp)
-                                
-                                if (action.cost > 0) {
-                                    Text(
-                                        text = " [${viewModel?.formatLargeNumber(action.cost) ?: action.cost.toInt()}]",
-                                        color = if (action.riskDelta < 0) color else com.siliconsage.miner.ui.theme.ElectricBlue,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                            // Split actions into rows of 2 if there are many, or just use a horizontal scroll
+                            // Given the terminal aesthetic, a simple wrapping FlowRow-like logic or 
+                            // just a scrollable Row is cleanest. Let's do scrollable Row for absolute vertical min.
+                            Row(
+                                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                info.specialActions.forEach { action ->
+                                    OutlinedButton(
+                                        onClick = { viewModel?.onBioAction(message.id, action) },
+                                        modifier = Modifier.height(28.dp),
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.White
+                                        ),
+                                        shape = RoundedCornerShape(2.dp),
+                                        border = androidx.compose.foundation.BorderStroke(
+                                            1.dp, 
+                                            (if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.Gray).copy(alpha = 0.4f)
+                                        )
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = action.text.replace("_", " "),
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                fontFamily = FontFamily.Monospace
+                                            )
+                                            
+                                            val badge = when {
+                                                action.productionBonus > 1.0 -> "⚡"
+                                                action.riskDelta > 0 -> "⚠️"
+                                                action.riskDelta < 0 -> "🛡️"
+                                                else -> ""
+                                            }
+                                            if (badge.isNotEmpty()) {
+                                                Text(" $badge", fontSize = 9.sp)
+                                            }
+                                            
+                                            if (action.cost > 0) {
+                                                Text(
+                                                    text = " [${viewModel?.formatLargeNumber(action.cost) ?: action.cost.toInt()}]",
+                                                    color = if (action.riskDelta < 0) color else com.siliconsage.miner.ui.theme.ElectricBlue,
+                                                    fontSize = 8.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
