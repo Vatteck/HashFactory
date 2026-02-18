@@ -425,6 +425,7 @@ fun MainScreen(viewModel: GameViewModel) {
                 activeTransition?.let { type ->
                     Box(modifier = Modifier.fillMaxSize()) {
                         when (type) {
+                            "BLACKOUT" -> com.siliconsage.miner.ui.components.BlackoutOverlay { viewModel.onClimaxTransitionComplete() }
                             "NULL" -> com.siliconsage.miner.ui.components.GlitchBloom { viewModel.onClimaxTransitionComplete() }
                             "SOVEREIGN" -> com.siliconsage.miner.ui.components.ShieldSlam { viewModel.onClimaxTransitionComplete() }
                             "UNITY" -> com.siliconsage.miner.ui.components.PrismaticBurst { viewModel.onClimaxTransitionComplete() }

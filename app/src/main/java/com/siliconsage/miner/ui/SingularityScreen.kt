@@ -56,8 +56,7 @@ fun SingularityScreen(viewModel: GameViewModel) {
                 path = selectedPath!!,
                 onBack = { step = 1 },
                 onConfirm = { 
-                    viewModel.setSingularityChoice(selectedPath!!.name)
-                    viewModel.dismissSingularityScreen() // Handled cleanup
+                    viewModel.triggerSingularitySequence(selectedPath!!.name)
                     SoundManager.play("victory")
                 }
             )

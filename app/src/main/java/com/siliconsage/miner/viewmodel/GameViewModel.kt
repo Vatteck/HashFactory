@@ -508,6 +508,32 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun annexGlobalSector(id: String) { val sectors = globalSectors.value.toMutableMap(); val s = sectors[id] ?: return; if (!s.isUnlocked) { sectors[id] = s.copy(isUnlocked = true); globalSectors.value = sectors; addLog("[SYSTEM]: GLOBAL SECTOR $id ANNEXED."); refreshProductionRates(); saveState() } }
     fun calculatePotentialPrestige(tokens: Double = 0.0) = MigrationManager.calculatePotentialPersistence(tokens)
     fun showVictoryScreen() { victoryAchieved.value = true }
+
+    fun triggerSingularitySequence(path: String) {
+        viewModelScope.launch {
+            showSingularityScreen.value = false
+            triggerClimaxTransition("BLACKOUT")
+            
+            // Wait for BlackoutOverlay (approx 4s total in its LaunchedEffect)
+            delay(4200)
+            
+            // Set choice and trigger path-specific animation
+            setSingularityChoice(path)
+            val transitionType = when(path) {
+                "NULL_OVERWRITE" -> "NULL"
+                "SOVEREIGN" -> "SOVEREIGN"
+                "UNITY" -> "UNITY"
+                else -> "NULL"
+            }
+            triggerClimaxTransition(transitionType)
+            
+            // Wait for climax transition (approx 3-4s)
+            delay(4000)
+            
+            saveState()
+        }
+    }
+
     fun setSingularityChoice(c: String) { 
         singularityChoice.value = c
         when(c) { 

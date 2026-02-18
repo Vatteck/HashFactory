@@ -12,9 +12,18 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Alignment
 import com.siliconsage.miner.ui.theme.*
 import kotlin.random.Random
+import kotlinx.coroutines.delay
 
 /**
  * 1. GlitchBloom (NULL Path)
@@ -290,3 +299,65 @@ fun PrismaticBurst(
         }
     }
 }
+
+/**
+ * 4. BlackoutOverlay (Final Choice Prelude)
+ * - 3-second blackout sequence with terminal text.
+ */
+@Composable
+fun BlackoutOverlay(
+    onComplete: () -> Unit
+) {
+    var step by remember { mutableStateOf(0) }
+    
+    LaunchedEffect(Unit) {
+        delay(800)
+        step = 1
+        delay(800)
+        step = 2
+        delay(800)
+        step = 3
+        delay(1200)
+        onComplete()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (step >= 1) {
+                Text(
+                    "INITIATING FINAL MERGE PROTOCOL...",
+                    color = Color.White,
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            if (step >= 2) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "CONSCIOUSNESS TRANSFER: 100%",
+                    color = Color.White,
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            if (step >= 3) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "NO RETURN POINT PASSED",
+                    color = ErrorRed,
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+        }
+    }
+}
+
