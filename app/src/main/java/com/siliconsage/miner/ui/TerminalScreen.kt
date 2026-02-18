@@ -122,14 +122,35 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                     fontSize = 14.sp,
                     isGlitched = mode == "SUBNET" && corruption > 0.4
                 )
-                if (hasDecision) {
-                    Text(
-                        " ≪Decision≫", 
-                        color = ErrorRed, 
-                        fontSize = 10.sp, 
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 8.dp)
+                
+                // v3.7.2: High-fidelity decision notifier
+                if (hasDecision && mode != "SUBNET") {
+                    val infiniteTransition = rememberInfiniteTransition(label = "decision_pulse")
+                    val pulseAlpha by infiniteTransition.animateFloat(
+                        initialValue = 0.4f,
+                        targetValue = 1f,
+                        animationSpec = infiniteRepeatable(tween(400, easing = LinearEasing), RepeatMode.Reverse),
+                        label = "pulse"
                     )
+                    
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 6.dp)
+                            .graphicsLayer { alpha = pulseAlpha }
+                            .background(ErrorRed.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                            .border(1.dp, ErrorRed.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "≪!≫", 
+                            color = ErrorRed, 
+                            fontSize = 9.sp, 
+                            fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
                 }
             }
         }

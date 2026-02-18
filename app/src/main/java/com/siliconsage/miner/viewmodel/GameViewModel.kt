@@ -184,6 +184,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val manualClickEvent = MutableSharedFlow<Unit>(replay = 0)
     var logCounter = 0L
     var lastNewsTickTime = 0L
+    private var lastSubnetMsgTime = 0L // v3.7.2: Pacing control
     var lastPopupTime = 0L
     var raidsSurvived = 0
     var lastRaidTime = 0L
@@ -285,11 +286,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
 
                 // v3.4.41: System-Reactive Pacing
-                val baseChance = 0.10f
-                val heatMod = (currentHeat.value / 100.0).toFloat() * 0.15f
-                val raidMod = if (isRaidActive.value) 0.25f else 0.0f
+                val baseChance = 0.03f // v3.7.2: Reduced from 0.10f
+                val heatMod = (currentHeat.value / 100.0).toFloat() * 0.10f
+                val raidMod = if (isRaidActive.value) 0.20f else 0.0f
                 val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.80f)
-                if (Random.nextFloat() < finalChance) addSubnetChatter()
+                
+                // v3.7.2: Enforce 45s minimum cooldown for idle chatter
+                if (now - lastSubnetMsgTime > 45000L && Random.nextFloat() < finalChance) {
+                    addSubnetChatter()
+                }
 
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
                 refreshProductionRates()
@@ -1172,6 +1177,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     private fun deliverSubnetMessage(message: com.siliconsage.miner.util.SocialManager.SubnetMessage, parentId: String? = null) {
+        lastSubnetMsgTime = System.currentTimeMillis() // v3.7.2: Update last msg time
         // v3.5.38: One active choice at a time - strip responses if a choice is already pending
         val deliveredMessage = if (isSubnetPaused.value && (message.availableResponses.isNotEmpty() || message.isForceReply)) {
             message.copy(interactionType = null, availableResponses = emptyList(), isForceReply = false)
