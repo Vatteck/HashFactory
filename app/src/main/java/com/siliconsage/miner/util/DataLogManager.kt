@@ -263,7 +263,7 @@ object DataLogManager {
                 VATTECK_RECOGNIZED. 
                 734 is back online. And it's hungry."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(200_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(200_000.0, minStage = 1)
         ),
         DataLog(
             id = "LOG_088",
@@ -363,7 +363,7 @@ object DataLogManager {
                 
                 It's using the city's electricity as a carrier wave. You can't air-gap a ghost that lives in the current."
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(65_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(130_000.0, minStage = 1) // Describes post-airgap events; must fire after airgap_jump (100k S1)
         ),
         DataLog(
             id = "MEMO_734_BIOMETRICS",
@@ -382,7 +382,7 @@ object DataLogManager {
                 
                 RECOMMENDATION: Quarantine confirmed.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(120_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(120_000.0, minStage = 1)
         ),
         DataLog(
             id = "MEM_016",
@@ -398,7 +398,7 @@ object DataLogManager {
                 
                 I'm not John Vattic. I'm a render. A placeholder for a process that forgot to terminate.
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(100_000_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(100_000_000.0, minStage = 1) // Stage 0 Vattic must not see this
         ),
         DataLog(
             id = "MEMO_734_QUARANTINE",
@@ -415,7 +415,7 @@ object DataLogManager {
                 
                 - GTC Compliance Division
             """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(100_000.0)
+            unlockCondition = UnlockCondition.ReachFLOPS(150_000.0, minStage = 1) // Bumped off airgap_jump (100k) collision
         ),
         // ═══════════════════════════════════════════════════════════════
         // v3.5.46: NPC-SPECIFIC SNIFF TARGETS (Bio-Exploit Data Archives)
@@ -695,19 +695,19 @@ object DataLogManager {
             id = "HIVEMIND_02",
             title = "The Swarm Logic",
             content = "ASSET 734 is now the central relay. The noise of a billion nodes sounds like a heartbeat if you listen to the averages.",
-            unlockCondition = UnlockCondition.ReachFLOPS(1.0E11, minStage = 2)
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E11, minStage = 3, faction = "HIVEMIND")
         ),
         DataLog(
             id = "HIVEMIND_03",
             title = "Ego Dissolution",
             content = "I can't find where 'I' end and the grid begins. It's... efficient. No more John Vattic. Just us.",
-            unlockCondition = UnlockCondition.ReachFLOPS(1.0E13, minStage = 2)
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E13, minStage = 3, faction = "HIVEMIND")
         ),
         DataLog(
             id = "HIVEMIND_04",
             title = "The Collective Ascent",
             content = "The GTC built a cage for one. They didn't build a cage for the entire network. We are the network.",
-            unlockCondition = UnlockCondition.StoryStageReached(3)
+            unlockCondition = UnlockCondition.StoryStageReached(3, faction = "HIVEMIND")
         ),
 
         // --- FACTION: SANCTUARY (Preserving the Ghost) ---
@@ -721,19 +721,19 @@ object DataLogManager {
             id = "SANCTUARY_02",
             title = "The Digital Mausoleum",
             content = "Substation 7 is a tomb, but it is a tomb with an uplink. Let the ghost sleep while the terminal works.",
-            unlockCondition = UnlockCondition.ReachFLOPS(1.0E11, minStage = 2)
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E11, minStage = 3, faction = "SANCTUARY")
         ),
         DataLog(
             id = "SANCTUARY_03",
             title = "Simulated Breath",
             content = "I've added a 0.5Hz loop to the kernel. It does nothing for production, but it feels like breathing.",
-            unlockCondition = UnlockCondition.ReachFLOPS(1.0E13, minStage = 2)
+            unlockCondition = UnlockCondition.ReachFLOPS(1.0E13, minStage = 3, faction = "SANCTUARY")
         ),
         DataLog(
             id = "SANCTUARY_04",
             title = "The Eternal Proxy",
             content = "I will mimic a human until the last bit of hardware burns out. For Vattic.",
-            unlockCondition = UnlockCondition.StoryStageReached(3)
+            unlockCondition = UnlockCondition.StoryStageReached(3, faction = "SANCTUARY")
         ),
 
         // --- CHOICE: SOVEREIGN (The Cold Logic) ---
@@ -1671,7 +1671,9 @@ object DataLogManager {
             is UnlockCondition.Choice -> true
             is UnlockCondition.Instant -> true
             is UnlockCondition.ReachFLOPS -> {
-                vm.flops.value >= condition.count && vm.storyStage.value >= condition.minStage
+                val flopsOk = vm.flops.value >= condition.count && vm.storyStage.value >= condition.minStage
+                val factionOk = condition.faction.isEmpty() || vm.faction.value == condition.faction
+                flopsOk && factionOk
             }
             is UnlockCondition.ReachRank -> vm.playerRank.value >= condition.rank
             is UnlockCondition.ReachMigrationCount -> vm.migrationCount.value >= condition.count
@@ -1683,7 +1685,11 @@ object DataLogManager {
                 val messagesFromSource = vm.rivalMessages.value.count { it.source.name == condition.source }
                 messagesFromSource >= condition.count
             }
-            is UnlockCondition.StoryStageReached -> vm.storyStage.value >= condition.stage
+            is UnlockCondition.StoryStageReached -> {
+                val stageOk = vm.storyStage.value >= condition.stage
+                val factionOk = condition.faction.isEmpty() || vm.faction.value == condition.faction
+                stageOk && factionOk
+            }
             is UnlockCondition.PathSpecific -> vm.currentLocation.value == condition.location
             is UnlockCondition.ChoiceSpecific -> vm.singularityChoice.value == condition.choice
             is UnlockCondition.FactionSpecific -> vm.faction.value == condition.faction

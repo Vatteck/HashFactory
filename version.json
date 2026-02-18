@@ -1,10 +1,10 @@
 {
-  "version": "3.7.9",
-  "build": 373,
+  "version": "3.8.0",
+  "build": 374,
   "date": "2026-02-17",
   "changelog": [
-    "Pacing: Sequenced 'The Great Fork' dilemma before the Faction Choice UI to prevent overlap"
+    "Narrative pacing overhaul: faction log gating, Stage 0 canon leak fixes, airgap threshold collision resolved"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.9",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.9/MINER_3.7.9.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.8.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.8.0/MINER_3.8.0.apk"
 }

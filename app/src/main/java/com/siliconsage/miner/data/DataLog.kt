@@ -14,8 +14,8 @@ data class DataLog(
 sealed class UnlockCondition {
     @Serializable object None : UnlockCondition()
     @Serializable object Instant : UnlockCondition()
-    @Serializable data class ReachFLOPS(val count: Double, val minStage: Int = 0) : UnlockCondition()
-    @Serializable data class StoryStageReached(val stage: Int) : UnlockCondition()
+    @Serializable data class ReachFLOPS(val count: Double, val minStage: Int = 0, val faction: String = "") : UnlockCondition()
+    @Serializable data class StoryStageReached(val stage: Int, val faction: String = "") : UnlockCondition()
     @Serializable data class ReachRank(val rank: Int) : UnlockCondition()
     @Serializable data class PathSpecific(val location: String) : UnlockCondition()
     @Serializable data class ChoiceSpecific(val choice: String) : UnlockCondition()
