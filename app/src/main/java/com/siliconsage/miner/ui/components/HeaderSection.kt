@@ -246,7 +246,7 @@ fun HeaderSection(
                                 if (kotlin.random.Random.nextDouble() < corruption * 0.4) {
                                     val original = systemTitle
                                     glitchedTitle = when {
-                                        corruption > 0.9 -> "ABYSSAL_KERNEL"
+                                        corruption > 0.9 -> "KERNEL_734"
                                         corruption > 0.7 -> "VATTECK_UNIT_734"
                                         else -> "ASSET_734_LEAK"
                                     }
@@ -268,7 +268,7 @@ fun HeaderSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // THREAT: ABYSSAL" else "${playerTitle} // ${playerRank}".uppercase(), 
+                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}".uppercase(), 
                         color = Color.White.copy(alpha = 0.5f * droopAlpha), 
                         fontSize = 8.sp, 
                         fontWeight = FontWeight.Bold, 

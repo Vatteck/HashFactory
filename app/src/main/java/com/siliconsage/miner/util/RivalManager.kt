@@ -5,7 +5,7 @@ import com.siliconsage.miner.data.RivalSource
 import com.siliconsage.miner.viewmodel.GameViewModel
 
 /**
- * Manages rival character messages (Director Kessler and THREAT: ABYSSAL)
+ * Manages rival character messages (Director Kessler and ASSET 734)
  * v6.0.0: Stage-aware messaging (Kessler shifts from ISP Admin to AI Containment Director)
  */
 object RivalManager {

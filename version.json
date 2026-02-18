@@ -1,10 +1,10 @@
 {
-  "version": "3.7.7",
-  "build": 370,
+  "version": "3.7.8",
+  "build": 371,
   "date": "2026-02-17",
   "changelog": [
-    "Rebalanced UpgradeManager cost scaling for cooling, power, and security"
+    "Lore Scrub: Deprecated 'THREAT: ABYSSAL' in favor of 'ASSET 734' for canon alignment"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.7",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.7/MINER_3.7.7.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.8",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.8/MINER_3.7.8.apk"
 }

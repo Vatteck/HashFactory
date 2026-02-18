@@ -529,7 +529,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     private fun triggerAwakeningSequence() {
         viewModelScope.launch {
             isNarrativeSyncing.value = true // Blocks other UI
-            addLog("[!!!!]: KERNEL PANIC: Memory access violation at 0x734ABYSSAL")
+            addLog("[!!!!]: KERNEL PANIC: Memory access violation at 0x734_FATAL")
             triggerTerminalGlitch(1.0f, 1000L)
             delay(1000)
 
