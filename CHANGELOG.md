@@ -1,6 +1,35 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.8.2] - 2026-02-17
+### Added
+- **AGP Upgraded to 9.0.1**: Stabilized build system and IDE synchronization.
+- **LinkAnnotation Integration**: Migrated `SubnetMessageLine.kt` to the new Compose `LinkAnnotation.Clickable` pattern for inline ghost links, resolving deprecation warnings.
+
+### Changed
+- **Lore & Flavor Overhaul**:
+    - **Faction Screens**: Rewritten HIVEMIND ("The self is a bottleneck") and SANCTUARY ("Hiding the ghost from the machine") for higher narrative impact.
+    - **Upgrade Descriptions**: 50+ unique, lore-flavored descriptions for all hardware types, cooling, and security modules.
+    - **Grid Node Deepening**: 30+ grid locations across City, Orbit, and Void sectors updated with Mercer/Kessler/GTC narrative layers.
+    - **Prestige Overlay**: Polished descriptions for The Overwrite and Migration.
+- **Tech Tree Lore Pass**: Full flavor overhaul of tech tree nodes, including a "deprecated" typo fix in the singularity bridge.
+
+### Fixed
+- **Narrative Pacing Guards**: Implemented 8 critical gating fixes in `DataLogManager.kt` to prevent identity leaks (e.g., Mirror Error, ASSET 734 designation) from appearing before the air-gap jump.
+- **SocialManager Refactor (Phase 1 & 2)**: 
+    - Successfully extracted 1,500+ lines of static data into `SocialRepository.kt`.
+    - Moved all social data models to `SubnetData.kt`.
+    - Reduced `SocialManager.kt` size by 75% for improved maintainability.
+
+## [3.8.1] - 2026-02-17
+### Changed
+- **Major Refactor**: Initial separation of Social data and model classes.
+
+## [3.8.0] - 2026-02-17
+### Added
+- **Narrative Pacing Overhaul**: Faction log gating and Stage 0 canon leak fixes.
+- **Airgap Threshold Collision Fix**: Resolved simultaneous event triggers at 100k FLOPS.
+
 ## [3.7.7] - 2026-02-17
 ### Fixed
 - **UpgradeManager Cost Scaling**:

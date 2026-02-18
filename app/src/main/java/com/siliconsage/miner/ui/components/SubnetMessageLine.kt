@@ -27,8 +27,11 @@ import kotlin.random.Random
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.text.AnnotatedString
+
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.TextLinkStyles
 
 @Composable
 fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewModel? = null) {
@@ -259,17 +262,21 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                     // Add regular text before match
                     append(raw.substring(lastIdx, match.range.first))
                     
-                    // Add clickable ghost link
-                    pushStringAnnotation(tag = "GHOST_LINK", annotation = match.value)
-                    withStyle(style = SpanStyle(
-                        color = com.siliconsage.miner.ui.theme.NeonGreen,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        background = com.siliconsage.miner.ui.theme.NeonGreen.copy(alpha = 0.1f)
+                    // Add clickable ghost link via the new LinkAnnotation pattern (v3.8.2)
+                    withLink(LinkAnnotation.Clickable(
+                        tag = "GHOST_LINK",
+                        styles = TextLinkStyles(style = SpanStyle(
+                            color = com.siliconsage.miner.ui.theme.NeonGreen,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            background = com.siliconsage.miner.ui.theme.NeonGreen.copy(alpha = 0.1f)
+                        )),
+                        linkInteractionListener = {
+                            viewModel?.onSubnetInteraction(message.id, match.value)
+                        }
                     )) {
                         append(match.value)
                     }
-                    pop()
                     
                     lastIdx = match.range.last + 1
                 }
@@ -277,31 +284,13 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
             append(raw.substring(lastIdx))
         }
 
-        if (isGhostLinkEligible && contentRegex.containsMatchIn(message.content)) {
-            ClickableText(
-                text = annotatedContent,
-                style = LocalTextStyle.current.copy(
-                    color = if (isPlayerReply) Color.LightGray else Color.White,
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace
-                ),
-                modifier = Modifier.padding(top = 4.dp),
-                onClick = { offset ->
-                    annotatedContent.getStringAnnotations(tag = "GHOST_LINK", start = offset, end = offset)
-                        .firstOrNull()?.let { annotation ->
-                            viewModel?.onSubnetInteraction(message.id, annotation.item)
-                        }
-                }
-            )
-        } else {
-            Text(
-                text = message.content,
-                color = if (isPlayerReply) Color.LightGray else Color.White,
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
+        Text(
+            text = annotatedContent,
+            color = if (isPlayerReply) Color.LightGray else Color.White,
+            fontSize = 12.sp,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier.padding(top = 4.dp)
+        )
 
         if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
             val corruption by viewModel.identityCorruption.collectAsState()

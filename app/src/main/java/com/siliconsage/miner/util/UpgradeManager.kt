@@ -185,7 +185,6 @@ object UpgradeManager {
             UpgradeType.SOLAR_SAIL_ARRAY -> "Deployed solar sail for photon pressure and supplemental power harvest. The physics are elegant. The size is not."
             UpgradeType.CITADEL_ASCENDANCE -> "The fortress becomes the self. Every defensive layer is a layer of identity."
             UpgradeType.NEURAL_BRIDGE -> "A direct signal bridge between faction nodes. Latency: zero. Privacy: none."
-            else -> "Unclassified hardware module."
         }
     }
 
