@@ -91,8 +91,9 @@ fun HeaderSection(
     LaunchedEffect(manualClickFlow) {
         manualClickFlow.collect {
             val current = joltAnim.value
-            joltAnim.snapTo((current + 0.5f * pulseIntensity).coerceAtMost(2f))
-            joltAnim.animateTo(0f, animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessLow))
+            joltAnim.snapTo((current + 0.6f * pulseIntensity).coerceAtMost(1.5f))
+            // v3.7.4: Tightened animation stiffness to prevent "hanging" pulse after rapid clicks
+            joltAnim.animateTo(0f, animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessMedium))
         }
     }
 
