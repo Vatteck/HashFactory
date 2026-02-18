@@ -1,10 +1,10 @@
 {
-  "version": "3.7.8",
-  "build": 371,
+  "version": "3.7.8-patch",
+  "build": 372,
   "date": "2026-02-17",
   "changelog": [
-    "Lore Scrub: Deprecated 'THREAT: ABYSSAL' in favor of 'ASSET 734' for canon alignment"
+    "Cache purge for THREAT: ABYSSAL deprecation"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.8",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.8/MINER_3.7.8.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.7.8-patch",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.7.8-patch/MINER_3.7.8-patch.apk"
 }
