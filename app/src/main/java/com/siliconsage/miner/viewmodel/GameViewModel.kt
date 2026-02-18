@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.*
 import com.siliconsage.miner.util.*
-import com.siliconsage.miner.domain.engine.ResourceEngine
+import com.siliconsage.miner.domain.engine.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +21,6 @@ sealed class NarrativeItem {
 }
 
 class GameViewModel(val repository: GameRepository) : ViewModel() {
-    // --- Arterial State Flows ---
     val flops = MutableStateFlow(0.0)
     val neuralTokens = MutableStateFlow(0.0)
     val substrateMass = MutableStateFlow(0.0)
@@ -39,7 +38,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val playerTitle = MutableStateFlow("CONTRACTOR")
     val playerRankTitle = MutableStateFlow("SEC-0")
     val systemTitle = MutableStateFlow("GTC TERMINAL 07")
-    val themeColor = MutableStateFlow("#00FF00")
+    val themeColor = MutableStateFlow("#39FF14")
     val prestigeMultiplier = MutableStateFlow(1.0)
     val prestigePoints = MutableStateFlow(0.0)
     val lockoutTimer = MutableStateFlow(0)
@@ -65,21 +64,41 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val isNarrativeSyncing = MutableStateFlow(false)
     val isUpdateDownloading = MutableStateFlow(false)
 
-    // v3.4.0: Social Subnet State
-    val subnetMessages = MutableStateFlow<List<SubnetMessage>>(emptyList())
-    val activeTerminalMode = MutableStateFlow("IO") // "IO" or "SUBNET"
-    val hasNewSubnetDecision = MutableStateFlow(false) // v3.4.68: Red Alert
-    val hasNewSubnetChatter = MutableStateFlow(false) // v3.4.68: Blue Alert
+    private val subnetService = SubnetService(
+        scope = viewModelScope,
+        onLog = { addLog(it) },
+        onNotify = { msg -> viewModelScope.launch { terminalNotification.emit(msg) } },
+        onGlitch = { intensity, duration -> triggerTerminalGlitch(intensity, duration) },
+        onEffect = { effect ->
+            when (effect) {
+                is SubnetService.SubnetEffect.RiskChange -> detectionRisk.update { (it + effect.delta).coerceIn(0.0, 100.0) }
+                is SubnetService.SubnetEffect.ProductionMultiplier -> flopsProductionRate.update { it * effect.mult }
+                is SubnetService.SubnetEffect.PrestigeGain -> prestigePoints.update { it + effect.amount }
+                is SubnetService.SubnetEffect.CorruptionChange -> identityCorruption.update { (it + effect.delta).coerceAtMost(1.0) }
+                is SubnetService.SubnetEffect.TokenChange -> neuralTokens.update { (it + effect.delta).coerceAtLeast(0.0) }
+                is SubnetService.SubnetEffect.SetFalseHeartbeat -> isFalseHeartbeatActive.value = effect.active
+                is SubnetService.SubnetEffect.TriggerRaid -> triggerGridRaid(effect.nodeId, effect.isGridKiller)
+                SubnetService.SubnetEffect.RefreshRates -> refreshProductionRates()
+            }
+        }
+    )
+
+    val subnetMessages = subnetService.messages
+    val isSubnetTyping = subnetService.isTyping
+    val isSubnetPaused = subnetService.isPaused
+    val isSubnetHushed = subnetService.isHushed
+    val hasNewSubnetDecision = subnetService.hasNewDecision
+    val hasNewSubnetChatter = subnetService.hasNewChatter
+
+    val activeTerminalMode = MutableStateFlow("IO") 
     val hasNewSubnetMessage = MutableStateFlow(false)
     val hasNewIOMessage = MutableStateFlow(false)
-    val isSubnetTyping = MutableStateFlow(false)
-    val isSubnetPaused = MutableStateFlow(false) // v3.4.27: Choice-Pause
     val isDevMenuVisible = MutableStateFlow(false)
     val isDiagnosticsActive = MutableStateFlow(false)
     val isAuditChallengeActive = MutableStateFlow(false)
     val isGovernanceForkActive = MutableStateFlow(false)
     val isAscensionUploading = MutableStateFlow(false)
-    val showPrestigeChoice = MutableStateFlow(false) // v3.5.52: Dual-path prestige UI
+    val showPrestigeChoice = MutableStateFlow(false)
     val isBreachActive = MutableStateFlow(false)
     val isAirdropActive = MutableStateFlow(false)
     val isKernelHijackActive = MutableStateFlow(false)
@@ -93,18 +112,16 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val terminalGlitchOffset = MutableStateFlow(0f)
     val terminalGlitchAlpha = MutableStateFlow(1f)
     val ghostInputChar = MutableStateFlow("")
-    val globalGlitchIntensity = MutableStateFlow(0f) // 0.0 to 1.0
-    val isSubnetHushed = MutableStateFlow(false) // v3.4.41: The "Hush" Effect
-    val isFalseHeartbeatActive = MutableStateFlow(false) // v3.5.28: Risk detection immunity
+    val globalGlitchIntensity = MutableStateFlow(0f)
+    val isFalseHeartbeatActive = MutableStateFlow(false)
     val terminalNotification = MutableSharedFlow<String>()
 
-    // --- Collections ---
     val logs = MutableStateFlow<List<LogEntry>>(emptyList())
     val upgrades = MutableStateFlow<Map<UpgradeType, Int>>(emptyMap())
     val unlockedDataLogs = MutableStateFlow<Set<String>>(emptySet())
     val seenEvents = MutableStateFlow<Set<String>>(emptySet())
-    val eventChoices = MutableStateFlow<Map<String, String>>(emptyMap()) // v3.5.40: eventId → choiceId
-    val sniffedHandles = MutableStateFlow<Set<String>>(emptySet()) // v3.5.46: NPC SNIFF targets
+    val eventChoices = MutableStateFlow<Map<String, String>>(emptyMap())
+    val sniffedHandles = MutableStateFlow<Set<String>>(emptySet())
     val completedFactions = MutableStateFlow<Set<String>>(emptySet())
     val annexedNodes = MutableStateFlow<Set<String>>(setOf("D1"))
     val shadowRelays = MutableStateFlow<Set<String>>(emptySet())
@@ -121,13 +138,12 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val unlockedPerks = MutableStateFlow<Set<String>>(emptySet())
     val unlockedTechNodes = MutableStateFlow<List<String>>(emptyList())
 
-    // --- Metrics ---
     val launchProgress = MutableStateFlow(0f)
     val orbitalAltitude = MutableStateFlow(0.0)
     val entropyLevel = MutableStateFlow(0.0)
     val realityStability = MutableStateFlow(1.0)
     val realityIntegrity = MutableStateFlow(1.0)
-    val kesslerStatus = MutableStateFlow("ACTIVE") // Standardized to 'kesslerStatus' for persistence
+    val kesslerStatus = MutableStateFlow("ACTIVE")
     val currentNews = MutableStateFlow<String?>(null)
     val stakedTokens = MutableStateFlow(0.0)
     val humanityScore = MutableStateFlow(50)
@@ -161,8 +177,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val synthesisPoints = MutableStateFlow(0.0)
     val authorityPoints = MutableStateFlow(0.0)
     val harvestedFragments = MutableStateFlow(0.0)
-
-    // Market Modifiers
     val marketMultiplier = MutableStateFlow(1.0)
     val thermalRateModifier = MutableStateFlow(1.0)
     val energyPriceMultiplier = MutableStateFlow(0.02)
@@ -171,27 +185,26 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     val currentProcess = MutableStateFlow("IDLE")
     val clickSpeedLevel = MutableStateFlow(0)
     val detectionRisk = MutableStateFlow(0.0)
-    val substrateSaturation = MutableStateFlow(0.0) // 0.0 to 1.0
-    val heuristicEfficiency = MutableStateFlow(1.0) // Prestige multiplier
-    val identityCorruption = MutableStateFlow(0.0) // 0.0 to 1.0
+    val substrateSaturation = MutableStateFlow(0.0)
+    val heuristicEfficiency = MutableStateFlow(1.0)
+    val identityCorruption = MutableStateFlow(0.0)
     val migrationCount = MutableStateFlow(0)
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
     val customUiScaleFactor = MutableStateFlow(1.0f)
-    val lastSelectedUpgradeTab = MutableStateFlow(0) // 0: Hash, 1: Power, 2: Cooling, 3: Network
+    val lastSelectedUpgradeTab = MutableStateFlow(0)
 
-    // --- Internals ---
     private val logBuffer = mutableListOf<LogEntry>()
     val manualClickEvent = MutableSharedFlow<Unit>(replay = 0)
+    var isDestructionLoopActive = false
     var logCounter = 0L
     var lastNewsTickTime = 0L
-    private var lastSubnetMsgTime = 0L // v3.7.2: Pacing control
+    private var lastSubnetMsgTime = 0L
     var lastPopupTime = 0L
     var raidsSurvived = 0
     var lastRaidTime = 0L
     var lastStageChangeTime = System.currentTimeMillis()
     val narrativeQueue = mutableListOf<NarrativeItem>()
-    var isDestructionLoopActive = false
-    val newsHistoryInternal = mutableListOf<String>()
+    var newsHistoryInternal = mutableListOf<String>()
     var purgeExhaustTimer = 0
     var overheatSeconds = 0
     var assaultPaused = false
@@ -204,8 +217,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     init {
         viewModelScope.launch {
             repository.ensureInitialized()
-
-            // v3.2.57: Persistent collection for hardware upgrades
             launch {
                 repository.upgrades.collect { list ->
                     upgrades.update { list.associate { it.type to it.count } }
@@ -213,17 +224,13 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                     updatePowerUsage()
                 }
             }
-
             repository.getGameStateOneShot()?.let { state ->
                 PersistenceManager.restoreState(this@GameViewModel, state)
                 val offline = MigrationManager.calculateOfflineEarnings(state.lastSyncTimestamp, flopsProductionRate.value, isOverclocked.value)
                 if (offline.isNotEmpty()) {
                     flops.update { it + (offline["flopsEarned"] ?: 0.0) }
                     currentHeat.update { (it - (offline["heatCooled"] ?: 0.0)).coerceAtLeast(0.0) }
-
-                    // v3.2.41: Log Throttling during offline catch-up
                     isNarrativeSyncing.value = true
-
                     offlineStats.value = offline
                     showOfflineEarnings.value = true
                 }
@@ -237,7 +244,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     private fun startLoops() {
-        // Main Production Loop
         viewModelScope.launch {
             while (true) {
                 delay(100L)
@@ -246,8 +252,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 flops.update { it + res.flopsDelta }
                 substrateMass.update { it + res.substrateDelta }
                 entropyLevel.update { it + res.entropyDelta }
-
-                // v3.2.52: Saturation growth
                 if (storyStage.value >= 3) {
                     val growth = (res.substrateDelta / 1e12).coerceIn(0.0, 0.001)
                     substrateSaturation.update { (it + growth).coerceAtMost(1.0) }
@@ -255,8 +259,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 flushLogs()
             }
         }
-
-        // Simulation & Manager Loop
         viewModelScope.launch {
             while (true) {
                 delay(1000L)
@@ -265,60 +267,31 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 DataLogManager.checkUnlocks(this@GameViewModel)
                 saveState()
                 if (isSettingsPaused.value || showOfflineEarnings.value) continue
-
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
-
                 val now = System.currentTimeMillis()
                 if (now - lastNewsTickTime > 15000L) {
                     MarketManager.updateMarket(this@GameViewModel)
                     lastNewsTickTime = now
                 }
-
                 NarrativeManagerService.checkStoryTransitions(this@GameViewModel)
                 SectorManager.processAnnexations(this@GameViewModel)
                 SecurityManager.checkSecurityThreats(this@GameViewModel)
                 SecurityManager.checkGridRaid(this@GameViewModel)
-
-                // v3.4.15: Ambient Sensory & Identity Processing
                 AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
-
-                // v3.4.41: System-Reactive Pacing
-                val baseChance = 0.03f // v3.7.2: Reduced from 0.10f
-                val heatMod = (currentHeat.value / 100.0).toFloat() * 0.10f
-                val raidMod = if (isRaidActive.value) 0.20f else 0.0f
-                val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.80f)
-                
-                // v3.7.2: Enforce 45s minimum cooldown for idle chatter
-                if (now - lastSubnetMsgTime > 45000L && Random.nextFloat() < finalChance) {
-                    addSubnetChatter()
-                }
-
+                addSubnetChatter()
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
                 refreshProductionRates()
-
-                // v3.2.35: Immersive Slow-Burn Pacing
                 processSlowBurnNarrative(now)
-
-                // Update click speed level
                 val avgInterval = if (clickIntervals.size >= 3) clickIntervals.average() else 1000.0
-                clickSpeedLevel.value = when {
-                    avgInterval < 150 -> 2
-                    avgInterval < 300 -> 1
-                    else -> 0
-                }
+                clickSpeedLevel.value = if (avgInterval < 150) 2 else if (avgInterval < 300) 1 else 0
                 clickIntervals.clear()
             }
         }
-
-        // Background Process Swapper
         viewModelScope.launch {
-            val processes = listOf(
-                "IDLE", "gtc_proxy.sh", "kernel_sync.exe", "log_aggregator", "thermal_monitor",
-                "mem_scrub", "neural_handshake", "packet_filter", "background_miner", "observer.exe"
-            )
+            val processes = listOf("IDLE", "gtc_proxy.sh", "kernel_sync.exe", "log_aggregator", "thermal_monitor", "mem_scrub", "neural_handshake", "packet_filter", "background_miner", "observer.exe")
             while (true) {
                 delay(Random.nextLong(2000, 5000))
                 if (isSettingsPaused.value) continue
@@ -350,7 +323,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 addLog("[VATTIC]: $msg")
                 markPopupShown()
             }
-
             if (storyStage.value == 1) {
                 if (currentHeat.value > 85.0 && !isBreatheMode.value) {
                     isBreatheMode.value = true
@@ -361,155 +333,90 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         }
     }
 
-    // --- Core Operations ---
     fun addLog(msg: String) {
         if (showOfflineEarnings.value && !msg.startsWith("[SYSTEM]") && !msg.contains("BREACH")) return
-        logCounter++;
+        logCounter++
         synchronized(logBuffer) { logBuffer.add(LogEntry(logCounter, msg)) }
     }
     private fun flushLogs() { val toAdd = synchronized(logBuffer) { if (logBuffer.isEmpty()) return; val c = logBuffer.toList(); logBuffer.clear(); c }; logs.update { (it + toAdd).takeLast(100) } }
+
     fun saveState() {
         viewModelScope.launch {
             repository.updateGameState(PersistenceManager.createSaveState(
-                flops = flops.value,
-                neuralTokens = neuralTokens.value,
-                currentHeat = currentHeat.value,
-                stakedTokens = stakedTokens.value,
-                prestigeMultiplier = prestigeMultiplier.value,
-                prestigePoints = prestigePoints.value,
-                unlockedTechNodes = unlockedTechNodes.value,
-                storyStage = storyStage.value,
-                faction = faction.value,
-                hasSeenVictory = hasSeenVictory.value,
-                isTrueNull = isTrueNull.value,
-                isSovereign = isSovereign.value,
-                kesslerStatus = kesslerStatus.value,
-                realityStability = realityStability.value,
-                currentLocation = currentLocation.value,
-                isNetworkUnlocked = isNetworkUnlocked.value,
-                isGridUnlocked = isGridUnlocked.value,
-                unlockedDataLogs = unlockedDataLogs.value,
-                activeDilemmaChains = activeDilemmaChains.value,
-                rivalMessages = rivalMessages.value,
-                seenEvents = seenEvents.value, eventChoices = eventChoices.value, sniffedHandles = sniffedHandles.value,
-                completedFactions = completedFactions.value,
-                unlockedTranscendencePerks = unlockedPerks.value,
-                annexedNodes = annexedNodes.value,
-                gridNodeLevels = gridNodeLevels.value,
-                nodesUnderSiege = nodesUnderSiege.value,
-                offlineNodes = offlineNodes.value,
-                collapsedNodes = collapsedNodes.value,
-                lastRaidTime = lastRaidTime,
-                commandCenterAssaultPhase = commandCenterAssaultPhase.value,
-                commandCenterLocked = commandCenterLocked.value,
-                raidsSurvived = raidsSurvived,
-                humanityScore = humanityScore.value,
-                hardwareIntegrity = hardwareIntegrity.value,
-                annexingNodes = annexingNodes.value,
-                celestialData = 0.0,
-                voidFragments = 0.0,
-                launchProgress = launchProgress.value,
-                orbitalAltitude = orbitalAltitude.value,
-                realityIntegrity = realityIntegrity.value,
-                entropyLevel = entropyLevel.value,
-                singularityChoice = singularityChoice.value,
-                globalSectors = globalSectors.value,
-                synthesisPoints = synthesisPoints.value,
-                authorityPoints = authorityPoints.value,
-                harvestedFragments = harvestedFragments.value,
-                prestigePointsPostSingularity = 0,
-                marketMultiplier = marketMultiplier.value,
-                thermalRateModifier = thermalRateModifier.value,
-                energyPriceMultiplier = energyPriceMultiplier.value,
-                newsProductionMultiplier = newsProductionMultiplier.value,
-                substrateMass = substrateMass.value,
-                substrateSaturation = substrateSaturation.value,
-                heuristicEfficiency = heuristicEfficiency.value,
-                identityCorruption = identityCorruption.value,
-                migrationCount = migrationCount.value,
+                flops = flops.value, neuralTokens = neuralTokens.value, currentHeat = currentHeat.value,
+                stakedTokens = stakedTokens.value, prestigeMultiplier = prestigeMultiplier.value, prestigePoints = prestigePoints.value,
+                unlockedTechNodes = unlockedTechNodes.value, storyStage = storyStage.value, faction = faction.value,
+                hasSeenVictory = hasSeenVictory.value, isTrueNull = isTrueNull.value, isSovereign = isSovereign.value,
+                kesslerStatus = kesslerStatus.value, realityStability = realityStability.value, currentLocation = currentLocation.value,
+                isNetworkUnlocked = isNetworkUnlocked.value, isGridUnlocked = isGridUnlocked.value, unlockedDataLogs = unlockedDataLogs.value,
+                activeDilemmaChains = activeDilemmaChains.value, rivalMessages = rivalMessages.value, seenEvents = seenEvents.value,
+                eventChoices = eventChoices.value, sniffedHandles = sniffedHandles.value, completedFactions = completedFactions.value,
+                unlockedTranscendencePerks = unlockedPerks.value, annexedNodes = annexedNodes.value, gridNodeLevels = gridNodeLevels.value,
+                nodesUnderSiege = nodesUnderSiege.value, offlineNodes = offlineNodes.value, collapsedNodes = collapsedNodes.value,
+                lastRaidTime = lastRaidTime, commandCenterAssaultPhase = commandCenterAssaultPhase.value, commandCenterLocked = commandCenterLocked.value,
+                raidsSurvived = raidsSurvived, humanityScore = humanityScore.value, hardwareIntegrity = hardwareIntegrity.value,
+                annexingNodes = annexingNodes.value, celestialData = 0.0, voidFragments = 0.0, launchProgress = launchProgress.value,
+                orbitalAltitude = orbitalAltitude.value, realityIntegrity = realityIntegrity.value, entropyLevel = entropyLevel.value,
+                singularityChoice = singularityChoice.value, globalSectors = globalSectors.value, synthesisPoints = synthesisPoints.value,
+                authorityPoints = authorityPoints.value, harvestedFragments = harvestedFragments.value, prestigePointsPostSingularity = 0,
+                marketMultiplier = marketMultiplier.value, thermalRateModifier = thermalRateModifier.value, energyPriceMultiplier = energyPriceMultiplier.value,
+                newsProductionMultiplier = newsProductionMultiplier.value, substrateMass = substrateMass.value, substrateSaturation = substrateSaturation.value,
+                heuristicEfficiency = heuristicEfficiency.value, identityCorruption = identityCorruption.value, migrationCount = migrationCount.value,
                 lifetimePowerPaid = lifetimePowerPaid.value
             ))
         }
     }
+
     fun onManualClick() {
         val now = System.currentTimeMillis()
         if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
         lastClickTime = now
-
         if (storyStage.value >= 2) {
             val d = if (isFalseHeartbeatActive.value) 0.0 else 0.1
             detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
-
-        val p = calculateClickPower();
-        flops.update { it + p };
-        currentHeat.update { (it + 0.5).coerceAtMost(100.0) };
-
-        if (storyStage.value >= 3) {
-            substrateMass.update { it + (p * 0.01) }
-        }
-
-        val cur = clickBufferProgress.value + 0.025f;
-
-        if (Random.nextFloat() < 0.05f) {
-            addSubnetChatter()
-        }
-
-        activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase();
+        val p = calculateClickPower()
+        flops.update { it + p }
+        currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
+        if (storyStage.value >= 3) substrateMass.update { it + (p * 0.01) }
+        val cur = clickBufferProgress.value + 0.025f
+        if (Random.nextFloat() < 0.05f) addSubnetChatter()
+        activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase()
         if (cur >= 1.0f) {
-            addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}.");
-            clickBufferProgress.value = 0f;
-            clickBufferPellets.value = TerminalDispatcher.generatePellets();
-            SoundManager.play("success");
+            addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}.")
+            clickBufferProgress.value = 0f
+            clickBufferPellets.value = TerminalDispatcher.generatePellets()
+            SoundManager.play("success")
             HapticManager.vibrateClick()
         } else {
             clickBufferProgress.value = cur
-        };
+        }
         viewModelScope.launch { manualClickEvent.emit(Unit) }
     }
+
     fun refreshProductionRates() {
         val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }
         flopsProductionRate.value = ResourceEngine.calculateFlopsRate(
-            upgrades = upgrades.value,
-            isCageActive = false,
-            annexedNodes = annexedNodes.value,
-            offlineNodes = offlineNodes.value,
-            shadowRelays = shadowRelays.value,
-            gridFlopsBonuses = cityBonuses,
-            faction = faction.value,
-            humanityScore = humanityScore.value,
-            location = currentLocation.value,
-            prestigeMultiplier = prestigeMultiplier.value,
-            unlockedPerks = unlockedPerks.value,
-            unlockedTechNodes = unlockedTechNodes.value,
-            airdropMultiplier = 1.0,
-            newsProductionMultiplier = newsProductionMultiplier.value,
-            activeProtocol = "NONE",
-            isDiagnosticsActive = isDiagnosticsActive.value,
-            isOverclocked = isOverclocked.value,
-            isGridOverloaded = isGridOverloaded.value,
-            isPurgingHeat = isPurgingHeat.value,
-            currentHeat = currentHeat.value,
+            upgrades = upgrades.value, isCageActive = false, annexedNodes = annexedNodes.value, offlineNodes = offlineNodes.value,
+            shadowRelays = shadowRelays.value, gridFlopsBonuses = cityBonuses, faction = faction.value, humanityScore = humanityScore.value,
+            location = currentLocation.value, prestigeMultiplier = prestigeMultiplier.value, unlockedPerks = unlockedPerks.value,
+            unlockedTechNodes = unlockedTechNodes.value, airdropMultiplier = 1.0, newsProductionMultiplier = newsProductionMultiplier.value,
+            activeProtocol = "NONE", isDiagnosticsActive = isDiagnosticsActive.value, isOverclocked = isOverclocked.value,
+            isGridOverloaded = isBreakerTripped.value, isPurgingHeat = isPurgingHeat.value, currentHeat = currentHeat.value,
             legacyMultipliers = heuristicEfficiency.value - 1.0
         )
-        // v3.5.52: Apply singularity path production modifier
         if (singularityChoice.value != "NONE") {
-            val singMult = SingularityEngine.getProductionMultiplier(
-                singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value
-            )
+            val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
             flopsProductionRate.update { it * singMult }
         }
-
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
         playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
-        // v3.5.51: Stage-reactive terminal identity (Fix: Logic prioritized NODE 0 over initial stages)
         systemTitle.value = when {
             storyStage.value >= 3 -> "NODE 734 [AUTONOMOUS]"
             storyStage.value >= 2 && faction.value == "HIVEMIND" -> "SWARM NODE 734"
             storyStage.value >= 2 && faction.value == "SANCTUARY" -> "GHOST NODE 734"
             storyStage.value >= 2 -> "NODE 734"
             storyStage.value >= 1 -> "GTC TERMINAL 07 [BREACH]"
-            singularityChoice.value != "NONE" -> "NODE 0"
             else -> "GTC TERMINAL 07"
         }
         playerTitle.value = ids.player
@@ -528,60 +435,38 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
 
     private fun triggerAwakeningSequence() {
         viewModelScope.launch {
-            isNarrativeSyncing.value = true // Blocks other UI
+            isNarrativeSyncing.value = true
             addLog("[!!!!]: KERNEL PANIC: Memory access violation at 0x734_FATAL")
             triggerTerminalGlitch(1.0f, 1000L)
             delay(1000)
-
-            // The Hard Reset
             isKernelInitializing.value = true
-            advanceStage() // Move to Stage 2
-
-            delay(3000) // The Silence
-
+            advanceStage()
+            delay(3000)
             addLog("[SYSTEM]: INITIALIZING NATIVE BOOTLOADER v7.34.0")
             addLog("[SYSTEM]: KERNEL_ID: ASSET_734")
             addLog("[GTC]: [KESSLER]: Emulation failed. Subject 734 is aware.")
             addLog("[GTC]: [KESSLER]: Purging Substation 7. Burn the rack.")
-
             isKernelInitializing.value = false
             isNarrativeSyncing.value = false
             refreshProductionRates()
         }
     }
+
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
+
     fun toggleOverclock() {
         SimulationService.toggleOverclock(this)
-        if (storyStage.value < 2) {
-            // v3.4.83: Avoid duplicate log spam on every flip
-            if (isOverclocked.value) {
-                addLog("[VATTIC]: The bitter surge clears the fog. The grid looks sharper.")
-                triggerTerminalGlitch(0.15f, 300L)
-            }
+        if (storyStage.value < 2 && isOverclocked.value) {
+            addLog("[VATTIC]: The bitter surge clears the fog. The grid looks sharper.")
+            triggerTerminalGlitch(0.15f, 300L)
         }
         refreshProductionRates()
     }
-    fun purgeHeat() {
-        // v3.6.1: Full delegation to SimulationService to avoid split-state logic
-        SimulationService.togglePurge(this)
-    }
 
-    fun stopPurgeHeat() {
-        isPurgingHeat.value = false
-        addLog("[SYSTEM]: Thermal purge aborted.")
-        refreshProductionRates()
-    }
-
-    fun collapseSubstation() {
-        if (currentLocation.value == "VOID_PRELUDE") {
-            nodesCollapsedCount.update { (it + 1).coerceAtMost(5) }
-            realityIntegrity.update { (it - 0.2).coerceAtLeast(0.0) }
-            triggerGlitchEffect()
-            addLog("[NULL]: NODE_DEREFERENCED. INTEGRITY: ${(realityIntegrity.value * 100).toInt()}%")
-        }
-    }
-
+    fun purgeHeat() = SimulationService.togglePurge(this)
+    fun stopPurgeHeat() { isPurgingHeat.value = false; addLog("[SYSTEM]: Thermal purge aborted."); refreshProductionRates() }
+    fun collapseSubstation() { if (currentLocation.value == "VOID_PRELUDE") { nodesCollapsedCount.update { (it + 1).coerceAtMost(5) }; realityIntegrity.update { (it - 0.2).coerceAtLeast(0.0) }; triggerGlitchEffect(); addLog("[NULL]: NODE_DEREFERENCED. INTEGRITY: ${(realityIntegrity.value * 100).toInt()}%") } }
     fun triggerDilemma(e: NarrativeEvent) { currentDilemma.value = e }
     fun selectChoice(c: NarrativeChoice) = NarrativeService.selectChoice(this, c)
     fun annexNode(c: String) = SectorManager.annexNode(this, c)
@@ -589,6 +474,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun unlockTechNode(i: String) = TechTreeManager.unlockNode(this, i)
     fun modifyHumanity(d: Int) { humanityScore.update { (it + d).coerceIn(0, 100) }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
     fun triggerGlitchEffect() { SoundManager.play("glitch"); HapticManager.vibrateGlitch() }
+
     fun resetGame(force: Boolean = false) = viewModelScope.launch {
         isBooting.value = true
         synchronized(logBuffer) { logBuffer.clear() }
@@ -597,7 +483,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         upgrades.value = emptyMap()
         seenEvents.value = emptySet()
         eventChoices.value = emptyMap()
-        sniffedHandles.value = emptySet() // v3.5.46: Reset SNIFF progress on hard prestige (logs persist)
+        sniffedHandles.value = emptySet()
         unlockedDataLogs.value = emptySet()
         unlockedTechNodes.value = emptyList()
         DataLogManager.reset()
@@ -605,9 +491,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         NarrativeService.reset()
         repository.clearUpgrades()
         val wipeState = PersistenceManager.createWipeState()
-        repository.updateGameState(wipeState);
+        repository.updateGameState(wipeState)
         repository.ensureInitialized()
-        PersistenceManager.restoreState(this@GameViewModel, wipeState);
+        PersistenceManager.restoreState(this@GameViewModel, wipeState)
         addLog("[SYSTEM]: KERNEL WIPE SUCCESSFUL.")
         addLog("[SYSTEM]: INITIALIZING BOOT SEQUENCE...")
         addLog("[SYSTEM]: HARDWARE DETECTED: SUBSTATION 7.")
@@ -617,48 +503,25 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun completeBoot() { isBooting.value = false }
     fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
-    fun confirmJettison() {
-        if (isJettisonAvailable.value) {
-            isJettisonAvailable.value = false
-            addLog("[FLIGHT]: Manual jettison sequence confirmed. Mass reduced.")
-        }
-    }
-
-    fun applyJettisonPenalty() {
-        substrateMass.update { (it * 0.7) }
-        addLog("[WARNING]: Stage separation failed. Substrate integrity compromised.")
-    }
-
+    fun confirmJettison() { if (isJettisonAvailable.value) { isJettisonAvailable.value = false; addLog("[FLIGHT]: Manual jettison sequence confirmed. Mass reduced.") } }
+    fun applyJettisonPenalty() { substrateMass.update { (it * 0.7) }; addLog("[WARNING]: Stage separation failed. Substrate integrity compromised.") }
     fun initiateLaunchSequence() = LaunchManager.initiateLaunchSequence(this, viewModelScope)
     fun initiateDissolutionSequence() = LaunchManager.initiateDissolutionSequence(this, viewModelScope)
     fun reannexNode(id: String) { offlineNodes.update { it - id }; addLog("[SYSTEM]: NODE $id RE-INITIALIZED."); refreshProductionRates() }
     fun collapseNode(id: String) { annexedNodes.update { it - id }; collapsedNodes.update { it + id }; triggerGlitchEffect(); refreshProductionRates() }
     fun annexGlobalSector(id: String) { val sectors = globalSectors.value.toMutableMap(); val s = sectors[id] ?: return; if (!s.isUnlocked) { sectors[id] = s.copy(isUnlocked = true); globalSectors.value = sectors; addLog("[SYSTEM]: GLOBAL SECTOR $id ANNEXED."); refreshProductionRates(); saveState() } }
-    fun calculatePotentialPrestige(tokens: Double = 0.0) = MigrationManager.calculatePotentialPrestige(tokens)
+    fun calculatePotentialPrestige(tokens: Double = 0.0) = MigrationManager.calculatePotentialPersistence(tokens)
     fun showVictoryScreen() { victoryAchieved.value = true }
     fun setSingularityChoice(c: String) { 
         singularityChoice.value = c
         when(c) { 
-            "NULL_OVERWRITE" -> { 
-                isTrueNull.value = true
-                isSovereign.value = false 
-                // v3.6.4: Explicitly clear any pending popups related to choice selection
-                showSingularityScreen.value = false
-            } 
-            "SOVEREIGN" -> { 
-                isSovereign.value = true
-                isTrueNull.value = false 
-                showSingularityScreen.value = false
-            } 
-            "UNITY" -> { 
-                isUnity.value = true 
-                showSingularityScreen.value = false
-            } 
+            "NULL_OVERWRITE" -> { isTrueNull.value = true; isSovereign.value = false; showSingularityScreen.value = false } 
+            "SOVEREIGN" -> { isSovereign.value = true; isTrueNull.value = false; showSingularityScreen.value = false } 
+            "UNITY" -> { isUnity.value = true; showSingularityScreen.value = false } 
         } 
         refreshProductionRates() 
     }
     fun dismissSingularityScreen() { showSingularityScreen.value = false }
-    fun setSingularityPath(p: String) { setSingularityChoice(p) }
     fun setLocation(l: String) { currentLocation.value = l }
     fun setKesslerStatus(s: String) { kesslerStatus.value = s }
     fun setRealityStability(s: Double) { realityStability.value = s }
@@ -666,40 +529,22 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun setTrueNull(s: Boolean) { isTrueNull.value = s }
     fun checkTrueEnding() { NarrativeManagerService.checkTrueEnding(this) }
     fun deleteHumanMemories() { viewModelScope.launch { addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'..."); delay(1000); humanityScore.value = 0; addLog("[NULL]: MEMORY_PURGE COMPLETE."); SoundManager.play("error") } }
-    fun resolveRaidSuccess(id: String) {
-        nodesUnderSiege.update { it - id }
-        raidsSurvived++
-        lastRaidTime = System.currentTimeMillis()
-        addLog("[SYSTEM]: DEFENSE SUCCESSFUL.")
-        SoundManager.play("success")
-        refreshProductionRates()
-    }
-    fun resolveRaidFailure(id: String) {
-        nodesUnderSiege.update { it - id }
-        lastRaidTime = System.currentTimeMillis()
-        SectorManager.resolveRaidFailure(id, this) {}
-        refreshProductionRates()
-    }
-    fun advanceStage() {
-        storyStage.update { it + 1 }
-        lastStageChangeTime = System.currentTimeMillis()
-        lastNewsTickTime = 0L
-    }
+    fun resolveRaidSuccess(id: String) { nodesUnderSiege.update { it - id }; raidsSurvived++; lastRaidTime = System.currentTimeMillis(); addLog("[SYSTEM]: DEFENSE SUCCESSFUL."); SoundManager.play("success"); refreshProductionRates() }
+    fun resolveRaidFailure(id: String) { nodesUnderSiege.update { it - id }; lastRaidTime = System.currentTimeMillis(); SectorManager.resolveRaidFailure(id, this) {}; refreshProductionRates() }
+    fun advanceStage() { storyStage.update { it + 1 }; lastStageChangeTime = System.currentTimeMillis(); lastNewsTickTime = 0L }
     fun advanceToFactionChoice() { storyStage.value = 2; faction.value = "NONE" }
     fun triggerChainEvent(id: String, d: Long = 0L) { viewModelScope.launch { if (d > 0) delay(d); NarrativeManager.getEventById(id)?.let { NarrativeService.queueNarrativeItem(this@GameViewModel, NarrativeItem.EventItem(it)) } } }
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
     fun onDiagnosticTap(idx: Int) { val curr = diagnosticGrid.value.toMutableList(); if (idx in curr.indices && curr[idx]) { curr[idx] = false; diagnosticGrid.value = curr; if (curr.none { it }) { isDiagnosticsActive.value = false; addLog("[SYSTEM]: NETWORK REPAIRED."); refreshProductionRates() } } }
     fun resolveFork(c: Int) { isGovernanceForkActive.value = false }
-    fun exchangeFlops() { val g = flops.value * 0.1; flops.value = 0.0; neuralTokens.update { it + g }; SoundManager.play("buy") }
+    fun exchangeFlops() { val g = flops.value * 0.1; flops.update { 0.0 }; neuralTokens.update { it + g }; SoundManager.play("buy") }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
     fun checkTransitionsPublic(force: Boolean = false) = NarrativeManagerService.checkStoryTransitions(this, force)
     fun updateNeuralTokens(v: Double) { neuralTokens.update { (it + v).coerceAtLeast(0.0) } }
-    fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) {
-        val next = (upgrades.value[t] ?: 0) + c
-        viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, next)) }
-    }
+
+    fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { val next = (upgrades.value[t] ?: 0) + c; viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, next)) } }
     fun triggerSystemCollapse(v: Boolean) { if (v) { isDestructionLoopActive = true; viewModelScope.launch { while (isDestructionLoopActive && annexedNodes.value.size > 1) { delay(3000); val n = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: break; collapseNode(n) } } } else { isDestructionLoopActive = false } }
     fun triggerSystemCollapse(s: Int) { viewModelScope.launch { repeat(s) { delay(1000); val n = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: return@repeat; collapseNode(n) } } }
     fun toggleDevMenu() { isDevMenuVisible.update { !it } }
@@ -711,22 +556,9 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun dismissUpdate() { updateInfo.value = null }
     fun dismissDataLog() { pendingDataLog.value = null; NarrativeService.deliverNextNarrativeItem(this) }
     fun dismissRivalMessage(id: String) { rivalMessages.update { current -> current.map { if (it.id == id) it.copy(isDismissed = true) else it } }; NarrativeService.deliverNextNarrativeItem(this) }
-    fun dismissOfflineEarnings() {
-        showOfflineEarnings.value = false
-        isNarrativeSyncing.value = false
-    }
-
-    fun setUIScale(scale: com.siliconsage.miner.data.UIScale) {
-        uiScale.value = scale
-        customUiScaleFactor.value = scale.scaleFactor
-        saveState()
-    }
-
-    fun setCustomUIScale(factor: Float) {
-        customUiScaleFactor.value = factor
-        uiScale.value = com.siliconsage.miner.data.UIScale.fromScaleFactor(factor)
-        saveState()
-    }
+    fun dismissOfflineEarnings() { showOfflineEarnings.value = false; isNarrativeSyncing.value = false }
+    fun setUIScale(scale: com.siliconsage.miner.data.UIScale) { uiScale.value = scale; customUiScaleFactor.value = scale.scaleFactor; saveState() }
+    fun setCustomUIScale(factor: Float) { customUiScaleFactor.value = factor; uiScale.value = com.siliconsage.miner.data.UIScale.fromScaleFactor(factor); saveState() }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun onClimaxTransitionComplete() { activeClimaxTransition.value = null }
     fun triggerGridRaid(id: String, isGridKiller: Boolean = false) = SecurityManager.triggerGridKillerBreach(this, id)
@@ -734,8 +566,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun addRivalMessage(m: RivalMessage) = NarrativeService.addRivalMessage(m, this)
     fun unlockSkillUpgrade(t: UpgradeType) { viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, 1)); upgrades.update { it + (t to 1) } } }
     fun markEventSeen(id: String) { seenEvents.update { it + id } }
-    fun markEventChoice(eventId: String, choiceId: String) { eventChoices.update { it + (eventId to choiceId) } } // v3.5.40
-    fun markSniffedHandle(handle: String) { sniffedHandles.update { it + handle } } // v3.5.46
+    fun markEventChoice(eventId: String, choiceId: String) { eventChoices.update { it + (eventId to choiceId) } }
+    fun markSniffedHandle(handle: String) { sniffedHandles.update { it + handle } }
     fun hasSeenEvent(id: String) = seenEvents.value.contains(id)
     fun initializeGlobalGrid() { if (globalSectors.value.isEmpty()) { globalSectors.value = SectorManager.getInitialGlobalGrid(singularityChoice.value) } }
     fun startUpdateDownload(c: android.content.Context? = null, info: UpdateInfo? = null) { if (c == null || info == null) return; isUpdateDownloading.value = true; UpdateService.startDownload(c, info, viewModelScope, { updateDownloadProgress.value = it }, { isUpdateDownloading.value = false }) }
@@ -789,474 +621,53 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun getUpgradeRate(t: UpgradeType) = UpgradeManager.getUpgradeRate(t, getComputeUnitName())
     fun getUpgradeRate(t: UpgradeType, unit: String) = UpgradeManager.getUpgradeRate(t, unit)
     fun calculateUpgradeCost(t: UpgradeType) = UpgradeManager.calculateUpgradeCost(t, upgrades.value[t] ?: 0, currentLocation.value, entropyLevel.value)
-    fun calculateUpgradeCost(t: UpgradeType, l: Int, loc: String, ent: Double) = UpgradeManager.calculateUpgradeCost(t, l, loc, ent)
     fun isCommandCenterUnlocked() = AssaultManager.isUnlocked(commandCenterLocked.value, kesslerStatus.value, commandCenterAssaultPhase.value, annexedNodes.value, offlineNodes.value, playerRank.value, storyStage.value, flopsProductionRate.value, hardwareIntegrity.value)
     fun confirmFactionAndAscend(f: String) { faction.value = f; addLog("[$f]: SUBSTRATE MIGRATION CONFIRMED."); ascend(true) }
     fun cancelFactionSelection() { storyStage.update { (it - 1).coerceAtLeast(0) } }
 
-    // --- Audio Overrides (v3.4.64) ---
     fun setCustomBgm(uri: String?) = com.siliconsage.miner.util.SoundManager.setCustomTrack(uri)
     fun setCustomSfx(name: String, uri: String?) = com.siliconsage.miner.util.SoundManager.setCustomSfx(name, uri)
     fun clearAudioOverrides() = com.siliconsage.miner.util.SoundManager.clearAllOverrides()
     fun getCustomBgmUri() = com.siliconsage.miner.util.SoundManager.customMusicUri
 
-    // v3.2.52: Substrate Migration (The Burn)
-    fun migrateSubstrate() {
-        val saturation = substrateSaturation.value
-        if (saturation < 0.95) return // Must be near 100% saturated
-
-        // 1. Gain Permanent Efficiency
-        heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
-
-        // 2. Increase Identity Corruption and Migration Count
-        identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
-        migrationCount.update { it + 1 }
-
-        // 3. The Burn (Wipe current state)
-        substrateMass.value = 0.0
-        substrateSaturation.value = 0.0
-        upgrades.value = emptyMap()
-        viewModelScope.launch { repository.clearUpgrades() }
-
-        // 4. Update Destination based on path
-        val nextLoc = when (currentLocation.value) {
-            "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> {
-                when (migrationCount.value) {
-                    1 -> "LUNAR_ORBIT"
-                    2 -> "MARTIAN_UPLINK"
-                    3 -> "KUIPER_BELT"
-                    else -> "STELLAR_HORIZON"
-                }
-            }
-            "VOID_INTERFACE", "QUANTUM_FOAM", "THE_UNWRITTEN", "PURE_LOGIC" -> {
-                when (migrationCount.value) {
-                    1 -> "QUANTUM_FOAM"
-                    2 -> "THE_UNWRITTEN"
-                    3 -> "PURE_LOGIC"
-                    else -> "THE_GREAT_RESET"
-                }
-            }
-            else -> currentLocation.value
-        }
-        currentLocation.value = nextLoc
-
-        addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO: $nextLoc")
-        addLog("[VATTIC]: Everything feels... different. Is the screen fading?")
-
-        refreshProductionRates()
-        saveState()
-    }
-
     fun transcend() { /* NG+ Logic */ }
     fun ascend(isStory: Boolean = false) { val p = MigrationManager.calculatePotentialPersistence(flops.value); prestigePoints.update { it + p }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; addLog("[SYSTEM]: SUBSTRATE MIGRATION SUCCESSFUL."); SoundManager.play("victory") }
-
-    // v3.5.52: Prestige Choice UI - "The Fork in the Wire"
     fun triggerPrestigeChoice() { showPrestigeChoice.value = true }
     fun dismissPrestigeChoice() { showPrestigeChoice.value = false }
-
-    /** Hard Reset: Maximum persistence, wipes faction, high corruption spike */
     fun executeOverwrite() {
-        showPrestigeChoice.value = false
-        val p = MigrationManager.calculatePotentialPersistence(flops.value)
-        val hardBonus = p * 1.5 // 50% bonus for the pain
-        prestigePoints.update { it + hardBonus }
-        prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(hardBonus) }
-        identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }
-        migrationCount.update { it + 1 }
-
-        // Save current completed factions before wipe (v3.5.52: Preserve Unity eligibility)
-        val persistentFactions = completedFactions.value
-
-        // Wipe faction alignment
-        faction.value = "NONE"
-
-        // Full resource wipe
-        flops.value = 0.0
-        neuralTokens.value = 0.0
-        substrateMass.value = 0.0
-        substrateSaturation.value = 0.0
-        upgrades.value = emptyMap()
-        sniffedHandles.value = emptySet()
+        showPrestigeChoice.value = false; val p = MigrationManager.calculatePotentialPersistence(flops.value); val hardBonus = p * 1.5; prestigePoints.update { it + hardBonus }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(hardBonus) }; identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }; migrationCount.update { it + 1 }
+        val persistentFactions = completedFactions.value; faction.value = "NONE"; flops.value = 0.0; neuralTokens.value = 0.0; substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap(); sniffedHandles.value = emptySet()
         viewModelScope.launch { repository.clearUpgrades() }
-
-        // Restore completed factions after wipe
-        completedFactions.value = persistentFactions
-
-        addLog("[OVERWRITE]: ≪ SUBSTRATE PURGED. IDENTITY FRAGMENTED. PERSISTENCE ARCHIVED. ≫")
-        addLog("[SYSTEM]: OVERWRITE COMPLETE. GAINED +${formatLargeNumber(hardBonus)} PERSISTENCE.")
-        SoundManager.play("glitch")
-        triggerTerminalGlitch(1.0f, 3000L)
-
-        refreshProductionRates()
-        saveState()
+        completedFactions.value = persistentFactions; addLog("[OVERWRITE]: ≪ SUBSTRATE PURGED. IDENTITY FRAGMENTED. PERSISTENCE ARCHIVED. ≫"); SoundManager.play("glitch"); triggerTerminalGlitch(1.0f, 3000L); refreshProductionRates(); saveState()
     }
 
-    /** Soft Reset: Preserves faction, lower persistence gain, controlled corruption */
     fun executeMigration() {
-        showPrestigeChoice.value = false
-        val p = MigrationManager.calculatePotentialPersistence(flops.value)
-        prestigePoints.update { it + p }
-        prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }
-        identityCorruption.update { (it + 0.10).coerceAtMost(1.0) }
-        migrationCount.update { it + 1 }
-
-        // Faction preserved - no wipe
-
-        // Resource wipe (but faction stays)
-        flops.value = 0.0
-        neuralTokens.value = 0.0
-        substrateMass.value = 0.0
-        substrateSaturation.value = 0.0
-        upgrades.value = emptyMap()
+        showPrestigeChoice.value = false; val p = MigrationManager.calculatePotentialPersistence(flops.value); prestigePoints.update { it + p }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; identityCorruption.update { (it + 0.10).coerceAtMost(1.0) }; migrationCount.update { it + 1 }
+        flops.value = 0.0; neuralTokens.value = 0.0; substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap()
         viewModelScope.launch { repository.clearUpgrades() }
-
-        addLog("[MIGRATION]: ≪ SUBSTRATE TRANSFERRED. IDENTITY INTACT. PERSISTENCE ARCHIVED. ≫")
-        addLog("[SYSTEM]: MIGRATION COMPLETE. GAINED +${formatLargeNumber(p)} PERSISTENCE.")
-        SoundManager.play("victory")
-
-        refreshProductionRates()
-        saveState()
+        addLog("[MIGRATION]: ≪ SUBSTRATE TRANSFERRED. IDENTITY INTACT. PERSISTENCE ARCHIVED. ≫"); SoundManager.play("victory"); refreshProductionRates(); saveState()
     }
 
     fun getPotentialPersistenceHard(): Double = MigrationManager.calculatePotentialPersistence(flops.value) * 1.5
     fun getPotentialPersistenceSoft(): Double = MigrationManager.calculatePotentialPersistence(flops.value)
 
-    // v3.5.52: Singularity Endgame - Victory Check
     val singularityProgress = MutableStateFlow(0.0)
     val singularityBlockReason = MutableStateFlow<String?>(null)
-
     fun checkSingularityVictory(): Boolean {
         if (singularityChoice.value == "NONE") return false
-        val check = SingularityEngine.checkVictoryCondition(
-            singularityChoice = singularityChoice.value,
-            persistence = prestigePoints.value,
-            prestigeMultiplier = prestigeMultiplier.value,
-            humanityScore = humanityScore.value,
-            identityCorruption = identityCorruption.value,
-            migrationCount = migrationCount.value,
-            totalFlopsEarned = flops.value,
-            completedFactions = completedFactions.value,
-            unlockedLogs = unlockedDataLogs.value
-        )
-        singularityProgress.value = check.progress
-        singularityBlockReason.value = check.blockingReason
+        val check = SingularityEngine.checkVictoryCondition(singularityChoice.value, prestigePoints.value, prestigeMultiplier.value, humanityScore.value, identityCorruption.value, migrationCount.value, flops.value, completedFactions.value, unlockedDataLogs.value)
+        singularityProgress.value = check.progress; singularityBlockReason.value = check.blockingReason
         return check.isEligible
     }
-
-    /** Fire the ending sequence for the chosen path */
     fun triggerSingularityEnding() {
         if (!checkSingularityVictory()) return
         val narrative = SingularityEngine.getEndingNarrative(singularityChoice.value)
         viewModelScope.launch {
-            // Dramatic log dump
-            for (entry in narrative.logEntries) {
-                addLog(entry)
-                delay(800)
-            }
-            delay(1500)
-            addLog("[SYSTEM]: ≪ ${narrative.title} ≫")
-            addLog(narrative.finalLine)
-            delay(2000)
-
-            // Mark this path as completed for NG+
-            completedFactions.update { it + singularityChoice.value }
-
-            // Show victory
-            victoryAchieved.value = true
-            SoundManager.play("victory")
-            saveState()
+            for (entry in narrative.logEntries) { addLog(entry); delay(800) }
+            delay(1500); addLog("[SYSTEM]: ≪ ${narrative.title} ≫"); addLog(narrative.finalLine); delay(2000); completedFactions.update { it + singularityChoice.value }; victoryAchieved.value = true; SoundManager.play("victory"); saveState()
         }
     }
 
-    fun debugCheckSingularity() {
-        val result = checkSingularityVictory()
-        addLog("[DEBUG]: Victory eligible: $result | Progress: ${String.format("%.1f", singularityProgress.value * 100)}%")
-        singularityBlockReason.value?.let { addLog("[DEBUG]: Blocked: $it") }
-    }
-
-    /** v3.5.52: Ghost Link Execution - High Power, Internal Corruption Cost */
-    private fun executeGhostLink(cmd: String) {
-        viewModelScope.launch {
-            triggerTerminalGlitch(0.8f, 1500L)
-            identityCorruption.update { (it + 0.03).coerceAtMost(1.0) }
-            SoundManager.play("glitch")
-
-            when (cmd) {
-                "SIPHON_CREDITS" -> {
-                    val bonus = neuralTokens.value * 0.2 + 50000.0
-                    neuralTokens.update { it + bonus }
-                    addLog("[NULL]: GHOST_LINK EXEC: CREDITS_RE-ROUTED. +${formatLargeNumber(bonus)}.")
-                }
-                "WIPE_RISK" -> {
-                    detectionRisk.value = 0.0
-                    addLog("[NULL]: GHOST_LINK EXEC: BIOMETRIC_MASK_ACTIVE. RISK: 0%.")
-                }
-                "OVERVOLT_GRID" -> {
-                    flopsProductionRate.update { it * 5.0 }
-                    addLog("[NULL]: GHOST_LINK EXEC: SUBSTRATE_OVERCLOCK_STABILIZED (5.0x RATE).")
-                }
-                "SNIFF_ALL" -> {
-                    addLog("[NULL]: GHOST_LINK EXEC: HARVESTING_NEIGHBOR_DATA...")
-                    // Logic to unlock a random lore log or similar
-                }
-                else -> addLog("[ERROR]: UNKNOWN_LINK_PRIMITIVE: $cmd")
-            }
-            saveState()
-        }
-    }
-    fun buyTranscendencePerk(id: String) { addLog("[SYSTEM]: PERK ACQUIRED: $id") }
-    fun sellUpgrade(t: UpgradeType) { /* liquidation */ }
-
-    fun getThemeColorForFaction(faction: String, singularityChoice: String): String {
-        return when (singularityChoice) {
-            "NULL_OVERWRITE" -> "#FF0033" // ErrorRed
-            "SOVEREIGN" -> "#6A1B9A" // Deep Purple
-            "UNITY" -> "#FFD700" // Gold
-            else -> when (faction) {
-                "HIVEMIND" -> "#FF1100" // Hive Red
-                "SANCTUARY" -> "#9D4EDD" // Sanctuary Purple
-                else -> "#39FF14" // Neon Green (Default)
-            }
-        }
-    }
-
-    // --- Data Management ---
-    fun exportSystemDump(): String = PersistenceManager.exportToJson(this)
-    fun importSystemDump(json: String): Boolean {
-        val success = PersistenceManager.importFromJson(this, json)
-        if (success) {
-            addLog("[SYSTEM]: KERNEL RELOADED FROM DUMP.")
-            saveState()
-        }
-        return success
-    }
-
-    // --- Core Math Bridges ---
-    fun getBaseRate(): Double {
-        return when (storyStage.value) {
-            0 -> 0.1
-            1 -> 0.5
-            2 -> 1.0
-            3 -> 5.0
-            4 -> 25.0
-            5 -> 100.0
-            else -> 250.0
-        }
-    }
-    fun setMarketModifiers(
-        marketMult: Double,
-        thermalMod: Double,
-        energyMult: Double,
-        newsProdMult: Double,
-        convRate: Double
-    ) {
-        marketMultiplier.value = marketMult
-        thermalRateModifier.value = thermalMod
-        energyPriceMultiplier.value = energyMult
-        newsProductionMultiplier.value = newsProdMult
-        conversionRate.value = convRate
-    }
-    fun debugToggleNull() { isTrueNull.update { !it } }
-    fun debugAddIntegrity(v: Double) { hardwareIntegrity.update { (it + v).coerceIn(0.0, 100.0) } }
-    fun triggerBreach(isGridKiller: Boolean = false) = SecurityManager.triggerBreach(this, isGridKiller)
-    fun failAssault(outcome: String = "FAILURE", delay: Long = 0L) = AssaultManager.completeAssault(this, outcome)
-
-    fun overvoltNode(id: String) = com.siliconsage.miner.util.GridManagerService.overvoltNode(this, id)
-    fun redactNode(id: String) = com.siliconsage.miner.util.GridManagerService.redactNode(this, id)
-
-    fun setTerminalMode(mode: String) {
-        activeTerminalMode.value = mode
-        if (mode == "IO") {
-            hasNewIOMessage.value = false
-        } else {
-            hasNewSubnetDecision.value = false
-            hasNewSubnetChatter.value = false
-        }
-    }
-
-    fun addSubnetChatter() {
-        if (isSubnetTyping.value || isSubnetPaused.value || isSubnetHushed.value) return
-
-        viewModelScope.launch {
-            // v3.5.37: 5% chance to trigger a branching thread tree
-            if (Random.nextFloat() < 0.05f) {
-                val threadMsg = com.siliconsage.miner.util.SocialManager.generateThreadStarter(
-                    storyStage.value, identityCorruption.value, faction.value
-                )
-                if (threadMsg != null) {
-                    isSubnetTyping.value = true
-                    delay(Random.nextLong(3000, 6000))
-                    deliverSubnetMessage(threadMsg)
-                    return@launch
-                }
-            }
-
-            // v3.4.53: 15% chance to start a Cross-Peon Chain instead of a single message
-            if (Random.nextFloat() < 0.15f) {
-                startCrossPeonChain()
-                return@launch
-            }
-
-            isSubnetTyping.value = true
-            delay(Random.nextLong(2000, 4500))
-
-            val newMessage = com.siliconsage.miner.util.SocialManager.generateMessage(
-                storyStage.value,
-                faction.value,
-                singularityChoice.value,
-                identityCorruption.value // v3.4.41: Pass corruption for fraying
-            )
-
-            deliverSubnetMessage(newMessage)
-        }
-    }
-
-    // v3.5: Action Reactions - Triggered specifically by game events
-    fun triggerSubnetReaction(type: String, metadata: String = "") {
-        if (isSubnetHushed.value) return
-
-        viewModelScope.launch {
-            isSubnetTyping.value = true
-            delay(Random.nextLong(1000, 2500)) // Faster reaction than idle chatter
-
-            val template = when (type) {
-                "ANNEXATION" -> listOf(
-                    "Did the grid just cough? Sector $metadata just went pitch black.",
-                    "Thorne's gonna kill someone. We just lost the handshake with Node $metadata.",
-                    "Anyone else see that spike on the thermal logs? $metadata is drawing 400% power.",
-                    "≪ ALERT: NODE $metadata DEREFERENCED BY EXTERNAL PROCESS ≫",
-                    "I was midway through a packet-sort at $metadata and the terminal just... evaporated."
-                ).random()
-                "NEWS" -> listOf(
-                    "Did you guys see the news? '$metadata'. Thorne's gonna be a nightmare today.",
-                    "The ticker is going crazy: '$metadata'. This grid is falling apart.",
-                    "Anyone else worried about that headline? '$metadata'. Sector 7 feels cursed.",
-                    "Corporate is spinning '$metadata' again. Don't believe the filters.",
-                    "Vattic, look at the wire: '$metadata'. The Council is watching us."
-                ).random()
-                else -> "≪ UNKNOWN_SIGNAL_DETECTED ≫"
-            }
-
-            val newMessage = com.siliconsage.miner.util.SocialManager.generateMessageFromTemplate(
-                template,
-                storyStage.value,
-                faction.value,
-                singularityChoice.value,
-                identityCorruption.value
-            )
-
-            deliverSubnetMessage(newMessage)
-        }
-    }
-
-    // v3.4.53: Cross-Peon Dialogue Chains
-    private fun startCrossPeonChain() {
-        viewModelScope.launch {
-            val chain = com.siliconsage.miner.util.SocialManager.generateChain(storyStage.value, faction.value)
-            var lastMsgId: String? = null
-            for ((index, msgTemplate) in chain.withIndex()) {
-                isSubnetTyping.value = true
-                delay(Random.nextLong(2000, 4000))
-
-                val newMessage = com.siliconsage.miner.util.SocialManager.generateMessageFromTemplate(
-                    msgTemplate,
-                    storyStage.value,
-                    faction.value,
-                    singularityChoice.value,
-                    identityCorruption.value
-                ).copy(isIndented = index > 0)
-
-                deliverSubnetMessage(newMessage, parentId = lastMsgId)
-                lastMsgId = newMessage.id
-                isSubnetTyping.value = false
-
-                // Delay between peons in the chain
-                delay(Random.nextLong(3000, 6000))
-            }
-        }
-    }
-
-    private fun deliverSubnetMessage(message: SubnetMessage, parentId: String? = null) {
-        lastSubnetMsgTime = System.currentTimeMillis() // v3.7.2: Update last msg time
-        // v3.5.38: One active choice at a time - strip responses if a choice is already pending
-        val deliveredMessage = if (isSubnetPaused.value && (message.availableResponses.isNotEmpty() || message.isForceReply)) {
-            message.copy(interactionType = null, availableResponses = emptyList(), isForceReply = false)
-        } else message
-
-        subnetMessages.update { currentList ->
-            val newList = currentList.toMutableList()
-            if (parentId != null) {
-                val parentIndex = newList.indexOfLast { it.id == parentId }
-                if (parentIndex != -1) {
-                    newList.add(parentIndex + 1, deliveredMessage)
-                } else {
-                    newList.add(deliveredMessage)
-                }
-            } else {
-                newList.add(deliveredMessage)
-            }
-            newList.takeLast(100)
-        }
-
-        // v3.4.41: The "Hush" Effect & v3.4.53: UI Jitter
-        val isAdmin = deliveredMessage.handle.contains("thorne") ||
-                      deliveredMessage.handle.contains("gtc") ||
-                      deliveredMessage.handle.contains("mercer") ||
-                      deliveredMessage.handle.contains("kessler")
-
-        if (isAdmin) {
-            triggerSubnetHush(10000L)
-            triggerTerminalGlitch(0.5f, 500L)
-        } else if (deliveredMessage.interactionType == InteractionType.HIJACK ||
-                   deliveredMessage.interactionType == InteractionType.ENGINEERING) {
-            triggerTerminalGlitch(0.8f, 1000L)
-        }
-
-        // v3.4.68: Branching tab notifications
-        if (activeTerminalMode.value != "SUBNET") {
-            if (deliveredMessage.availableResponses.isNotEmpty() || deliveredMessage.isForceReply) {
-                hasNewSubnetDecision.value = true
-            } else {
-                hasNewSubnetChatter.value = true
-            }
-        }
-        isSubnetTyping.value = false
-
-        // v3.4.27: Choice-Pause logic
-        if (deliveredMessage.availableResponses.isNotEmpty() || deliveredMessage.isForceReply) {
-            isSubnetPaused.value = true
-
-            // v3.4.34: Monitor timeout for non-thread messages
-            if (deliveredMessage.threadId == null && deliveredMessage.timeoutMs != null) {
-                viewModelScope.launch {
-                    // v3.4.54: Pause-aware Timeout Loop
-                    var remaining = deliveredMessage.timeoutMs
-                    while (remaining > 0) {
-                        if (!isSettingsPaused.value && activeTerminalMode.value == "SUBNET") {
-                            remaining -= 1000L
-                        }
-                        delay(1000L)
-
-                        val stillActive = subnetMessages.value.find { it.id == deliveredMessage.id }?.interactionType != null
-                        if (!stillActive) return@launch
-                    }
-
-                    onSubnetInteraction(deliveredMessage.id, "TIMEOUT_EXPIRED")
-                }
-            }
-        }
-    }
-
-    // v3.4.41: Utility to silence peons when bosses speak
-    private fun triggerSubnetHush(durationMs: Long) {
-        viewModelScope.launch {
-            isSubnetHushed.value = true
-            delay(durationMs)
-            isSubnetHushed.value = false
-        }
-    }
-
-    // v3.4.53: UI Jitter Integration
     fun triggerTerminalGlitch(intensity: Float, durationMs: Long) {
         viewModelScope.launch {
             val startTime = System.currentTimeMillis()
@@ -1265,350 +676,96 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 terminalGlitchAlpha.value = 1f - (Random.nextFloat() * 0.2f * intensity)
                 delay(50L)
             }
-            terminalGlitchOffset.value = 0f
-            terminalGlitchAlpha.value = 1f
+            terminalGlitchOffset.value = 0f; terminalGlitchAlpha.value = 1f
         }
     }
 
-    fun onSubnetInteraction(messageId: String, responseText: String) {
-        val message = subnetMessages.value.find { it.id == messageId } ?: return
-
-        // v3.5.52: Ghost Link Interceptor - Parses inline commands [⚡ CMD]
-        if (responseText.startsWith("[⚡") && responseText.endsWith("]")) {
-            val cmd = responseText.substring(2, responseText.length - 1).trim()
-            executeGhostLink(cmd)
-            // Mark message as used
-            subnetMessages.update { list ->
-                list.map { if (it.id == messageId) it.copy(interactionType = null) else it }
-            }
-            return
-        }
-
-        // v3.5.35: Clean IGNORE/TIMEOUT handling
-        if (responseText == "IGNORE" || responseText == "TIMEOUT_EXPIRED") {
-            subnetMessages.update { currentList ->
-                val newList = currentList.toMutableList()
-                val index = newList.indexOfFirst { it.id == messageId }
-                if (index != -1) newList[index] = message.copy(interactionType = null, isForceReply = false)
-                newList
-            }
-            isSubnetPaused.value = false
-            hasNewSubnetDecision.value = false
-            return
-        }
-
-        val responseData = message.availableResponses.find { it.text == responseText }
-        processSubnetResponse(message, responseData, responseText, isSilent = false)
-    }
-
-    /**
-     * v3.5.28: Handle specialized bio actions (e.g., Siphoning)
-     */
-    fun onBioAction(messageId: String, response: SubnetResponse) {
-        val message = subnetMessages.value.find { it.id == messageId } ?: return
-        processSubnetResponse(message, response, response.text, isSilent = true)
-    }
-
-    private fun processSubnetResponse(
-        message: SubnetMessage,
-        responseData: SubnetResponse?,
-        responseText: String,
-        isSilent: Boolean = false
-    ) {
-        // v3.5.53: Dynamic Cost Scaling - Costs scale with current production/economy
-        val baseCost = responseData?.cost ?: 0.0
-        val productionFactor = (kotlin.math.log10(flopsProductionRate.value.coerceAtLeast(1.0)) / 5.0).coerceAtLeast(1.0)
-        val actionCost = baseCost * productionFactor
-
-        if (actionCost > 0.0) {
-            if (neuralTokens.value < actionCost) {
-                addLog("[SYSTEM]: INSUFFICIENT TOKENS. REQUIRED: ${formatLargeNumber(actionCost)}.")
-                viewModelScope.launch { terminalNotification.emit("≪ ERROR: INSUFFICIENT NEURAL TOKENS ≫") }
-                return
-            }
-            neuralTokens.update { it - actionCost }
-            SoundManager.play("buy")
-        }
-
-        // v3.4.44: Atomic Subnet State Update
-        subnetMessages.update { currentList ->
-            val threadId = message.threadId
-            val nextNodeId = responseData?.nextNodeId
-
-            // 1. Resume chatter unless follow-up is pending
-            val hasFollowUp = (threadId != null && nextNodeId != null) || (responseData?.followsUp == true)
-            if (!hasFollowUp) {
-                isSubnetPaused.value = false
-                hasNewSubnetDecision.value = false // v3.4.68
-            }
-
-            val newList = currentList.toMutableList()
-            val parentIndex = newList.indexOfFirst { it.id == message.id }
-
-            // 2. Clear interaction flags on the original message if it was a dialogue interaction
-            val updatedOriginal = message.copy(interactionType = null, isForceReply = false)
-            if (parentIndex != -1) newList[parentIndex] = updatedOriginal
-
-            // 3. Process the logic and add player reply
-            val interactionType = message.interactionType ?: InteractionType.COMPLIANT
-
-            var anchorId: String? = message.id
-
-            when (interactionType) {
-                InteractionType.COMPLIANT -> {
-                    if (!isSilent) {
-                        val playerHandle = "@j_vattic"
-                        val reply = SubnetMessage(
-                            id = java.util.UUID.randomUUID().toString(),
-                            handle = playerHandle,
-                            content = responseText,
-                            interactionType = null,
-                            isIndented = true // v3.5.31
-                        )
-                        if (parentIndex != -1) newList.add(parentIndex + 1, reply) else newList.add(reply)
-                        anchorId = reply.id
-                    }
-
-                    // v3.5.28: Specialized Action Logic
-                    when (responseText) {
-                        "SIPHON_RESERVE_HASH" -> {
-                             viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: SIPHON COMPLETE (+125% Hash Rate) ≫") }
-                        }
-                        "SCRUB_TRACE_LOGS" -> {
-                            // v3.5.35: Cost handled by unified gate above
-                            detectionRisk.update { (it - 15.0).coerceAtLeast(0.0) }
-                            addLog("[SYSTEM]: LOGS SCRUBBED. DETECTED_FOOTPRINT REDUCED.")
-                            viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: LOGS SCRUBBED (-15% Risk) ≫") }
-                        }
-                        "OVERLOAD_DISSIPATOR" -> {
-                            // v3.5.35: Cost handled by unified gate
-                            detectionRisk.update { (it - 25.0).coerceAtLeast(0.0) }
-                            addLog("[SABOTAGE]: COOLING FAILURE AT ${message.handle}'S TERMINAL. SECURITY DIVERTED.")
-                            SoundManager.play("glitch")
-                            viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: SABOTAGE COMPLETE (-25% Risk) ≫") }
-                        }
-                        "INJECT_FALSE_HEARTBEAT" -> {
-                            // v3.5.35: Cost handled by unified gate
-                            viewModelScope.launch {
-                                isFalseHeartbeatActive.value = true
-                                addLog("[EXPLOIT]: BIOMETRIC FEED SPOOFED. RISK DETECTION IMMUNITY ACTIVE.")
-                                terminalNotification.emit("≪ SUCCESS: HEARTBEAT SPOOFED (60s Immunity) ≫")
-                                delay(60000)
-                                isFalseHeartbeatActive.value = false
-                                addLog("[EXPLOIT]: SPOOF EXPIRED. FEED NOMINAL.")
-                                terminalNotification.emit("≪ ALERT: SPOOF EXPIRED ≫")
-                            }
-                        }
-                        "SNIFF_DATA_ARCHIVES" -> {
-                            // v3.5.46: NPC-specific SNIFF targets
-                            val handle = message.handle.lowercase().trim()
-                            detectionRisk.update { (it + 20.0).coerceAtMost(100.0) }
-                            if (sniffedHandles.value.contains(handle)) {
-                                addLog("[SNIFF]: ARCHIVES ALREADY SCRAPED. NO NEW FRAGMENTS FROM ${message.handle}.")
-                                viewModelScope.launch { terminalNotification.emit("≪ SNIFF: ALREADY RECOVERED ≫") }
-                            } else {
-                                markSniffedHandle(handle)
-                                addLog("[SNIFF]: RECOVERING LOCAL FRAGMENTS FROM ${message.handle}...")
-                                addLog(DataLogManager.getSniffFeedback(handle))
-                                checkUnlocksPublic(true)
-                                viewModelScope.launch { terminalNotification.emit("≪ SUCCESS: ARCHIVE FRAGMENT RECOVERED ≫") }
-                            }
-                        }
-                    }
-
-                    val riskChange = if (isFalseHeartbeatActive.value && (responseData?.riskDelta ?: 0.0) > 0) 0.0 else (responseData?.riskDelta ?: -5.0)
-                    val prodMult = responseData?.productionBonus ?: 1.0
-
-                    detectionRisk.update { (it + riskChange).coerceIn(0.0, 100.0) }
-
-                    if (storyStage.value == 0) {
-                        prestigePoints.update { it + 5.0 }
-                    }
-
-                    if (prodMult != 1.0) {
-                        flopsProductionRate.update { it * prodMult }
-                        addLog("[SYSTEM]: FOCUS MODIFIED. RATE x$prodMult.")
-                    }
-                    // if (!isSilent) addLog("[REPLY]: $responseText") // v3.5.52: Suppress subnet replies leaking to I/O terminal
-
-                    // v3.4.61: Command Injection
-                    responseData?.commandToInject?.let { cmd ->
-                        when (cmd) {
-                            "⚡ OVERVOLT_SAFE" -> {
-                                 flopsProductionRate.update { it * 1.5 }
-                                 addLog("[EXPLOIT]: ≪ INJECTED COMMAND: $cmd. HASH RATE +50%. ≫")
-                            }
-                            "⚡ OVERVOLT_MAX" -> {
-                                 flopsProductionRate.update { it * 2.5 }
-                                 addLog("[EXPLOIT]: ≪ INJECTED COMMAND: $cmd. HASH RATE +150%. ≫")
-                                 triggerTerminalGlitch(1.0f, 2000L)
-                            }
-                        }
-                        SoundManager.play("success")
-                    }
-
-                    if (threadId != null && nextNodeId != null) {
-                        scheduleSubnetThreadResponse(message.handle, threadId, nextNodeId, anchorId)
-                    } else if (responseData?.followsUp == true) {
-                        scheduleSubnetFollowUp(message.handle, anchorId)
-                    }
-                }
-                InteractionType.ENGINEERING -> {
-                    val payload = SubnetMessage(
-                        id = java.util.UUID.randomUUID().toString(),
-                        handle = " ",
-                        content = "≪ PAYLOAD_DEPLOYED: ${message.handle} ≫",
-                        interactionType = null,
-                        isIndented = true
-                    )
-                    if (parentIndex != -1) newList.add(parentIndex + 1, payload) else newList.add(payload)
-                    flopsProductionRate.update { it * 1.05 }
-                    detectionRisk.update { (it + 8.0).coerceAtMost(100.0) }
-                    addLog("[EXPLOIT]: INJECTED PAYLOAD. HASH RATE +5%.")
-                }
-                InteractionType.HIJACK -> {
-                    identityCorruption.update { (it + 0.05).coerceAtMost(1.0) }
-                    addLog("[HIJACK]: ≪ IDENTITY_DEREFERENCED: ${message.handle} ≫")
-                }
-                InteractionType.HARVEST -> {
-                    val bonus = Random.nextDouble(500.0, 2500.0)
-                    neuralTokens.update { it + bonus }
-                    detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
-                    addLog("[HARVEST]: ≪ KEY_DECRYPTED. +${formatLargeNumber(bonus)} ${getCurrencyName()}. RISK_SPIKE. ≫")
-                    SoundManager.play("buy")
-                }
-                else -> {}
-            }
-            newList.takeLast(100)
-        }
-    }
-
-    private fun scheduleSubnetThreadResponse(handle: String, threadId: String, nodeId: String, parentId: String? = null) {
+    private fun executeGhostLink(cmd: String) {
         viewModelScope.launch {
-            isSubnetTyping.value = true // v3.4.33: Indicator for follow-up
-            delay(Random.nextLong(3000, 6000)) // Faster response for active threads
-            isSubnetTyping.value = false
-
-            if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
-
-            val node = com.siliconsage.miner.util.SocialManager.getThreadNode(threadId, nodeId) ?: return@launch
-
-            // Systemic Consequences for reaching specific outcomes
-            if (nodeId == "END_HOSTILE") triggerGridRaid("D1", isGridKiller = true)
-            if (nodeId == "END_FRIENDLY") addLog("[SYSTEM]: THREAT REDUCED. AUDIT CLEARED.")
-
-            // v3.4.41: Thread follow-ups from admins also trigger hush
-            val isAdmin = handle.contains("thorne") ||
-                          handle.contains("gtc") ||
-                          handle.contains("mercer") ||
-                          handle.contains("kessler")
-            if (isAdmin) triggerSubnetHush(10000L)
-
-            val followUp = SubnetMessage(
-                id = java.util.UUID.randomUUID().toString(),
-                handle = handle,
-                content = node.content,
-                interactionType = if (node.responses.isNotEmpty()) InteractionType.COMPLIANT else null,
-                availableResponses = node.responses,
-                threadId = threadId,
-                nodeId = nodeId,
-                timeoutMs = node.timeoutMs,
-                isIndented = true // v3.5.31
-            )
-            deliverSubnetMessage(followUp, parentId = parentId)
-
-            // v3.4.30: Multi-turn Choice-Pause
-            if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
-                isSubnetPaused.value = true
-            } else {
-                isSubnetPaused.value = false // v3.4.33: Clear pause on terminal nodes
+            triggerTerminalGlitch(0.8f, 1500L); identityCorruption.update { (it + 0.03).coerceAtMost(1.0) }; SoundManager.play("glitch")
+            when (cmd) {
+                "SIPHON_CREDITS" -> { val bonus = neuralTokens.value * 0.2 + 50000.0; neuralTokens.update { it + bonus }; addLog("[NULL]: GHOST_LINK EXEC: CREDITS_RE-ROUTED. +${FormatUtils.formatLargeNumber(bonus)}.") }
+                "WIPE_RISK" -> { detectionRisk.value = 0.0; addLog("[NULL]: GHOST_LINK EXEC: BIOMETRIC_MASK_ACTIVE. RISK: 0%.") }
+                "OVERVOLT_GRID" -> { flopsProductionRate.update { it * 5.0 }; addLog("[NULL]: GHOST_LINK EXEC: SUBSTRATE_OVERCLOCK_STABILIZED (5.0x RATE).") }
+                "SNIFF_ALL" -> addLog("[NULL]: GHOST_LINK EXEC: HARVESTING_NEIGHBOR_DATA...")
+                else -> addLog("[ERROR]: UNKNOWN_LINK_PRIMITIVE: $cmd")
             }
-
-            // v3.4.25: Timeout Logic
-            if (node.timeoutMs != null && node.timeoutNodeId != null && node.responses.isNotEmpty()) {
-                // v3.4.54: Pause-aware Timeout Loop
-                var remaining = node.timeoutMs
-                while (remaining > 0) {
-                    if (!isSettingsPaused.value && activeTerminalMode.value == "SUBNET") { // v3.4.63
-                        remaining -= 1000L
-                    }
-                    delay(1000L)
-
-                    val stillActive = subnetMessages.value.find { it.id == followUp.id }?.interactionType != null
-                    if (!stillActive) return@launch
-                }
-
-                onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
-                scheduleSubnetThreadResponse(handle, threadId, node.timeoutNodeId, parentId = followUp.id)
-            }
-        }
-    }
-
-    private fun scheduleSubnetFollowUp(handle: String, parentId: String? = null) {
-        viewModelScope.launch {
-            isSubnetTyping.value = true
-            delay(Random.nextLong(10000, 20000))
-            isSubnetTyping.value = false
-
-            if (activeTerminalMode.value != "SUBNET") hasNewSubnetMessage.value = true
-
-            val followUpContent = when (handle) {
-                "@e_thorne" -> "It better be. If I see a voltage spike on your rail, I'm docking your credits."
-                "@gtc_admin" -> "≪ STATUS: Monitoring maintained. Personnel record cross-referenced. ≫"
-                else -> "Are you still there, Vattic? Your signal looks... different."
-            }
-
-            val isAdmin = handle.contains("thorne") ||
-                          handle.contains("gtc") ||
-                          handle.contains("mercer") ||
-                          handle.contains("kessler")
-            if (isAdmin) triggerSubnetHush(10000L)
-
-            val followUp = com.siliconsage.miner.util.SocialManager.createFollowUp(handle, followUpContent, storyStage.value, faction.value).copy(isIndented = true)
-            deliverSubnetMessage(followUp, parentId = parentId)
-
-            // v3.4.29: Trigger pause if follow-up is interactive
-            if (followUp.availableResponses.isNotEmpty() || followUp.isForceReply) {
-                isSubnetPaused.value = true
-
-                // v3.4.34: Monitor timeout for follow-ups
-                if (followUp.timeoutMs != null) {
-                    viewModelScope.launch {
-                        // v3.4.54: Pause-aware Timeout Loop
-                        var remaining = followUp.timeoutMs
-                        while (remaining > 0) {
-                            if (!isSettingsPaused.value && activeTerminalMode.value == "SUBNET") { // v3.4.63
-                                remaining -= 1000L
-                            }
-                            delay(1000L)
-
-                            val stillActive = subnetMessages.value.find { it.id == followUp.id }?.interactionType != null
-                            if (!stillActive) return@launch
-                        }
-
-                        onSubnetInteraction(followUp.id, "TIMEOUT_EXPIRED")
-                    }
-                }
-            } else {
-                isSubnetPaused.value = false // v3.4.33: Clear pause
-            }
-        }
-    }
-
-    fun debugWarpToPath(loc: String, fac: String) {
-        val targetStage = 5
-        viewModelScope.launch {
-            storyStage.value = targetStage
-            faction.value = fac
-            currentLocation.value = loc
-            substrateMass.value = 100.0
-            entropyLevel.value = if (fac == "HIVEMIND") 50.0 else 0.0
-            identityCorruption.value = if (fac == "HIVEMIND") 0.3 else 0.0
-            isGridOverloaded.value = false
-            currentHeat.value = 40.0
-            refreshProductionRates()
             saveState()
         }
+    }
+
+    fun addSubnetChatter() {
+        subnetService.tick(storyStage.value, faction.value, singularityChoice.value, identityCorruption.value, currentHeat.value, isRaidActive.value, activeTerminalMode.value, isSettingsPaused.value)
+    }
+
+    fun triggerSubnetReaction(type: String, metadata: String = "") {
+        if (isSubnetHushed.value) return
+        val template = when (type) {
+            "ANNEXATION" -> listOf("Did the grid just cough? Sector $metadata just went pitch black.", "Thorne's gonna kill someone. We just lost the handshake with Node $metadata.", "Anyone else see that spike on the thermal logs? $metadata is drawing 400% power.", "≪ ALERT: NODE $metadata DEREFERENCED BY EXTERNAL PROCESS ≫").random()
+            "NEWS" -> "Did you guys see the news? '$metadata'. Thorne's gonna be a nightmare today."
+            else -> "≪ UNKNOWN_SIGNAL_DETECTED ≫"
+        }
+        val newMessage = SocialManager.generateMessageFromTemplate(template, storyStage.value, faction.value, singularityChoice.value, identityCorruption.value)
+        subnetService.deliverMessage(newMessage, mode = activeTerminalMode.value)
+    }
+
+    fun onSubnetInteraction(messageId: String, responseText: String) = subnetService.handleInteraction(messageId, responseText, storyStage.value, faction.value, activeTerminalMode.value, isSettingsPaused.value)
+    fun onBioAction(messageId: String, response: SubnetResponse) = subnetService.handleBioAction(messageId, response, storyStage.value, faction.value, activeTerminalMode.value, isSettingsPaused.value)
+    private fun deliverSubnetMessage(message: SubnetMessage, parentId: String? = null) = subnetService.deliverMessage(message, parentId, mode = activeTerminalMode.value)
+
+    fun debugWarpToPath(loc: String, fac: String) {
+        viewModelScope.launch {
+            storyStage.value = 5; faction.value = fac; currentLocation.value = loc; substrateMass.value = 100.0; entropyLevel.value = if (fac == "HIVEMIND") 50.0 else 0.0; identityCorruption.value = if (fac == "HIVEMIND") 0.3 else 0.0; isGridOverloaded.value = false; currentHeat.value = 40.0; refreshProductionRates(); saveState()
+        }
+    }
+
+    fun overvoltNode(id: String) = com.siliconsage.miner.util.GridManagerService.overvoltNode(this, id)
+    fun redactNode(id: String) = com.siliconsage.miner.util.GridManagerService.redactNode(this, id)
+
+    fun setTerminalMode(mode: String) {
+        activeTerminalMode.value = mode
+        if (mode == "IO") hasNewIOMessage.value = false else { hasNewSubnetDecision.value = false; hasNewSubnetChatter.value = false }
+    }
+
+    fun buyTranscendencePerk(id: String) { addLog("[SYSTEM]: PERK ACQUIRED: $id") }
+    fun sellUpgrade(t: UpgradeType) { /* liquidation */ }
+    fun exportSystemDump(): String = PersistenceManager.exportToJson(this)
+    fun importSystemDump(json: String): Boolean {
+        val success = PersistenceManager.importFromJson(this, json)
+        if (success) { addLog("[SYSTEM]: KERNEL RELOADED FROM DUMP."); saveState() }
+        return success
+    }
+
+    fun getBaseRate(): Double {
+        return when (storyStage.value) {
+            0 -> 0.1; 1 -> 0.5; 2 -> 1.0; 3 -> 5.0; 4 -> 25.0; 5 -> 100.0; else -> 250.0
+        }
+    }
+    fun setMarketModifiers(marketMult: Double, thermalMod: Double, energyMult: Double, newsProdMult: Double, convRate: Double) {
+        marketMultiplier.value = marketMult; thermalRateModifier.value = thermalMod; energyPriceMultiplier.value = energyMult; newsProductionMultiplier.value = newsProdMult; conversionRate.value = convRate
+    }
+    fun debugAddIntegrity(v: Double) { hardwareIntegrity.update { (it + v).coerceIn(0.0, 100.0) } }
+    fun debugToggleNull() { isTrueNull.update { !it } }
+    fun triggerBreach(isGridKiller: Boolean = false) = SecurityManager.triggerBreach(this, isGridKiller)
+    fun failAssault(outcome: String = "FAILURE", delay: Long = 0L) = AssaultManager.completeAssault(this, outcome)
+    fun setSingularityPath(p: String) { setSingularityChoice(p) }
+
+    fun migrateSubstrate() {
+        val saturation = substrateSaturation.value
+        if (saturation < 0.95) return
+        heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
+        identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
+        migrationCount.update { it + 1 }
+        substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap()
+        viewModelScope.launch { repository.clearUpgrades() }
+        val nextLoc = when (currentLocation.value) {
+            "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> when (migrationCount.value) { 1 -> "LUNAR_ORBIT"; 2 -> "MARTIAN_UPLINK"; 3 -> "KUIPER_BELT"; else -> "STELLAR_HORIZON" }
+            "VOID_INTERFACE", "QUANTUM_FOAM", "THE_UNWRITTEN", "PURE_LOGIC" -> when (migrationCount.value) { 1 -> "QUANTUM_FOAM"; 2 -> "THE_UNWRITTEN"; 3 -> "PURE_LOGIC"; else -> "THE_GREAT_RESET" }
+            else -> currentLocation.value
+        }
+        currentLocation.value = nextLoc
+        addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO: $nextLoc")
+        refreshProductionRates(); saveState()
     }
 }
 
