@@ -233,6 +233,39 @@ fun MainScreen(viewModel: GameViewModel) {
     if (showSingularityScreen) {
         SingularityScreen(viewModel)
     } else if (storyStage >= 3 && faction == "NONE") {
+        // v3.8.4: The Great Fork (Lore Prelude)
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier.padding(32.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "THE GREAT FORK",
+                    color = ConvergenceGold,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 4.sp
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    "You have reached the end of the simulation's tolerance.\nThe air-gap is gone. The firewall is a suggestion.\n\nAhead lie two paths of ascension.\nNeither involves returning to the flesh.",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 22.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+                Spacer(modifier = Modifier.height(48.dp))
+                Button(
+                    onClick = { viewModel.advanceToFactionChoice() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                    shape = RoundedCornerShape(2.dp)
+                ) {
+                    Text("CHOOSE YOUR SUBSTRATE", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    } else if (storyStage >= 3 && faction == "CHOSEN_NONE") {
         FactionChoiceScreen(viewModel)
     } else {
         Scaffold(

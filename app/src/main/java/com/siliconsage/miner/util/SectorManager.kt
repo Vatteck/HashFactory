@@ -15,11 +15,51 @@ object SectorManager {
 
     fun annexNode(vm: GameViewModel, coord: String) {
         if (!vm.annexedNodes.value.contains(coord) && !vm.annexingNodes.value.containsKey(coord)) {
-            vm.annexingNodes.update { it + (coord to 0.0f) }
-            vm.addLogPublic("[SYSTEM]: INITIALIZING ANNEXATION AT $coord...")
-            SoundManager.play("steam")
-            vm.saveStatePublic()
+            // v3.8.4: Adjacency Check
+            val isAdjacent = isNodeAdjacent(coord, vm.annexedNodes.value)
+            
+            if (isAdjacent || vm.annexedNodes.value.isEmpty()) {
+                vm.annexingNodes.update { it + (coord to 0.0f) }
+                vm.addLogPublic("[SYSTEM]: INITIALIZING ANNEXATION AT $coord...")
+                SoundManager.play("steam")
+                vm.saveStatePublic()
+            } else {
+                vm.addLogPublic("[SYSTEM]: ERROR: TARGET $coord IS NOT ADJACENT TO CONTROLLED SECTORS.")
+                SoundManager.play("error")
+            }
         }
+    }
+
+    private fun isNodeAdjacent(target: String, annexed: Set<String>): Boolean {
+        if (annexed.isEmpty()) return true
+        
+        // Extract sector and index (e.g., "D1" -> 'D', 1)
+        val targetSector = target[0]
+        val targetIndex = target.substring(1).toIntOrNull() ?: return false
+
+        return annexed.any { node ->
+            val nodeSector = node[0]
+            val nodeIndex = node.substring(1).toIntOrNull() ?: return@any false
+
+            val sameSector = targetSector == nodeSector
+            val adjacentIndex = Math.abs(targetIndex - nodeIndex) == 1
+            
+            // Cross-sector adjacency defined in the road network
+            val roadAdjacent = isConnectedByRoad(target, node)
+
+            (sameSector && adjacentIndex) || roadAdjacent
+        }
+    }
+
+    private fun isConnectedByRoad(a: String, b: String): Boolean {
+        val roadNetwork = listOf(
+            setOf("D1", "D2"), setOf("D1", "D3"), setOf("D3", "D4"), setOf("D4", "D5"),
+            setOf("D1", "C1"), setOf("C1", "C2"), setOf("C2", "C3"), setOf("C3", "C4"), setOf("C4", "C5"),
+            setOf("C3", "B3"), setOf("B3", "B2"), setOf("B2", "B1"), setOf("B3", "B4"), setOf("B4", "B5"),
+            setOf("B2", "A1"), setOf("B3", "A3"), setOf("B3", "A4"), setOf("B3", "A5"), setOf("A3", "A2"),
+            setOf("D1", "E1"), setOf("B5", "E2"), setOf("C3", "E3"), setOf("C1", "E4"), setOf("C4", "E5")
+        )
+        return roadNetwork.contains(setOf(a, b))
     }
 
     /**

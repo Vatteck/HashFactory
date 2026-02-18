@@ -1,10 +1,10 @@
 {
-  "version": "3.8.3",
-  "build": 377,
+  "version": "3.8.4",
+  "build": 378,
   "date": "2026-02-18",
   "changelog": [
-    "See CHANGELOG.md for details"
+    "Fixed adjacency annexation bug and refactored The Great Fork as a lore prelude"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.8.3",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.8.3/MINER_3.8.3.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.8.4",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.8.4/MINER_3.8.4.apk"
 }
