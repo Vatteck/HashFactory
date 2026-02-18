@@ -28,7 +28,7 @@ fun BootSequenceOverlay(
         "CHECKING VRAM... [6144MB OK]",
         "PROBING SUBSTRATE...",
         "MOUNTING /DEV/NULL...",
-        "STARTING DAEMON: vattic_observer",
+        "STARTING DAEMON: observer.exe",
         "ESTABLISHING NEURAL HANDSHAKE...",
         "BUFFER_SYNC: SUCCESS",
         "READY."

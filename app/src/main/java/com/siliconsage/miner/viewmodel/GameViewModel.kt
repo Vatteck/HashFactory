@@ -317,7 +317,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         viewModelScope.launch {
             val processes = listOf(
                 "IDLE", "gtc_proxy.sh", "kernel_sync.exe", "log_aggregator", "thermal_monitor",
-                "mem_scrub", "neural_handshake", "packet_filter", "background_miner", "vattic_observer"
+                "mem_scrub", "neural_handshake", "packet_filter", "background_miner", "observer.exe"
             )
             while (true) {
                 delay(Random.nextLong(2000, 5000))

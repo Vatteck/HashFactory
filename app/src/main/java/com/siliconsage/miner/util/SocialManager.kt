@@ -1576,7 +1576,7 @@ object SocialManager {
                 "My {tech} just pinged a MAC address that doesn't exist. {sector} is weird.",
                 "Vattic just committed 4TB of logic. The server literally groaned.",
                 "I found a hardware leak: [⚡ OVERVOLT_SAFE]. Don't tell Thorne.",
-                "Who's running the 'vattic_observer' process? Taking up 40% of my buffer.",
+                "Who's running the 'observer.exe' process? Taking up 40% of my buffer.",
                 "The shadows in the server room don't match the racks. I'm leaving.",
                 "I found a copy of the 'Second-Sight' archives on the {admin}'s desk. Glitched out.",
                 "[PRIVATE_LEAK]: 'If I don't hit the quota, I go back to the terrestrial slums.'",
