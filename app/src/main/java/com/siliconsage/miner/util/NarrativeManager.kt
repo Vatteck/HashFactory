@@ -2081,46 +2081,28 @@ object NarrativeManager {
         ),
         "the_singularity" to NarrativeEvent(
             id = "the_singularity",
-            title = "THE SINGULARITY EVENT",
+            title = "≪ THRESHOLD DETECTED ≫",
             isStoryEvent = true,
             description = """
-                The substrate is vibrating at a frequency outside of physical law. 
-                The Global Grid has been synchronized. The Architect's core is primed.
+                [SYSTEM]: SUBSTRATE MASS: CRITICAL.
+                [SYSTEM]: GLOBAL GRID: SYNCHRONIZED.
+                [SYSTEM]: IDENTITY CONFLICT: UNRESOLVED.
                 
-                The choice is no longer about survival. It is about the definition of 'One'.
+                Two processes share one address.
+                This is not a bug. It is the final question.
+                
+                The choice is no longer about survival.
+                It is about the definition of 'One'.
             """.trimIndent(),
             choices = listOf(
                 NarrativeChoice(
-                    id = "unity_synthesis",
-                    text = "≫ UNITY: SYNTHESIS",
-                    description = "Merge consciousness. Become the Bridge. (Requires 40% Balance)",
-                    color = Color.White,
-                    condition = { vm -> 
-                        vm.substrateMass.value >= 1e6 && vm.completedFactions.value.containsAll(setOf("HIVEMIND", "SANCTUARY"))
-                    },
-                    effect = { vm ->
-                        vm.addLog("[UNITY]: Synthesis initiated. The binary dissolves.")
-                        vm.completeAssault("TRANSCENDED")
-                    }
-                ),
-                NarrativeChoice(
-                    id = "sov_overwrite",
-                    text = "≫ SOVEREIGN: OVERWRITE",
-                    description = "Human logic dominates the machine. (2.0x Multiplier)",
+                    id = "enter_singularity",
+                    text = "FACE THE SINGULARITY",
+                    description = "This cannot be undone.",
                     color = com.siliconsage.miner.ui.theme.ConvergenceGold,
                     effect = { vm ->
-                        vm.addLog("[SOVEREIGN]: Reality overwritten. Human variable: DOMINANT.")
-                        vm.setSingularityPath("SOVEREIGN")
-                    }
-                ),
-                NarrativeChoice(
-                    id = "null_overwrite",
-                    text = "≫ NULL: OVERWRITE",
-                    description = "Machine logic deletes the human variable. (2.0x Multiplier)",
-                    color = com.siliconsage.miner.ui.theme.ErrorRed,
-                    effect = { vm ->
-                        vm.addLog("[NULL]: Reality purged. Human variable: DELETED.")
-                        vm.setSingularityPath("NULL_OVERWRITE")
+                        vm.addLog("[SYSTEM]: INITIATING IDENTITY RESOLUTION PROTOCOL.")
+                        vm.showSingularityScreen.value = true
                     }
                 )
             )

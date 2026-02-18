@@ -141,7 +141,7 @@ object NarrativeManagerService {
 
         // v3.5.45: Removed dead stage 2 memory_leak block (was calling storyEvents[2] which no longer exists)
 
-        if (currentStage == 3 && vm.substrateMass.value >= 1e12 && !vm.hasSeenEvent("the_singularity")) {
+        if (currentStage >= 4 && vm.substrateMass.value >= 1e12 && !vm.hasSeenEvent("the_singularity") && vm.singularityChoice.value == "NONE") {
             NarrativeManager.getEventById("the_singularity")?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
