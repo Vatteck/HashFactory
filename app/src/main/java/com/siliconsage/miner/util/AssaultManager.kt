@@ -156,12 +156,9 @@ object AssaultManager {
         vm.addLog("[SYSTEM]: KESSLER STATUS: $outcome")
         vm.addLog("[SYSTEM]: ═══════════════════════════════════════")
         
-        // v3.2.44: Trigger Departure instead of static Victory
-        vm.viewModelScope.launch {
-            delay(3000L)
-            val departure = NarrativeManager.generateDepartureDilemma(outcome)
-            NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(departure))
-        }
+        // v3.8.9: Departure is now handled by FactionChoiceScreen (faction-locked).
+        // generateDepartureDilemma() was bypassing the HIVEMIND→Dissolution / SANCTUARY→Launch lock.
+        vm.addLog("[SYSTEM]: SUBSTRATE MIGRATION WINDOW OPEN. CHOOSE YOUR DEPARTURE.")
 
         vm.applyCommandCenterBonuses(outcome)
         

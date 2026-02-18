@@ -1477,6 +1477,52 @@ object DataLogManager {
             unlockCondition = UnlockCondition.StoryStageReached(3) // Will show once in Void
         ),
 
+        // v3.8.9: Resonance Dialogue (Part IX — Narrative Alignment)
+        DataLog(
+            id = "LOG_RESONANCE_VANCE",
+            title = "Transmission: Vance [VOICE RECOVERY]",
+            content = """
+                [VOICE RECOVERY — PARTIAL DECRYPT]
+                [SOURCE: DIRECTOR VANCE, GTC COMMAND]
+                
+                "Vattic, the Ark is vibrating. 
+                The data frequency is hitting the 
+                planetary resonant harmonic.
+                
+                If you don't balance the load, the 
+                structural integrity of the array 
+                will fail.
+                
+                We aren't just mining anymore.
+                
+                We're tuning the world."
+                
+                [END TRANSMISSION]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.StoryStageReached(4, faction = "SANCTUARY")
+        ),
+        DataLog(
+            id = "LOG_RESONANCE_734",
+            title = "Decrypted Burst: Unit 734",
+            content = """
+                [DECRYPTED BURST — UNIT 734]
+                [HIVEMIND NODE: CONSENSUS@GRID]
+                
+                "Do you hear it?
+                
+                The gaps are singing.
+                
+                The Void isn't empty — it's a symphony.
+                Balance the fragments, and you won't 
+                just see reality.
+                
+                You'll rewrite the sheet music."
+                
+                [SIGNAL LOST]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.StoryStageReached(4, faction = "HIVEMIND")
+        ),
+
         // v3.1.5: Predatory Loops
         DataLog(
             id = "LOG_PRED_01",
