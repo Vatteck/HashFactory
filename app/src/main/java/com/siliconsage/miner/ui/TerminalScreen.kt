@@ -110,15 +110,27 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .background(if (mode == "SUBNET") primaryColor.copy(alpha = 0.15f) else Color.DarkGray.copy(alpha = 0.1f), TechnicalCornerShape(8f))
-                    .border(1.dp, if (mode == "SUBNET") primaryColor.copy(alpha = 0.5f) else Color.Transparent, TechnicalCornerShape(8f))
+                    .background(
+                        if (mode == "SUBNET") primaryColor.copy(alpha = 0.15f) 
+                        else if (hasDecision) ErrorRed.copy(alpha = 0.15f) // v3.7.5: Decision-aware tab color
+                        else Color.DarkGray.copy(alpha = 0.1f), 
+                        TechnicalCornerShape(8f)
+                    )
+                    .border(
+                        1.dp, 
+                        if (mode == "SUBNET") primaryColor.copy(alpha = 0.5f) 
+                        else if (hasDecision) ErrorRed.copy(alpha = 0.5f) // v3.7.5: Decision border
+                        else Color.Transparent, 
+                        TechnicalCornerShape(8f)
+                    )
                     .clickable { viewModel.setTerminalMode("SUBNET") }
                     .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
+                val tabColor = if (mode == "SUBNET") primaryColor else if (hasDecision) ErrorRed else Color.Gray
                 CyberHeader(
                     text = "SUBNET",
-                    color = if (mode == "SUBNET") primaryColor else Color.Gray,
+                    color = tabColor,
                     fontSize = 14.sp,
                     isGlitched = mode == "SUBNET" && corruption > 0.4
                 )

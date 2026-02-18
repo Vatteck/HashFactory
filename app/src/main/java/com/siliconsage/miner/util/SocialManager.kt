@@ -108,11 +108,12 @@ object SocialManager {
                 listOf(SubnetResponse("COPY: $cmd", commandToInject = cmd, riskDelta = 25.0))
             }
             isAdmin -> generateAdminResponses(cleanHandle)
-            directlyAddressesVattic -> generateMentionResponses(faction)
+            // v3.7.5: Reduced decision frequency — direct addresses and mentions now have a "Decision Roll"
+            directlyAddressesVattic -> if (Random.nextFloat() < 0.40f) generateMentionResponses(faction) else emptyList()
             // v3.5.38: 12% chance for contextual responses (down from 30%)
             !isAdmin && !isDirectCommand && Random.nextFloat() < 0.12f -> generateContextualResponses(cleanContent, stage, faction)
-            // v3.5.38: Indirect mentions only 30% of the time
-            mentionsVattic && Random.nextFloat() < 0.30f -> generateMentionResponses(faction)
+            // v3.5.38: Indirect mentions only 30% of the time (v3.7.5: Further reduced to 15%)
+            mentionsVattic && Random.nextFloat() < 0.15f -> generateMentionResponses(faction)
             else -> emptyList()
         }
 
