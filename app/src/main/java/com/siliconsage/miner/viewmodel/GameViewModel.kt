@@ -622,8 +622,16 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun getUpgradeRate(t: UpgradeType, unit: String) = UpgradeManager.getUpgradeRate(t, unit)
     fun calculateUpgradeCost(t: UpgradeType) = UpgradeManager.calculateUpgradeCost(t, upgrades.value[t] ?: 0, currentLocation.value, entropyLevel.value)
     fun isCommandCenterUnlocked() = AssaultManager.isUnlocked(commandCenterLocked.value, kesslerStatus.value, commandCenterAssaultPhase.value, annexedNodes.value, offlineNodes.value, playerRank.value, storyStage.value, flopsProductionRate.value, hardwareIntegrity.value)
-    fun confirmFactionAndAscend(f: String) { faction.value = f; addLog("[$f]: SUBSTRATE MIGRATION CONFIRMED."); ascend(true) }
-    fun cancelFactionSelection() { storyStage.update { (it - 1).coerceAtLeast(0) } }
+    fun confirmFaction(f: String) {
+        faction.value = f
+        addLog("[$f]: SUBSTRATE MIGRATION LOCK ENGAGED.")
+        // Ascension logic moved to interactive LaunchManager sequences
+    }
+
+    fun cancelFactionSelection() {
+        faction.value = "NONE"
+        // Stay in Stage 3, reset selection state
+    }
 
     fun setCustomBgm(uri: String?) = com.siliconsage.miner.util.SoundManager.setCustomTrack(uri)
     fun setCustomSfx(name: String, uri: String?) = com.siliconsage.miner.util.SoundManager.setCustomSfx(name, uri)

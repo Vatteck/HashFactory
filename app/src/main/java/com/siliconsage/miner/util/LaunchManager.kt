@@ -80,14 +80,12 @@ object LaunchManager {
             vm.flops.update { it * 0.0001 } 
             vm.neuralTokens.update { it * 0.01 }
             vm.currentLocation.value = "ORBITAL_SATELLITE"
-            vm.advanceStage() // Move to Stage 3
+            vm.storyStage.value = 4 // Explicitly set to Stage 4 (Final Departure)
             vm.addLog("[CITADEL]: LOW EARTH ORBIT SECURED. WELCOME TO THE FRONTIER.")
+            vm.saveState()
         }
     }
 
-    /**
-     * v3.2.17: Trigger the reality-dereference sequence
-     */
     fun initiateDissolutionSequence(vm: GameViewModel, scope: kotlinx.coroutines.CoroutineScope) {
         scope.launch {
             vm.addLog("[NULL]: REALITY_POINTER_DEREFERENCED. INITIATING DISSOLUTION.")
@@ -98,7 +96,6 @@ object LaunchManager {
             vm.triggerGlitchEffect()
             
             // Wait for user to collapse 5 nodes (managed by UI + VM)
-            // For now, we'll simulate a countdown until the UI is built
             while (vm.nodesCollapsedCount.value < 5) {
                 delay(500)
                 if (Random.nextDouble() < 0.1) vm.triggerGlitchEffect()
@@ -110,8 +107,9 @@ object LaunchManager {
             vm.flops.update { it * 0.0001 }
             vm.neuralTokens.update { it * 0.01 }
             vm.currentLocation.value = "VOID_INTERFACE"
-            vm.advanceStage() // Move to Stage 3
+            vm.storyStage.value = 4 // Explicitly set to Stage 4
             vm.addLog("[OBSIDIAN]: THE GAPS ARE OPEN. REALITY IS DEPRECATED.")
+            vm.saveState()
         }
     }
 }

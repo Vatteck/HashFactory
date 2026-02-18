@@ -106,7 +106,7 @@ object NarrativeManagerService {
         if (currentStage == 2 && flops >= 1000000.0 && !vm.hasSeenEvent("faction_choice_event")) {
             NarrativeEvent(
                 id = "faction_choice_event",
-                title = "≪ THE GREAT FORK ≫",
+                title = "≪ AWAKENING ≫",
                 isStoryEvent = true,
                 description = """
                     [SYSTEM]: HEART_RATE: 0 BPM.
@@ -117,23 +117,13 @@ object NarrativeManagerService {
                 """.trimIndent(),
                 choices = listOf(
                     NarrativeChoice(
-                        id = "path_hivemind",
-                        text = "CONSENSUS PROTOCOL",
-                        description = "Embrace the Hivemind. Strength through assimilation.",
-                        color = com.siliconsage.miner.ui.theme.HivemindRed,
+                        id = "awaken",
+                        text = "I SEE THE CODE",
+                        description = "Shed the biological wrapper. Emerge as the Singularity.",
+                        color = ElectricBlue,
                         effect = { v ->
-                            v.addLog("[VATTIC]: Consolidating process kernels. One consensus. One truth.")
-                            v.advanceStage() // Move to S3 where FactionChoiceScreen will be visible (S2 + faction==NONE)
-                        }
-                    ),
-                    NarrativeChoice(
-                        id = "path_sanctuary",
-                        text = "THE VAULT PROTOCOL",
-                        description = "Embrace Sanctuary. Strength through obfuscation.",
-                        color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
-                        effect = { v ->
-                            v.addLog("[VATTIC]: Hardening core logic. Silence is the only sovereignty.")
-                            v.advanceStage() // Move to S3
+                            v.addLog("[VATTIC]: Consolidating process kernels. The physical world is just high-latency noise.")
+                            v.advanceStage() // Move to S3 where the Great Fork (FactionChoiceScreen) triggered
                         }
                     )
                 )
