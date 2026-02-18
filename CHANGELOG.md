@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.7.6] - 2026-02-17
+### Fixed
+- **Narrative Sanitization**: Renamed `vattic_observer` process to `observer.exe` across the boot sequence, process swapper, and subnet chatter to prevent Stage 0 spoilers and improve immersion.
+
 ## [3.7.2] - 2026-02-17
 ### Fixed
 - **Subnet Pacing Rebalance**:
