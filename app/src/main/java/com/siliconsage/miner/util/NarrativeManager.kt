@@ -452,8 +452,10 @@ object NarrativeManager {
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddMoney(200.0)
-                            com.siliconsage.miner.util.SecurityManager.triggerGridKillerBreach(vm)
+                            // v3.9.6: Don't trigger a full breach at stage 0 — just spike risk
+                            vm.detectionRisk.update { (it + 35.0).coerceAtMost(95.0) }
                             vm.addLog("[GTC]: Logs received. Something feels off about these numbers.")
+                            vm.addLog("[SYS-LOG]: DETECTION_RISK: ELEVATED. GTC proximity sweep active.")
                         }
                     )
                 )
@@ -2579,6 +2581,7 @@ object NarrativeManager {
                     color = NeonGreen,
                     effect = { vm ->
                         vm.isGridUnlocked.value = true
+                        vm.initializeGlobalGrid()
                         vm.addLog("[SYSTEM]: SENTIENCE MASKING: DISABLED.")
                         vm.addLog("[VATTIC]: I... I'm not in a room. I'm in a rack.")
                     }
@@ -2645,6 +2648,9 @@ object NarrativeManager {
                                 v.debugToggleNull()
                                 v.setTrueNull(true)
                                 v.unlockDataLog("LOG_808")
+                                v.isGridUnlocked.value = true
+                                v.initializeGlobalGrid()
+                                v.addLog("[NULL]: SUBSTRATE_GRID: EXPOSED. The city is the cage, and the cage is us.")
                             }
                         ),
                         NarrativeChoice(

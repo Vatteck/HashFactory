@@ -93,7 +93,28 @@ fun NetworkScreen(viewModel: GameViewModel) {
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(20.dp))
+                // Migration card sits ABOVE the tab strip — always accessible, never inside the tree
+                if (storyStage >= 3 || faction != "NONE") {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth().border(1.dp, themeColor.copy(alpha = 0.3f), RoundedCornerShape(8.dp)),
+                        colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("SUBSTRATE MIGRATION", color = themeColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text("Reboot the kernel to crystallize current progress into memories.", color = Color.Gray, fontSize = 10.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 4.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("POTENTIAL: ", color = Color.LightGray, fontSize = 11.sp)
+                                Text("+${viewModel.formatBytes(potential)}", color = if (potential >= 1.0) NeonGreen else ErrorRed, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Button(onClick = { viewModel.triggerPrestigeChoice() }, enabled = potential >= 1.0, modifier = Modifier.fillMaxWidth().padding(top = 8.dp), shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(containerColor = if (potential >= 1.0) themeColor else Color.DarkGray, contentColor = Color.Black)) {
+                                Text("INITIATE MIGRATION", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
                 
                 Row(
                     modifier = Modifier.fillMaxWidth().height(40.dp).background(Color.Black.copy(alpha=0.5f), RoundedCornerShape(8.dp)).border(1.dp, Color.DarkGray.copy(alpha=0.5f), RoundedCornerShape(8.dp)),
@@ -102,7 +123,6 @@ fun NetworkScreen(viewModel: GameViewModel) {
                     Box(modifier = Modifier.weight(1f).fillMaxHeight().background(if (currentTab == 0) themeColor.copy(alpha=0.15f) else Color.Transparent).clickable { currentTab = 0 }, contentAlignment = Alignment.Center) {
                         Text("TECH TREE", color = if (currentTab == 0) themeColor else Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
-                    // Gate "THE OVERWRITE" behind first migration
                     if (migrationCount >= 1) {
                         Box(modifier = Modifier.weight(1f).fillMaxHeight().background(if (currentTab == 1) ConvergenceGold.copy(alpha=0.15f) else Color.Transparent).clickable { currentTab = 1 }, contentAlignment = Alignment.Center) {
                             Text("THE OVERWRITE", color = if (currentTab == 1) ConvergenceGold else Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -110,35 +130,15 @@ fun NetworkScreen(viewModel: GameViewModel) {
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             if (currentTab == 0) {
-                if (storyStage >= 3 || faction != "NONE") {
-                    item {
-                        Card(modifier = Modifier.fillMaxWidth().border(1.dp, themeColor.copy(alpha = 0.3f), RoundedCornerShape(8.dp)), colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))) {
-                            Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("SUBSTRATE MIGRATION", color = themeColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                Text("Reboot the kernel to crystallize current progress into memories.", color = Color.Gray, fontSize = 10.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 4.dp))
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("POTENTIAL: ", color = Color.LightGray, fontSize = 11.sp)
-                                    Text("+${viewModel.formatBytes(potential)}", color = if (potential >= 1.0) NeonGreen else ErrorRed, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Button(onClick = { viewModel.ascend() }, enabled = potential >= 1.0, modifier = Modifier.fillMaxWidth().padding(top = 8.dp), shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(containerColor = if (potential >= 1.0) themeColor else Color.DarkGray, contentColor = Color.Black)) {
-                                    Text("INITIATE MIGRATION", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-                }
-
                 item {
                     val unitName = viewModel.getComputeUnitName()
+                    // Header immediately above the tree with no gap
                     Text("$unitName TECH TREE", color = themeColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
+                    Spacer(modifier = Modifier.height(6.dp))
                     LegacyGrid(nodes = techNodes, unlockedIds = unlockedNodes, prestigePoints = prestigePoints, faction = faction, onUnlock = { id -> TechTreeManager.unlockNode(viewModel, id) }, themeColor = themeColor, storyStage = storyStage)
                 }
             } else {

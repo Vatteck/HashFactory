@@ -147,10 +147,6 @@ object NarrativeManagerService {
         }
         
         NarrativeManager.rollForEvent(vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
-
-        if (currentStage >= 3 || vm.currentLocation.value == "ORBITAL_SATELLITE" || vm.currentLocation.value == "VOID_INTERFACE") {
-            vm.initializeGlobalGrid()
-        }
     }
 
     fun checkTrueEnding(vm: GameViewModel) {

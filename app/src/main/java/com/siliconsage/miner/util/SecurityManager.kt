@@ -106,9 +106,14 @@ object SecurityManager {
     }
 
     fun triggerGridKillerBreach(vm: GameViewModel, targetId: String = "S09") {
+        // v3.9.6: Hard guard — no breaches before the grid is narratively revealed
+        if (!vm.isGridUnlocked.value) {
+            vm.detectionRisk.update { (it + 20.0).coerceAtMost(95.0) }
+            return
+        }
         isBreachInProgress = true
-        vm.isRaidActive.value = true // v3.3.18: Use dedicated Raid state
-        vm.nodesUnderSiege.update { it + targetId } // v3.3.14: Visually mark the node on the grid
+        vm.isRaidActive.value = true
+        vm.nodesUnderSiege.update { it + targetId }
         val rank = vm.playerRank.value
         val flopsFactor = (vm.flops.value.coerceAtLeast(1.0).let { log10(it) } / 10.0).coerceAtLeast(1.0)
         val siegeFactor = if (rank >= 5) 2.5 else 1.0
@@ -181,11 +186,15 @@ object SecurityManager {
         val now = System.currentTimeMillis()
         if (now - vm.lastRaidTime < 180_000L) return
         if (vm.kesslerStatus.value != "ACTIVE") return
-        
+        // Never raid before the grid is narratively revealed
+        if (!vm.isGridUnlocked.value) return
+        // Require at least 2 annexed nodes (can't raid when only D1 is held)
+        if (vm.annexedNodes.value.size < 2) return
+
         val raidableNodes = vm.annexedNodes.value.filter { nodeId ->
             nodeId != "D1" &&
             !vm.offlineNodes.value.contains(nodeId) &&
-            (now - (vm.nodeAnnexTimes[nodeId] ?: 0L)) > 300_000L 
+            (now - (vm.nodeAnnexTimes[nodeId] ?: 0L)) > 300_000L
         }
         if (raidableNodes.isEmpty()) return
         
