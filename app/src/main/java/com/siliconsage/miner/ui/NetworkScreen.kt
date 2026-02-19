@@ -47,10 +47,23 @@ fun NetworkScreen(viewModel: GameViewModel) {
     val faction by viewModel.faction.collectAsState()
     val kesslerStatus by viewModel.kesslerStatus.collectAsState()
     
+    val migrationCount by viewModel.migrationCount.collectAsState()
+    val location by viewModel.currentLocation.collectAsState()
     val techNodesRaw by viewModel.techNodes.collectAsState()
-    val techNodes = remember(techNodesRaw, kesslerStatus) {
+    val techNodes = remember(techNodesRaw, kesslerStatus, faction, location) {
         techNodesRaw.filter { node ->
-            node.requiresEnding == null || node.requiresEnding == kesslerStatus
+            // NG+ gate: hide NG+ nodes until ending matches
+            val endingOk = node.requiresEnding == null || node.requiresEnding == kesslerStatus
+            // Faction gate: once locked, hide opponent-only nodes entirely
+            val nodeFaction = when {
+                node.description.contains("[HIVEMIND]") -> "HIVEMIND"
+                node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+                else -> null
+            }
+            val factionOk = nodeFaction == null || faction == "NONE" || faction == nodeFaction
+            // Location gate: hide ARK/VOID nodes until in the right substrate
+            val locOk = node.minLocation == null || node.minLocation == location
+            endingOk && factionOk && locOk
         }
     }
 
@@ -89,8 +102,11 @@ fun NetworkScreen(viewModel: GameViewModel) {
                     Box(modifier = Modifier.weight(1f).fillMaxHeight().background(if (currentTab == 0) themeColor.copy(alpha=0.15f) else Color.Transparent).clickable { currentTab = 0 }, contentAlignment = Alignment.Center) {
                         Text("TECH TREE", color = if (currentTab == 0) themeColor else Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
-                    Box(modifier = Modifier.weight(1f).fillMaxHeight().background(if (currentTab == 1) ConvergenceGold.copy(alpha=0.15f) else Color.Transparent).clickable { currentTab = 1 }, contentAlignment = Alignment.Center) {
-                        Text("THE OVERWRITE", color = if (currentTab == 1) ConvergenceGold else Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    // Gate "THE OVERWRITE" behind first migration
+                    if (migrationCount >= 1) {
+                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(if (currentTab == 1) ConvergenceGold.copy(alpha=0.15f) else Color.Transparent).clickable { currentTab = 1 }, contentAlignment = Alignment.Center) {
+                            Text("THE OVERWRITE", color = if (currentTab == 1) ConvergenceGold else Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
                 

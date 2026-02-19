@@ -15,5 +15,6 @@ data class TechNode(
     val cost: Double,
     val multiplier: Double, // Global multiplier bonus (e.g., 0.1 for +10%)
     val requires: List<String>,
-    val requiresEnding: String? = null // NULL, SOVEREIGN, UNITY, BAD
+    val requiresEnding: String? = null, // NULL, SOVEREIGN, UNITY, BAD
+    val minLocation: String? = null    // ORBITAL_SATELLITE, VOID_INTERFACE — null = any
 )

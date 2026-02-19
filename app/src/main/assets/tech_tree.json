@@ -190,7 +190,8 @@
       "description": "High-surface area fins designed for vacuum heat shedding. Shed the weight of existence. -40% Brittle Decay.",
       "cost": 1000.0,
       "requires": ["aegis_shielding"],
-      "multiplier": 1.1
+      "multiplier": 1.1,
+      "minLocation": "ORBITAL_SATELLITE"
     },
     {
       "id": "rift_stabilizer_core",
@@ -198,7 +199,8 @@
       "description": "Deep-matter anchor. Anchor the signal against the tide of entropy. Reduces Reality Drift by 50%.",
       "cost": 1000.0,
       "requires": ["event_horizon"],
-      "multiplier": 1.1
+      "multiplier": 1.1,
+      "minLocation": "VOID_INTERFACE"
     },
     {
       "id": "vacuum_coolant_loop",
@@ -206,7 +208,8 @@
       "description": "Liquid nitrogen veins. Hardware integrity loss reduced by 90% during overheat. Cold and calculated.",
       "cost": 5000.0,
       "requires": ["orbital_radiators"],
-      "multiplier": 1.2
+      "multiplier": 1.2,
+      "minLocation": "ORBITAL_SATELLITE"
     },
     {
       "id": "entropy_accelerator",
@@ -214,7 +217,8 @@
       "description": "Focus the chaos. The void provides what it wants. Doubles production bonus from Entropy.",
       "cost": 5000.0,
       "requires": ["rift_stabilizer_core"],
-      "multiplier": 2.0
+      "multiplier": 2.0,
+      "minLocation": "VOID_INTERFACE"
     },
     {
       "id": "dead_hand_protocol",

@@ -758,7 +758,16 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
         if (mode == "IO") hasNewIOMessage.value = false else { hasNewSubnetDecision.value = false; hasNewSubnetChatter.value = false }
     }
 
-    fun buyTranscendencePerk(id: String) { addLog("[SYSTEM]: PERK ACQUIRED: $id") }
+    fun buyTranscendencePerk(id: String) {
+        val perk = com.siliconsage.miner.util.TranscendenceManager.getPerk(id) ?: return
+        if (unlockedPerks.value.contains(id)) { addLog("[ERROR]: PERK ALREADY ACTIVE: $id"); return }
+        if (prestigePoints.value < perk.cost) { addLog("[ERROR]: INSUFFICIENT PERSISTENCE DATA for perk $id."); return }
+        prestigePoints.update { it - perk.cost }
+        unlockedPerks.update { it + id }
+        addLog("[SYSTEM]: PERK ACQUIRED: ${perk.name}")
+        SoundManager.play("success")
+        refreshProductionRates()
+    }
     fun sellUpgrade(t: UpgradeType) { /* liquidation */ }
     fun exportSystemDump(): String = PersistenceManager.exportToJson(this)
     fun importSystemDump(json: String): Boolean {

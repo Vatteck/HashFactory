@@ -31,11 +31,53 @@ object TechTreeManager {
     }
 
     fun unlockNode(vm: GameViewModel, nodeId: String) {
-        if (!vm.unlockedTechNodes.value.contains(nodeId)) {
-            vm.unlockedTechNodes.update { it + nodeId }
-            vm.addLog("[SYSTEM]: NODE ANNEXED: $nodeId")
-            SoundManager.play("success")
-            vm.refreshProductionRates()
+        val node = vm.techNodes.value.find { it.id == nodeId } ?: return
+        val unlocked = vm.unlockedTechNodes.value
+        val faction = vm.faction.value
+        val location = vm.currentLocation.value
+
+        // Already unlocked
+        if (unlocked.contains(nodeId)) return
+
+        // Prerequisites not met
+        if (!node.requires.all { unlocked.contains(it) }) {
+            vm.addLog("[ERROR]: PREREQUISITES NOT MET for $nodeId.")
+            SoundManager.play("error")
+            return
         }
+
+        // Can't afford
+        if (vm.prestigePoints.value < node.cost) {
+            vm.addLog("[ERROR]: INSUFFICIENT PERSISTENCE DATA for $nodeId.")
+            SoundManager.play("error")
+            return
+        }
+
+        // Opposing faction gate
+        val nodeFaction = when {
+            node.description.contains("[HIVEMIND]") -> "HIVEMIND"
+            node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+            else -> null
+        }
+        if (nodeFaction != null && faction != "NONE" && faction != nodeFaction) {
+            vm.addLog("[ERROR]: FACTION LOCK — $nodeId requires $nodeFaction alignment.")
+            SoundManager.play("error")
+            return
+        }
+
+        // Location gate (ARK/VOID nodes)
+        val requiredLoc = node.minLocation
+        if (requiredLoc != null && location != requiredLoc) {
+            vm.addLog("[ERROR]: LOCATION GATE — $nodeId requires substrate: $requiredLoc.")
+            SoundManager.play("error")
+            return
+        }
+
+        // All checks passed — commit
+        vm.prestigePoints.update { it - node.cost }
+        vm.unlockedTechNodes.update { it + nodeId }
+        vm.addLog("[SYSTEM]: NODE ANNEXED: $nodeId")
+        SoundManager.play("success")
+        vm.refreshProductionRates()
     }
 }
