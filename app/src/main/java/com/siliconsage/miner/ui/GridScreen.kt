@@ -582,7 +582,13 @@ fun CityGridScreen(viewModel: GameViewModel) {
 
                 Column {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(loc.name, color = if (isAnnexed) themeColor else Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Column {
+                            Text(loc.name, color = if (isAnnexed) themeColor else Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            if (isAnnexed) {
+                                val currentLvl = gridNodeLevels[loc.id] ?: 1
+                                Text("LEVEL: $currentLvl", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                            }
+                        }
                         Text("NODE: ${loc.id}", color = Color.Gray, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
@@ -605,29 +611,38 @@ fun CityGridScreen(viewModel: GameViewModel) {
                     } else if (isAnnexing) {
                          val prog = annexingNodes[loc.id] ?: 0f
                          LinearProgressIndicator(progress = { if (prog.isNaN()) 0f else prog }, modifier = Modifier.fillMaxWidth().height(8.dp), color = themeColor, trackColor = Color.DarkGray)
-                    } else if (isAnnexed && storyStage >= 3) {
+                    } else if (isAnnexed) {
+                        val currentLvl = gridNodeLevels[loc.id] ?: 1
+                        val upgradeCost = 1000.0 * 5.0.pow(currentLvl - 1)
+                        val canAfford = viewModel.neuralTokens.collectAsState().value >= upgradeCost
+
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            // [⚡ OVERVOLT]
+                            // [UPGRADE NODE]
                             Button(
-                                onClick = { viewModel.overvoltNode(loc.id) },
-                                modifier = Modifier.weight(1f).height(40.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
-                                enabled = viewModel.neuralTokens.collectAsState().value >= 500.0
+                                onClick = { viewModel.upgradeGridNode(loc.id) },
+                                modifier = Modifier.weight(1.5f).height(40.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = themeColor),
+                                enabled = canAfford
                             ) {
-                                Text("⚡ OVERVOLT", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp)
+                                Text("UPGRADE (LVL ${currentLvl + 1})", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp)
                             }
-                            
-                            // [💠 REDACT]
-                            Button(
-                                onClick = { viewModel.redactNode(loc.id) },
-                                modifier = Modifier.weight(1f).height(40.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray.copy(alpha = 0.5f))
-                            ) {
-                                Text("💠 REDACT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+
+                            if (storyStage >= 3) {
+                                // [⚡ OVERVOLT]
+                                Button(
+                                    onClick = { viewModel.overvoltNode(loc.id) },
+                                    modifier = Modifier.weight(1f).height(40.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
+                                    enabled = viewModel.neuralTokens.collectAsState().value >= 500.0
+                                ) {
+                                    Text("⚡ OVERVOLT", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp)
+                                }
                             }
                         }
-                    } else if (isAnnexed) {
-                        Text("NODE_ACTIVE // MONITORING_UPLINK", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        
+                        if (canAfford) {
+                             Text("COST: ${viewModel.formatLargeNumber(upgradeCost)} ${viewModel.getCurrencyName()}", color = Color.Gray, fontSize = 9.sp, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 2.dp))
+                        }
                     }
                 }
             } else {
