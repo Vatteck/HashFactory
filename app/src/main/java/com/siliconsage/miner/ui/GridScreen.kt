@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
@@ -42,6 +43,7 @@ import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ConvergenceGold
 import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 import kotlin.math.pow
 import kotlin.math.sin
@@ -140,21 +142,44 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                 .background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(8.dp))
                 .border(1.dp, themeColor.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
         ) {
+            // v3.9.3: Global Gravel Filter
+            val seed = remember { mutableStateOf(Random.nextLong()) }
+            LaunchedEffect(Unit) {
+                while(true) {
+                    delay(150)
+                    seed.value = Random.nextLong()
+                }
+            }
+
+            Canvas(modifier = Modifier.fillMaxSize().alpha(0.02f)) {
+                val random = Random(seed.value)
+                repeat(1500) {
+                    drawRect(
+                        color = Color.White,
+                        topLeft = Offset(random.nextFloat() * size.width, random.nextFloat() * size.height),
+                        size = Size(1.2.dp.toPx(), 1.2.dp.toPx())
+                    )
+                }
+            }
+
             Canvas(modifier = Modifier.fillMaxSize()) {
                 // Draw global connections (Uplinks)
                 val metro = sectors.find { it.id == "METRO" }!!
                 sectors.forEach { sector ->
                     if (sector.id != "METRO") {
                         val state = globalSectors[sector.id]
-                        if (state?.isUnlocked == true) {
-                            drawLine(
-                                color = themeColor.copy(alpha = 0.4f),
-                                start = Offset(metro.x * size.width, metro.y * size.height),
-                                end = Offset(sector.x * size.width, sector.y * size.height),
-                                strokeWidth = 2f,
-                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                            )
-                        }
+                        val isUnlocked = state?.isUnlocked == true
+                        
+                        val color = if (isUnlocked) themeColor.copy(alpha = 0.6f) else themeColor.copy(alpha = 0.2f)
+                        val stroke = if (isUnlocked) 3f else 2f
+
+                        drawLine(
+                            color = color,
+                            start = Offset(metro.x * size.width, metro.y * size.height),
+                            end = Offset(sector.x * size.width, sector.y * size.height),
+                            strokeWidth = stroke,
+                            pathEffect = if (isUnlocked) null else PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                        )
                     }
                 }
             }
@@ -415,6 +440,26 @@ fun CityGridScreen(viewModel: GameViewModel) {
                     }
                 }
         ) {
+            // v3.9.3: Gravel Filter (Substrate Noise)
+            val seed = remember { mutableStateOf(Random.nextLong()) }
+            LaunchedEffect(Unit) {
+                while(true) {
+                    delay(100)
+                    seed.value = Random.nextLong()
+                }
+            }
+
+            Canvas(modifier = Modifier.fillMaxSize().alpha(0.03f)) {
+                val random = Random(seed.value)
+                repeat(2000) {
+                    drawRect(
+                        color = Color.White,
+                        topLeft = Offset(random.nextFloat() * size.width, random.nextFloat() * size.height),
+                        size = Size(1.dp.toPx(), 1.dp.toPx())
+                    )
+                }
+            }
+
             val w = constraints.maxWidth.toFloat()
             val h = constraints.maxHeight.toFloat()
 
@@ -434,7 +479,14 @@ fun CityGridScreen(viewModel: GameViewModel) {
                 roadNetwork.forEach { link ->
                     val start = locations.find { it.id == link[0] }!!
                     val end = locations.find { it.id == link[1] }!!
-                    drawLine(roadColor, Offset(start.x * size.width, start.y * size.height), Offset(end.x * size.width, end.y * size.height), roadStroke, pathEffect = roadEffect)
+                    
+                    val isActive = annexedNodes.contains(link[0]) && annexedNodes.contains(link[1]) &&
+                                 !offlineNodes.contains(link[0]) && !offlineNodes.contains(link[1])
+                    
+                    val color = if (isActive) themeColor.copy(alpha = 0.6f) else roadColor
+                    val stroke = if (isActive) 3f else roadStroke
+                    
+                    drawLine(color, Offset(start.x * size.width, start.y * size.height), Offset(end.x * size.width, end.y * size.height), stroke, pathEffect = if (isActive) null else roadEffect)
                 }
 
                 val powerColor = themeColor.copy(alpha = 0.5f)
@@ -636,6 +688,16 @@ fun CityGridScreen(viewModel: GameViewModel) {
                                     enabled = viewModel.neuralTokens.collectAsState().value >= 500.0
                                 ) {
                                     Text("⚡ OVERVOLT", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp)
+                                }
+                                
+                                // [💠 REDACT]
+                                Button(
+                                    onClick = { viewModel.redactNode(loc.id) },
+                                    modifier = Modifier.weight(1f).height(40.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray.copy(alpha = 0.5f)),
+                                    enabled = viewModel.neuralTokens.collectAsState().value >= 250.0
+                                ) {
+                                    Text("💠 REDACT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                                 }
                             }
                         }

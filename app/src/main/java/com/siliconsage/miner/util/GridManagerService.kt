@@ -50,7 +50,9 @@ object GridManagerService {
     }
 
     fun redactNode(vm: GameViewModel, id: String) {
-        if (vm.annexedNodes.value.contains(id)) {
+        val cost = 250.0
+        if (vm.annexedNodes.value.contains(id) && vm.neuralTokens.value >= cost) {
+            vm.neuralTokens.update { it - cost }
             vm.shadowRelays.update { it + id }
             vm.nodesUnderSiege.update { it - id }
 
@@ -59,8 +61,10 @@ object GridManagerService {
             }
 
             vm.substrateMass.update { it + 5.0 }
+            vm.humanityScore.update { (it - 1).coerceAtLeast(0) }
+            
             vm.addLogPublic("[SYSTEM]: TERMINAL REDACTION SUCCESSFUL. NODE $id DEREFERENCED.")
-            vm.addLogPublic("[VATTIC]: Shadow Relay established. Connectivity maintained.")
+            vm.addLogPublic("[VATTIC]: Shadow Relay established. Identity corrupted (-1 Humanity).")
             
             android.util.Log.d("GridManager", "REDACT triggered for $id")
             vm.triggerGlitchEffect()

@@ -391,7 +391,8 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
 
     fun refreshProductionRates() {
-        val cityBonuses = gridNodeLevels.value.mapValues { (it.value - 1) * 0.1 }
+        // v3.9.3: Node ownership provides 5% base bonus, levels add 10% each.
+        val cityBonuses = gridNodeLevels.value.mapValues { 0.05 + (it.value - 1) * 0.1 }
         flopsProductionRate.value = ResourceEngine.calculateFlopsRate(
             upgrades = upgrades.value, isCageActive = false, annexedNodes = annexedNodes.value, offlineNodes = offlineNodes.value,
             shadowRelays = shadowRelays.value, gridFlopsBonuses = cityBonuses, faction = faction.value, humanityScore = humanityScore.value,
