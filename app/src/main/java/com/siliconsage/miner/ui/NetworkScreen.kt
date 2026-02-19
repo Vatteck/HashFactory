@@ -287,37 +287,74 @@ fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean,
         node.description.contains("[SANCTUARY]") -> "SANCTUARY"
         else -> "SHARED"
     }
+    val isNGPlus = node.requiresEnding != null
     val isOpposing = (nodeFaction == "HIVEMIND" && playerFaction == "SANCTUARY") || (nodeFaction == "SANCTUARY" && playerFaction == "HIVEMIND")
-    val borderColor = when {
-        isUnlocked -> themeColor
-        nodeFaction == "HIVEMIND" -> Color(0xFFFF1100) // HIVEMIND Red
-        nodeFaction == "SANCTUARY" -> Color(0xFF9D4EDD) // SANCTUARY Purple
-        node.requiresEnding == "UNITY" -> ConvergenceGold
+    val factionColor = when {
+        nodeFaction == "HIVEMIND" -> Color(0xFFFF1100)
+        nodeFaction == "SANCTUARY" -> Color(0xFF9D4EDD)
+        isNGPlus -> ConvergenceGold
         else -> ElectricBlue
     }
-    
-    // Strict size and alignment
+    val borderColor = if (isUnlocked) themeColor else factionColor
+    val bgTint = when {
+        isUnlocked -> factionColor.copy(alpha = 0.25f)
+        isUnlockable && canAfford && !isOpposing -> factionColor.copy(alpha = 0.12f)
+        else -> Color.Black.copy(alpha = 0.85f)
+    }
+    val nameColor = when {
+        isOpposing -> Color.Gray.copy(alpha = 0.35f)
+        isUnlocked -> factionColor
+        isUnlockable -> Color.White
+        else -> Color.Gray.copy(alpha = 0.5f)
+    }
+
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally, 
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .size(90.dp, 85.dp) // Fixed footprint
-            .background(Color.Black.copy(alpha = 0.9f), RoundedCornerShape(8.dp))
-            .border(BorderStroke(1.dp, borderColor.copy(alpha = if (isUnlockable || isUnlocked) 1f else 0.3f)), RoundedCornerShape(8.dp))
+            .size(90.dp, 92.dp)
+            .background(bgTint, RoundedCornerShape(8.dp))
+            .border(BorderStroke(if (isUnlocked) 2.dp else 1.dp, borderColor.copy(alpha = if (isUnlockable || isUnlocked) 1f else 0.3f)), RoundedCornerShape(8.dp))
             .headerClickable(enabled = isUnlockable && !isUnlocked && canAfford && !isOpposing) { onUnlock() }
             .padding(4.dp)
     ) {
-        Box(modifier = Modifier.size(20.dp).background(borderColor.copy(alpha = if (isUnlocked) 1f else 0.4f), CircleShape), contentAlignment = Alignment.Center) {
-             if (isUnlocked) Text("✓", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-             else {
-                 val icon = when (node.requiresEnding) { "NULL" -> "🌑"; "SOVEREIGN" -> "👑"; "UNITY" -> "⚛"; "BAD" -> "💀"; else -> "" }
-                 if (icon.isNotEmpty()) Text(icon, fontSize = 10.sp)
-             }
+        Box(modifier = Modifier.size(20.dp).background(borderColor.copy(alpha = if (isUnlocked) 1f else 0.35f), CircleShape), contentAlignment = Alignment.Center) {
+            if (isUnlocked) Text("✓", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            else {
+                val icon = when (node.requiresEnding) { "NULL" -> "🌑"; "SOVEREIGN" -> "👑"; "UNITY" -> "⚛"; "BAD" -> "💀"; else -> "" }
+                val locIcon = when (node.minLocation) { "ORBITAL_SATELLITE" -> "🛰"; "VOID_INTERFACE" -> "🌀"; else -> "" }
+                val displayIcon = icon.ifEmpty { locIcon }
+                if (displayIcon.isNotEmpty()) Text(displayIcon, fontSize = 9.sp)
+            }
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(node.name.replace(" ", "\n"), color = if (isUnlocked || isUnlockable) (if (isOpposing) Color.Gray.copy(alpha = 0.4f) else Color.White) else Color.Gray.copy(alpha = 0.5f), fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, lineHeight = 10.sp)
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            node.name.replace(" ", "\n"),
+            color = nameColor,
+            fontSize = 9.sp,
+            fontWeight = if (isUnlocked) FontWeight.ExtraBold else FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            lineHeight = 10.sp
+        )
+        Spacer(modifier = Modifier.height(2.dp))
         if (!isUnlocked) {
             val costLabel = if (storyStage < 3) "REP" else "LP"
-            Text("${node.cost.toInt()} $costLabel", color = if (isOpposing) Color.Gray.copy(alpha = 0.4f) else if (canAfford) NeonGreen else ErrorRed.copy(alpha = 0.7f), fontSize = 8.sp)
+            // Inline UNLOCK tap hint
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(if (canAfford && !isOpposing) factionColor.copy(alpha = 0.3f) else Color.Transparent, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 2.dp, vertical = 1.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "${node.cost.toInt()} $costLabel",
+                    color = if (isOpposing) Color.Gray.copy(alpha = 0.35f) else if (canAfford) factionColor else ErrorRed.copy(alpha = 0.7f),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        } else {
+            Text("ACTIVE", color = factionColor.copy(alpha = 0.7f), fontSize = 7.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

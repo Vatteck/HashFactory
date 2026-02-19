@@ -507,7 +507,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun reannexNode(id: String) { offlineNodes.update { it - id }; addLog("[SYSTEM]: NODE $id RE-INITIALIZED."); refreshProductionRates() }
     fun collapseNode(id: String) { annexedNodes.update { it - id }; collapsedNodes.update { it + id }; triggerGlitchEffect(); refreshProductionRates() }
     fun annexGlobalSector(id: String) { val sectors = globalSectors.value.toMutableMap(); val s = sectors[id] ?: return; if (!s.isUnlocked) { sectors[id] = s.copy(isUnlocked = true); globalSectors.value = sectors; addLog("[SYSTEM]: GLOBAL SECTOR $id ANNEXED."); refreshProductionRates(); saveState() } }
-    fun calculatePotentialPrestige(tokens: Double = 0.0) = MigrationManager.calculatePotentialPersistence(tokens)
+    fun calculatePotentialPrestige() = MigrationManager.calculatePotentialPersistence(flops.value)
     fun showVictoryScreen() { victoryAchieved.value = true }
 
     fun triggerSingularitySequence(path: String) {
@@ -560,7 +560,14 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
     fun onDiagnosticTap(idx: Int) { val curr = diagnosticGrid.value.toMutableList(); if (idx in curr.indices && curr[idx]) { curr[idx] = false; diagnosticGrid.value = curr; if (curr.none { it }) { isDiagnosticsActive.value = false; addLog("[SYSTEM]: NETWORK REPAIRED."); refreshProductionRates() } } }
     fun resolveFork(c: Int) { isGovernanceForkActive.value = false }
-    fun exchangeFlops() { val g = flops.value * 0.1; flops.update { 0.0 }; neuralTokens.update { it + g }; SoundManager.play("buy") }
+    fun exchangeFlops() {
+        val g = flops.value * 0.1
+        flops.update { 0.0 }
+        // At stage 3+, upgrades cost substrateMass — fill that pool instead
+        if (storyStage.value >= 3) substrateMass.update { it + g }
+        else neuralTokens.update { it + g }
+        SoundManager.play("buy")
+    }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
