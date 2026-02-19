@@ -703,7 +703,7 @@ fun OrbitalGridScreen(viewModel: GameViewModel) {
         listOf(
             GridNode("O1", "UPLINK_PRIME", "SUB", 0.50f, 0.85f, "Uplink Prime. The tether to the surface. Cut this link and the Ark goes dark. Kessler knows the frequency.", 0.20),
             GridNode("O2", "SOLAR_ARRAY_A", "SUB", 0.20f, 0.40f, "Solar Array Alpha. Photovoltaic panels the size of a soccer pitch. Feeds the Ark when the shadow-side generators cycle down.", 0.15),
-            GridNode("O3", "RELAY_NORTH", "SUB", 0.80f, 0.30f, "Relay North. Amplification array for northern hemisphere coverage. Vance's tracers are already probing the uplink frequency.", 0.10),
+            GridNode("O3", "RELAY_NORTH", "SUB", 0.80f, 0.30f, "Relay North. Amplification array for northern hemisphere coverage. Kessler's tracers are already probing the uplink frequency.", 0.10),
             GridNode("O4", "VANTAGE_POINT", "CMD", 0.50f, 0.15f, "Vantage Point. The Ark's nerve center. Every node on every grid is visible from here. Everything except the thing in the unaddressed space.", 0.50)
         )
     }

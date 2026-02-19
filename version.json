@@ -1,10 +1,10 @@
 {
-  "version": "3.9.0",
-  "build": 385,
+  "version": "3.9.1",
+  "build": 387,
   "date": "2026-02-18",
   "changelog": [
     "See CHANGELOG.md for details"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.9.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.9.0/MINER_3.9.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.9.1",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.9.1/MINER_3.9.1.apk"
 }

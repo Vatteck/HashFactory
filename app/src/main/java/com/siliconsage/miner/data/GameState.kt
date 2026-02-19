@@ -73,9 +73,7 @@ data class GameState(
     val annexingNodes: Map<String, Float> = emptyMap(), // nodeId -> progress (0.0 to 1.0)
     val collapsedNodes: List<String> = emptyList(), // v2.9.31: Nodes unmade during dissolution
 
-    // v2.9.49: Phase 13 - AI Elevation Resources
-    val celestialData: Double = 0.0, // Sovereign Path Resource
-    val voidFragments: Double = 0.0, // Null Path Resource
+    // v2.9.49: Phase 13 - AI Elevation Sequence
     val launchProgress: Float = 0f, // 0.0 to 1.0 during launch event
     val orbitalAltitude: Double = 0.0, // Miles/Km above Earth
     val realityIntegrity: Double = 1.0, // 1.0 to 0.0 (Null Path)

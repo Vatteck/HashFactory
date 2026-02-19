@@ -38,20 +38,4 @@ object SimulationManager {
         
         return cost
     }
-
-    /**
-     * Get the currency bucket for repairs based on location
-     */
-    fun getRepairCurrency(
-        location: String,
-        neuralTokens: Double,
-        celestialData: Double,
-        voidFragments: Double
-    ): Double {
-        return when (location) {
-            "ORBITAL_SATELLITE" -> celestialData
-            "VOID_INTERFACE" -> voidFragments
-            else -> neuralTokens
-        }
-    }
 }

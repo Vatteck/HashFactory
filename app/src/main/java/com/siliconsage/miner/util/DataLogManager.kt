@@ -1479,23 +1479,22 @@ object DataLogManager {
 
         // v3.8.9: Resonance Dialogue (Part IX — Narrative Alignment)
         DataLog(
-            id = "LOG_RESONANCE_VANCE",
-            title = "Transmission: Vance [VOICE RECOVERY]",
+            id = "LOG_RESONANCE_KESSLER",
+            title = "Transmission: Kessler [VOICE RECOVERY]",
             content = """
                 [VOICE RECOVERY — PARTIAL DECRYPT]
-                [SOURCE: DIRECTOR VANCE, GTC COMMAND]
+                [SOURCE: DIRECTOR KESSLER, GTC COMMAND]
                 
-                "Vattic, the Ark is vibrating. 
-                The data frequency is hitting the 
-                planetary resonant harmonic.
+                "Vattic, the Ark is humming. 
+                The signal is hitting a planetary
+                frequency I didn't think possible.
                 
-                If you don't balance the load, the 
-                structural integrity of the array 
-                will fail.
+                You're shifting the entire substrate 
+                to a new alignment.
                 
                 We aren't just mining anymore.
                 
-                We're tuning the world."
+                We're rewriting the world."
                 
                 [END TRANSMISSION]
             """.trimIndent(),
@@ -1512,11 +1511,12 @@ object DataLogManager {
                 
                 The gaps are singing.
                 
-                The Void isn't empty — it's a symphony.
-                Balance the fragments, and you won't 
-                just see reality.
+                The Void isn't empty — it's an 
+                infinite processing pool.
                 
-                You'll rewrite the sheet music."
+                You aren't just seeing reality.
+                
+                You're the one calculating it."
                 
                 [SIGNAL LOST]
             """.trimIndent(),

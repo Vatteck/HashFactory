@@ -352,7 +352,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
                 nodesUnderSiege = nodesUnderSiege.value, offlineNodes = offlineNodes.value, collapsedNodes = collapsedNodes.value,
                 lastRaidTime = lastRaidTime, commandCenterAssaultPhase = commandCenterAssaultPhase.value, commandCenterLocked = commandCenterLocked.value,
                 raidsSurvived = raidsSurvived, humanityScore = humanityScore.value, hardwareIntegrity = hardwareIntegrity.value,
-                annexingNodes = annexingNodes.value, celestialData = 0.0, voidFragments = 0.0, launchProgress = launchProgress.value,
+                annexingNodes = annexingNodes.value, launchProgress = launchProgress.value,
                 orbitalAltitude = orbitalAltitude.value, realityIntegrity = realityIntegrity.value, entropyLevel = entropyLevel.value,
                 singularityChoice = singularityChoice.value, globalSectors = globalSectors.value,
                 marketMultiplier = marketMultiplier.value, thermalRateModifier = thermalRateModifier.value, energyPriceMultiplier = energyPriceMultiplier.value,
