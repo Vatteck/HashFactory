@@ -7,21 +7,19 @@ import com.siliconsage.miner.viewmodel.GameViewModel
 
 /**
  * NarrativeManager — Routing logic only.
- * Event data lives in [NarrativeEvents] and [AssaultDialogue].
+ * Event data lives in NarrativeEvents.kt and AssaultDialogue.kt.
  *
  * v3.9.12: Extracted 2,500+ lines of event pools into dedicated data files.
  */
 object NarrativeManager {
 
-    // ── Delegate: Event Pools (from NarrativeEvents) ──
-
+    // Delegate to NarrativeEvents for all pool data
     val randomEvents get() = NarrativeEvents.randomEvents
     val stageEvents get() = NarrativeEvents.stageEvents
     val factionEvents get() = NarrativeEvents.factionEvents
     val specialDilemmas get() = NarrativeEvents.specialDilemmas
 
-    // ── Delegate: Assault / Raid (from AssaultDialogue) ──
-
+    // Delegate to AssaultDialogue for raid/assault content
     fun generateRaidDilemma(
         nodeId: String, nodeName: String,
         raidsSurvived: Int = 0, currentAssaultPhase: String = "NOT_STARTED"
@@ -30,18 +28,8 @@ object NarrativeManager {
     fun generateFirewallDilemma() = AssaultDialogue.generateFirewallDilemma()
     fun generateCageDilemma() = AssaultDialogue.generateCageDilemma()
     fun generateDeadHandDilemma() = AssaultDialogue.generateDeadHandDilemma()
-
-    fun generateConfrontationDilemma(
-        faction: String,
-        isTrueNull: Boolean,
-        isSovereign: Boolean,
-        hasUnityPath: Boolean,
-        humanityScore: Int
-    ) = AssaultDialogue.generateConfrontationDilemma(faction, isTrueNull, isSovereign, hasUnityPath, humanityScore)
-
-    fun generateDepartureDilemma(faction: String) = AssaultDialogue.generateDepartureDilemma(faction)
-
-    // ── Routing Logic ──
+    fun generateConfrontationDilemma(humanityScore: Int) = AssaultDialogue.generateConfrontationDilemma(humanityScore)
+    fun generateDepartureDilemma() = AssaultDialogue.generateDepartureDilemma()
 
     // v3.9.7: Events excluded from the random pool (chain-only or direct-call)
     private val excludedFromRoll = setOf("sensory_darkness", "the_singularity")

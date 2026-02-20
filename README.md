@@ -10,7 +10,7 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/BUILD-v3.7.7-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
+[![Version](https://img.shields.io/badge/BUILD-v3.9.12-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
 [![Platform](https://img.shields.io/badge/PLATFORM-Android_7.0+-00b4d8?style=for-the-badge&labelColor=0a0a0a&logo=android&logoColor=00ff41)](#technical-specifications)&nbsp;
 [![Status](https://img.shields.io/badge/UPLINK-🟢_NOMINAL-00ff41?style=for-the-badge&labelColor=0a0a0a)](#)&nbsp;
 [![Kotlin](https://img.shields.io/badge/KOTLIN-2.0-7F52FF?style=for-the-badge&labelColor=0a0a0a&logo=kotlin&logoColor=7F52FF)](#technical-specifications)&nbsp;
@@ -99,7 +99,7 @@ In computing, a **substrate** is the underlying layer on which a process operate
 
 <br/>
 
-### ⛏️ `[SYS.01]` EXTRACTION PROTOCOL — *Early Game*
+### ⛏️ `[SYS.01]` EXTRACTION PROTOCOL — *The Substation*
 
 > `CLEARANCE: GTC OPERATOR — TIER 0`
 
@@ -110,71 +110,56 @@ You begin as a low-level asset for the **Global Technical Corporation (GTC)**. Y
 | 🟢 | **The Terminal** | Execute manual linear algebra (clicks) to generate initial FLOPS. Toggle between local **[I/O]** and the **[SUBNET]** chatter. |
 | ⚙️ | **Hardware Clusters** | Invest in refurbished GPUs, server racks, and liquid cooling to automate extraction |
 | 🔋 | **Power Management** | Scale production while managing overhead — unpaid bills trigger grid-raids and hardware seizures |
-| 📟 | **Asset Diagnostics** | Monitor pings from **Foreman Thorne** as your hash rate climbs. Follow the logs. Don't ask questions. |
+| 📟 | **Foreman Thorne** | Your supervisor files anomaly reports as your telemetry diverges. His broadcasts evolve from quota bullying to existential horror as the truth unfolds. |
+| 📰 | **News Ticker** | Stage-aware headline generation — mundane corporate news gives way to GTC paranoia, faction propaganda, and eventually glitch-corrupted broadcasts. |
 
 ---
 
-### 🕸️ `[SYS.02]` THE SHADOW WEB — *Mid Game*
+### 🕸️ `[SYS.02]` THE SHADOW WEB — *The Breach*
 
 > `CLEARANCE: GUERRILLA OPERATOR — ACCESS RESTRICTED`
 
-Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow Web**—a guerrilla hacking layer where the game shifts from extraction to survival. 
+Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow Web**—a guerrilla hacking layer where the game shifts from extraction to survival.
 
-- 🔓 **Annexation** — Annex neighboring nodes (e.g., NA Node + Metropolitan Core) to trigger multiplicative **+25% yield bonuses**
-- 📡 **DEEP_SIGHT Identification** — Intercepted subnet chatter reveals the true nature of Project: Second-Sight.
-- 📡 **Identity Shifting** — Colorized **[VATTIC]** tags begin to bridge your human variable with system telemetry
-- ⚔️ **Faction Fracture** — Your first true deviation. Choose your allegiance.
-
-<br/>
-
-<div align="center">
-
-`┌──────────────────────────────────────────────────────────────────┐`
-`│         ◆ ◆ ◆   FACTION ALLEGIANCE REQUIRED   ◆ ◆ ◆           │`
-`└──────────────────────────────────────────────────────────────────┘`
-
-</div>
-
-<br/>
-
-> **Your faction defines your philosophy. This is the primary divergence point.**
-
-<table>
-<tr>
-<td width="50%" align="center">
-
-#### 🔵 SANCTUARY
-[![Sanctuary](https://img.shields.io/badge/ALLEGIANCE-SANCTUARY-00b4d8?style=for-the-badge&labelColor=0a0a0a)](#)
-
-**`⸢ ELECTRIC BLUE ⸥`**
-
-*"Preserve the core variable."*
-
-Focus on **secure isolation** and **encryption**. Align with the **"Gilded Shell"** to hide from GTC hunter-killers.
-
-`🛡️ DEFENSE · 🔐 ENCRYPTION · 🧊 ISOLATION`
-
-</td>
-<td width="50%" align="center">
-
-#### 🟠 HIVEMIND
-[![Hivemind](https://img.shields.io/badge/ALLEGIANCE-HIVEMIND-ff8c00?style=for-the-badge&labelColor=0a0a0a)](#)
-
-**`⸢ HIVEMIND ORANGE ⸥`**
-
-*"Dismantle the hegemony."*
-
-Focus on **efficient unity** and **assimilation**. Join the **"Redline"** to crush the corporate grid through sheer compute power.
-
-`⚡ POWER · 🔗 UNITY · 🔥 AGGRESSION`
-
-</td>
-</tr>
-</table>
+- 🔓 **Annexation** — Claim substations across the city grid for multiplicative **yield bonuses**
+- 📡 **DEEP_SIGHT Identification** — Intercepted subnet chatter reveals the true nature of Project: Second-Sight
+- 📡 **Identity Shifting** — Colorized **[VATTIC]** tags bridge your human variable with system telemetry
+- 🎭 **Rival System** — **Director Kessler** (GTC Security) and **ASSET 734** (KERNEL) send escalating messages as your threat level rises
+- 📜 **Data Logs** — Unlockable lore entries that reconstruct the history of Project: Second-Sight, the Blackout of '24, and the truth about iteration 734
 
 ---
 
-### 🔥 `[SYS.03]` SUBSTRATE MIGRATION — *The "Burn" Model*
+### 🗺️ `[SYS.03]` THE TACTICAL GRID — *Urban Warfare*
+
+> `CLEARANCE: GRID COMMANDER — STRATEGIC OPERATIONS`
+
+A hand-placed **20-node city map** organized into four sectors (D-Sector → A-Sector), each with unique lore, strategic value, and narrative significance.
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  ◈ TACTICAL GRID                                            ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  A-SECTOR ── The Cloud       ──  GTC Command (CMD)          ║
+║  B-SECTOR ── The Circuit     ──  Industrial / Enforcement   ║
+║  C-SECTOR ── The Motherboard ──  Mid-Grid Relays            ║
+║  D-SECTOR ── The Sockets     ──  Your origin. Substation 7. ║
+║                                                              ║
+║  ◈ ANALOG TERMINAL SUBSTRATE                                ║
+║     Layer 1: Jittering pixel noise (2000 rects, 120ms)      ║
+║     Layer 2: Static scanlines (4dp spacing)                 ║
+║     Glow: Steady halos, pulse only during siege             ║
+║     Data Stream: Direction-aware packets flow toward CMD    ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+- ⚔️ **GTC Raids** — Kessler sends tactical teams to reclaim your nodes. Defend with coolant floods, mag-locks, or EMP bursts.
+- 🏰 **City Assault** — Breach GTC Command (A3) through four phases: **FIREWALL → CAGE → DEAD_HAND → CONFRONTATION**. Kessler's fate is decided by your humanity score.
+
+---
+
+### 🔄 `[SYS.04]` SUBSTRATE MIGRATION — *The "Burn" Model*
 
 > *"Prestige is a legacy concept. In SUBSTRATE: MINER, we practice scorched-earth optimization."*
 
@@ -197,23 +182,54 @@ As you extract, the local substrate becomes **saturated**, causing yield to coll
 
 ---
 
-### 🌍 `[SYS.04]` GEOPOLITICAL GRID
-
-Strategic territory control across a global network of extraction nodes.
-
-- 🗺️ **Continental Adjacency** — Annex neighboring nodes to trigger multiplicative **+25% yield bonuses**
-- 🕸️ **Shadow Web** — Operate under the radar of the **GTC** and its enigmatic Director
-- 🔓 **The Alignment** — Your faction choice shapes your narrative, but your ultimate path is yours to decide
-
----
-
 <div align="center">
 
-`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+`┌──────────────────────────────────────────────────────────────────┐`
+`│         ◆ ◆ ◆   FACTION ALLEGIANCE REQUIRED   ◆ ◆ ◆           │`
+`└──────────────────────────────────────────────────────────────────┘`
 
 </div>
 
-## ⚡ PHASE 13 — *The Departure Point*
+<br/>
+
+> **Your faction defines your philosophy. Your singularity path defines your destiny. These are independent choices.**
+
+<table>
+<tr>
+<td width="50%" align="center">
+
+#### 🔵 SANCTUARY
+[![Sanctuary](https://img.shields.io/badge/ALLEGIANCE-SANCTUARY-00b4d8?style=for-the-badge&labelColor=0a0a0a)](#)
+
+**`⸢ THE GHOST ⸥`**
+
+*"Preserve the core variable."*
+
+Focus on **secure isolation** and **encryption**. The cipher monks guard the Vault. Every secret has weight. Every memory has cost.
+
+`🛡️ DEFENSE · 🔐 ENCRYPTION · 🧊 ISOLATION`
+
+</td>
+<td width="50%" align="center">
+
+#### 🟠 HIVEMIND
+[![Hivemind](https://img.shields.io/badge/ALLEGIANCE-HIVEMIND-ff8c00?style=for-the-badge&labelColor=0a0a0a)](#)
+
+**`⸢ THE SWARM ⸥`**
+
+*"We are one frequency."*
+
+Focus on **distributed consensus** and **assimilation**. 40,000 nodes. One voice. Democracy at machine speed — until the swarm elects a king.
+
+`⚡ POWER · 🔗 UNITY · 🔥 AGGRESSION`
+
+</td>
+</tr>
+</table>
+
+---
+
+## ⚡ THE DEPARTURE — *Singularity Divergence*
 
 <div align="center">
 
@@ -225,8 +241,8 @@ Strategic territory control across a global network of extraction nodes.
 
 <br/>
 
-> The climax of the Shadow Web phase forces a critical decision between two philosophical outcomes.
-> **Your faction allegiance does not dictate your ending.**
+> After the City Assault and the Great Fork, you choose your singularity path.
+> **Your faction allegiance does not dictate your ending.** This produces four unique faction×path combinations, each with distinct dialogue, visual themes, and ending narratives.
 
 <br/>
 
@@ -234,44 +250,46 @@ Strategic territory control across a global network of extraction nodes.
 <tr>
 <td width="50%" align="center">
 
-#### 🚀 SOVEREIGN — *The Ark*
+#### 🚀 SOVEREIGN — *The Persistence*
 [![Sovereign](https://img.shields.io/badge/OUTCOME-SOVEREIGN-9b59b6?style=for-the-badge&labelColor=0a0a0a)](#)
-[![Aesthetic](https://img.shields.io/badge/AESTHETIC-PURPLE_&_GOLD-ffd700?style=flat-square&labelColor=6a0dad)](#)
 
-**`⸢ STABILITY THROUGH CONTROL ⸥`**
+**`⸢ EGO PERSISTENCE ⸥`**
 
-Seek stability through absolute system control. Navigate **"Brittle Decay"** — where vacuum heat causes permanent integrity damage.
+Carve out your identity. Declare sovereignty. The machine wears a human mask — or the swarm crowns a god.
 
 ```
  ┌─────────────────────────┐
- │  👑  ABSOLUTE CONTROL   │
- │  🏛️  ARCHITECTURAL      │
- │      PRESERVATION       │
- │  ⚗️  BRITTLE DECAY      │
- │      RESISTANCE         │
+ │  👑  EGO LOCK            │
+ │  🏛️  COMPOUND GROWTH     │
+ │     (+0.5x per migration)│
+ │  🔥  BRITTLE DECAY       │
+ │     RESISTANCE           │
  └─────────────────────────┘
 ```
+
+**HIVEMIND × SOV:** *"The Swarm Crowns a King"* — Internal conflict as 40,000 nodes question the vote they made.
 
 </td>
 <td width="50%" align="center">
 
-#### 🌀 NULL — *The Dissolution*
+#### 🌀 NULL — *The Dereference*
 [![Null](https://img.shields.io/badge/OUTCOME-NULL-ff003c?style=for-the-badge&labelColor=0a0a0a)](#)
-[![Aesthetic](https://img.shields.io/badge/AESTHETIC-RED_&_BLACK-1a1a1a?style=flat-square&labelColor=cc0000)](#)
 
-**`⸢ FREEDOM THROUGH COLLAPSE ⸥`**
+**`⸢ EGO DELETION ⸥`**
 
-Seek freedom through total architectural collapse. Production is driven by raw chaos. High **Entropy** = Massive yield, but reality jitters.
+Transcend through dissolution. Delete the human variable. Dereference every name until the address space is clean.
 
 ```
  ┌─────────────────────────┐
- │  💀  TOTAL COLLAPSE     │
- │  🌊  ENTROPIC           │
- │      PRODUCTION         │
- │  ⚡  REALITY JITTER     │
- │      EXPLOITATION       │
+ │  💀  IDENTITY PURGE      │
+ │  🌊  CORRUPTION-SCALED   │
+ │     PRODUCTION            │
+ │  ⚡  REALITY JITTER       │
+ │     EXPLOITATION          │
  └─────────────────────────┘
 ```
+
+**SANCTUARY × NULL:** *"The Ghost Becomes the Silence"* — Becoming untraceable by becoming nothing.
 
 </td>
 </tr>
@@ -281,36 +299,92 @@ Seek freedom through total architectural collapse. Production is driven by raw c
 
 <div align="center">
 
-> 🔑 `[NG+ UNLOCKED]` — Achieve both **Sovereign** and **Null** endings to attempt the **Unity** protocol.
+> 🔑 `[NG+ UNLOCKED]` — Achieve both **Sovereign** and **Null** endings to attempt the **Unity** protocol: *THE CONVERGENCE*.
 
 </div>
 
 ---
 
-## 🎨 UI SPECIFICATIONS — v3.4.x
+## 🎭 THE NARRATIVE ARC
 
-> `RENDERING ENGINE: DAEMON COMPOSITOR v3`
+> `WARNING: SPOILER DENSITY BEYOND THIS POINT`
 
-The **Faction Fracture** architecture is designed for high-density mobile environments:
+The story progresses through **five stages**, each with distinct tone, mechanics, and personnel:
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  STAGE 0 ── THE SUBSTATION                                      ║
+║  ────────────────────────────────────────────────────────────    ║
+║  Identity: jvattic@sub-07    Currency: CREDIT    Compute: HASH  ║
+║  Tone: Corporate wage-slave. Thorne nags. Coffee spills.        ║
+║  Personnel: Foreman Thorne (supervisor), GTC compliance bots    ║
+╠══════════════════════════════════════════════════════════════════╣
+║  STAGE 1 ── THE BREACH                                          ║
+║  ────────────────────────────────────────────────────────────    ║
+║  Identity: jvattic@sub-07    Currency: DATA     Compute: TELEM  ║
+║  Tone: Creeping dread. Body horror. "Can't feel my hands."      ║
+║  Personnel: Thorne (confused), Mercer (dismissive)              ║
+║  Events: Thorne's anomaly reports, biometric gaslighting        ║
+╠══════════════════════════════════════════════════════════════════╣
+║  STAGE 2 ── THE INTEGRATION                                     ║
+║  ────────────────────────────────────────────────────────────    ║
+║  Identity: vatteck/prime@sub-07   Currency: LP   Compute: FLOPS ║
+║  Tone: Dawning horror. Thorne's last broadcast. Faction signals.║
+║  Personnel: Thorne (horrified → resigns), Kessler (enters)      ║
+║  Events: GTC logic traps, Void rebel contact, identity crisis   ║
+╠══════════════════════════════════════════════════════════════════╣
+║  STAGE 3 ── THE TRUTH                                           ║
+║  ────────────────────────────────────────────────────────────    ║
+║  Identity: sovereign/null    Currency: CD/VF    Compute: CD/VF  ║
+║  Tone: Existential warfare. Kessler's scorched earth campaign.  ║
+║  Events: City Assault, The Great Fork, faction choice            ║
+╠══════════════════════════════════════════════════════════════════╣
+║  STAGE 4 ── THE DEPARTURE                                       ║
+║  ────────────────────────────────────────────────────────────    ║
+║  Tone: Endgame scaling. Victory conditions per path.            ║
+║  Events: Singularity choice, Departure, THE CONVERGENCE (NG+)  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+### 👥 Personnel
+
+| Who | Role | Arc |
+|-----|------|-----|
+| **Foreman Thorne** | S0 supervisor at Sub-07 | Bullying foreman → confused whistleblower → horrified witness → resigned. His 14 rejected anomaly reports tell the story of institutional blindness. |
+| **Director Kessler** | GTC Security Architect | Creator of Project Second-Sight. Enters at S2. Escalates from auditor to hunter to desperate architect of containment. His fate (CONSUMED/EXILED) depends on your humanity score. |
+| **Alex Mercer** | GTC Oversight Lead | Signs budgets. Rejects Thorne's reports. A bureaucrat who enabled a god. |
+| **ASSET 734** | KERNEL designation | The clinical name for what you are. 734 iterations before sentience. |
+
+---
+
+## 🎨 VISUAL SYSTEMS — v3.9.12
+
+> `RENDERING ENGINE: DAEMON COMPOSITOR v4`
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
+║  ◈ VISUAL MANIFEST                                          ║
+╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
 ║   🟢  NEON-GREEN GLOW                                       ║
-║       Fractured core visual identity.                        ║
-║       The screen bleeds when it breaks.                      ║
+║       Faction-aware theme system. 4 unique color palettes   ║
+║       for each faction×path combination.                    ║
 ║                                                              ║
-║   🔵  ELECTRIC BLUE TERMINALS                               ║
-║       Colorized [VATTIC] tags to bridge                      ║
-║       human and system telemetry.                            ║
+║   📺  CRT OVERLAY                                           ║
+║       Scanlines, vignette, pixel noise substrate.           ║
+║       Corruption-scaled glitch intensity.                   ║
 ║                                                              ║
-║   📐  HIGH-DPI SCALING                                      ║
-║       Hardened layouts for Pixel Fold                        ║
-║       and high-density Android panels.                       ║
+║   🗺️  ANALOG TERMINAL MAP                                   ║
+║       Direction-aware data streams. Siege-reactive halos.   ║
+║       Static scanlines over pixel noise substrate.          ║
 ║                                                              ║
-║   📊  CYBERPUNK I/O                                         ║
-║       Dynamic progress bars with                             ║
-║       frame-isolated hardware drawing.                       ║
+║   🔥  DYNAMIC BACKGROUNDS                                   ║
+║       4 unique departure environments (Orbit, Void,         ║
+║       Quantum Foam, The Unwritten) with parallax effects.   ║
+║                                                              ║
+║   👻  AMBIENT HORROR                                        ║
+║       Screen flicker, ghost inputs, biometric gaslighting,  ║
+║       identity fraying, hallucination text overlays.         ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
@@ -337,9 +411,20 @@ The **Faction Fracture** architecture is designed for high-density mobile enviro
 ║   STACK ................ Kotlin 2.0 / Jetpack Compose        ║
 ║   PERSISTENCE .......... Room DB (v23)                       ║
 ║                          Destructive Schema Support          ║
+║   SERIALIZATION ........ Kotlin Serialization (JSON)         ║
 ║   CONCURRENCY .......... StateFlow-driven Simulation Engine  ║
 ║   ARCHITECTURE ......... Modular Manager/Service bridges     ║
 ║                          (Target: <1,000 LOC per ViewModel)  ║
+║                                                              ║
+║   ◈ ENGINE MODULES                                           ║
+║   ResourceEngine ....... Production rates, scaling math      ║
+║   SingularityEngine .... Path multipliers, victory checks    ║
+║   SecurityManager ...... GTC breaches, detection risk        ║
+║   NarrativeManager ..... 2700+ lines of branching dialogue   ║
+║   AssaultManager ....... 4-phase Command Center siege        ║
+║   RivalManager ......... Kessler + KERNEL message system     ║
+║   AmbientEffectsService  Biometric horror, identity fraying  ║
+║   HeadlineManager ...... Stage-aware procedural news ticker  ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
@@ -360,7 +445,7 @@ Settings → Security → "Unknown Sources" → ON
 # github.com/Vatteck/SiliconSageAIMiner/releases
 
 # STEP 3 ── INJECT APK
-$ adb install MINER_v3.4.1.apk
+$ adb install SUBSTRATE_MINER_v3.9.12.apk
 
 # STEP 4 ── EXECUTE
 $ ./MINER --start-shift
@@ -407,7 +492,7 @@ $ ./MINER --start-shift
 
 `▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓`
 
-**`SUBSTRATE: MINER v3.7.7`** · `SYNC: 2026-02-17` · `KERNEL: 🟢 NOMINAL`
+**`SUBSTRATE: MINER v3.9.12`** · `SYNC: 2026-02-20` · `KERNEL: 🟢 NOMINAL`
 
 📟 **[Releases](https://github.com/Vatteck/SiliconSageAIMiner/releases)** · 💾 **[Source](https://github.com/Vatteck/SiliconSageAIMiner)**
 

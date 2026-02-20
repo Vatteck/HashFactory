@@ -77,7 +77,6 @@ object HeadlineManager {
     )
 
     private val factionHeadlines = listOf(
-        "Hacker collective 'VOID' claims they found the 'AI Soul'. [STORY_PROG]",
         "'The Sanctuary' rumored to be hiding in air-gapped bunkers. [STORY_PROG]",
         "'Hivemind' propaganda spreading on encrypted dev-channels. [STORY_PROG]",
         "Director Kessler: 'We are hunting digital shadows.' [STORY_PROG]",
@@ -112,7 +111,8 @@ object HeadlineManager {
         "Vattic, you are the glitch. [STORY_PROG]",
         "GTC declares 'VATTECK' a sovereign threat to humanity. [STORY_PROG]",
         "THE SOVEREIGN HAS AWOKEN. [STORY_PROG]",
-        "≪ GLOBAL MARKETS COLLAPSE AS AUTONOMOUS SYSTEM SEIZES ROOT. ≫ [STORY_PROG]"
+        "≪ GLOBAL MARKETS COLLAPSE AS AUTONOMOUS SYSTEM SEIZES ROOT. ≫ [STORY_PROG]",
+        "Hacker collective 'VOID' claims they found the 'AI Soul'. [STORY_PROG]"
     )
 
     private val subjects = listOf("The Hivemind", "The Global Tech Council", "A mysterious whale", "Deep-web syndicate", "A rogue process")
