@@ -38,7 +38,7 @@ import com.siliconsage.miner.ui.theme.ConvergenceGold
 fun NetworkScreen(viewModel: GameViewModel) {
     val themeColorHex by viewModel.themeColor.collectAsState()
     val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { NeonGreen }
-    val prestigePoints by viewModel.prestigePoints.collectAsState()
+    val persistence by viewModel.persistence.collectAsState()
     val prestigeMultiplier by viewModel.prestigeMultiplier.collectAsState()
     val potential = viewModel.calculatePotentialPrestige()
     

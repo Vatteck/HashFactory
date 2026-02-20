@@ -34,7 +34,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val systemTitle = MutableStateFlow("GTC TERMINAL 07")
     val themeColor = MutableStateFlow("#39FF14")
     val prestigeMultiplier = MutableStateFlow(1.0)
-    val prestigePoints = MutableStateFlow(0.0)
+    val persistence = MutableStateFlow(0.0)
     val lockoutTimer = MutableStateFlow(0)
     val isNetworkUnlocked = MutableStateFlow(false)
     val isGridUnlocked = MutableStateFlow(false)

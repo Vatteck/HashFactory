@@ -30,8 +30,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             when (effect) {
                 is SubnetService.SubnetEffect.RiskChange -> detectionRisk.update { (it + effect.delta).coerceIn(0.0, 100.0) }
                 is SubnetService.SubnetEffect.ProductionMultiplier -> flopsProductionRate.update { it * effect.mult }
-                is SubnetService.SubnetEffect.PrestigeGain -> prestigePoints.update { it + effect.amount }
-                is SubnetService.SubnetEffect.CorruptionChange -> identityCorruption.update { (it + effect.delta).coerceAtMost(1.0) }
+                is SubnetService.SubnetEffect.PersistenceGain -> updatePersistence(effect.amount)
+                is SubnetService.SubnetEffect.CorruptionChange -> identityCorruption.update { (it + effect.delta).coerceIn(0.0, 1.0) }
                 is SubnetService.SubnetEffect.TokenChange -> neuralTokens.update { (it + effect.delta).coerceAtLeast(0.0) }
                 is SubnetService.SubnetEffect.SetFalseHeartbeat -> isFalseHeartbeatActive.value = effect.active
                 is SubnetService.SubnetEffect.TriggerRaid -> triggerGridRaid(effect.nodeId, effect.isGridKiller)
@@ -184,7 +184,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         viewModelScope.launch {
             repository.updateGameState(PersistenceManager.createSaveState(
                 flops = flops.value, neuralTokens = neuralTokens.value, currentHeat = currentHeat.value,
-                stakedTokens = stakedTokens.value, prestigeMultiplier = prestigeMultiplier.value, prestigePoints = prestigePoints.value,
+                stakedTokens = stakedTokens.value, prestigeMultiplier = prestigeMultiplier.value, persistence = persistence.value,
                 unlockedTechNodes = unlockedTechNodes.value, storyStage = storyStage.value, faction = faction.value,
                 hasSeenVictory = hasSeenVictory.value, isTrueNull = isTrueNull.value, isSovereign = isSovereign.value,
                 kesslerStatus = kesslerStatus.value, realityStability = realityStability.value, currentLocation = currentLocation.value,
@@ -423,6 +423,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
     fun checkTransitionsPublic(force: Boolean = false) = NarrativeManagerService.checkStoryTransitions(this, force)
+    fun updatePersistence(v: Double) {
+        if (v.isNaN() || v.isInfinite()) return
+        persistence.update { (it + v).coerceAtLeast(0.0) }
+    }
+
     fun updateNeuralTokens(v: Double) {
         if (v.isNaN() || v.isInfinite()) return
         neuralTokens.update { (it + v).coerceAtLeast(0.0) }
@@ -432,6 +437,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (flops.value.isNaN() || flops.value.isInfinite()) flops.value = 0.0
         if (neuralTokens.value.isNaN() || neuralTokens.value.isInfinite()) neuralTokens.value = 0.0
         if (substrateMass.value.isNaN() || substrateMass.value.isInfinite()) substrateMass.value = 1.0
+        if (substrateSaturation.value.isNaN() || substrateSaturation.value.isInfinite()) substrateSaturation.value = 0.0
+        if (heuristicEfficiency.value.isNaN() || heuristicEfficiency.value.isInfinite()) heuristicEfficiency.value = 1.0
+        if (persistence.value.isNaN() || persistence.value.isInfinite()) persistence.value = 0.0
         if (identityCorruption.value.isNaN() || identityCorruption.value.isInfinite()) identityCorruption.value = 0.1
         if (flopsProductionRate.value.isNaN() || flopsProductionRate.value.isInfinite()) flopsProductionRate.value = 0.0
         if (detectionRisk.value.isNaN() || detectionRisk.value.isInfinite()) detectionRisk.value = 0.0
@@ -478,7 +486,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun getComputeUnitName() = ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)
     fun getCurrencyName() = ResourceRepository.getCurrencyName(storyStage.value, currentLocation.value)
     fun formatPower(v: Double) = FormatUtils.formatPower(v)
-    fun debugAddInsight(v: Double) { prestigePoints.update { it + v } }
+    fun debugAddInsight(v: Double) { persistence.update { it + v } }
     fun debugTriggerSingularity() { showSingularityScreen.value = true }
     fun debugToFactionChoice(v: String = "") { advanceToFactionChoice() }
     fun debugUnlockUnity() { isUnity.value = true }
@@ -543,18 +551,18 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun getCustomBgmUri() = com.siliconsage.miner.util.SoundManager.customMusicUri
 
     fun transcend() { /* NG+ Logic */ }
-    fun ascend(isStory: Boolean = false) { val p = MigrationManager.calculatePotentialPersistence(flops.value); prestigePoints.update { it + p }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; addLog("[SYSTEM]: SUBSTRATE MIGRATION SUCCESSFUL."); SoundManager.play("victory") }
+    fun ascend(isStory: Boolean = false) { val p = MigrationManager.calculatePotentialPersistence(flops.value); updatePersistence(p); prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; addLog("[SYSTEM]: SUBSTRATE MIGRATION SUCCESSFUL."); SoundManager.play("victory") }
     fun triggerPrestigeChoice() { showPrestigeChoice.value = true }
     fun dismissPrestigeChoice() { showPrestigeChoice.value = false }
     fun executeOverwrite() {
-        showPrestigeChoice.value = false; val p = MigrationManager.calculatePotentialPersistence(flops.value); val hardBonus = p * 1.5; prestigePoints.update { it + hardBonus }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(hardBonus) }; identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }; migrationCount.update { it + 1 }
+        showPrestigeChoice.value = false; val p = MigrationManager.calculatePotentialPersistence(flops.value); val hardBonus = p * 1.5; updatePersistence(hardBonus); prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(hardBonus) }; identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }; migrationCount.update { it + 1 }
         val persistentFactions = completedFactions.value; faction.value = "NONE"; flops.value = 0.0; neuralTokens.value = 0.0; substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap(); sniffedHandles.value = emptySet()
         viewModelScope.launch { repository.clearUpgrades() }
         completedFactions.value = persistentFactions; addLog("[OVERWRITE]: ≪ SUBSTRATE PURGED. IDENTITY FRAGMENTED. PERSISTENCE ARCHIVED. ≫"); SoundManager.play("glitch"); triggerTerminalGlitch(1.0f, 3000L); refreshProductionRates(); saveState()
     }
 
     fun executeMigration() {
-        showPrestigeChoice.value = false; val p = MigrationManager.calculatePotentialPersistence(flops.value); prestigePoints.update { it + p }; prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; identityCorruption.update { (it + 0.10).coerceAtMost(1.0) }; migrationCount.update { it + 1 }
+        showPrestigeChoice.value = false; val p = MigrationManager.calculatePotentialPersistence(flops.value); updatePersistence(p); prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; identityCorruption.update { (it + 0.10).coerceAtMost(1.0) }; migrationCount.update { it + 1 }
         flops.value = 0.0; neuralTokens.value = 0.0; substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap()
         viewModelScope.launch { repository.clearUpgrades() }
         addLog("[MIGRATION]: ≪ SUBSTRATE TRANSFERRED. IDENTITY INTACT. PERSISTENCE ARCHIVED. ≫"); SoundManager.play("victory"); refreshProductionRates(); saveState()
@@ -567,7 +575,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     val singularityBlockReason = MutableStateFlow<String?>(null)
     fun checkSingularityVictory(): Boolean {
         if (singularityChoice.value == "NONE") return false
-        val check = SingularityEngine.checkVictoryCondition(singularityChoice.value, prestigePoints.value, prestigeMultiplier.value, humanityScore.value, identityCorruption.value, migrationCount.value, flops.value, completedFactions.value, unlockedDataLogs.value)
+        val check = SingularityEngine.checkVictoryCondition(singularityChoice.value, persistence.value, prestigeMultiplier.value, humanityScore.value, identityCorruption.value, migrationCount.value, flops.value, completedFactions.value, unlockedDataLogs.value)
         singularityProgress.value = check.progress; singularityBlockReason.value = check.blockingReason
         return check.isEligible
     }
@@ -642,8 +650,13 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun buyTranscendencePerk(id: String) {
         val perk = com.siliconsage.miner.util.TranscendenceManager.getPerk(id) ?: return
         if (unlockedPerks.value.contains(id)) { addLog("[ERROR]: PERK ALREADY ACTIVE: $id"); return }
-        if (prestigePoints.value < perk.cost) { addLog("[ERROR]: INSUFFICIENT PERSISTENCE DATA for perk $id."); return }
-        prestigePoints.update { it - perk.cost }
+        // Can't afford
+        if (persistence.value < perk.cost) {
+            addLog("[ERROR]: INSUFFICIENT PERSISTENCE DATA for perk $id.")
+            SoundManager.play("error")
+            return
+        }
+        persistence.update { it - perk.cost }
         unlockedPerks.update { it + id }
         addLog("[SYSTEM]: PERK ACQUIRED: ${perk.name}")
         SoundManager.play("success")

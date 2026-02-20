@@ -22,7 +22,7 @@ data class GameState(
     // Phase 2: Prestige
     val prestigeMultiplier: Double = 1.0,
     val unlockedTechNodes: List<String> = emptyList(),
-    val prestigePoints: Double = 0.0, // "Insight"
+    val persistence: Double = 0.0,
     
     // Phase 2: Staking
     val stakedTokens: Double = 0.0,

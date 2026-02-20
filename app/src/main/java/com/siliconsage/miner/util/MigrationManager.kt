@@ -15,7 +15,7 @@ object MigrationManager {
      * Calculate potential persistence gain based on current resource scale
      */
     fun calculatePotentialPersistence(flops: Double): Double {
-        if (flops < 10000.0) return 0.0
+        if (flops.isNaN() || flops.isInfinite() || flops < 10000.0) return 0.0
         // Formula: 100 * log10(flops / 1000)
         return (100.0 * log10(flops / 1000.0)).coerceAtLeast(0.0)
     }
@@ -24,6 +24,7 @@ object MigrationManager {
      * Calculate potential prestige gain based on current neural tokens
      */
     fun calculatePotentialPrestige(neuralTokens: Double): Double {
+        if (neuralTokens.isNaN() || neuralTokens.isInfinite()) return 0.0
         return sqrt(neuralTokens / 10000.0)
     }
 

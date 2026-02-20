@@ -17,7 +17,7 @@ object PersistenceManager {
 
     fun createSaveState(
         flops: Double, neuralTokens: Double, currentHeat: Double,
-        stakedTokens: Double, prestigeMultiplier: Double, prestigePoints: Double,
+        stakedTokens: Double, prestigeMultiplier: Double, persistence: Double,
         unlockedTechNodes: List<String>, storyStage: Int, faction: String,
         hasSeenVictory: Boolean, isTrueNull: Boolean, isSovereign: Boolean,
         kesslerStatus: String, realityStability: Double, currentLocation: String,
@@ -48,7 +48,7 @@ object PersistenceManager {
             currentHeat = sanitizeDouble(currentHeat),
             powerBill = 0.0, stakedTokens = sanitizeDouble(stakedTokens), 
             prestigeMultiplier = sanitizeDouble(prestigeMultiplier, 1.0),
-            prestigePoints = sanitizeDouble(prestigePoints), unlockedTechNodes = unlockedTechNodes,
+            persistence = sanitizeDouble(persistence), unlockedTechNodes = unlockedTechNodes,
             storyStage = storyStage, faction = faction, hasSeenVictory = hasSeenVictory,
             isTrueNull = isTrueNull, isSovereign = isSovereign, kesslerStatus = kesslerStatus,
             realityStability = sanitizeDouble(realityStability, 1.0), currentLocation = currentLocation,
@@ -81,22 +81,21 @@ object PersistenceManager {
     }
 
     fun restoreState(vm: GameViewModel, state: GameState) {
-        vm.flops.value = state.flops
-        vm.neuralTokens.value = state.neuralTokens
-        vm.substrateMass.value = state.substrateMass
-        vm.substrateSaturation.value = state.substrateSaturation
-        vm.heuristicEfficiency.value = state.heuristicEfficiency
-        vm.identityCorruption.value = state.identityCorruption
+        vm.flops.value = sanitizeDouble(state.flops)
+        vm.neuralTokens.value = sanitizeDouble(state.neuralTokens)
+        vm.substrateMass.value = sanitizeDouble(state.substrateMass, 1.0)
+        vm.substrateSaturation.value = sanitizeDouble(state.substrateSaturation).coerceIn(0.0, 1.0)
+        vm.persistence.value = sanitizeDouble(state.persistence)
         vm.migrationCount.value = state.migrationCount
-        vm.reputationScore.value = state.reputationScore
-        vm.currentHeat.value = state.currentHeat
-        vm.prestigeMultiplier.value = state.prestigeMultiplier
-        vm.prestigePoints.value = state.prestigePoints
+        vm.reputationScore.value = sanitizeDouble(state.reputationScore, 50.0).coerceIn(0.0, 100.0)
+        vm.currentHeat.value = sanitizeDouble(state.currentHeat)
+        vm.prestigeMultiplier.value = sanitizeDouble(state.prestigeMultiplier, 1.0)
+        vm.prestigePoints.value = sanitizeDouble(state.prestigePoints)
         vm.storyStage.value = state.storyStage
-        vm.faction.value = state.faction
-        vm.humanityScore.value = state.humanityScore
-        vm.hardwareIntegrity.value = state.hardwareIntegrity
-        vm.currentLocation.value = state.currentLocation
+        vm.faction.value = state.faction ?: "NONE"
+        vm.humanityScore.value = state.humanityScore.coerceIn(0, 100)
+        vm.hardwareIntegrity.value = sanitizeDouble(state.hardwareIntegrity, 100.0)
+        vm.currentLocation.value = state.currentLocation ?: "SUBSTATION_7"
         vm.unlockedDataLogs.value = state.unlockedDataLogs
         vm.seenEvents.value = state.seenEvents
         vm.eventChoices.value = state.eventChoices
@@ -106,29 +105,29 @@ object PersistenceManager {
         vm.offlineNodes.value = state.offlineNodes.toSet()
         vm.nodesUnderSiege.value = state.nodesUnderSiege.toSet()
         vm.collapsedNodes.value = state.collapsedNodes.toSet()
-        vm.gridNodeLevels.value = state.gridNodeLevels
-        vm.globalSectors.value = state.globalSectors
+        vm.gridNodeLevels.value = state.gridNodeLevels ?: emptyMap()
+        vm.globalSectors.value = state.globalSectors ?: emptyMap()
         vm.launchProgress.value = state.launchProgress
-        vm.orbitalAltitude.value = state.orbitalAltitude
-        vm.entropyLevel.value = state.entropyLevel
+        vm.orbitalAltitude.value = sanitizeDouble(state.orbitalAltitude)
+        vm.entropyLevel.value = sanitizeDouble(state.entropyLevel)
         vm.raidsSurvived = state.raidsSurvived
-        vm.annexingNodes.value = state.annexingNodes
+        vm.annexingNodes.value = state.annexingNodes ?: emptyMap()
         vm.singularityChoice.value = state.singularityChoice ?: "NONE"
         vm.isTrueNull.value = vm.singularityChoice.value == "NULL_OVERWRITE"
         vm.isSovereign.value = vm.singularityChoice.value == "SOVEREIGN"
         vm.isUnity.value = vm.singularityChoice.value == "UNITY"
-        vm.kesslerStatus.value = state.kesslerStatus
-        vm.realityStability.value = state.realityStability
-        vm.realityIntegrity.value = state.realityIntegrity
+        vm.kesslerStatus.value = state.kesslerStatus ?: "ACTIVE"
+        vm.realityStability.value = sanitizeDouble(state.realityStability, 1.0)
+        vm.realityIntegrity.value = sanitizeDouble(state.realityIntegrity, 1.0)
         vm.isNetworkUnlocked.value = state.isNetworkUnlocked
         vm.isGridUnlocked.value = state.isGridUnlocked
-        vm.stakedTokens.value = state.stakedTokens
+        vm.stakedTokens.value = sanitizeDouble(state.stakedTokens)
         
-        vm.marketMultiplier.value = state.marketMultiplier
-        vm.thermalRateModifier.value = state.thermalRateModifier
-        vm.energyPriceMultiplier.value = state.energyPriceMultiplier
-        vm.newsProductionMultiplier.value = state.newsProductionMultiplier
-        vm.lifetimePowerPaid.value = state.lifetimePowerPaid
+        vm.marketMultiplier.value = sanitizeDouble(state.marketMultiplier, 1.0)
+        vm.thermalRateModifier.value = sanitizeDouble(state.thermalRateModifier, 1.0)
+        vm.energyPriceMultiplier.value = sanitizeDouble(state.energyPriceMultiplier, 0.02)
+        vm.newsProductionMultiplier.value = sanitizeDouble(state.newsProductionMultiplier, 1.0)
+        vm.lifetimePowerPaid.value = sanitizeDouble(state.lifetimePowerPaid)
         vm.unlockedTechNodes.value = state.unlockedTechNodes
         vm.unlockedPerks.value = state.unlockedTranscendencePerks
         try {
@@ -148,8 +147,9 @@ object PersistenceManager {
             currentHeat = 0.0,
             powerBill = 0.0,
             prestigeMultiplier = 1.0,
-            prestigePoints = 0.0,
+            persistence = 0.0,
             stakedTokens = 0.0,
+            lockoutTimer = 0,
             storyStage = 0,
             faction = "NONE",
             hasSeenVictory = false,
@@ -199,7 +199,7 @@ object PersistenceManager {
         val state = createSaveState(
             flops = vm.flops.value, neuralTokens = vm.neuralTokens.value, currentHeat = vm.currentHeat.value,
             stakedTokens = vm.stakedTokens.value,
-            prestigeMultiplier = vm.prestigeMultiplier.value, prestigePoints = vm.prestigePoints.value,
+            prestigeMultiplier = vm.prestigeMultiplier.value, persistence = vm.persistence.value,
             unlockedTechNodes = vm.unlockedTechNodes.value, storyStage = vm.storyStage.value,
             faction = vm.faction.value, hasSeenVictory = vm.hasSeenVictory.value,
             isTrueNull = vm.isTrueNull.value, isSovereign = vm.isSovereign.value,

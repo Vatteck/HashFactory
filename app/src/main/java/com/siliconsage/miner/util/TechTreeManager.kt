@@ -74,7 +74,7 @@ object TechTreeManager {
         }
 
         // All checks passed — commit
-        vm.prestigePoints.update { it - node.cost }
+        vm.persistence.update { it - node.cost }
         vm.unlockedTechNodes.update { it + nodeId }
         vm.addLog("[SYSTEM]: NODE ANNEXED: $nodeId")
         SoundManager.play("success")

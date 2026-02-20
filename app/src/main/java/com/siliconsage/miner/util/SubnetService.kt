@@ -31,7 +31,7 @@ class SubnetService(
     sealed class SubnetEffect {
         data class RiskChange(val delta: Double) : SubnetEffect()
         data class ProductionMultiplier(val mult: Double) : SubnetEffect()
-        data class PrestigeGain(val amount: Double) : SubnetEffect()
+        data class PersistenceGain(val amount: Double) : SubnetEffect()
         data class CorruptionChange(val delta: Double) : SubnetEffect()
         data class TokenChange(val delta: Double) : SubnetEffect()
         data class SetFalseHeartbeat(val active: Boolean) : SubnetEffect()
@@ -375,7 +375,7 @@ class SubnetService(
                 val prodMult = responseData?.productionBonus ?: 1.0
 
                 onEffect(SubnetEffect.RiskChange(finalRiskChange))
-                if (stage == 0) onEffect(SubnetEffect.PrestigeGain(5.0))
+                if (stage == 0) onEffect(SubnetEffect.PersistenceGain(5.0))
                 if (prodMult != 1.0) onEffect(SubnetEffect.ProductionMultiplier(prodMult))
 
                 responseData?.commandToInject?.let { cmd ->
