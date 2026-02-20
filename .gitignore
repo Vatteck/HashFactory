@@ -44,3 +44,6 @@ research_db.json
 
 # Legacy AI folders
 legacy_gemini/
+
+# APKs - keep on Desktop, upload manually to GitHub Releases
+releases/*.apk
