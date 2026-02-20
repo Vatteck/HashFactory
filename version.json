@@ -1,10 +1,10 @@
 {
-  "version": "3.9.8",
-  "build": 393,
-  "date": "2026-02-19",
+  "version": "--adb",
+  "build": 394,
+  "date": "2026-02-20",
   "changelog": [
-    "Singularity-before-departure, Kessler player-choice, faction flavoring"
+    "192.168.50.116:42077"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.9.8",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.9.8/MINER_3.9.8.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v--adb",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v--adb/MINER_--adb.apk"
 }
