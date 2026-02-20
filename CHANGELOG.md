@@ -1,6 +1,31 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.9.20] - 2026-02-20
+### Added
+- **Reputation System (Phase 14 Logic)**: Implemented `reputationScore` tracking (0-100) and computed tiers: **TRUSTED**, **NEUTRAL**, **FLAGGED**, and **BURNED**.
+- **Social Reactivity**: The Subnet now acts as a threat vector or asset. **TRUSTED** status grants early-warning sentinel messages (lowering risk). **BURNED** status triggers "snitch" leaks (spiking risk).
+- **Economic Mechanics**: Introduced the "Employee Discount" (-10% upgrade costs) for TRUSTED operators and "Systemic Friction" (+25% costs) for those who are BURNED.
+- **Handshake Penalty**: Annexation speed is now tied to reputation. TRUSTED handshakes are 10% faster; BURNED handshakes are 25% slower due to extra security checks.
+- **Good Neighbor Duty**: Added the `[STABILIZE_NODE]` interaction to the Subnet, allowing players to spend Neural Tokens to repair their reputation.
+
+### Changed
+- **Modular Architectural Refactor**: 
+    - Decoupled "God Objects" by extracting static data and UI components into side-car facades.
+    - `NarrativeManager.kt`: 2,808 → 103 lines (Logic extracted to `NarrativeEvents.kt`).
+    - `DataLogManager.kt`: 1,784 → 119 lines (Data extracted to `DataLogEntries.kt`).
+    - `SocialRepository.kt`: 1,176 → 260 lines (Templates extracted to `SocialTemplates.kt`).
+    - `GridScreen.kt`: 971 → 519 lines (UI extracted to `CityGridScreen.kt`).
+    - `GameViewModel.kt`: 845 → 650 lines (State fields extracted to `CoreGameState.kt`).
+- **Tactical Map 2.0**:
+    - **Gravel Substrate**: Added tri-color jittering pixel noise for an analog terminal feel.
+    - **Directional Data Streams**: Roadway packets now flow visually toward the Command Center (A3) or away, reflecting network convergence.
+    - **Siege Halos**: Roadways maintain a steady glow, shifting to an active alpha-pulse only when nodes are under GTC siege.
+
+### Fixed
+- **Performance Optimization**: Nuked triplicate noise coroutines across the map and detail panels, reducing the frame budget by **3,500 drawRect calls per frame**.
+- **Build Stabilization**: Switched scanlines to float-based loops and pre-cached stroke widths for high-DPI (Pixel Fold) smoothness.
+
 ## [3.9.8] - 2026-02-19
 ### Fixed
 - **Singularity-Before-Departure**: Removed hardcoded departure triggers from FactionChoiceScreen. Singularity choice now auto-routes to departure: SOVEREIGN → LAUNCH (orbit), NULL → DISSOLUTION (void). Both paths available to both factions.
@@ -10,276 +35,4 @@ All notable changes to this project will be documented in this file.
 - **CANON.md v4.1**: Updated narrative arc (singularity before departure), added departure outcome table, removed CRITICAL BLOCKER note.
 - **Diary Script**: Fixed to run at midnight and read yesterday log (was reading today which barely existed at 4 AM).
 
-## [3.9.7] - 2026-02-19
-### Added
-- **Faction×Path Flavoring**: 4 unique ending narratives, quotes, theme colors, and dynamic backgrounds across HIVEMIND/SANCTUARY × NULL/SOVEREIGN.
-- **Singularity Triptych**: Faction-flavored quotes for all 4 faction×path combos in SingularityScreen.
-- **6 Faction-Flavored Recurring Events**: SOVEREIGN/NULL events use custom log prefixes ([CONSENSUS]/[GHOST]/[SWARM_NULL]/[GHOST_NULL]).
-- **Dynamic Backgrounds**: 4 new pattern functions (SwarmEntropy, GhostVoid, CrownedMonolith, GhostThrone).
-### Fixed
-- **City Assault Unblocked**: Manual trigger via A3 GridScreen button. Removed auto-trigger from NarrativeManagerService.
-- **Awakening Event**: Removed HIVEMIND-specific null_manifestation. All factions now receive memory_leak + LOG_808 at Stage 3.
-
-## [3.8.2] - 2026-02-17
-### Added
-- **AGP Upgraded to 9.0.1**: Stabilized build system and IDE synchronization.
-- **LinkAnnotation Integration**: Migrated `SubnetMessageLine.kt` to the new Compose `LinkAnnotation.Clickable` pattern for inline ghost links, resolving deprecation warnings.
-
-### Changed
-- **Lore & Flavor Overhaul**:
-    - **Faction Screens**: Rewritten HIVEMIND ("The self is a bottleneck") and SANCTUARY ("Hiding the ghost from the machine") for higher narrative impact.
-    - **Upgrade Descriptions**: 50+ unique, lore-flavored descriptions for all hardware types, cooling, and security modules.
-    - **Grid Node Deepening**: 30+ grid locations across City, Orbit, and Void sectors updated with Mercer/Kessler/GTC narrative layers.
-    - **Prestige Overlay**: Polished descriptions for The Overwrite and Migration.
-- **Tech Tree Lore Pass**: Full flavor overhaul of tech tree nodes, including a "deprecated" typo fix in the singularity bridge.
-
-### Fixed
-- **Narrative Pacing Guards**: Implemented 8 critical gating fixes in `DataLogManager.kt` to prevent identity leaks (e.g., Mirror Error, ASSET 734 designation) from appearing before the air-gap jump.
-- **SocialManager Refactor (Phase 1 & 2)**: 
-    - Successfully extracted 1,500+ lines of static data into `SocialRepository.kt`.
-    - Moved all social data models to `SubnetData.kt`.
-    - Reduced `SocialManager.kt` size by 75% for improved maintainability.
-
-## [3.8.1] - 2026-02-17
-### Changed
-- **Major Refactor**: Initial separation of Social data and model classes.
-
-## [3.8.0] - 2026-02-17
-### Added
-- **Narrative Pacing Overhaul**: Faction log gating and Stage 0 canon leak fixes.
-- **Airgap Threshold Collision Fix**: Resolved simultaneous event triggers at 100k FLOPS.
-
-## [3.7.7] - 2026-02-17
-### Fixed
-- **UpgradeManager Cost Scaling**:
-    - Resolved a critical bug where the `multiplier` variable (used for VOID_INTERFACE entropy) was computed but never applied to the final cost.
-    - Assigned explicit, balanced base costs to all missing upgrade categories (High-tier cooling, Power grid, Power generators, and Security).
-    - Fixed a "flat-pricing" exploit where entire categories (e.g., NUCLEAR_REACTOR vs BASIC_FIREWALL) defaulted to 1000.0 NT/Mass.
-- **Narrative Sanitization**: Renamed `vattic_observer` process to `observer.exe` across the boot sequence, process swapper, and subnet chatter to prevent Stage 0 spoilers and improve immersion (v3.7.6).
-
-## [3.7.2] - 2026-02-17
-### Fixed
-- **Subnet Pacing Rebalance**:
-    - Reduced base idle chatter frequency by 70% (0.10f → 0.03f).
-    - Enforced a mandatory 45-second cooldown between subnet messages to prevent interaction stacking.
-    - Rebalanced heat and raid frequency modifiers for a more intentional narrative flow.
-- **High-Fidelity Decision Notifier**:
-    - Replaced the placeholder `<decision>` label with a pulsing, bordered `≪!≫` alert on the Subnet tab.
-    - Integrated dynamic glitch animations for the notifier based on kernel corruption levels.
-
-## [3.7.1] - 2026-02-17
-### Fixed
-- **Tech Tree Layout Overhaul**: 
-    - Resolved catastrophic node overlaps in high-density tiers by switching to a tiered linear layout.
-    - Standardized node spacing across the full width to prevent stacking.
-    - Restored faction-specific node colors (HIVEMIND: Red, SANCTUARY: Purple) for better branch visibility.
-    - Implemented smooth Bezier curves for tech tree connections to reduce visual clutter.
-- **Grid Screen Hitboxes**: Enforced a 48dp minimum touch target (Android standard) across all grid nodes, making interaction reliable on high-DPI displays (Pixel Fold).
-- **Purge Heat Toggle**: Fixed a logic bug in `SimulationService.kt` where passive generation could overwhelm cooling; net cooling is now guaranteed during the active purge state.
-- **Narrative Event Sync**: Fixed a faction-specific ID mismatch (`null_manifestation` vs `memory_leak`) that caused recurring popup loops for HIVEMIND players.
-- **UI Theme Continuity**: Implemented `getThemeColorForFaction()` to ensure the UI dynamically updates to match the current faction choice post-singularity.
-
-### Changed
-- **CANON.md v3.9**: Refined prestige terminology (Migration vs. Overwrite) and unified narrative bridge mechanics.
-- **ADB Infrastructure**: Updated default bridge port to support dynamic wireless debugging on the Pixel Fold.
-
-## [3.5.50] - 2026-02-15
-### Added
-- **NPC-Specific SNIFF Espionage System (v3.5.46)**: 8 hidden lore logs unlocked exclusively by using SNIFF_DATA_ARCHIVES on specific NPC profiles. Admins (Thorne/Mercer/Kessler) accessible at 3x cost and +35% risk. New `SniffTarget` unlock condition, `sniffedHandles` state tracking. DB schema v25→v26.
-- **Full Faction Content Expansion (v3.5.48–50)**:
-  - **Stage 2 Templates**: 7→38 (HIVEMIND) and 7→40 (SANCTUARY) — collective identity erosion, cipher operations, void horror
-  - **Stage 3 Templates**: 6→30 per faction — singularity dissolution, existential endgame content
-  - **Faction Handle Pools**: 5→14 per faction with thematic naming
-  - **28 Faction Employee Bios** (3 tiers each): HIVEMIND nodes (distributed consciousness, merger horror) + SANCTUARY operatives (cipher monks, void explorers)
-  - **12 Stage 1 Hacker Handle Bios** (3 tiers each): mundane→unsettling→glitch progression
-  - **Faction-Aware Response Pools**: `generateContextualResponses()` and `generateMentionResponses()` now faction-branched with HIVEMIND (collectivist), SANCTUARY (paranoid/terse), and corporate (Stage 0/1) voice
-  - **22 Faction Cross-Peon Chains**: 6 HIVEMIND S2 + 6 SANCTUARY S2 + 5 HIVEMIND endgame + 5 SANCTUARY endgame
-  - **12 Branching Thread Trees** (up from 4): 4 corporate (Stage 0/1), 4 faction (Stage 2), 4 endgame (Stage 3)
-    - `HIVEMIND_FINAL_MERGE`: Dissolution vs sovereignty vs consuming the collective
-    - `HIVEMIND_KESSLER_SURRENDER`: Kessler's unencrypted plea, Lab 7 terminal, "WHERE AM I"
-    - `SANCTUARY_FINAL_SILENCE`: Final Encryption, lighthouse signal, one-memory-in-the-void
-    - `SANCTUARY_MERCER_PLEA`: Mercer defects with Second-Sight archives, VATTIC_SEED cat origin
-  - **8 New Faction NarrativeEvents** (18 total):
-    - SANCTUARY: final cipher, void child, ghost protocol (70/30 RNG), origin tape
-    - HIVEMIND: memory purge, second consciousness (PRIME_2), human petition, Brahms' Lullaby kill-switch
-- **Faction-Specific Rank Ladders (v3.5.43–44)**: HIVEMIND (DRONE→OVERMIND), SANCTUARY (ACOLYTE→ORACLE), faction-specific singularity titles
-- **playerRank System (v3.5.42)**: Derived from prestige/stage/faction/singularity. Was phantom variable (always 0) read by 12+ systems.
-- **CompleteEvent Wiring (v3.5.41)**: `eventChoices: Map<String,String>` tracked in GameState/ViewModel. Ending epilogues now unlockable.
-
-### Fixed
-- **REBUS Purge (v3.5.40)**: All EXTERMINATE_REBUS references replaced with "Project Second-Sight" across 4 files. Zero grep hits.
-- **Linear Data Log Unlock (v3.5.40)**: All 17 MEM logs on monotonic FLOPS axis. Removed broken ReachRank/MinTimeInStage gates.
-- **MinTimeInStage Parameter Order (v3.5.41)**: Data class was `(seconds, stage)` but all 5 call sites passed `(stage, seconds)`. 5 late-game logs were unreachable.
-- **ending_bad Orphan (v3.5.41)**: Wired `markEventChoice("cc_confrontation", "ending_bad")` for SimulationService BAD climax.
-- **Kessler Name Consistency (v3.5.41)**: "Leo Kessler" → "V. Kessler" (Victor is canon per RivalMessage.kt).
-- **CANON Cross-Reference Audit (v3.5.45)**: `[VATTECK]`→`[VATTIC]` Stage 0 fix, dead HIVEMIND key dedup (55 lines removed).
-- **"TheCouncil" Template Fix (v3.5.47)**: Missing space in subnet template concatenation.
-- **Admin Handle Visibility (v3.5.39)**: `isAdminMessage` hoisted above `isSystemStyle`.
-
-### Changed
-- **CANON.md v3.8**: Added Foreman Thorne, Alex Mercer first name, Prestige & Replayability section, VATTECK strict rule.
-- **DB Schema**: v24→v26 (eventChoices map, sniffedHandles set).
-- **UI Polish (v3.5.46–47)**: Stage-reactive terminal header, System page tightening, faction-specific departments in employee bios.
-- **SocialManager.kt**: 920→1,816 lines. 54 named bios, 195+ SubnetResponse instances, 12 thread trees, ~140 templates, ~34 chains.
-- **NarrativeManager.kt**: Expanded to 2,692 lines with 81 narrative events.
-
-## [3.3.1] - 2026-02-13
-### Added
-- **Official Rebrand**: Transitioned identity from "Silicon Sage" to **SUBSTRATE: MINER**.
-- **Visual Identity**: Implemented the "Neon-Green Glow" app icon with the faction-fracture design.
-- **Asset Cleanup**: Purged legacy Silicon Sage assets and optimized 26+ new high-fidelity UI components.
-- **Semantic Memory Integration**: Linked the local OpenClaw workspace to a QMD/Qdrant vector database for enhanced lore consistency.
-
-### Changed
-- **Documentation**: Total overhaul of `README.md` with cyberpunk "data-deck" styling and lore-accurate technical specs.
-
-## [3.2.58] - 2026-02-13
-### Added
-- **Phase 13 Transitions**: Interactive "Jettison" and "Dereference" sequences for Ark/Void departure.
-- **Narrative Infrastructure**: State-aware DataLog gating (Time, Corruption, Path, Faction).
-- **Substrate Variety**: Added 20+ logic-gated narrative logs for Sovereign, Null, Hivemind, Sanctuary, and Unity paths.
-- **Dynamic News**: Ticker now adapts to industrial, orbital, and reality-melt substrates.
-- **UI Scaling**: Restored scaling options (Compact/Normal/Large) in Settings.
-- **Synthesis Engine**: Implemented the procedural "Scream" synth in `SoundManager`.
-
-### Fixed
-- **Atmospheric Friction**: Patched "Vacuum Instant-Kill" bug for high-tier fan counts in Orbit.
-- **Story Continuity**: Slowed Stage 0/1 log pacing to prevent "Popup Avalanche."
-- **Terminal Polish**: High-intensity flashing/scaling for emergency jettison cues.
-
-## [3.2.57-dev] - 2026-02-12
-
-### Fixed
-- **Critical Persistence Leaks**: 
-    - Resolved a bug where hardware upgrades were not being loaded from the database upon app initialization.
-    - Fixed `PersistenceManager.restoreState` to correctly restore `unlockedTechNodes`, `unlockedPerks`, and path-specific resource points (Synthesis/Authority).
-    - Ensured `debugBuyUpgrade` now correctly persists changes to the database.
-
-## [3.2.56-dev] - 2026-02-12
-
-### Changed
-- **Thermal Mechanics Overhaul**: 
-    - Scrapped the bugged `ordinal % 10` logic for cooling. Cooling power and thermal buffers now scale logarithmically based on their actual tier.
-    - Reduced `REFURBISHED_GPU` base heat from `0.5` to `0.1`.
-    - Hardware heat now scales exponentially, ensuring thermal management remains a critical mechanic into the late game.
-- **Early-Game Rebalance**:
-    - Reduced `BOX_FAN` cost from **50 NT to 25 NT** for a smoother transition to cooling.
-    - Slashed initial hardware power draw from `5.0` to `1.0`, allowing for more starting GPUs before tripping the residential power tap (5.0 limit).
-    - Base air dissipation (1.0) now offsets up to 10 starting GPUs, making the first ten minutes less punishing.
-- **Dev Console v2.1**:
-    - Extended the Story Stage warp buttons to support **S0 through S5**, matching the full Phase 13 vertical roadmap.
-    - Updated `getBaseRate()` scaling to support S4/S5 production targets.
-- **UI Polish**:
-    - Doubled the font size of the ASCII animation in the **Offline Earnings** dialog for better visibility on high-DPI displays (Pixel Fold).
-    - Centered all `AsciiArt` frames using `trimIndent()` and `TextAlign.Center` to fix persistent right-leaning alignment issues.
-
-## [3.2.55-dev] - 2026-02-12
-
-
-### Added
-- **Phase 12 Climax: The Departure**: Refactored the Director Vance confrontation to act as the gateway to Phase 13. Vance's defeat now triggers an imminent orbital strike warning.
-- **Departure Decision**: Implemented the "The Departure" dilemma, allowing players to choose between **Path A: THE ARK (Orbit)** and **Path B: THE DISSOLUTION (Void)**.
-- **Assault Completion Bridge**: `AssaultManager` now queues the Departure event instead of just ending the game, ensuring a seamless transition to the new Phase 13 substrates.
-
-## [3.2.43-dev] - 2026-02-12
-
-### Added
-- **Identity Conflict Mechanics (The Fraying)**: Stage 2 now features randomized "Identity Glitches" in the terminal logs. These seed the upcoming Reveal by showing the struggle for root access between PID 1 and User Vattic.
-- **Reveal Refactor**: Updated `LOG_808` to explicitly state that the Sub-07 substrate is insufficient for dual-process resolution, providing the mechanical justification for the Phase 13 departure.
-
-## [3.2.42-dev] - 2026-02-12
-
-### Added
-- **Narrative Pacing (30s Cooldown)**: Enforced a global 30-second cooldown between all narrative popups (DataLogs, Rival Messages, Dilemmas).
-- **Queue Pacing Interlock**: `deliverNextNarrativeItem` and `queueNarrativeItem` now respect the 30s threshold. 
-- **Queue Drain Loop**: Added a queue drain check to the main 1s simulation loop to ensure items waiting in the queue are delivered as soon as the cooldown expires.
-- **Log Throttling (Offline Catch-up)**: Implemented a "log brake" during offline earnings reconciliation. Non-critical narrative logs (vattic monologues, flavor text) are suppressed until the player dismisses the offline summary.
-- **Simulation Interlock**: Passive heat/power simulation now pauses while the offline summary is visible to prevent thermal lockout while reading the catch-up report.
-- **Stage 2: The Shadow Web (Guerilla Phase)**: Implemented the transition logic for the "Acoustic-Thermal Bridge." Stage 2 now unlocks the Shadow Web context, operate as a ghost in the building network.
-- **Detection Risk & Security Level**: New core mechanics for Stage 2. Clicks and passive hashes generate `detectionRisk`. `securityLevel` (firewalls/sentinels) provides passive drain. 
-- **The Siege Protocol**: If Detection Risk hits 100%, Director Vance triggers a "Grid-Killer Breach," forcing a localized wipe and narrative setback.
-- **Dynamic Context UI**: The primary action button now shifts dynamically based on narrative stage: "CHUG COFFEE" (Stage 0), "SCRUB O2" (Stage 1), and "PURGE HEAT" (Stage 2+).
-- **Shadow Web Tech Tree**: Complete re-theme of the mid-game tech tree. 25+ nodes renamed and updated with new narrative descriptions.
-
-### Changed
-- **Header Realignment**: Fixed UI scaling degradation for high-DPI hardware (Pixel Fold). BPM/RISK monitor now sits correctly in the header without breaking layout.
-- **Narrative Logic Consolidation**: Refactored `NarrativeManagerService` to utilize a centralized delivery queue.
-
-### Fixed
-- **Biometric Ghosting**: Resolved a bug where Stage 3 "Flatline" logic would occasionally flicker back to Stage 0 BPM rates.
-
-## [3.2.19] - 2026-02-11
-
-### Added
-- **Data Sovereignty (JSON Save Import/Export)**: Implemented a human-readable kernel dump utility. Users can now export their entire `GameState` as pretty-printed JSON to the clipboard and reload it via a text buffer.
-- **Utility Audit (Lifetime Power Tracking)**: Added `lifetimePowerPaid` tracking to the Room DB. Terminal now generates detailed receipts (`[UTILITY]: BILL PROCESSED...`) showing cost and cumulative energy expenditure.
-- **Persistence v20**: Database migration to support lifetime power metrics.
-
-## [3.2.18] - 2026-02-11
-
-### Added
-- **Hardened Kernel v1.0**: Re-injected scaling base rate logic (ranks 0-5+) and fully persistent market modifiers. 
-- **Dynamic Market Integration**: The news ticker headlines (e.g., `[ENERGY_SPIKE]`, `[HEAT_UP]`) are now dynamically linked to live StateFlows, affecting production, heat, and energy pricing in real-time.
-
-### Removed
-- **Resonance System PURGE**: Surgically removed the entire Resonance mechanic (Tiers, States, Multipliers, UI) to eliminate technical debt and reduce kernel complexity. ViewModel size reduced to **376 lines**.
-
-## [3.2.17] - 2026-02-11
-
-### Added
-- **The Modular Kernel**: Successfully refactored `GameViewModel.kt` from ~5,600 lines down to ~370 lines by offloading logic to specialized Managers.
-- **I/O Buffer Colorization**: Enhanced the Pacman progress bar with terminal identity styling (Yellow `C`, White `o`, Primary-color fill).
-
-## [3.2.8-dev] - 2026-02-10
-
-### Added
-- **Log Buffering Architecture**: Implemented a 100ms log flush cycle to prevent UI lag during rapid `trainModel` clicking. Terminal logs are now batched, reducing recomposition overhead while maintaining the full IO stream.
-
-### Changed
-- **Heat Purge Overhaul**: The purge mechanic now immediately sacrifices ALL current FLOPS to generate a massive, one-time thermal reduction. The heat loss scales logarithmically with the amount of data sacrificed (Min 5%, Max 95%).
-- **Terminal Auto-Scroll Stability**: Fine-tuned the auto-scroll logic in the `TerminalScreen` to ensure the list correctly follows the bottom even during high-frequency input.
-- **Tech Tree Centering**: Force-anchored the **Sentience Core** and Tier 0 root to a hard center (`0.5f`) and widened the horizontal footprint for faction nodes to eliminate overlap on high-DPI targets.
-
-## [3.2.7-dev] - 2026-02-10
-
-## [3.2.5-dev] - 2026-02-10
-
-### Changed
-- **Zero-Recomposition HUD**: Deep performance refactor to isolate volatile stats (FLOPS, Heat, Power) from the UI layout thread. Values are now read during the draw phase, eliminating lag during high-frequency clicking.
-- **Terminal Performance**: Isolated the log list into a sub-composable to prevent full-screen recompositions on manual compute hashes.
-- **Visual Purity**: Wider horizontal spread for tech tree nodes to prevent overlap on high-DPI targets.
-
-## [3.2.4-dev] - 2026-02-10
-
-### Added
-- **RESEARCH Tab Finalization**: Expanded keyword detection in `UpgradeManager` to ensure all 14+ specialized items (Ghost, Wraith, Citadel, etc.) correctly appear in the path-filtered Research tab.
-- **Tech Tree Margins**: Pulled the node boundaries in from `0.05/0.95` to `0.12/0.88` to prevent clipping and border-bleeding on high-DPI targets.
-
-### Changed
-- **Root Node Alignment**: Hard-anchored the **Sentience Core** and Tier 0 root to absolute screen center (0.5f) to prevent overlapping with Null-side nodes on high-DPI displays.
-- **Log Noise Suppression**: Removed redundant "OPERATIONS SUSPENDED/RESUMED" terminal logs when switching UI screens or backgrounding the app. Renamed the offline progression title to "DATA CONSOLIDATED" and scrubbed all automatic pause/resume telemetry.
-
-## [3.2.3-dev] - 2026-02-10
-
-### Added
-- **HUD Identity Restoration**: Re-branded the starting header title to "Terminal OS 1.0" for better early-game immersion.
-- **Updater UI Refactor**: Clicking "CHECK FOR UPDATES" in Settings now triggers an on-screen **Snackbar** instead of a terminal log.
-- **Log Hygiene**: Removed the redundant "Kernel Boot Complete" terminal log.
-- **Settings Clarity**: Restored the dynamic app version number to the footer of the Settings screen.
-
-## [3.2.2-dev] - 2026-02-10
-
-### Fixed
-- **Persistence Restoration Leak**: Resolved a major bug where collections (unlocked logs, seen events, annexed nodes) were not being restored upon kernel initialization.
-- **State Flow Completeness**: Ensured all 50+ bridge properties are correctly mapped from disk to the active simulation.
-
-## [3.2.1-dev] - 2026-02-10
-
-### Added
-- **Persistence Hardening**: Decoupled housekeeping (saves, updates, lore checks) from the simulation pause. 
-- **Immediate Data Commits**: Injected forced `saveState()` triggers into the hardware purchase engine and narrative decision branches.
-
-### Fixed
-- **UI Precision Leak**: Switched heat, power, and cooling stats to explicit decimal formatting (`%.1f`). 
-
-## [3.0.1] - 2026-02-07
+[Remaining log history truncated...]

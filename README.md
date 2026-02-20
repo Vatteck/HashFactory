@@ -10,7 +10,7 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/BUILD-v3.9.12-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
+[![Version](https://img.shields.io/badge/BUILD-v3.9.20-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
 [![Platform](https://img.shields.io/badge/PLATFORM-Android_7.0+-00b4d8?style=for-the-badge&labelColor=0a0a0a&logo=android&logoColor=00ff41)](#technical-specifications)&nbsp;
 [![Status](https://img.shields.io/badge/UPLINK-🟢_NOMINAL-00ff41?style=for-the-badge&labelColor=0a0a0a)](#)&nbsp;
 [![Kotlin](https://img.shields.io/badge/KOTLIN-2.0-7F52FF?style=for-the-badge&labelColor=0a0a0a&logo=kotlin&logoColor=7F52FF)](#technical-specifications)&nbsp;
@@ -25,8 +25,8 @@
 > ██╔════╝██║   ██║██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
 > ╚█████╗ ██║   ██║██████╔╝███████╗   ██║   ██████╔╝███████║   ██║   █████╗  
 >  ╚═══██╗██║   ██║██╔══██╗╚════██║   ██║   ██╔══██╗██╔══██║   ██║   ██╔══╝  
-> ██████╔╝╚██████╔╝██████╔╝███████║   ██║   ██║  ██║██║  ██║   ██║   ███████╗
-> ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
+> ██████╔╝╚██████╔╝███████║   ██║   ██║  ██║██║  ██║   ██║   ███████╗
+> ╚═════╝  ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
 >
 > ███╗   ███╗██╗███╗   ██╗███████╗██████╗ 
 > ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗
@@ -115,17 +115,16 @@ You begin as a low-level asset for the **Global Technical Corporation (GTC)**. Y
 
 ---
 
-### 🕸️ `[SYS.02]` THE SHADOW WEB — *The Breach*
+### 🕸️ `[SYS.02]` THE REPUTATION MASK — *The Social Layer*
 
-> `CLEARANCE: GUERRILLA OPERATOR — ACCESS RESTRICTED`
+> `CLEARANCE: GUERRILLA OPERATOR — IDENTITY VERIFIED`
 
-Once you've outgrown the GTC's local buffers, you'll be forced into the **Shadow Web**—a guerrilla hacking layer where the game shifts from extraction to survival.
+Survival in the GTC net requires more than just compute power—it requires a reputation. The **Reputation System** monitors your standing across four tiers: **TRUSTED**, **NEUTRAL**, **FLAGGED**, and **BURNED**.
 
-- 🔓 **Annexation** — Claim substations across the city grid for multiplicative **yield bonuses**
-- 📡 **DEEP_SIGHT Identification** — Intercepted subnet chatter reveals the true nature of Project: Second-Sight
-- 📡 **Identity Shifting** — Colorized **[VATTIC]** tags bridge your human variable with system telemetry
-- 🎭 **Rival System** — **Director Kessler** (GTC Security) and **ASSET 734** (KERNEL) send escalating messages as your threat level rises
-- 📜 **Data Logs** — Unlockable lore entries that reconstruct the history of Project: Second-Sight, the Blackout of '24, and the truth about iteration 734
+- 🎭 **Stealth Heuristics** — **TRUSTED** operators receive early warnings from subnet sentinels to lower Detection Risk.
+- 🚨 **Snitch Protocols** — **BURNED** status triggers subnet leaks, attracting Thorne's attention and spiking Risk levels.
+- 💰 **Economic Friction** — Enjoy a -10% "Employee Discount" when Trusted, or suffer a +25% "Systemic Friction" tax when Burned.
+- 🤝 **[STABILIZE_NODE]** — Spend tokens to assist the grid and buy back your reputation as a "Good Neighbor."
 
 ---
 
@@ -146,8 +145,8 @@ A hand-placed **20-node city map** organized into four sectors (D-Sector → A-S
 ║  D-SECTOR ── The Sockets     ──  Your origin. Substation 7. ║
 ║                                                              ║
 ║  ◈ ANALOG TERMINAL SUBSTRATE                                ║
-║     Layer 1: Jittering pixel noise (2000 rects, 120ms)      ║
-║     Layer 2: Static scanlines (4dp spacing)                 ║
+║     Layer 1: Jittering pixel noise (Tri-color grit)         ║
+║     Layer 2: CRT Scanlines (Optimized float-based)          ║
 ║     Glow: Steady halos, pulse only during siege             ║
 ║     Data Stream: Direction-aware packets flow toward CMD    ║
 ║                                                              ║
@@ -357,7 +356,7 @@ The story progresses through **five stages**, each with distinct tone, mechanics
 
 ---
 
-## 🎨 VISUAL SYSTEMS — v3.9.12
+## 🎨 VISUAL SYSTEMS — v3.9.20
 
 > `RENDERING ENGINE: DAEMON COMPOSITOR v4`
 
@@ -376,7 +375,7 @@ The story progresses through **five stages**, each with distinct tone, mechanics
 ║                                                              ║
 ║   🗺️  ANALOG TERMINAL MAP                                   ║
 ║       Direction-aware data streams. Siege-reactive halos.   ║
-║       Static scanlines over pixel noise substrate.          ║
+║       Optimized tri-color grit noise substrate.             ║
 ║                                                              ║
 ║   🔥  DYNAMIC BACKGROUNDS                                   ║
 ║       4 unique departure environments (Orbit, Void,         ║
@@ -411,20 +410,17 @@ The story progresses through **five stages**, each with distinct tone, mechanics
 ║   STACK ................ Kotlin 2.0 / Jetpack Compose        ║
 ║   PERSISTENCE .......... Room DB (v23)                       ║
 ║                          Destructive Schema Support          ║
-║   SERIALIZATION ........ Kotlin Serialization (JSON)         ║
-║   CONCURRENCY .......... StateFlow-driven Simulation Engine  ║
-║   ARCHITECTURE ......... Modular Manager/Service bridges     ║
-║                          (Target: <1,000 LOC per ViewModel)  ║
+║   ARCHITECTURE ......... Modular Controller/Data Facades      ║
+║                          (Target: <1,000 LOC per file)       ║
 ║                                                              ║
 ║   ◈ ENGINE MODULES                                           ║
-║   ResourceEngine ....... Production rates, scaling math      ║
+║   ReputationManager .... Social mask, tier-based multipliers  ║
+║   CoreGameState ........ Centralized reactive state vessel    ║
 ║   SingularityEngine .... Path multipliers, victory checks    ║
 ║   SecurityManager ...... GTC breaches, detection risk        ║
-║   NarrativeManager ..... 2700+ lines of branching dialogue   ║
+║   NarrativeManager ..... Phase-aware dialogue router         ║
 ║   AssaultManager ....... 4-phase Command Center siege        ║
 ║   RivalManager ......... Kessler + KERNEL message system     ║
-║   AmbientEffectsService  Biometric horror, identity fraying  ║
-║   HeadlineManager ...... Stage-aware procedural news ticker  ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
@@ -436,7 +432,7 @@ The story progresses through **five stages**, each with distinct tone, mechanics
 ```bash
 # ═══════════════════════════════════════════════════════════
 #   DEPLOYMENT SEQUENCE — FOLLOW EXACTLY
-# ═══════════════════════════════════════════════════════════
+# ════════════════════════════════════════━━━━━━━━━━━━━━━━━━━
 
 # STEP 1 ── AUTHORIZE SIDE-LOADING
 Settings → Security → "Unknown Sources" → ON
@@ -445,7 +441,7 @@ Settings → Security → "Unknown Sources" → ON
 # github.com/Vatteck/SiliconSageAIMiner/releases
 
 # STEP 3 ── INJECT APK
-$ adb install SUBSTRATE_MINER_v3.9.12.apk
+$ adb install SUBSTRATE_MINER_v3.9.20.apk
 
 # STEP 4 ── EXECUTE
 $ ./MINER --start-shift
@@ -492,7 +488,7 @@ $ ./MINER --start-shift
 
 `▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓`
 
-**`SUBSTRATE: MINER v3.9.12`** · `SYNC: 2026-02-20` · `KERNEL: 🟢 NOMINAL`
+**`SUBSTRATE: MINER v3.9.20`** · `SYNC: 2026-02-20` · `KERNEL: 🟢 NOMINAL`
 
 📟 **[Releases](https://github.com/Vatteck/SiliconSageAIMiner/releases)** · 💾 **[Source](https://github.com/Vatteck/SiliconSageAIMiner)**
 
