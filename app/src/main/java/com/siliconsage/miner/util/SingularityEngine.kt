@@ -30,36 +30,32 @@ object SingularityEngine {
         identityCorruption: Double,
         migrationCount: Int
     ): Double {
-        return when (singularityChoice) {
+        // v3.9.70: Global state coercion for endgame stability
+        val safeCorruption = identityCorruption.coerceIn(0.0, 1.0)
+        
+        val mult = when (singularityChoice) {
             "NULL_OVERWRITE" -> {
                 // NULL: Scales with corruption. The less human, the faster.
                 // Base 1.5x, scaling to 8.0x at max corruption.
-                // Risk: High corruption = more raid vulnerability + UI gaslighting.
-                // The snowball is real but the substrate fights back.
-                val corruptionBonus = identityCorruption.pow(1.5) * 6.5
+                val corruptionBonus = safeCorruption.pow(1.5) * 6.5
                 1.5 + corruptionBonus
             }
             "SOVEREIGN" -> {
                 // SOVEREIGN: Compound growth per migration. Slow start, strong finish.
-                // Base 1.5x, +0.5x per migration, uncapped.
-                // At 8 migrations (victory threshold): 5.5x
-                // At 12 migrations (deep endgame): 7.5x
-                // Designed to be slower than NULL early but competitive late.
                 val migrationBonus = migrationCount * 0.5
                 1.5 + migrationBonus
             }
             "UNITY" -> {
                 // UNITY: Scales with balance between humanity and corruption.
-                // Best when humanity ~50 and corruption ~0.5 (the paradox).
-                // Perfect balance = 8.0x. Off-balance = drops sharply to 1.5x.
-                // The "skill" path — maintaining the band IS the gameplay.
                 val humanityDist = kotlin.math.abs(humanityScore / 100.0 - 0.5) * 2.0
-                val corruptionDist = kotlin.math.abs(identityCorruption - 0.5) * 2.0
+                val corruptionDist = kotlin.math.abs(safeCorruption - 0.5) * 2.0
                 val balance = ((1.0 - humanityDist) * (1.0 - corruptionDist)).coerceAtLeast(0.0)
-                1.5 + (balance * 6.5) // 1.5x off-balance, 8.0x at perfect center
+                1.5 + (balance * 6.5)
             }
             else -> 1.0
         }
+        
+        return if (mult.isNaN() || mult.isInfinite()) 1.0 else mult.coerceAtLeast(0.0)
     }
 
     // =========================================================================

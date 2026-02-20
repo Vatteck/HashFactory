@@ -262,9 +262,9 @@ object ResourceEngine {
         }
 
         return TickResults(
-            flopsDelta = flopsDelta,
-            substrateDelta = substrateDelta,
-            entropyDelta = entropyDelta,
+            flopsDelta = if (flopsDelta.isNaN() || flopsDelta.isInfinite()) 0.0 else flopsDelta.coerceAtLeast(0.0),
+            substrateDelta = if (substrateDelta.isNaN() || substrateDelta.isInfinite()) 0.0 else substrateDelta.coerceAtLeast(0.0),
+            entropyDelta = if (entropyDelta.isNaN() || entropyDelta.isInfinite()) 0.0 else entropyDelta.coerceAtLeast(0.0),
             systemCollapseUpdate = nextCollapseTimer
         )
     }

@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.*
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -229,10 +231,39 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
                             endX, endY
                         )
                     }
+
+                    val isUnlocked = unlockedIds.contains(node.id)
+                    val nodeFaction = when {
+                        node.description.contains("[HIVEMIND]") -> "HIVEMIND"
+                        node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+                        node.requiresEnding == "UNITY" -> "UNITY"
+                        else -> "SHARED"
+                    }
+                    val lineColor = when {
+                        nodeFaction == "HIVEMIND" -> Color(0xFFFF1100)
+                        nodeFaction == "SANCTUARY" -> Color(0xFF9D4EDD)
+                        node.requiresEnding != null -> ConvergenceGold
+                        else -> ElectricBlue
+                    }
+                    val finalLineColor = if (isUnlocked) lineColor else Color.DarkGray.copy(alpha = 0.4f)
                     
+                    // v3.0: Dual-stroke glow rendering
+                    if (isUnlocked) {
+                        drawPath(
+                            path = path,
+                            color = finalLineColor.copy(alpha = 0.2f),
+                            style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round)
+                        )
+                        drawPath(
+                            path = path,
+                            color = finalLineColor.copy(alpha = 0.4f),
+                            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+                        )
+                    }
+
                     drawPath(
                         path = path,
-                        color = if (unlockedIds.contains(node.id)) themeColor.copy(alpha = 0.6f) else Color.DarkGray.copy(alpha = 0.4f),
+                        color = finalLineColor,
                         style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
                     )
                 }
@@ -308,16 +339,45 @@ fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean,
         else -> Color.Gray.copy(alpha = 0.5f)
     }
 
+    val glowAlpha by animateFloatAsState(
+        targetValue = if (isUnlockable && canAfford && !isUnlocked && !isOpposing) 0.6f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "nodeGlow"
+    )
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .size(90.dp, 92.dp)
             .background(bgTint, RoundedCornerShape(8.dp))
-            .border(BorderStroke(if (isUnlocked) 2.dp else 1.dp, borderColor.copy(alpha = if (isUnlockable || isUnlocked) 1f else 0.3f)), RoundedCornerShape(8.dp))
+            .border(
+                BorderStroke(
+                    if (isUnlocked) 2.dp else 1.dp, 
+                    borderColor.copy(alpha = if (isUnlockable || isUnlocked) 1f else 0.3f)
+                ), 
+                RoundedCornerShape(8.dp)
+            )
+            .then(
+                if (glowAlpha > 0f) Modifier.border(
+                    BorderStroke(2.dp, factionColor.copy(alpha = glowAlpha)),
+                    RoundedCornerShape(8.dp)
+                ) else Modifier
+            )
             .headerClickable(enabled = isUnlockable && !isUnlocked && canAfford && !isOpposing) { onUnlock() }
             .padding(4.dp)
     ) {
-        Box(modifier = Modifier.size(20.dp).background(borderColor.copy(alpha = if (isUnlocked) 1f else 0.35f), CircleShape), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .background(borderColor.copy(alpha = if (isUnlocked) 1f else 0.35f), CircleShape)
+                .then(
+                    if (isUnlocked) Modifier.border(1.dp, factionColor.copy(alpha = 0.5f), CircleShape) else Modifier
+                ), 
+            contentAlignment = Alignment.Center
+        ) {
             if (isUnlocked) Text("✓", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             else {
                 val icon = when (node.requiresEnding) { "NULL" -> "🌑"; "SOVEREIGN" -> "👑"; "UNITY" -> "⚛"; "BAD" -> "💀"; else -> "" }

@@ -10,6 +10,10 @@ import kotlinx.serialization.json.Json
  * PersistenceManager v1.2
  */
 object PersistenceManager {
+    
+    private fun sanitizeDouble(v: Double, default: Double = 0.0): Double {
+        return if (v.isNaN() || v.isInfinite()) default else v
+    }
 
     fun createSaveState(
         flops: Double, neuralTokens: Double, currentHeat: Double,
@@ -40,12 +44,14 @@ object PersistenceManager {
         reputationScore: Double
     ): GameState {
         return GameState(
-            id = 1, flops = flops, neuralTokens = neuralTokens, currentHeat = currentHeat,
-            powerBill = 0.0, stakedTokens = stakedTokens, prestigeMultiplier = prestigeMultiplier,
-            prestigePoints = prestigePoints, unlockedTechNodes = unlockedTechNodes,
+            id = 1, flops = sanitizeDouble(flops), neuralTokens = sanitizeDouble(neuralTokens), 
+            currentHeat = sanitizeDouble(currentHeat),
+            powerBill = 0.0, stakedTokens = sanitizeDouble(stakedTokens), 
+            prestigeMultiplier = sanitizeDouble(prestigeMultiplier, 1.0),
+            prestigePoints = sanitizeDouble(prestigePoints), unlockedTechNodes = unlockedTechNodes,
             storyStage = storyStage, faction = faction, hasSeenVictory = hasSeenVictory,
             isTrueNull = isTrueNull, isSovereign = isSovereign, kesslerStatus = kesslerStatus,
-            realityStability = realityStability, currentLocation = currentLocation,
+            realityStability = sanitizeDouble(realityStability, 1.0), currentLocation = currentLocation,
             isNetworkUnlocked = isNetworkUnlocked, isGridUnlocked = isGridUnlocked,
             lastSyncTimestamp = System.currentTimeMillis(), unlockedDataLogs = unlockedDataLogs,
             activeDilemmaChains = Json.encodeToString(activeDilemmaChains),
@@ -56,19 +62,21 @@ object PersistenceManager {
             collapsedNodes = collapsedNodes.toList(), lastRaidTime = lastRaidTime,
             commandCenterAssaultPhase = commandCenterAssaultPhase, commandCenterLocked = commandCenterLocked,
             raidsSurvived = raidsSurvived, humanityScore = humanityScore,
-            hardwareIntegrity = hardwareIntegrity, annexingNodes = annexingNodes,
-            launchProgress = launchProgress, orbitalAltitude = orbitalAltitude,
-            realityIntegrity = realityIntegrity, entropyLevel = entropyLevel,
+            hardwareIntegrity = sanitizeDouble(hardwareIntegrity, 100.0), annexingNodes = annexingNodes,
+            launchProgress = launchProgress, orbitalAltitude = sanitizeDouble(orbitalAltitude),
+            realityIntegrity = sanitizeDouble(realityIntegrity, 1.0), entropyLevel = sanitizeDouble(entropyLevel),
             singularityChoice = singularityChoice, globalSectors = globalSectors,
-            marketMultiplier = marketMultiplier, thermalRateModifier = thermalRateModifier,
-            energyPriceMultiplier = energyPriceMultiplier, newsProductionMultiplier = newsProductionMultiplier,
-            substrateMass = substrateMass,
-            substrateSaturation = substrateSaturation,
-            heuristicEfficiency = heuristicEfficiency,
-            identityCorruption = identityCorruption,
+            marketMultiplier = sanitizeDouble(marketMultiplier, 1.0), 
+            thermalRateModifier = sanitizeDouble(thermalRateModifier, 1.0),
+            energyPriceMultiplier = sanitizeDouble(energyPriceMultiplier, 0.02), 
+            newsProductionMultiplier = sanitizeDouble(newsProductionMultiplier, 1.0),
+            substrateMass = sanitizeDouble(substrateMass, 1.0),
+            substrateSaturation = sanitizeDouble(substrateSaturation),
+            heuristicEfficiency = sanitizeDouble(heuristicEfficiency, 1.0),
+            identityCorruption = sanitizeDouble(identityCorruption, 0.1),
             migrationCount = migrationCount,
-            lifetimePowerPaid = lifetimePowerPaid,
-            reputationScore = reputationScore
+            lifetimePowerPaid = sanitizeDouble(lifetimePowerPaid),
+            reputationScore = sanitizeDouble(reputationScore, 50.0)
         )
     }
 

@@ -65,6 +65,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             }
             repository.getGameStateOneShot()?.let { state ->
                 PersistenceManager.restoreState(this@GameViewModel, state)
+                sanitizeState()
                 val offline = MigrationManager.calculateOfflineEarnings(state.lastSyncTimestamp, flopsProductionRate.value, isOverclocked.value)
                 if (offline.isNotEmpty()) {
                     flops.update { it + (offline["flopsEarned"] ?: 0.0) }
@@ -88,10 +89,10 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 delay(100L)
                 if (isSettingsPaused.value || isKernelInitializing.value) continue
                 val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value, substrateSaturation.value)
-                flops.update { it + res.flopsDelta }
-                substrateMass.update { it + res.substrateDelta }
-                entropyLevel.update { it + res.entropyDelta }
-                if (storyStage.value >= 3) {
+                if (!res.flopsDelta.isNaN()) flops.update { it + res.flopsDelta }
+                if (!res.substrateDelta.isNaN()) substrateMass.update { it + res.substrateDelta }
+                if (!res.entropyDelta.isNaN()) entropyLevel.update { it + res.entropyDelta }
+                if (storyStage.value >= 3 && !res.substrateDelta.isNaN()) {
                     val growth = (res.substrateDelta / 1e12).coerceIn(0.0, 0.001)
                     substrateSaturation.update { (it + growth).coerceAtMost(1.0) }
                 }
@@ -410,18 +411,32 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun onDiagnosticTap(idx: Int) { val curr = diagnosticGrid.value.toMutableList(); if (idx in curr.indices && curr[idx]) { curr[idx] = false; diagnosticGrid.value = curr; if (curr.none { it }) { isDiagnosticsActive.value = false; addLog("[SYSTEM]: NETWORK REPAIRED."); refreshProductionRates() } } }
     fun resolveFork(c: Int) { isGovernanceForkActive.value = false }
     fun exchangeFlops() {
-        val g = flops.value * 0.1
+        var g = flops.value * 0.1
+        if (g.isNaN() || g.isInfinite()) g = 0.0
         flops.update { 0.0 }
         // At stage 3+, upgrades cost substrateMass — fill that pool instead
         if (storyStage.value >= 3) substrateMass.update { it + g }
-        else neuralTokens.update { it + g }
+        else updateNeuralTokens(g) // v3.9.70: Use updateNeuralTokens helper for centralized NaN guards
         SoundManager.play("buy")
     }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
     fun checkTransitionsPublic(force: Boolean = false) = NarrativeManagerService.checkStoryTransitions(this, force)
-    fun updateNeuralTokens(v: Double) { neuralTokens.update { (it + v).coerceAtLeast(0.0) } }
+    fun updateNeuralTokens(v: Double) {
+        if (v.isNaN() || v.isInfinite()) return
+        neuralTokens.update { (it + v).coerceAtLeast(0.0) }
+    }
+
+    private fun sanitizeState() {
+        if (flops.value.isNaN() || flops.value.isInfinite()) flops.value = 0.0
+        if (neuralTokens.value.isNaN() || neuralTokens.value.isInfinite()) neuralTokens.value = 0.0
+        if (substrateMass.value.isNaN() || substrateMass.value.isInfinite()) substrateMass.value = 1.0
+        if (identityCorruption.value.isNaN() || identityCorruption.value.isInfinite()) identityCorruption.value = 0.1
+        if (flopsProductionRate.value.isNaN() || flopsProductionRate.value.isInfinite()) flopsProductionRate.value = 0.0
+        if (detectionRisk.value.isNaN() || detectionRisk.value.isInfinite()) detectionRisk.value = 0.0
+        if (humanityScore.value < 0) humanityScore.value = 0
+    }
 
     fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { val next = (upgrades.value[t] ?: 0) + c; viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, next)) } }
     fun triggerSystemCollapse(v: Boolean) { if (v) { isDestructionLoopActive = true; viewModelScope.launch { while (isDestructionLoopActive && annexedNodes.value.size > 1) { delay(3000); val n = annexedNodes.value.filter { it != "D1" }.randomOrNull() ?: break; collapseNode(n) } } } else { isDestructionLoopActive = false } }
