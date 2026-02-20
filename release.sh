@@ -117,6 +117,11 @@ echo -e "${YELLOW}[7/7]${NC} Pushing to GitHub..."
 git push origin master --tags --force
 echo -e "${GREEN}       ✓ Pushed to GitHub${NC}"
 
+# --- [7b] Create GitHub Release ---
+echo -e "${YELLOW}[7b/8]${NC} Creating GitHub Release..."
+gh release create "v$VERSION" --title "v$VERSION" --notes "${SUMMARY:-Release v$VERSION}" "$RELEASES_DIR/$APK_NAME"
+echo -e "${GREEN}       ✓ GitHub Release created${NC}"
+
 # --- [8] Lean Persistence (Purge Old Releases) ---
 echo -e "${YELLOW}[8/8]${NC} Maintaining lean repo (keeping top 2 releases)..."
 # Get tags of all releases, sorted by date, except the top 2
