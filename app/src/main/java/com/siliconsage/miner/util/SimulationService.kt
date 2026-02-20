@@ -130,7 +130,8 @@ object SimulationService {
                 isCageActive = vm.commandCenterAssaultPhase.value == "CAGE", unlockedPerks = vm.unlockedPerks.value,
                 unlockedTechNodes = vm.unlockedTechNodes.value, playerRank = vm.playerRank.value,
                 storyStage = vm.storyStage.value, faction = vm.faction.value,
-                thermalRateModifier = vm.thermalRateModifier.value
+                thermalRateModifier = vm.thermalRateModifier.value,
+                reputationTier = vm.reputationTier.value
             )
             results = heatResults
             
@@ -217,6 +218,11 @@ object SimulationService {
         val newHeat = vm.currentHeat.value
         val heartbeatChance = if (newHeat > 95.0) 0.2 else 0.1
         if (newHeat > 80.0 && kotlin.random.Random.nextDouble() < heartbeatChance) HapticManager.vibrateHeartbeat()
+        
+        // Phase 2: Passive Reputation Erosion
+        if (newHeat > 95.0) {
+            com.siliconsage.miner.util.ReputationManager.modifyReputation(vm, -0.5)
+        }
         
         if (vm.isThermalLockout.value) { vm.overheatSeconds = 0; return }
         if (newHeat >= 100.0) {

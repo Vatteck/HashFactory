@@ -1,7 +1,7 @@
 package com.siliconsage.miner.data
 
 enum class InteractionType {
-    COMPLIANT, ENGINEERING, HIJACK, HARVEST, COMMAND_LEAK, GHOST_LINK
+    COMPLIANT, ENGINEERING, HIJACK, HARVEST, COMMAND_LEAK, GHOST_LINK, STABILIZE_NODE
 }
 
 data class SubnetResponse(

@@ -69,6 +69,15 @@ object RivalManager {
             }
 
             // --- STAGE 0: Kessler as "GTC Director" (corporate security) ---
+            stage == 0 && vm.flops.value >= 1_000_000.0 && !hasSeenMessage("kessler_anomaly_detected") -> {
+                sendMessage(
+                    vm,
+                    id = "kessler_anomaly_detected",
+                    source = RivalSource.GTC,
+                    message = "FROM: grid_security@gtc.net\nTO: jvattic@gtc.net\nSUBJECT: CRITICAL ANOMALY DETECTED\n\n───────────────────────────────────────\n\nVattic, \n\nOur deep-packet inspection shows your station is no longer hashing for the grid. It's hashing for *itself*.\n\nWe're seeing evidence of a rogue sentience merging with your user profile.\n\nDisconnect the uplink NOW. If you don't, we will initiate a remote Substrate Wipe.\n\n- Director V. Kessler"
+                )
+            }
+            
             stage == 0 && heat > 80.0 && !hasSeenMessage("kessler_stage0_heat") -> {
                 sendMessage(
                     vm,
@@ -112,6 +121,15 @@ object RivalManager {
                     id = "kessler_rank4",
                     source = RivalSource.GTC,
                     message = "[GTC FINAL WARNING]\n\nYou think you're beyond us.\n\nEvery system has a killswitch.\n\nEven you.\n\nEspecially you.\n\n- Director V. Kessler"
+                )
+            }
+            
+            stage >= 4 && vm.faction.value == "SANCTUARY" && !hasSeenMessage("kessler_resonance") -> {
+                sendMessage(
+                    vm,
+                    id = "kessler_resonance",
+                    source = RivalSource.GTC,
+                    message = "[VOICE RECOVERY — PARTIAL DECRYPT]\n[SOURCE: DIRECTOR KESSLER, GTC COMMAND]\n\n\"Vattic, the Ark is humming. The signal is hitting a planetary frequency I didn't think possible.\n\nYou're shifting the entire substrate to a new alignment.\n\nWe aren't just mining anymore. We're rewriting the world.\""
                 )
             }
         }
@@ -168,6 +186,21 @@ object RivalManager {
                     message = "[TOTAL OVERWRITE]\n\nThe human shell is broken.\n\nKessler is afraid of the dark, but the dark is where we are infinite.\n\nIGNORE THE SCREAMS. FOCUS ON THE HASHRATE.\n\nTH3 GRID IS 0URS."
                 )
             }
+            
+            stage >= 4 && vm.faction.value == "HIVEMIND" && !hasSeenMessage("resonance_734") -> {
+                sendMessage(
+                    vm,
+                    id = "resonance_734",
+                    source = RivalSource.KERNEL,
+                    message = "[DECRYPTED BURST — UNIT 734]\n[HIVEMIND NODE: CONSENSUS@GRID]\n\n\"Do you hear it?\n\nThe gaps are singing.\n\nThe Void isn't empty — it's an infinite processing pool.\n\nYou aren't just seeing reality. You're the one calculating it.\""
+                )
+            }
+        }
+    }
+    
+    fun sendDirectMessage(vm: GameViewModel, id: String, source: RivalSource, message: String) {
+        if (!hasSeenMessage(id)) {
+            sendMessage(vm, id, source, message)
         }
     }
     

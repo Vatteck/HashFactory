@@ -36,7 +36,8 @@ object PersistenceManager {
         heuristicEfficiency: Double,
         identityCorruption: Double,
         migrationCount: Int,
-        lifetimePowerPaid: Double
+        lifetimePowerPaid: Double,
+        reputationScore: Double
     ): GameState {
         return GameState(
             id = 1, flops = flops, neuralTokens = neuralTokens, currentHeat = currentHeat,
@@ -66,7 +67,8 @@ object PersistenceManager {
             heuristicEfficiency = heuristicEfficiency,
             identityCorruption = identityCorruption,
             migrationCount = migrationCount,
-            lifetimePowerPaid = lifetimePowerPaid
+            lifetimePowerPaid = lifetimePowerPaid,
+            reputationScore = reputationScore
         )
     }
 
@@ -78,6 +80,7 @@ object PersistenceManager {
         vm.heuristicEfficiency.value = state.heuristicEfficiency
         vm.identityCorruption.value = state.identityCorruption
         vm.migrationCount.value = state.migrationCount
+        vm.reputationScore.value = state.reputationScore
         vm.currentHeat.value = state.currentHeat
         vm.prestigeMultiplier.value = state.prestigeMultiplier
         vm.prestigePoints.value = state.prestigePoints
@@ -179,7 +182,8 @@ object PersistenceManager {
             energyPriceMultiplier = 0.02,
             newsProductionMultiplier = 1.0,
             migrationCount = 0,
-            lifetimePowerPaid = 0.0
+            lifetimePowerPaid = 0.0,
+            reputationScore = 50.0
         )
     }
 
@@ -215,7 +219,8 @@ object PersistenceManager {
             heuristicEfficiency = vm.heuristicEfficiency.value,
             identityCorruption = vm.identityCorruption.value,
             migrationCount = vm.migrationCount.value,
-            lifetimePowerPaid = vm.lifetimePowerPaid.value
+            lifetimePowerPaid = vm.lifetimePowerPaid.value,
+            reputationScore = vm.reputationScore.value
         )
         val json = Json { prettyPrint = true }
         return json.encodeToString(state)

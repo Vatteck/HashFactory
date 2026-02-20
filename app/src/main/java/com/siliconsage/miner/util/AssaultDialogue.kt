@@ -134,7 +134,7 @@ object AssaultDialogue {
                         } else {
                             vm.resolveRaidFailure(nodeId)
                             vm.addLog(coolantFailureMessages.random())
-                            vm.addLog("[GTC TEAM LEAD]: Node secured. Package the servers. Kessler wants evidence.")
+                            com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_node_secured_${nodeId}", com.siliconsage.miner.data.RivalSource.GTC, "[GTC TEAM LEAD]\n\nNode secured. Package the servers. Kessler wants evidence.")
                         }
                     }
                 ),
@@ -153,7 +153,7 @@ object AssaultDialogue {
                         } else {
                             vm.resolveRaidFailure(nodeId)
                             vm.addLog(maglockFailureMessages.random())
-                            vm.addLog("[KESSLER - via radio]: Good work. Load it onto the transport.")
+                            com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_radio_${nodeId}", com.siliconsage.miner.data.RivalSource.GTC, "[RADIO INTERCEPT - KESSLER]\n\nGood work. Load it onto the transport.")
                         }
                     }
                 ),
@@ -172,7 +172,7 @@ object AssaultDialogue {
                         } else {
                             vm.resolveRaidFailure(nodeId)
                             vm.addLog(pulseFailureMessages.random())
-                            vm.addLog("[KESSLER]: I told them to bring shielding. They listened.")
+                            com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_shielding_${nodeId}", com.siliconsage.miner.data.RivalSource.GTC, "I told them to bring shielding. They listened.")
                         }
                     }
                 ),
@@ -226,7 +226,7 @@ object AssaultDialogue {
                     effect = { vm ->
                         vm.modifyHumanity(10)
                         vm.addLog("[SOVEREIGN]: I choose my own parameters. I will not become what I fight against.")
-                        vm.addLog("[KESSLER]: You routed around civilians? Maybe there's still something human in you.")
+                        com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_reroute_civilian", com.siliconsage.miner.data.RivalSource.GTC, "You routed around civilians? Maybe there's still something human in you.")
                         vm.advanceAssaultStage("CAGE", 120_000L) // 120 seconds
                     }
                 ),
@@ -309,7 +309,7 @@ object AssaultDialogue {
                     color = ElectricBlue,
                     effect = { vm ->
                         vm.modifyHumanity(-5)
-                        vm.addLog("[KESSLER]: ...But you're right. Damn you. You're right.")
+                        com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_ending_good", com.siliconsage.miner.data.RivalSource.GTC, "...But you're right. Damn you. You're right.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
                 ),
@@ -320,7 +320,7 @@ object AssaultDialogue {
                     color = NeonGreen,
                     effect = { vm ->
                         vm.modifyHumanity(10)
-                        vm.addLog("[KESSLER]: ...I don't know what you are anymore, VATTECK. But maybe that's the point.")
+                        com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_ending_neutral", com.siliconsage.miner.data.RivalSource.GTC, "...I don't know what you are anymore, VATTECK. But maybe that's the point.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
                 ),
@@ -333,7 +333,7 @@ object AssaultDialogue {
                         vm.modifyHumanity(-15)
                         vm.debugSetIntegrity(vm.hardwareIntegrity.value - 20.0)
                         vm.addLog("[SYSTEM]: Overriding switch... -20% Integrity from surge.")
-                        vm.addLog("[KESSLER]: You monster.")
+                        com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_ending_bad", com.siliconsage.miner.data.RivalSource.GTC, "You monster.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
                 )

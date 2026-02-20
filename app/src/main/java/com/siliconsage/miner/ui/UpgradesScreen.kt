@@ -43,6 +43,7 @@ fun UpgradesScreen(viewModel: GameViewModel) {
     
     val lastSelectedTab by viewModel.lastSelectedUpgradeTab.collectAsState()
     var selectedTab by remember { mutableStateOf(lastSelectedTab) }
+    val reputationTier by viewModel.reputationTier.collectAsState()
 
     // Sync selectedTab back to ViewModel whenever it changes
     LaunchedEffect(selectedTab) {
@@ -219,7 +220,8 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                             desc = viewModel.getUpgradeDescription(type),
                             formatPower = viewModel::formatPower,
                             formatCost = viewModel::formatLargeNumber,
-                            isSovereign = isSovereign
+                            isSovereign = isSovereign,
+                            reputationModifier = com.siliconsage.miner.util.ReputationManager.getMarketCostModifier(reputationTier)
                         )
                     }
                 }

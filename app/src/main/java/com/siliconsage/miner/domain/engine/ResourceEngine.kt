@@ -284,7 +284,8 @@ object ResourceEngine {
         playerRank: Int,
         storyStage: Int,
         faction: String,
-        thermalRateModifier: Double
+        thermalRateModifier: Double,
+        reputationTier: String = com.siliconsage.miner.util.ReputationManager.TIER_NEUTRAL
     ): HeatResults {
         val upgradeList = upgrades.map { com.siliconsage.miner.data.Upgrade(it.key.name, it.key, it.value) }
         
@@ -301,6 +302,16 @@ object ResourceEngine {
         )
 
         var finalPercentChange = baseResults.percentChange * thermalRateModifier
+        
+        // Phase 2: Reputation Thermal Penalties
+        if (finalPercentChange > 0) {
+            val repPenalty = when (reputationTier) {
+                com.siliconsage.miner.util.ReputationManager.TIER_FLAGGED -> 0.05
+                com.siliconsage.miner.util.ReputationManager.TIER_BURNED -> 0.10
+                else -> 0.0
+            }
+            finalPercentChange *= (1.0 + repPenalty)
+        }
         
         if (location == "ORBITAL_SATELLITE" && (upgrades[UpgradeType.AEGIS_SHIELDING] ?: 0) > 0) {
             if (finalPercentChange > 0) finalPercentChange *= 0.7 

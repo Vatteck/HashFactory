@@ -101,9 +101,11 @@ data class GameState(
     val heuristicEfficiency: Double = 1.0,
     val identityCorruption: Double = 0.0,
     val migrationCount: Int = 0,
-
     // v3.2.19: Utility Audit
-    val lifetimePowerPaid: Double = 0.0
+    val lifetimePowerPaid: Double = 0.0,
+
+    // Phase 14: Reputation
+    val reputationScore: Double = 50.0
 )
 
 @Serializable

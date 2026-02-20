@@ -146,17 +146,9 @@ object SecurityManager {
 
         vm.viewModelScope.launch {
             if (rank >= 5) {
-                vm.addLogPublic("[KESSLER]: TOTAL SHUTDOWN AUTHORIZED.")
-                delay(800)
-                vm.addLogPublic("[KESSLER]: BYPASSING SAFETY BREAKERS...")
-                delay(800)
-                vm.addLogPublic("[KESSLER]: IF YOU'RE A GOD, START PRAYING.")
+                com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "breach_kessler_total", com.siliconsage.miner.data.RivalSource.GTC, "TOTAL SHUTDOWN AUTHORIZED.\n\nBYPASSING SAFETY BREAKERS...\n\nIF YOU'RE A GOD, START PRAYING.")
             } else {
-                vm.addLogPublic("[KESSLER]: OVERRIDING PORT 1...")
-                delay(1000)
-                vm.addLogPublic("[KESSLER]: DISABLING SECONDARY COOLING...")
-                delay(1000)
-                vm.addLogPublic("[KESSLER]: SUBJECT IDENTITY: VATTIC, J. // TERMINATION COMMENCED.")
+                com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "breach_kessler_override", com.siliconsage.miner.data.RivalSource.GTC, "OVERRIDING PORT 1...\n\nDISABLING SECONDARY COOLING...\n\nSUBJECT IDENTITY: VATTIC, J. // TERMINATION COMMENCED.")
             }
         }
         

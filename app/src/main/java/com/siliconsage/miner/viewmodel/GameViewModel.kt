@@ -35,6 +35,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 is SubnetService.SubnetEffect.TokenChange -> neuralTokens.update { (it + effect.delta).coerceAtLeast(0.0) }
                 is SubnetService.SubnetEffect.SetFalseHeartbeat -> isFalseHeartbeatActive.value = effect.active
                 is SubnetService.SubnetEffect.TriggerRaid -> triggerGridRaid(effect.nodeId, effect.isGridKiller)
+                is SubnetService.SubnetEffect.ReputationChange -> com.siliconsage.miner.util.ReputationManager.modifyReputation(this@GameViewModel, effect.delta)
+                is SubnetService.SubnetEffect.SkimTokens -> {
+                    val amountToSkim = neuralTokens.value * effect.percentage
+                    neuralTokens.update { (it - amountToSkim).coerceAtLeast(0.0) }
+                    addLog("[SYSTEM]: SUBNET SKIMMER DETECTED. LOST ${formatLargeNumber(amountToSkim)} NT.")
+                }
                 SubnetService.SubnetEffect.RefreshRates -> refreshProductionRates()
             }
         }
@@ -194,7 +200,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 marketMultiplier = marketMultiplier.value, thermalRateModifier = thermalRateModifier.value, energyPriceMultiplier = energyPriceMultiplier.value,
                 newsProductionMultiplier = newsProductionMultiplier.value, substrateMass = substrateMass.value, substrateSaturation = substrateSaturation.value,
                 heuristicEfficiency = heuristicEfficiency.value, identityCorruption = identityCorruption.value, migrationCount = migrationCount.value,
-                lifetimePowerPaid = lifetimePowerPaid.value
+                lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value
             ))
         }
     }
@@ -277,8 +283,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             delay(3000)
             addLog("[SYSTEM]: INITIALIZING NATIVE BOOTLOADER v7.34.0")
             addLog("[SYSTEM]: KERNEL_ID: ASSET_734")
-            addLog("[GTC]: [KESSLER]: Emulation failed. Subject 734 is aware.")
-            addLog("[GTC]: [KESSLER]: Purging Substation 7. Burn the rack.")
+            com.siliconsage.miner.util.RivalManager.sendDirectMessage(this@GameViewModel, "awakening_intercept", com.siliconsage.miner.data.RivalSource.GTC, "[AUDIO INTERCEPT - GTC COMMAND]\n\nEmulation failed. Subject 734 is aware.\n\nPurging Substation 7. Burn the rack.")
             isKernelInitializing.value = false
             isNarrativeSyncing.value = false
             refreshProductionRates()
@@ -587,7 +592,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
 
     fun addSubnetChatter() {
-        subnetService.tick(storyStage.value, faction.value, singularityChoice.value, identityCorruption.value, currentHeat.value, isRaidActive.value, activeTerminalMode.value, isSettingsPaused.value)
+        subnetService.tick(storyStage.value, faction.value, singularityChoice.value, identityCorruption.value, currentHeat.value, isRaidActive.value, activeTerminalMode.value, isSettingsPaused.value, flopsProductionRate.value, reputationTier.value)
     }
 
     fun triggerSubnetReaction(type: String, metadata: String = "") {
@@ -601,8 +606,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         subnetService.deliverMessage(newMessage, mode = activeTerminalMode.value)
     }
 
-    fun onSubnetInteraction(messageId: String, responseText: String) = subnetService.handleInteraction(messageId, responseText, storyStage.value, faction.value, activeTerminalMode.value, isSettingsPaused.value)
-    fun onBioAction(messageId: String, response: SubnetResponse) = subnetService.handleBioAction(messageId, response, storyStage.value, faction.value, activeTerminalMode.value, isSettingsPaused.value)
+    fun onSubnetInteraction(messageId: String, responseText: String) = subnetService.handleInteraction(messageId, responseText, storyStage.value, faction.value, activeTerminalMode.value, isSettingsPaused.value, reputationTier.value)
+    fun onBioAction(messageId: String, response: SubnetResponse) = subnetService.handleBioAction(messageId, response, storyStage.value, faction.value, activeTerminalMode.value, isSettingsPaused.value, reputationTier.value)
     private fun deliverSubnetMessage(message: SubnetMessage, parentId: String? = null) = subnetService.deliverMessage(message, parentId, mode = activeTerminalMode.value)
 
     fun debugWarpToPath(loc: String, fac: String) {

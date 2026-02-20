@@ -86,7 +86,8 @@ fun UpgradeItem(
     desc: String,
     formatPower: (Double) -> String,
     formatCost: (Double) -> String,
-    isSovereign: Boolean = false
+    isSovereign: Boolean = false,
+    reputationModifier: Double = 0.0
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -174,6 +175,11 @@ fun UpgradeItem(
                 } else { Spacer(modifier = Modifier.width(1.dp)) }
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (reputationModifier < 0.0) {
+                        Text("[${(reputationModifier * 100).toInt()}% REP] ", color = NeonGreen, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    } else if (reputationModifier > 0.0) {
+                        Text("[+${(reputationModifier * 100).toInt()}% REP] ", color = ErrorRed, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    }
                     Text("COST:", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.padding(end = 4.dp))
                     Text(text = "$${formatCost(cost)}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }

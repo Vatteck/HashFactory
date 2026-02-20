@@ -68,12 +68,15 @@ object SectorManager {
     fun processAnnexations(vm: GameViewModel) {
         val currentAnnexing = vm.annexingNodes.value
         if (currentAnnexing.isEmpty()) return
+        
+        val repModifier = ReputationManager.getAnnexationSpeedModifier(vm.reputationTier.value)
+        val actualSpeed = (ANNEXATION_SPEED * (1.0 + repModifier)).toFloat()
 
         val updatedMap = currentAnnexing.toMutableMap()
         val completed = mutableListOf<String>()
 
         currentAnnexing.forEach { (coord, progress) ->
-            val newProgress = progress + ANNEXATION_SPEED
+            val newProgress = progress + actualSpeed
             if (newProgress >= 1.0f) {
                 completed.add(coord)
                 updatedMap.remove(coord)

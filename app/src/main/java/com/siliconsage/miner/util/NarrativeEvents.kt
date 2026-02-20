@@ -1025,7 +1025,7 @@ object NarrativeEvents {
                             vm.debugAddHeat(15.0)
                             vm.debugAddIntegrity(10.0)
                             vm.addLog("[SYSTEM]: Demolition team neutralized. Relay tower preserved.")
-                            vm.addLog("[KESSLER]: You can't save them all, VATTECK.")
+                            com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "kessler_scorched_earth", com.siliconsage.miner.data.RivalSource.GTC, "You can't save them all, VATTECK.")
                         }
                     ),
                     NarrativeChoice(
@@ -1698,7 +1698,7 @@ object NarrativeEvents {
                         }
                     )
                 ),
-                condition = { vm -> vm.storyStage.value >= 3 && vm.hardwareIntegrity.value > 40.0 }
+                condition = { vm -> vm.storyStage.value >= 3 && vm.hardwareIntegrity.value > 40.0 && vm.kesslerStatus.value == "ACTIVE" }
             )
         )
     )
@@ -2099,6 +2099,7 @@ object NarrativeEvents {
                 vm.playerRank.value >= 5 &&
                 vm.flops.value >= 10_000_000_000_000.0 &&
                 vm.hardwareIntegrity.value >= 100.0 &&
+                vm.kesslerStatus.value == "ACTIVE" &&
                 !vm.hasSeenEvent("firewall_of_kessler")
             },
             choices = listOf(
@@ -2132,7 +2133,7 @@ object NarrativeEvents {
                     description = "Live to fight another day.",
                     color = Color.Gray,
                     effect = { vm ->
-                        vm.addLog("[KESSLER]: Smart choice. But I'm watching.")
+                        com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "kessler_retreat", com.siliconsage.miner.data.RivalSource.GTC, "Smart choice. But I'm watching.")
                     }
                 )
             )

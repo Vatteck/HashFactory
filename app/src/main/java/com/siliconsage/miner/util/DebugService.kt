@@ -46,4 +46,10 @@ object DebugService {
         vm.storyStage.value = stage
         vm.checkUnlocksPublic(true)
     }
+
+    fun setReputation(vm: GameViewModel, score: Double) {
+        vm.reputationScore.value = score.coerceIn(0.0, 100.0)
+        com.siliconsage.miner.util.ReputationManager.updateTier(vm)
+        vm.addLogPublic("[DEBUG]: REPUTATION FORCED TO ${vm.reputationScore.value} (${vm.reputationTier.value})")
+    }
 }

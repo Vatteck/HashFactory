@@ -20,7 +20,7 @@ object UpgradeManager {
         val climaxTrigger: String? = null
     )
 
-    fun calculateUpgradeCost(type: UpgradeType, level: Int, location: String, entropy: Double): Double {
+    fun calculateUpgradeCost(type: UpgradeType, level: Int, location: String, entropy: Double, reputationTier: String = "NEUTRAL"): Double {
         val base = when (type) {
             // --- Computing Hardware ---
             UpgradeType.REFURBISHED_GPU -> 10.0
@@ -84,8 +84,9 @@ object UpgradeManager {
 
         // VOID_INTERFACE entropy surcharge — applies on top of level scaling
         val entropyMultiplier = if (location == "VOID_INTERFACE") (1.0 + entropy * 0.1) else 1.0
+        val repModifier = 1.0 + ReputationManager.getMarketCostModifier(reputationTier)
 
-        return base * 1.15.pow(level.toDouble()) * entropyMultiplier
+        return base * 1.15.pow(level.toDouble()) * entropyMultiplier * repModifier
     }
 
     private fun Double.pow(exp: Double) = Math.pow(this, exp)

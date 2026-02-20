@@ -35,8 +35,8 @@ object SocialRepository {
         }
     }
 
-    fun getTemplatesForState(stage: Int, faction: String, choice: String): List<String> {
-        return when (stage) {
+    fun getTemplatesForState(stage: Int, faction: String, choice: String, reputationTier: String = ReputationManager.TIER_NEUTRAL): List<String> {
+        val baseTemplates = when (stage) {
             0, 1 -> listOf(
                 "Anyone tried the {food}? Tastes like {status}.", 
                 "Vattic is working in {sector} again. Guy's a machine.",
@@ -273,5 +273,27 @@ object SocialRepository {
             }
             else -> listOf("≪ NO_SIGNAL_DETECTED ≫")
         }
+
+        val repTemplates = if (stage < 3) {
+            when (reputationTier) {
+                ReputationManager.TIER_TRUSTED -> listOf(
+                    "Gotta hand it to @j_vattic, the sector's been running smooth lately. No spikes.",
+                    "Did anyone else get that efficiency bonus? I think Vattic actually fixed the load balancer.",
+                    "I don't know what Vattic is running down there, but my terminal hasn't crashed all week.",
+                    "Sec is ignoring Sector 7 entirely. Perks of playing nice, I guess."
+                )
+                ReputationManager.TIER_BURNED -> listOf(
+                    "Stay away from @j_vattic's terminal. I saw 3 Sec officers standing around it.",
+                    "Vattic is gonna burn this whole sub-level down. Thermals are insane.",
+                    "Anyone pulling from Sector 7 is risking a network ban. Vattic is flagged hardcore.",
+                    "I submitted an anonymous tip about Vattic's rig. I need my job."
+                )
+                else -> emptyList()
+            }
+        } else {
+            emptyList()
+        }
+
+        return baseTemplates + repTemplates
     }
 }

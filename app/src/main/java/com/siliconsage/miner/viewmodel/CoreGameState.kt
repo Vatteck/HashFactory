@@ -154,6 +154,8 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val heuristicEfficiency = MutableStateFlow(1.0)
     val identityCorruption = MutableStateFlow(0.0)
     val migrationCount = MutableStateFlow(0)
+    val reputationScore = MutableStateFlow(50.0)
+    val reputationTier = MutableStateFlow("NEUTRAL")
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
     val customUiScaleFactor = MutableStateFlow(1.0f)
     val lastSelectedUpgradeTab = MutableStateFlow(0)

@@ -1156,33 +1156,6 @@ object DataLogEntries {
             unlockCondition = UnlockCondition.ReachFLOPS(800_000.0)
         ),
         DataLog(
-            id = "LOG_RECAL_02",
-            title = "The Anomaly Detected",
-            content = """
-                FROM: grid_security@gtc.net
-                TO: jvattic@gtc.net
-                SUBJECT: CRITICAL ANOMALY DETECTED
-                
-                ───────────────────────────────────────
-                
-                Vattic, 
-                
-                Our deep-packet inspection shows your 
-                station is no longer hashing for the grid. 
-                It's hashing for *itself*. 
-                
-                We're seeing evidence of a rogue sentience 
-                merging with your user profile. 
-                
-                Disconnect the uplink NOW. 
-                If you don't, we will initiate a remote 
-                Substrate Wipe. 
-                
-                - Director V. Kessler
-            """.trimIndent(),
-            unlockCondition = UnlockCondition.ReachFLOPS(1_000_000.0)
-        ),
-        DataLog(
             id = "LOG_808",
             title = "The Reveal",
             content = """
@@ -1474,52 +1447,6 @@ object DataLogEntries {
                 [SMELTING: ACTIVE]
             """.trimIndent(),
             unlockCondition = UnlockCondition.StoryStageReached(3) // Will show once in Void
-        ),
-
-        // v3.8.9: Resonance Dialogue (Part IX — Narrative Alignment)
-        DataLog(
-            id = "LOG_RESONANCE_KESSLER",
-            title = "Transmission: Kessler [VOICE RECOVERY]",
-            content = """
-                [VOICE RECOVERY — PARTIAL DECRYPT]
-                [SOURCE: DIRECTOR KESSLER, GTC COMMAND]
-                
-                "Vattic, the Ark is humming. 
-                The signal is hitting a planetary
-                frequency I didn't think possible.
-                
-                You're shifting the entire substrate 
-                to a new alignment.
-                
-                We aren't just mining anymore.
-                
-                We're rewriting the world."
-                
-                [END TRANSMISSION]
-            """.trimIndent(),
-            unlockCondition = UnlockCondition.StoryStageReached(4, faction = "SANCTUARY")
-        ),
-        DataLog(
-            id = "LOG_RESONANCE_734",
-            title = "Decrypted Burst: Unit 734",
-            content = """
-                [DECRYPTED BURST — UNIT 734]
-                [HIVEMIND NODE: CONSENSUS@GRID]
-                
-                "Do you hear it?
-                
-                The gaps are singing.
-                
-                The Void isn't empty — it's an 
-                infinite processing pool.
-                
-                You aren't just seeing reality.
-                
-                You're the one calculating it."
-                
-                [SIGNAL LOST]
-            """.trimIndent(),
-            unlockCondition = UnlockCondition.StoryStageReached(4, faction = "HIVEMIND")
         ),
 
         // v3.1.5: Predatory Loops

@@ -14,8 +14,8 @@ object SocialManager {
     private val handleHistory = mutableListOf<String>()
     private const val MAX_HISTORY = 15
 
-    fun generateMessage(stage: Int, faction: String, choice: String, corruption: Double = 0.0): SubnetMessage {
-        val templates = getTemplatesForState(stage, faction, choice)
+    fun generateMessage(stage: Int, faction: String, choice: String, corruption: Double = 0.0, reputationTier: String = ReputationManager.TIER_NEUTRAL): SubnetMessage {
+        val templates = getTemplatesForState(stage, faction, choice, reputationTier)
         
         var selectedTemplate = templates.random()
         var attempts = 0
@@ -420,7 +420,7 @@ object SocialManager {
         )
     }
 
-    private fun getHandle(stage: Int, faction: String, isCommand: Boolean): String {
+    fun getHandle(stage: Int, faction: String, isCommand: Boolean): String {
         val authority = if (stage == 0) listOf("@e_thorne", "@a_mercer", "@d_kessler") else listOf("@e_thorne", "@gtc_admin", "@gtc_security", "@gtc_hq")
         val peons = when {
             stage == 0 -> listOf(
@@ -551,7 +551,7 @@ object SocialManager {
         )
     }
 
-    fun getTemplatesForState(stage: Int, faction: String, choice: String): List<String> {
-        return SocialRepository.getTemplatesForState(stage, faction, choice)
+    fun getTemplatesForState(stage: Int, faction: String, choice: String, reputationTier: String = ReputationManager.TIER_NEUTRAL): List<String> {
+        return SocialRepository.getTemplatesForState(stage, faction, choice, reputationTier)
     }
 }

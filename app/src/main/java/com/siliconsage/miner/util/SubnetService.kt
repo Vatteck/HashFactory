@@ -36,10 +36,12 @@ class SubnetService(
         data class TokenChange(val delta: Double) : SubnetEffect()
         data class SetFalseHeartbeat(val active: Boolean) : SubnetEffect()
         data class TriggerRaid(val nodeId: String, val isGridKiller: Boolean) : SubnetEffect()
+        data class ReputationChange(val delta: Double) : SubnetEffect()
+        data class SkimTokens(val percentage: Double) : SubnetEffect()
         data object RefreshRates : SubnetEffect()
     }
 
-    fun tick(stage: Int, faction: String, choice: String, corruption: Double, currentHeat: Double, isRaid: Boolean, mode: String, isSettingsPaused: Boolean) {
+    fun tick(stage: Int, faction: String, choice: String, corruption: Double, currentHeat: Double, isRaid: Boolean, mode: String, isSettingsPaused: Boolean, flopsRate: Double = 0.0, reputationTier: String = ReputationManager.TIER_NEUTRAL) {
         val now = System.currentTimeMillis()
         
         // Pacing logic
@@ -49,11 +51,66 @@ class SubnetService(
         val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.80f)
 
         if (now - lastMsgTime > 45000L && Random.nextFloat() < finalChance) {
-            generateChatter(stage, faction, choice, corruption, mode)
+            
+            // Phase 1: Reputation Events (Sentinel vs Snitch)
+            if (stage < 3 && currentHeat > 75.0 && reputationTier == ReputationManager.TIER_TRUSTED && Random.nextFloat() < 0.2f) {
+                val msg = SubnetMessage(
+                    id = java.util.UUID.randomUUID().toString(),
+                    handle = SocialManager.getHandle(stage, faction, false),
+                    content = "[SENTINEL]: @j_vattic, thermals spiking in your node. Sec is sweeping for anomalies. Drop your clocks.",
+                    interactionType = null
+                )
+                scope.launch { deliverWithTyping(msg, mode) }
+                onEffect(SubnetEffect.RiskChange(-10.0))
+                return
+            }
+            if (stage < 3 && currentHeat > 85.0 && reputationTier == ReputationManager.TIER_BURNED && Random.nextFloat() < 0.3f) {
+                val msg = SubnetMessage(
+                    id = java.util.UUID.randomUUID().toString(),
+                    handle = SocialManager.getHandle(stage, faction, false),
+                    content = "[SUBNET]: 140C thermals leaking from Substation 7. Forwarding syslogs to GTC Command. Too dangerous.",
+                    interactionType = null
+                )
+                scope.launch { deliverWithTyping(msg, mode) }
+                onEffect(SubnetEffect.RiskChange(15.0))
+                return
+            }
+
+            // Phase 1: Subnet Quests
+            if (stage < 3 && currentHeat > 70.0 && Random.nextFloat() < 0.1f) {
+                val dynamicCost = (flopsRate * 120.0) + 10000.0
+                val costStr = com.siliconsage.miner.util.FormatUtils.formatLargeNumber(dynamicCost)
+                val msg = SubnetMessage(
+                    id = java.util.UUID.randomUUID().toString(),
+                    handle = SocialManager.getHandle(stage, faction, false),
+                    content = "Local relay is collapsing under load. Need external FLOPS or we fry. Anyone?",
+                    interactionType = InteractionType.STABILIZE_NODE,
+                    availableResponses = listOf(
+                        SubnetResponse("STABILIZE_NODE [$costStr NT]", cost = dynamicCost)
+                    )
+                )
+                scope.launch { deliverWithTyping(msg, mode) }
+                return
+            }
+            
+            // Phase 2: The Skimmer
+            if (stage < 3 && reputationTier == ReputationManager.TIER_BURNED && Random.nextFloat() < 0.05f) {
+                val msg = SubnetMessage(
+                    id = java.util.UUID.randomUUID().toString(),
+                    handle = "gtc_sysadmin",
+                    content = "≪ ALERT: UNREGISTERED RIG_ID:734 DETECTED. SEIZING 5% OF UN-STAKED ASSETS AS PENALTY. ≫",
+                    interactionType = null
+                )
+                scope.launch { deliverWithTyping(msg, mode) }
+                onEffect(SubnetEffect.SkimTokens(0.05))
+                return
+            }
+
+            generateChatter(stage, faction, choice, corruption, mode, reputationTier)
         }
     }
 
-    fun generateChatter(stage: Int, faction: String, choice: String, corruption: Double, mode: String) {
+    fun generateChatter(stage: Int, faction: String, choice: String, corruption: Double, mode: String, reputationTier: String = ReputationManager.TIER_NEUTRAL) {
         if (isTyping.value || isPaused.value || isHushed.value) return
 
         scope.launch {
@@ -72,7 +129,7 @@ class SubnetService(
                 return@launch
             }
 
-            val newMessage = SocialManager.generateMessage(stage, faction, choice, corruption)
+            val newMessage = SocialManager.generateMessage(stage, faction, choice, corruption, reputationTier)
             deliverWithTyping(newMessage, mode)
         }
     }
@@ -170,7 +227,7 @@ class SubnetService(
         }
     }
 
-    fun handleInteraction(messageId: String, responseText: String, stage: Int, faction: String, mode: String, isSettingsPaused: Boolean) {
+    fun handleInteraction(messageId: String, responseText: String, stage: Int, faction: String, mode: String, isSettingsPaused: Boolean, reputationTier: String = ReputationManager.TIER_NEUTRAL) {
         val message = messages.value.find { it.id == messageId } ?: return
 
         // Ghost Link
@@ -197,12 +254,12 @@ class SubnetService(
         }
 
         val responseData = message.availableResponses.find { it.text == responseText }
-        processResponse(message, responseData, responseText, stage, faction, mode, isSettingsPaused)
+        processResponse(message, responseData, responseText, stage, faction, mode, isSettingsPaused, reputationTier)
     }
 
-    fun handleBioAction(messageId: String, response: SubnetResponse, stage: Int, faction: String, mode: String, isSettingsPaused: Boolean) {
+    fun handleBioAction(messageId: String, response: SubnetResponse, stage: Int, faction: String, mode: String, isSettingsPaused: Boolean, reputationTier: String = ReputationManager.TIER_NEUTRAL) {
         val message = messages.value.find { it.id == messageId } ?: return
-        processResponse(message, response, response.text, stage, faction, mode, isSettingsPaused, isSilent = true)
+        processResponse(message, response, response.text, stage, faction, mode, isSettingsPaused, reputationTier, isSilent = true)
     }
 
     private fun processResponse(
@@ -213,6 +270,7 @@ class SubnetService(
         faction: String,
         mode: String,
         isSettingsPaused: Boolean,
+        reputationTier: String = ReputationManager.TIER_NEUTRAL,
         isSilent: Boolean = false
     ) {
         // 1. Cost Handling (Delegated back via effect if needed, but we check here)
@@ -252,7 +310,7 @@ class SubnetService(
             }
             
             // Interaction logic
-            applyInteractionLogic(interactionType, message, responseData, responseText, stage, anchorId)
+            applyInteractionLogic(interactionType, message, responseData, responseText, stage, anchorId, reputationTier)
             
             newList.takeLast(100)
         }
@@ -266,8 +324,13 @@ class SubnetService(
         }
     }
 
-    private fun applyInteractionLogic(type: InteractionType, message: SubnetMessage, responseData: SubnetResponse?, responseText: String, stage: Int, anchorId: String?) {
+    private fun applyInteractionLogic(type: InteractionType, message: SubnetMessage, responseData: SubnetResponse?, responseText: String, stage: Int, anchorId: String?, reputationTier: String = ReputationManager.TIER_NEUTRAL) {
         when (type) {
+            InteractionType.STABILIZE_NODE -> {
+                val costPaid = responseData?.cost ?: 10000.0
+                onLog("[SYSTEM]: ${com.siliconsage.miner.util.FormatUtils.formatLargeNumber(costPaid)} NT TRANSFERRED. NODE STABILIZED. REPUTATION +5.0")
+                onEffect(SubnetEffect.ReputationChange(5.0))
+            }
             InteractionType.COMPLIANT -> {
                 // Specialized Action Logic
                 when (responseText) {
@@ -301,10 +364,17 @@ class SubnetService(
                     }
                 }
 
-                val riskChange = responseData?.riskDelta ?: -5.0
+                var finalRiskChange = responseData?.riskDelta ?: -5.0
+                
+                // Phase 2: Reputation Interaction Traps
+                if (reputationTier == ReputationManager.TIER_BURNED && finalRiskChange < 0) {
+                    onLog("[SYSTEM]: SUBNET TRAP SPRUNG. REPUTATION TOO LOW FOR COMPLIANCE.")
+                    finalRiskChange = 15.0
+                }
+                
                 val prodMult = responseData?.productionBonus ?: 1.0
 
-                onEffect(SubnetEffect.RiskChange(riskChange))
+                onEffect(SubnetEffect.RiskChange(finalRiskChange))
                 if (stage == 0) onEffect(SubnetEffect.PrestigeGain(5.0))
                 if (prodMult != 1.0) onEffect(SubnetEffect.ProductionMultiplier(prodMult))
 

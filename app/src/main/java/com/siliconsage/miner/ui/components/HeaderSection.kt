@@ -71,6 +71,7 @@ fun HeaderSection(
     val currentLocation by viewModel.currentLocation.collectAsState()
     val singularityChoice by viewModel.singularityChoice.collectAsState()
     val corruption by viewModel.identityCorruption.collectAsState() // v3.5.53: Corruption-reactive identity
+    val reputationTier by viewModel.reputationTier.collectAsState()
 
     // v3.2.5: Zero-recomposition pattern - Isolate volatile stats into States
     val currentHeatState = viewModel.currentHeat.collectAsState()
@@ -267,8 +268,9 @@ fun HeaderSection(
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.width(8.dp))
+                    val repLabel = " // [REP: $reputationTier]"
                     Text(
-                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}".uppercase(), 
+                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}${repLabel}".uppercase(), 
                         color = Color.White.copy(alpha = 0.5f * droopAlpha), 
                         fontSize = 8.sp, 
                         fontWeight = FontWeight.Bold, 

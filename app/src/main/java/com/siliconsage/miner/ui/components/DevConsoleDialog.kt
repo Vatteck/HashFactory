@@ -419,9 +419,29 @@ fun KernelStat(label: String, value: String) {
 fun Phase14Tab(viewModel: GameViewModel) {
     val entropy by viewModel.entropyLevel.collectAsState()
     val corruption by viewModel.identityCorruption.collectAsState()
+    val repScore by viewModel.reputationScore.collectAsState()
+    val repTier by viewModel.reputationTier.collectAsState()
     
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Text("PHASE 14 PREDATION TESTING", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text("REPUTATION", color = Color.Cyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        KernelStat("SCORE", String.format("%.1f", repScore))
+        KernelStat("TIER", repTier)
+        
+        Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            DevButton(modifier = Modifier.weight(1f), text = "TRUSTED", color = NeonGreen) {
+                com.siliconsage.miner.util.DebugService.setReputation(viewModel, 90.0)
+            }
+            DevButton(modifier = Modifier.weight(1f), text = "FLAGGED", color = Color.Yellow) {
+                com.siliconsage.miner.util.DebugService.setReputation(viewModel, 15.0)
+            }
+            DevButton(modifier = Modifier.weight(1f), text = "BURNED", color = ErrorRed) {
+                com.siliconsage.miner.util.DebugService.setReputation(viewModel, 5.0)
+            }
+        }
+        
         Spacer(modifier = Modifier.height(16.dp))
         
         DevActionRow("VOID_RAID") {
