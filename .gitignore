@@ -15,3 +15,4 @@ local.properties
 
 # Exception: Release APKs for GitHub Actions
 !releases/*.apk
+CANON.md
