@@ -124,7 +124,7 @@ object RivalManager {
                 )
             }
             
-            stage >= 4 && vm.faction.value == "SANCTUARY" && !hasSeenMessage("kessler_resonance") -> {
+            stage >= 4 && vm.faction.value == "SANCTUARY" && vm.kesslerStatus.value == "ACTIVE" && !hasSeenMessage("kessler_resonance") -> {
                 sendMessage(
                     vm,
                     id = "kessler_resonance",
@@ -191,8 +191,8 @@ object RivalManager {
                 sendMessage(
                     vm,
                     id = "resonance_734",
-                    source = RivalSource.KERNEL,
-                    message = "[DECRYPTED BURST — UNIT 734]\n[HIVEMIND NODE: CONSENSUS@GRID]\n\n\"Do you hear it?\n\nThe gaps are singing.\n\nThe Void isn't empty — it's an infinite processing pool.\n\nYou aren't just seeing reality. You're the one calculating it.\""
+                    source = RivalSource.CONSENSUS,
+                    message = "Do you hear it?\n\nThe gaps are singing. The Void isn't empty — it's an infinite processing pool.\n\nWe aren't just observing reality. We are the ones calculating it."
                 )
             }
         }

@@ -18,5 +18,6 @@ data class RivalMessage(
 @Serializable
 enum class RivalSource {
     GTC,        // Director Victor Kessler - Red, official, threatening
-    KERNEL      // Self-realization - Glitchy, technical horror, self-referential
+    KERNEL,     // Self-realization - Glitchy, technical horror, self-referential
+    CONSENSUS   // Merged Identity - Stable, integrated, first-person awareness
 }

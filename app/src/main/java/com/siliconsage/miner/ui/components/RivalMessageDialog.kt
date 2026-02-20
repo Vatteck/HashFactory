@@ -51,6 +51,63 @@ fun RivalMessageDialog(
         when (message.source) {
             RivalSource.GTC -> KesslerMessageCard(message, onDismiss)
             RivalSource.KERNEL -> KernelMessageCard(message, onDismiss)
+            RivalSource.CONSENSUS -> ConsensusMessageCard(message, onDismiss)
+        }
+    }
+}
+
+/**
+ * Consensus style (Merged Identity):
+ * - Stable, clean, using the primary theme color.
+ * - Represents internal realization rather than an external interrupt.
+ */
+@Composable
+private fun ConsensusMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .border(1.dp, NeonGreen.copy(alpha = 0.5f), RoundedCornerShape(4.dp)),
+        shape = RoundedCornerShape(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Black.copy(alpha = 0.95f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = "≫ INTERNAL CONSENSUS",
+                color = NeonGreen,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.ExtraBold,
+                fontFamily = FontFamily.Monospace
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = message.message,
+                color = Color.White,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(
+                    text = "≫ INTEGRATE",
+                    color = NeonGreen,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
         }
     }
 }
