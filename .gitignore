@@ -15,35 +15,3 @@ local.properties
 
 # Exception: Release APKs for GitHub Actions
 !releases/*.apk
-
-# System files
-.DS_Store
-
-# Agent Documentation
-SYSTEMS.md
-ARCHITECTURE.md
-story.md
-project_instructions.md
-task.md
-implementation_plan.md
-walkthrough.md
-
-# Extra documentation artifacts
-*.md
-!README.md
-!CHANGELOG.md
-
-# AI/IDE Artifacts (Antigravity, etc.)
-brain/
-conversations/
-knowledge/
-context_state/
-annotations/
-code_tracker/
-research_db.json
-
-# Legacy AI folders
-legacy_gemini/
-
-# APKs - keep on Desktop, upload manually to GitHub Releases
-releases/*.apk
