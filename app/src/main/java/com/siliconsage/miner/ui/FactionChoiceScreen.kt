@@ -38,7 +38,6 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
                 progressLeft = (elapsed / 2000f).coerceAtMost(1.0f) // 2 seconds to confirm
                 if (progressLeft >= 1.0f) {
                     viewModel.confirmFaction("HIVEMIND")
-                    viewModel.initiateDissolutionSequence()
                 }
                 delay(16) // ~60 FPS
             }
@@ -55,7 +54,6 @@ fun FactionChoiceScreen(viewModel: GameViewModel) {
                 progressRight = (elapsed / 2000f).coerceAtMost(1.0f) // 2 seconds to confirm
                 if (progressRight >= 1.0f) {
                     viewModel.confirmFaction("SANCTUARY")
-                    viewModel.initiateLaunchSequence()
                 }
                 delay(16)
             }

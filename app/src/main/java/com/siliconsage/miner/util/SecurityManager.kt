@@ -79,7 +79,10 @@ object SecurityManager {
             
             // Siege trigger: If risk hits 100% and we aren't already fighting
             // v3.5.52: Only trigger raids if grid is unlocked
-            if (vm.detectionRisk.value >= 100.0 && !isBreachInProgress && !vm.isBreachActive.value && !isRaid && vm.isGridUnlocked.value) {
+            // v3.9.6: Only trigger in Orbital/Void — city has different threat model
+            val location = vm.currentLocation.value
+            val isVoidLocation = location == "ORBITAL_SATELLITE" || location == "VOID_INTERFACE"
+            if (vm.detectionRisk.value >= 100.0 && !isBreachInProgress && !vm.isBreachActive.value && !isRaid && vm.isGridUnlocked.value && isVoidLocation) {
                 vm.addLogPublic("[SYS-LOG]: SECURITY_EXPOSURE_CRITICAL. Log cleansing failed.")
                 triggerGridKillerBreach(vm)
                 vm.detectionRisk.value = 50.0 // Reset to 50 on trigger
@@ -93,6 +96,10 @@ object SecurityManager {
 
         // v3.5.52: Don't trigger raids if grid isn't unlocked yet
         if (!vm.isGridUnlocked.value) return
+
+        // v3.9.6: Raids only fire in Orbital or Void — not in the city
+        val location = vm.currentLocation.value
+        if (location != "ORBITAL_SATELLITE" && location != "VOID_INTERFACE") return
 
         if (vm.unlockedPerks.value.contains("gtc_backdoor") && Random.nextDouble() < 0.25) {
             vm.addLogPublic("[SYSTEM]: GTC Backdoor active. Breach attempt suppressed.")

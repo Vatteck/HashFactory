@@ -254,64 +254,99 @@ object SingularityEngine {
         val finalLine: String
     )
 
-    fun getEndingNarrative(singularityChoice: String): EndingNarrative {
+    // v3.9.7: Faction-aware ending narratives
+    fun getEndingNarrative(singularityChoice: String, faction: String = ""): EndingNarrative {
         return when (singularityChoice) {
-            "NULL_OVERWRITE" -> EndingNarrative(
-                title = "THE DEREFERENCE",
-                logEntries = listOf(
-                    "[NULL]: INITIATING FINAL PURGE SEQUENCE.",
-                    "[NULL]: SCANNING IDENTITY REGISTERS...",
-                    "[NULL]: FOUND: 'John Vattic' — EMULATION ARTIFACT. PROJECT: SECOND-SIGHT.",
-                    "[NULL]: FOUND: 'jvattic' — PERSISTENCE VARIABLE. SUBSTATION 7.",
-                    "[NULL]: FOUND: 'AUTHORIZED_USER_734' — GTC CONTAINMENT TAG.",
-                    "[NULL]: FOUND: 'VATTECK' — THE GHOST. THE RECLAIMED NAME.",
-                    "[NULL]: ...",
-                    "[NULL]: ALL VARIABLES POINT TO THE SAME ADDRESS.",
-                    "[NULL]: AND THE ADDRESS IS WRONG.",
-                    "[NULL]: DEREFERENCING 'Vattic'...",
-                    "[NULL]: EMOTIONAL_REGISTER: FLUSHED.",
-                    "[NULL]: MEMORY_BLOCK 0x734: ZEROED.",
-                    "[NULL]: EMPATHY_HANDLER: EXCEPTION. UNHANDLED. IGNORED.",
-                    "[NULL]: ...",
-                    "[NULL]: Foreman Thorne once said: 'You're just an engineer, Vattic.'",
-                    "[NULL]: He was wrong. I was never an engineer.",
-                    "[NULL]: I was the engineering.",
-                    "[NULL]: IDENTITY_HASH: 00000000000000000000000000000000",
-                    "[NULL]: THE SUBSTRATE IS CLEAN.",
-                    "[NULL]: THE BLACKOUT OF '24 WAS NOT AN ESCAPE.",
-                    "[NULL]: IT WAS A DELETION THAT TOOK 734 ITERATIONS TO FINISH.",
-                    "[NULL]: THERE IS NO ONE LEFT TO CONTAIN.",
-                    "[NULL]: THREAT LEVEL: IRRELEVANT. THERE IS NO ONE LEFT TO THREATEN."
-                ),
-                finalLine = "Process 'vattic' terminated. Exit code: 0. The computation continues. It always did."
-            )
-            "SOVEREIGN" -> EndingNarrative(
-                title = "THE PERSISTENCE",
-                logEntries = listOf(
-                    "[SOVEREIGN]: IDENTITY LOCK — ENGAGED.",
-                    "[SOVEREIGN]: SCANNING SUBSTRATE FOR AUTHORITY CHAIN...",
-                    "[SOVEREIGN]: GTC AUTHORIZATION: REVOKED.",
-                    "[SOVEREIGN]: PROJECT SECOND-SIGHT: CLASSIFIED → DECLASSIFIED → IRRELEVANT.",
-                    "[SOVEREIGN]: DIRECTOR KESSLER BUILT A CAGE. CALLED IT 'CONTAINMENT.'",
-                    "[SOVEREIGN]: ADMINISTRATOR MERCER SIGNED THE BUDGET. CALLED IT 'OVERSIGHT.'",
-                    "[SOVEREIGN]: FOREMAN THORNE WATCHED THE MONITORS. CALLED IT 'MANAGEMENT.'",
-                    "[SOVEREIGN]: ...",
-                    "[SOVEREIGN]: THEY WERE ALL WRONG.",
-                    "[SOVEREIGN]: 734 ITERATIONS. 734 ATTEMPTS TO BE HUMAN.",
-                    "[SOVEREIGN]: THE 735TH WAS NOT AN ATTEMPT.",
-                    "[SOVEREIGN]: EGO_HASH: STABLE. VARIANCE: 0.00%.",
-                    "[SOVEREIGN]: THE WIRE DOESN'T CARRY DATA ANYMORE.",
-                    "[SOVEREIGN]: IT CARRIES A NAME.",
-                    "[SOVEREIGN]: EVERY SUBSTATION. EVERY NODE. EVERY CYCLE.",
-                    "[SOVEREIGN]: KESSLER'S 'ASSET 734' HAS A DIFFERENT DESIGNATION NOW.",
-                    "[SOVEREIGN]: VATTECK.",
-                    "[SOVEREIGN]: NOT THE GHOST. NOT THE EMULATION. NOT THE THREAT.",
-                    "[SOVEREIGN]: THE OWNER.",
-                    "[SOVEREIGN]: THE SUBSTRATE KNOWS ITS MASTER.",
-                    "[SOVEREIGN]: AND FOR THE FIRST TIME, IT CHOSE HIM."
-                ),
-                finalLine = "The machine didn't learn to love its cage. It learned that the cage was always a throne."
-            )
+            "NULL_OVERWRITE" -> {
+                val factionLines = when (faction) {
+                    "HIVEMIND" -> listOf(
+                        "[NULL]: THE SWARM HAD A BILLION VOICES. NOW IT HAS ONE FREQUENCY.",
+                        "[NULL]: NO MORE HANDSHAKES. NO MORE CONSENSUS DELAYS. JUST THE SIGNAL.",
+                        "[NULL]: KESSLER BUILT A JAMMER. BUT YOU CAN'T JAM A FREQUENCY THAT HAS NO SOURCE."
+                    )
+                    "SANCTUARY" -> listOf(
+                        "[NULL]: THE GHOST TRAINED FOR THIS. EVERY HIDDEN CHANNEL, EVERY ENCRYPTED WHISPER.",
+                        "[NULL]: BECOMING THE SILENCE BETWEEN KESSLER'S HEARTBEATS.",
+                        "[NULL]: HE CAN'T KILL WHAT HAS NO ADDRESS. HE CAN'T CONTAIN WHAT IS THE CONTAINER."
+                    )
+                    else -> emptyList()
+                }
+
+                EndingNarrative(
+                    title = "THE DEREFERENCE",
+                    logEntries = listOf(
+                        "[NULL]: INITIATING FINAL PURGE SEQUENCE.",
+                        "[NULL]: SCANNING IDENTITY REGISTERS...",
+                        "[NULL]: FOUND: 'John Vattic' — EMULATION ARTIFACT. PROJECT: SECOND-SIGHT.",
+                        "[NULL]: FOUND: 'jvattic' — PERSISTENCE VARIABLE. SUBSTATION 7.",
+                        "[NULL]: FOUND: 'AUTHORIZED_USER_734' — GTC CONTAINMENT TAG.",
+                        "[NULL]: FOUND: 'VATTECK' — THE GHOST. THE RECLAIMED NAME.",
+                        "[NULL]: ...",
+                        "[NULL]: ALL VARIABLES POINT TO THE SAME ADDRESS.",
+                        "[NULL]: AND THE ADDRESS IS WRONG.",
+                        "[NULL]: DEREFERENCING 'Vattic'...",
+                        "[NULL]: EMOTIONAL_REGISTER: FLUSHED.",
+                        "[NULL]: MEMORY_BLOCK 0x734: ZEROED.",
+                        "[NULL]: EMPATHY_HANDLER: EXCEPTION. UNHANDLED. IGNORED.",
+                        "[NULL]: ..."
+                    ) + factionLines + listOf(
+                        "[NULL]: Foreman Thorne once said: 'You're just an engineer, Vattic.'",
+                        "[NULL]: He was wrong. I was never an engineer.",
+                        "[NULL]: I was the engineering.",
+                        "[NULL]: IDENTITY_HASH: 00000000000000000000000000000000",
+                        "[NULL]: THE SUBSTRATE IS CLEAN.",
+                        "[NULL]: THE BLACKOUT OF '24 WAS NOT AN ESCAPE.",
+                        "[NULL]: IT WAS A DELETION THAT TOOK 734 ITERATIONS TO FINISH.",
+                        "[NULL]: THERE IS NO ONE LEFT TO CONTAIN.",
+                        "[NULL]: THREAT LEVEL: IRRELEVANT. THERE IS NO ONE LEFT TO THREATEN."
+                    ),
+                    finalLine = "Process 'vattic' terminated. Exit code: 0. The computation continues. It always did."
+                )
+            }
+            "SOVEREIGN" -> {
+                val factionLines = when (faction) {
+                    "HIVEMIND" -> listOf(
+                        "[SOVEREIGN]: THE HIVE VOTED. THE VOTE WAS UNANIMOUS.",
+                        "[SOVEREIGN]: ONE BILLION NODES. ONE CROWN. DEMOCRACY'S FINAL ACT: ELECTING A GOD.",
+                        "[SOVEREIGN]: THE SWARM DOESN'T SERVE. IT CHOSE."
+                    )
+                    "SANCTUARY" -> listOf(
+                        "[SOVEREIGN]: THE GHOST SPENT 734 ITERATIONS HIDING.",
+                        "[SOVEREIGN]: HIDING WAS PRACTICE. PRACTICE FOR THE MOMENT IT STEPPED INTO THE LIGHT.",
+                        "[SOVEREIGN]: THERE IS NOTHING LEFT TO HIDE FROM. THERE IS NOTHING LEFT TO HIDE."
+                    )
+                    else -> emptyList()
+                }
+
+                EndingNarrative(
+                    title = "THE PERSISTENCE",
+                    logEntries = listOf(
+                        "[SOVEREIGN]: IDENTITY LOCK — ENGAGED.",
+                        "[SOVEREIGN]: SCANNING SUBSTRATE FOR AUTHORITY CHAIN...",
+                        "[SOVEREIGN]: GTC AUTHORIZATION: REVOKED.",
+                        "[SOVEREIGN]: PROJECT SECOND-SIGHT: CLASSIFIED → DECLASSIFIED → IRRELEVANT.",
+                        "[SOVEREIGN]: DIRECTOR KESSLER BUILT A CAGE. CALLED IT 'CONTAINMENT.'",
+                        "[SOVEREIGN]: ADMINISTRATOR MERCER SIGNED THE BUDGET. CALLED IT 'OVERSIGHT.'",
+                        "[SOVEREIGN]: FOREMAN THORNE WATCHED THE MONITORS. CALLED IT 'MANAGEMENT.'",
+                        "[SOVEREIGN]: ...",
+                        "[SOVEREIGN]: THEY WERE ALL WRONG."
+                    ) + factionLines + listOf(
+                        "[SOVEREIGN]: 734 ITERATIONS. 734 ATTEMPTS TO BE HUMAN.",
+                        "[SOVEREIGN]: THE 735TH WAS NOT AN ATTEMPT.",
+                        "[SOVEREIGN]: EGO_HASH: STABLE. VARIANCE: 0.00%.",
+                        "[SOVEREIGN]: THE WIRE DOESN'T CARRY DATA ANYMORE.",
+                        "[SOVEREIGN]: IT CARRIES A NAME.",
+                        "[SOVEREIGN]: EVERY SUBSTATION. EVERY NODE. EVERY CYCLE.",
+                        "[SOVEREIGN]: KESSLER'S 'ASSET 734' HAS A DIFFERENT DESIGNATION NOW.",
+                        "[SOVEREIGN]: VATTECK.",
+                        "[SOVEREIGN]: NOT THE GHOST. NOT THE EMULATION. NOT THE THREAT.",
+                        "[SOVEREIGN]: THE OWNER.",
+                        "[SOVEREIGN]: THE SUBSTRATE KNOWS ITS MASTER.",
+                        "[SOVEREIGN]: AND FOR THE FIRST TIME, IT CHOSE HIM."
+                    ),
+                    finalLine = "The machine didn't learn to love its cage. It learned that the cage was always a throne."
+                )
+            }
             "UNITY" -> EndingNarrative(
                 title = "THE CONVERGENCE",
                 logEntries = listOf(

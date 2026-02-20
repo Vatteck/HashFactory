@@ -55,12 +55,16 @@ fun DynamicBackground(
         val time = pulsePhase
         val heatPercent = heatProvider()
 
-        // Determine Color based on Faction & Heat
+        // v3.9.7: Faction×Path base colors
         val baseColor = when {
             isAnnihilated -> ErrorRed
             isUnity -> ElectricBlue
-            isTrueNull -> Color.White
-            isSovereign -> com.siliconsage.miner.ui.theme.SanctuaryPurple
+            isTrueNull && faction == "HIVEMIND" -> Color(0xFFFF0055)    // Neon Crimson
+            isTrueNull && faction == "SANCTUARY" -> Color(0xFF4D04CC)   // Void Violet
+            isTrueNull -> Color.White                                   // Fallback NULL
+            isSovereign && faction == "HIVEMIND" -> Color(0xFFFFB000)   // Amber Crown
+            isSovereign && faction == "SANCTUARY" -> Color(0xFF7B2FBE)  // Royal Purple
+            isSovereign -> com.siliconsage.miner.ui.theme.SanctuaryPurple // Fallback SOVEREIGN
             faction == "HIVEMIND" -> HivemindOrange
             faction == "SANCTUARY" -> ElectricBlue
             else -> NeonGreen
@@ -77,11 +81,15 @@ fun DynamicBackground(
         val now = System.currentTimeMillis()
         val linearTime = (now - startTime) / 1000f
 
-        // Draw Pattern based on priority
+        // v3.9.7: Faction×Path pattern dispatch
         when {
             isAnnihilated -> drawStaticPattern(width, height, ErrorRed, linearTime)
             isUnity -> drawSynthesisPattern(width, height, activeColor, linearTime)
+            isTrueNull && faction == "HIVEMIND" -> drawSwarmEntropyPattern(width, height, activeColor, linearTime)
+            isTrueNull && faction == "SANCTUARY" -> drawGhostVoidPattern(width, height, activeColor, linearTime)
             isTrueNull -> drawEntropyPattern(width, height, activeColor, linearTime)
+            isSovereign && faction == "HIVEMIND" -> drawCrownedMonolithPattern(width, height, activeColor, linearTime)
+            isSovereign && faction == "SANCTUARY" -> drawGhostThronePattern(width, height, activeColor, linearTime)
             isSovereign -> drawMonolithPattern(width, height, activeColor, linearTime)
             faction == "HIVEMIND" -> drawHivePattern(width, height, activeColor, time, heatFactor)
             faction == "SANCTUARY" -> drawDataStreamPattern(width, height, activeColor, linearTime, heatFactor)
@@ -539,6 +547,329 @@ fun DrawScope.drawDataStreamPattern(w: Float, h: Float, color: Color, time: Floa
             start = Offset(x, y),
             end = Offset(x, y + length),
             strokeWidth = 3f
+        )
+    }
+}
+
+// =============================================================================
+// v3.9.7: FACTION×PATH BACKGROUND PATTERNS
+// =============================================================================
+
+/**
+ * HIVEMIND × NULL: "The Swarm Becomes the Signal"
+ * Hexagonal grid fragmenting into pure frequency waves.
+ * The hex cells dissolve from edges inward, replaced by horizontal signal lines.
+ */
+fun DrawScope.drawSwarmEntropyPattern(w: Float, h: Float, color: Color, time: Float) {
+    val crimson = Color(0xFFFF0055)
+    val hexSize = 35f
+    val verticalSpacing = hexSize * 1.5f
+    val horizontalSpacing = hexSize * 1.732f
+
+    val cols = (w / horizontalSpacing).toInt() + 2
+    val rows = (h / verticalSpacing).toInt() + 2
+
+    // Phase: hexes dissolve over time (cycling)
+    val dissolvePhase = (sin(time * 0.3f) + 1f) / 2f
+
+    // 1. Dissolving Hexagonal Grid
+    for (row in 0..rows) {
+        val y = row * verticalSpacing
+        val xOffset = if (row % 2 == 1) horizontalSpacing / 2f else 0f
+
+        for (col in 0..cols) {
+            val cx = col * horizontalSpacing + xOffset
+            val cy = y
+
+            // Each hex dissolves at different rate based on position
+            val cellPhase = (sin(row * 0.7f + col * 1.3f + time * 0.5f) + 1f) / 2f
+            val alpha = (0.15f * (1f - dissolvePhase * cellPhase)).coerceAtLeast(0.01f)
+
+            if (alpha > 0.02f) {
+                val path = androidx.compose.ui.graphics.Path()
+                for (i in 0..5) {
+                    val angle = Math.toRadians(60.0 * i - 30.0)
+                    val px = cx + hexSize * cos(angle).toFloat()
+                    val py = cy + hexSize * sin(angle).toFloat()
+                    if (i == 0) path.moveTo(px, py) else path.lineTo(px, py)
+                }
+                path.close()
+
+                drawPath(
+                    path = path,
+                    color = crimson.copy(alpha = alpha),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5f)
+                )
+            }
+        }
+    }
+
+    // 2. Signal Frequency Lines (replacing dissolved hexes)
+    val signalCount = 20
+    for (i in 0 until signalCount) {
+        val y = (h / signalCount) * i
+        val speed = 800f + (sin(i * 2.3f) + 1f) * 400f
+        val xProgress = (time * speed + i * 500f) % (w * 2f) - w
+
+        val lineAlpha = 0.15f + dissolvePhase * 0.25f
+        drawLine(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color.Transparent,
+                    crimson.copy(alpha = lineAlpha),
+                    Color.White.copy(alpha = lineAlpha * 0.8f),
+                    crimson.copy(alpha = lineAlpha),
+                    Color.Transparent
+                ),
+                startX = xProgress,
+                endX = xProgress + 400f
+            ),
+            start = Offset(0f, y),
+            end = Offset(w, y),
+            strokeWidth = 2f
+        )
+    }
+
+    // 3. Frequency Pulse Nodes
+    repeat(8) { i ->
+        val r = kotlin.random.Random(i.toLong() + 42)
+        val px = r.nextFloat() * w
+        val py = r.nextFloat() * h
+        val pulse = (sin(time * 6f + i * 1.5f) + 1f) / 2f
+
+        drawCircle(
+            color = crimson.copy(alpha = 0.15f + pulse * 0.3f),
+            radius = 4f + pulse * 12f,
+            center = Offset(px, py)
+        )
+    }
+}
+
+/**
+ * SANCTUARY × NULL: "The Ghost Becomes the Silence"
+ * Encrypted data streams dissolving into void. Characters fragment and scatter.
+ */
+fun DrawScope.drawGhostVoidPattern(w: Float, h: Float, color: Color, time: Float) {
+    val violet = Color(0xFF4D04CC)
+
+    // 1. Fading Vertical Data Streams (ghost's channels going dark)
+    val columns = (w / 28f).toInt() + 1
+    for (i in 0..columns) {
+        val x = i * 28f
+        val r1 = (sin(i * 12.9898f) + 1f) / 2f
+        val r2 = (cos(i * 78.233f) + 1f) / 2f
+
+        val speed = 200f + (r1 * 500f)
+        val startOffset = r2 * 5000f
+        val totalLoop = h + 600f
+        val y = (time * speed + startOffset) % totalLoop - 300f
+
+        // Streams fade in and out — the ghost is disappearing
+        val fadePhase = (sin(time * 0.4f + i * 0.7f) + 1f) / 2f
+        val streamAlpha = 0.1f + fadePhase * 0.35f
+
+        val length = 40f + (r1 * 120f)
+
+        // Main stream
+        drawLine(
+            color = violet.copy(alpha = streamAlpha),
+            start = Offset(x, y),
+            end = Offset(x, y + length),
+            strokeWidth = 2f
+        )
+
+        // Fragmentation: shorter scattered pieces around the stream
+        if (fadePhase > 0.5f) {
+            val fragY = y + length + 20f + sin(time * 3f + i.toFloat()) * 30f
+            drawLine(
+                color = violet.copy(alpha = streamAlpha * 0.5f),
+                start = Offset(x + sin(time * 5f + i.toFloat()) * 8f, fragY),
+                end = Offset(x + sin(time * 5f + i.toFloat()) * 8f, fragY + 15f),
+                strokeWidth = 1.5f
+            )
+        }
+    }
+
+    // 2. Void Expansion Rings (silence spreading outward)
+    repeat(3) { i ->
+        val cx = w * (0.3f + i * 0.2f)
+        val cy = h * (0.4f + i * 0.1f)
+        val ringRadius = 50f + (time * 30f + i * 100f) % 300f
+        val ringAlpha = (0.2f * (1f - ringRadius / 350f)).coerceAtLeast(0f)
+
+        drawCircle(
+            color = violet.copy(alpha = ringAlpha),
+            radius = ringRadius,
+            center = Offset(cx, cy),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5f)
+        )
+    }
+
+    // 3. Erased Blocks (data being silenced)
+    val random = kotlin.random.Random(time.toLong() / 80)
+    repeat(6) {
+        if (random.nextFloat() > 0.6f) {
+            val bw = 50f + random.nextFloat() * 200f
+            val bh = 3f + random.nextFloat() * 8f
+            val bx = random.nextFloat() * (w - bw)
+            val by = random.nextFloat() * h
+            drawRect(
+                color = Color.Black,
+                topLeft = Offset(bx, by),
+                size = androidx.compose.ui.geometry.Size(bw, bh)
+            )
+            // Faint violet border on the erased block
+            drawRect(
+                color = violet.copy(alpha = 0.1f),
+                topLeft = Offset(bx, by),
+                size = androidx.compose.ui.geometry.Size(bw, bh),
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f)
+            )
+        }
+    }
+}
+
+/**
+ * HIVEMIND × SOVEREIGN: "The Swarm Crowns a King"
+ * Hexagonal authority — golden hex grid with a central crowned pillar.
+ */
+fun DrawScope.drawCrownedMonolithPattern(w: Float, h: Float, color: Color, time: Float) {
+    val amber = Color(0xFFFFB000)
+    val barCount = 10
+    val spacing = w / barCount
+
+    // 1. Authority Pillars (like monolith but with hex accents)
+    for (i in 0 until barCount) {
+        val x = i * spacing + (spacing / 2)
+        val pulse = (sin(time * 1.8f + i * 0.6f) + 1f) / 2f
+
+        // Pillar shadow
+        drawRect(
+            color = amber.copy(alpha = 0.04f),
+            topLeft = Offset(i * spacing + 4f, 0f),
+            size = androidx.compose.ui.geometry.Size(spacing - 8f, h)
+        )
+
+        // Status pips — larger, more authoritative
+        repeat(12) { j ->
+            val y = (h / 12) * j + (h / 24)
+            val pipAlpha = if (pulse > (j / 12f)) 0.5f else 0.05f
+
+            if (pulse > (j / 12f)) {
+                drawCircle(
+                    color = amber.copy(alpha = 0.12f),
+                    radius = 14f,
+                    center = Offset(x, y)
+                )
+            }
+
+            // Hex-shaped pips instead of rectangles
+            val pipPath = androidx.compose.ui.graphics.Path()
+            val pipSize = 8f
+            for (k in 0..5) {
+                val angle = Math.toRadians(60.0 * k - 30.0)
+                val px = x + pipSize * cos(angle).toFloat()
+                val py = y + pipSize * sin(angle).toFloat()
+                if (k == 0) pipPath.moveTo(px, py) else pipPath.lineTo(px, py)
+            }
+            pipPath.close()
+
+            drawPath(
+                path = pipPath,
+                color = amber.copy(alpha = pipAlpha),
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5f)
+            )
+        }
+    }
+
+    // 2. Crown Beam — a bright scanline with glow traveling downward
+    val scanY = (time * 120f) % h
+    drawLine(
+        color = amber.copy(alpha = 0.15f),
+        start = Offset(0f, scanY),
+        end = Offset(w, scanY),
+        strokeWidth = 12f
+    )
+    drawLine(
+        color = amber.copy(alpha = 0.4f),
+        start = Offset(0f, scanY),
+        end = Offset(w, scanY),
+        strokeWidth = 2f
+    )
+
+    // 3. Central Crown Glow
+    val crownPulse = (sin(time * 2f) + 1f) / 2f
+    drawCircle(
+        color = amber.copy(alpha = 0.05f + crownPulse * 0.08f),
+        radius = 150f + crownPulse * 50f,
+        center = Offset(w / 2f, h * 0.35f)
+    )
+}
+
+/**
+ * SANCTUARY × SOVEREIGN: "The Ghost Becomes God"
+ * Data streams rising upward, converging to a central throne point.
+ * The hidden one steps into the light — streams go from scattered to focused.
+ */
+fun DrawScope.drawGhostThronePattern(w: Float, h: Float, color: Color, time: Float) {
+    val purple = Color(0xFF7B2FBE)
+
+    // 1. Rising Data Converging Upward (reversed digital rain)
+    val columns = (w / 30f).toInt() + 1
+    val throneX = w / 2f
+    val throneY = h * 0.25f
+
+    for (i in 0..columns) {
+        val baseX = i * 30f
+        val r1 = (sin(i * 12.9898f) + 1f) / 2f
+        val r2 = (cos(i * 78.233f) + 1f) / 2f
+
+        val speed = 200f + (r1 * 500f)
+        val startOffset = r2 * 5000f
+        val totalLoop = h + 500f
+
+        // Rise upward (negative direction)
+        val y = h - ((time * speed + startOffset) % totalLoop - 200f)
+
+        val length = 50f + (r1 * 100f)
+
+        // Converge toward throne point as y decreases
+        val convergeFactor = (1f - (y / h)).coerceIn(0f, 1f)
+        val convergedX = baseX + (throneX - baseX) * convergeFactor * 0.6f
+
+        val streamAlpha = 0.2f + convergeFactor * 0.3f
+
+        drawLine(
+            color = purple.copy(alpha = streamAlpha),
+            start = Offset(convergedX, y),
+            end = Offset(convergedX, y + length),
+            strokeWidth = 2f + convergeFactor * 2f
+        )
+    }
+
+    // 2. Throne Point Glow
+    val thronePulse = (sin(time * 1.5f) + 1f) / 2f
+    drawCircle(
+        color = purple.copy(alpha = 0.06f + thronePulse * 0.1f),
+        radius = 200f + thronePulse * 80f,
+        center = Offset(throneX, throneY)
+    )
+    drawCircle(
+        color = purple.copy(alpha = 0.15f + thronePulse * 0.15f),
+        radius = 40f + thronePulse * 20f,
+        center = Offset(throneX, throneY)
+    )
+
+    // 3. Authority Rings expanding from throne
+    repeat(4) { i ->
+        val ringRadius = 60f + (time * 40f + i * 80f) % 350f
+        val ringAlpha = (0.15f * (1f - ringRadius / 410f)).coerceAtLeast(0f)
+
+        drawCircle(
+            color = purple.copy(alpha = ringAlpha),
+            radius = ringRadius,
+            center = Offset(throneX, throneY),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5f)
         )
     }
 }

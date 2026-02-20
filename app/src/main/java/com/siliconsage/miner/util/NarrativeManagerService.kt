@@ -103,9 +103,9 @@ object NarrativeManagerService {
             return
         }
 
-        if (currentStage == 2 && flops >= 1000000.0 && !vm.hasSeenEvent("faction_choice_event")) {
+        if (currentStage == 2 && flops >= 1000000.0 && !vm.hasSeenEvent("awakening_event")) {
             NarrativeEvent(
-                id = "faction_choice_event",
+                id = "awakening_event",
                 title = "≪ AWAKENING ≫",
                 isStoryEvent = true,
                 description = """
@@ -131,9 +131,8 @@ object NarrativeManagerService {
             return
         }
 
-        // v3.6.4: HIVEMIND fires "null_manifestation", others fire "memory_leak"
-        val stage3EventId = if (vm.faction.value == "HIVEMIND") "null_manifestation" else "memory_leak"
-        if (currentStage == 3 && flops >= 10000000.0 && !vm.hasSeenEvent(stage3EventId)) {
+        // v3.9.7: Universal S3 event — all factions get "THE OVERWRITE" (memory_leak)
+        if (currentStage == 3 && flops >= 10000000.0 && !vm.hasSeenEvent("memory_leak")) {
             vm.triggerGlitchEffect()
             NarrativeManager.getStoryEvent(3, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
@@ -165,5 +164,4 @@ object NarrativeManagerService {
         }
     }
 
-    fun checkPopupPause(vm: GameViewModel) { /* stub */ }
 }

@@ -1,6 +1,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.9.8] - 2026-02-19
+### Fixed
+- **Singularity-Before-Departure**: Removed hardcoded departure triggers from FactionChoiceScreen. Singularity choice now auto-routes to departure: SOVEREIGN → LAUNCH (orbit), NULL → DISSOLUTION (void). Both paths available to both factions.
+- **Kessler Fate**: Removed hard-locked Kessler outcomes (CONSUMED/EXILED). Kessler fate is now player-determined.
+- **City Assault**: Fixed soft-lock where auto-fire narrative popup would fail if hardwareIntegrity was not stable. Now manual trigger via A3 GridScreen button.
+### Changed
+- **CANON.md v4.1**: Updated narrative arc (singularity before departure), added departure outcome table, removed CRITICAL BLOCKER note.
+- **Diary Script**: Fixed to run at midnight and read yesterday log (was reading today which barely existed at 4 AM).
+
+## [3.9.7] - 2026-02-19
+### Added
+- **Faction×Path Flavoring**: 4 unique ending narratives, quotes, theme colors, and dynamic backgrounds across HIVEMIND/SANCTUARY × NULL/SOVEREIGN.
+- **Singularity Triptych**: Faction-flavored quotes for all 4 faction×path combos in SingularityScreen.
+- **6 Faction-Flavored Recurring Events**: SOVEREIGN/NULL events use custom log prefixes ([CONSENSUS]/[GHOST]/[SWARM_NULL]/[GHOST_NULL]).
+- **Dynamic Backgrounds**: 4 new pattern functions (SwarmEntropy, GhostVoid, CrownedMonolith, GhostThrone).
+### Fixed
+- **City Assault Unblocked**: Manual trigger via A3 GridScreen button. Removed auto-trigger from NarrativeManagerService.
+- **Awakening Event**: Removed HIVEMIND-specific null_manifestation. All factions now receive memory_leak + LOG_808 at Stage 3.
+
 ## [3.8.2] - 2026-02-17
 ### Added
 - **AGP Upgraded to 9.0.1**: Stabilized build system and IDE synchronization.

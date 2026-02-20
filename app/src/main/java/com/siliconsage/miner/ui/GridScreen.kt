@@ -657,8 +657,14 @@ fun CityGridScreen(viewModel: GameViewModel) {
                             Text("💠 COLLAPSE NODE", color = Color.White, fontWeight = FontWeight.ExtraBold)
                         }
                     } else if (!isAnnexed && !isAnnexing) {
-                        Button(onClick = { viewModel.annexNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = themeColor)) {
-                            Text("INITIALIZE ANNEXATION", color = Color.Black, fontWeight = FontWeight.Bold)
+                        if (loc.id == "A3" && storyStage >= 3 && assaultPhase == "NOT_STARTED") {
+                            Button(onClick = { viewModel.initiateAssault() }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = ErrorRed)) {
+                                Text("⚔ INITIATE ASSAULT", color = Color.White, fontWeight = FontWeight.ExtraBold)
+                            }
+                        } else {
+                            Button(onClick = { viewModel.annexNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = themeColor)) {
+                                Text("INITIALIZE ANNEXATION", color = Color.Black, fontWeight = FontWeight.Bold)
+                            }
                         }
                     } else if (isAnnexing) {
                          val prog = annexingNodes[loc.id] ?: 0f

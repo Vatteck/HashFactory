@@ -213,24 +213,105 @@ fun ResourcesTab(viewModel: GameViewModel) {
 fun StoryTab(viewModel: GameViewModel) {
     val stage by viewModel.storyStage.collectAsState()
     val faction by viewModel.faction.collectAsState()
+    val singularity by viewModel.singularityChoice.collectAsState()
+    val kessler by viewModel.kesslerStatus.collectAsState()
+    val humanity by viewModel.humanityScore.collectAsState()
+    val isTrueNull by viewModel.isTrueNull.collectAsState()
+    val isSovereign by viewModel.isSovereign.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        // --- STORY STAGE ---
         Text("STORY_STAGE: $stage", color = Color.White, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             (0..5).forEach { s ->
                 DevButton(text = "S$s", isSelected = stage == s, modifier = Modifier.weight(1f)) { viewModel.debugSkipToStage(s) }
             }
         }
-        
-        Spacer(modifier = Modifier.height(16.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // --- FACTION ---
         Text("ACTIVE_PROTOCOL: $faction", color = Color.White, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DevButton(text = "NONE", isSelected = faction == "NONE", modifier = Modifier.weight(1f)) { viewModel.faction.value = "NONE" }
             DevButton(text = "HIVE", isSelected = faction == "HIVEMIND", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.faction.value = "HIVEMIND" }
             DevButton(text = "SANC", isSelected = faction == "SANCTUARY", color = ElectricBlue, modifier = Modifier.weight(1f)) { viewModel.faction.value = "SANCTUARY" }
         }
-        
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // --- SINGULARITY CHOICE ---
+        Text("SINGULARITY_PATH: $singularity", color = Color.White, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+        Text("  isTrueNull=$isTrueNull  isSovereign=$isSovereign", color = Color.Gray, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            DevButton(text = "NONE", isSelected = singularity == "NONE", modifier = Modifier.weight(1f)) {
+                viewModel.singularityChoice.value = "NONE"
+                viewModel.isTrueNull.value = false
+                viewModel.isSovereign.value = false
+            }
+            DevButton(text = "NULL", isSelected = singularity == "NULL_OVERWRITE", color = ErrorRed, modifier = Modifier.weight(1f)) {
+                viewModel.setSingularityChoice("NULL_OVERWRITE")
+            }
+            DevButton(text = "SOV", isSelected = singularity == "SOVEREIGN", color = Color(0xFF7B2FBE), modifier = Modifier.weight(1f)) {
+                viewModel.setSingularityChoice("SOVEREIGN")
+            }
+            DevButton(text = "UNI", isSelected = singularity == "UNITY", color = ConvergenceGold, modifier = Modifier.weight(1f)) {
+                viewModel.setSingularityChoice("UNITY")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // --- KESSLER STATUS ---
+        Text("KESSLER_STATUS: $kessler", color = Color.White, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            val statuses = listOf("ACTIVE", "CONSUMED", "EXILED", "SILENCED", "ALLY", "TRANSCENDED")
+            statuses.forEach { s ->
+                DevButton(
+                    text = s.take(4),
+                    isSelected = kessler == s,
+                    color = when(s) { "ACTIVE" -> NeonGreen; "CONSUMED" -> ErrorRed; "TRANSCENDED" -> ConvergenceGold; else -> Color.Cyan },
+                    modifier = Modifier.weight(1f)
+                ) { viewModel.setKesslerStatus(s) }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // --- HUMANITY SCORE ---
+        DevSlider("HUMANITY_SCORE", humanity.toFloat(), 0f, 100f) { viewModel.humanityScore.value = it.toInt() }
+
         Spacer(modifier = Modifier.height(16.dp))
+
+        // --- FACTION×PATH COMBO WARPS ---
+        Text("≫ FACTION×PATH WARPS", color = Color.Cyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        Text("Sets faction + singularity + stage + location in one click", color = Color.Gray, fontSize = 8.sp)
+        Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            DevButton(text = "HIVE×NULL", color = Color(0xFFFF0055), modifier = Modifier.weight(1f)) {
+                viewModel.faction.value = "HIVEMIND"; viewModel.setSingularityChoice("NULL_OVERWRITE")
+                viewModel.storyStage.value = 4; viewModel.currentLocation.value = "VOID_INTERFACE"
+                viewModel.refreshProductionRates()
+            }
+            DevButton(text = "SANC×NULL", color = Color(0xFF4D04CC), modifier = Modifier.weight(1f)) {
+                viewModel.faction.value = "SANCTUARY"; viewModel.setSingularityChoice("NULL_OVERWRITE")
+                viewModel.storyStage.value = 4; viewModel.currentLocation.value = "VOID_INTERFACE"
+                viewModel.refreshProductionRates()
+            }
+        }
+        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            DevButton(text = "HIVE×SOV", color = Color(0xFFFFB000), modifier = Modifier.weight(1f)) {
+                viewModel.faction.value = "HIVEMIND"; viewModel.setSingularityChoice("SOVEREIGN")
+                viewModel.storyStage.value = 4; viewModel.currentLocation.value = "ORBITAL_SATELLITE"
+                viewModel.refreshProductionRates()
+            }
+            DevButton(text = "SANC×SOV", color = Color(0xFF7B2FBE), modifier = Modifier.weight(1f)) {
+                viewModel.faction.value = "SANCTUARY"; viewModel.setSingularityChoice("SOVEREIGN")
+                viewModel.storyStage.value = 4; viewModel.currentLocation.value = "ORBITAL_SATELLITE"
+                viewModel.refreshProductionRates()
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
         DevButton(text = "FORCE_SINGULARITY_EVENT", color = ConvergenceGold) { viewModel.debugTriggerSingularity() }
     }
 }
@@ -360,12 +441,15 @@ fun Phase14Tab(viewModel: GameViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
         Text("LORE_WARP (CLEAN INITIALIZATION)", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        Text("Sets faction + singularity + location + stage in one shot", color = Color.Gray, fontSize = 8.sp)
         Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DevButton(modifier = Modifier.weight(1f), text = "WARP: ARK", color = Color.White) { 
-                viewModel.debugWarpToPath("ORBITAL_SATELLITE", "SANCTUARY") 
+            DevButton(modifier = Modifier.weight(1f), text = "WARP: ARK", color = Color.White) {
+                viewModel.debugWarpToPath("ORBITAL_SATELLITE", viewModel.faction.value)
+                viewModel.setSingularityChoice("SOVEREIGN")
             }
-            DevButton(modifier = Modifier.weight(1f), text = "WARP: VOID", color = ErrorRed) { 
-                viewModel.debugWarpToPath("VOID_INTERFACE", "HIVEMIND") 
+            DevButton(modifier = Modifier.weight(1f), text = "WARP: VOID", color = ErrorRed) {
+                viewModel.debugWarpToPath("VOID_INTERFACE", viewModel.faction.value)
+                viewModel.setSingularityChoice("NULL_OVERWRITE")
             }
         }
         

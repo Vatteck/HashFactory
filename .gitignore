@@ -32,3 +32,15 @@ walkthrough.md
 *.md
 !README.md
 !CHANGELOG.md
+
+# AI/IDE Artifacts (Antigravity, etc.)
+brain/
+conversations/
+knowledge/
+context_state/
+annotations/
+code_tracker/
+research_db.json
+
+# Legacy AI folders
+legacy_gemini/

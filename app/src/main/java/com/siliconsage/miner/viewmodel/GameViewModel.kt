@@ -530,7 +530,15 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
             
             // Wait for climax transition (approx 3-4s)
             delay(4000)
-            
+
+            // Route to departure based on singularity choice
+            // SOVEREIGN → LAUNCH (orbit), NULL → DISSOLUTION (void), UNITY → NG+ (no departure)
+            when (path) {
+                "SOVEREIGN" -> initiateLaunchSequence()
+                "NULL_OVERWRITE" -> initiateDissolutionSequence()
+                // UNITY: no departure — NG+ handled separately
+            }
+
             saveState()
         }
     }
@@ -642,7 +650,6 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun updateKesslerStatus(s: String) { kesslerStatus.value = s }
     fun triggerClimaxTransition(t: String) { activeClimaxTransition.value = t }
     fun getNewsHistory(): List<String> = newsHistoryInternal
-    fun checkPopupPause() { NarrativeManagerService.checkPopupPause(this) }
     fun applyCommandCenterBonuses(outcome: String) { /* bonus logic */ }
     fun completeAssault(outcome: String) = AssaultManager.completeAssault(this, outcome)
     fun advanceAssaultStage(next: String, delay: Long = 0L) = AssaultManager.advanceAssaultStage(this, next, delay)
@@ -652,10 +659,21 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     fun getUpgradeRate(t: UpgradeType, unit: String) = UpgradeManager.getUpgradeRate(t, unit)
     fun calculateUpgradeCost(t: UpgradeType) = UpgradeManager.calculateUpgradeCost(t, upgrades.value[t] ?: 0, currentLocation.value, entropyLevel.value)
     fun isCommandCenterUnlocked() = AssaultManager.isUnlocked(commandCenterLocked.value, kesslerStatus.value, commandCenterAssaultPhase.value, annexedNodes.value, offlineNodes.value, playerRank.value, storyStage.value, flopsProductionRate.value, hardwareIntegrity.value)
+    
+    fun initiateAssault() {
+        com.siliconsage.miner.util.AssaultManager.initiateAssault(this)
+    }
+
+    // v3.9.7: Departure dilemma — player chooses LAUNCH or DISSOLUTION regardless of faction
+    // FactionChoiceScreen auto-dismisses when confirmFaction() sets faction != "CHOSEN_NONE"
+    fun triggerDepartureDilemma() {
+        val dilemma = NarrativeManager.generateDepartureDilemma(faction.value)
+        NarrativeService.queueNarrativeItem(this, NarrativeItem.EventItem(dilemma))
+    }
+
     fun confirmFaction(f: String) {
         faction.value = f
         addLog("[$f]: SUBSTRATE MIGRATION LOCK ENGAGED.")
-        // Ascension logic moved to interactive LaunchManager sequences
     }
 
     fun cancelFactionSelection() {
@@ -699,7 +717,7 @@ class GameViewModel(val repository: GameRepository) : ViewModel() {
     }
     fun triggerSingularityEnding() {
         if (!checkSingularityVictory()) return
-        val narrative = SingularityEngine.getEndingNarrative(singularityChoice.value)
+        val narrative = SingularityEngine.getEndingNarrative(singularityChoice.value, faction.value)
         viewModelScope.launch {
             for (entry in narrative.logEntries) { addLog(entry); delay(800) }
             delay(1500); addLog("[SYSTEM]: ≪ ${narrative.title} ≫"); addLog(narrative.finalLine); delay(2000); completedFactions.update { it + singularityChoice.value }; victoryAchieved.value = true; SoundManager.play("victory"); saveState()

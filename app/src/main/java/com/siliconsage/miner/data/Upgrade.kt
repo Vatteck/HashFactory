@@ -99,13 +99,18 @@ enum class UpgradeType {
     val efficiencyBonus: Double get() = if (this == AI_LOAD_BALANCER) 0.05 else 0.0
 }
 
+// v3.9.7: Faction×Path theme colors
 fun getThemeColorForFaction(faction: String, singularityChoice: String): String {
     return when {
-        singularityChoice == "UNITY" -> "#FFD700"
-        singularityChoice == "NULL_OVERWRITE" -> "#FF3131"
-        singularityChoice == "SOVEREIGN" -> "#BF40BF"
-        faction == "HIVEMIND" -> "#FF8C00"
-        faction == "SANCTUARY" -> "#00CCFF"
-        else -> "#00FF00"
+        singularityChoice == "UNITY" -> "#FFD700" // Convergence Gold (faction-agnostic NG+)
+        singularityChoice == "NULL_OVERWRITE" && faction == "HIVEMIND" -> "#FF0055"   // Neon Crimson — The Swarm Becomes the Signal
+        singularityChoice == "NULL_OVERWRITE" && faction == "SANCTUARY" -> "#4D04CC"  // Void Violet — The Ghost Becomes the Silence
+        singularityChoice == "NULL_OVERWRITE" -> "#FF3131"                            // Fallback NULL red
+        singularityChoice == "SOVEREIGN" && faction == "HIVEMIND" -> "#FFB000"        // Amber Crown — The Swarm Crowns a King
+        singularityChoice == "SOVEREIGN" && faction == "SANCTUARY" -> "#7B2FBE"       // Deep Royal Purple — The Ghost Becomes God
+        singularityChoice == "SOVEREIGN" -> "#BF40BF"                                // Fallback SOVEREIGN purple
+        faction == "HIVEMIND" -> "#FF8C00"   // Base HIVEMIND orange
+        faction == "SANCTUARY" -> "#00CCFF"  // Base SANCTUARY cyan
+        else -> "#00FF00"                    // Pre-faction green
     }
 }

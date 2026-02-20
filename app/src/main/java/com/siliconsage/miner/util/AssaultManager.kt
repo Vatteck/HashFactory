@@ -27,10 +27,9 @@ object AssaultManager {
         if (kesslerStatus != "ACTIVE") return false
         if (assaultPhase != "NOT_STARTED") return true
         
-        val allSubstationsAnnexed = listOf("D1", "C3", "B2").all { 
-            annexedNodes.contains(it) && !offlineNodes.contains(it)
-        }
-        return allSubstationsAnnexed && playerRank >= 4 && storyStage >= 3 && flopsRate >= 1e16 && hardwareIntegrity >= 80.0
+        // v3.9.6: Require all annexed nodes (no specific list)
+        val hasNodes = annexedNodes.isNotEmpty()
+        return hasNodes && storyStage >= 3
     }
 
     fun initiateAssault(vm: GameViewModel) {
@@ -45,7 +44,7 @@ object AssaultManager {
             return
         }
 
-        if (vm.hardwareIntegrity.value < 100.0) {
+        if (vm.hardwareIntegrity.value < 80.0) {
             vm.addLog("[SYSTEM]: ERROR: HARDWARE INTEGRITY CRITICAL. REPAIR REQUIRED BEFORE ASSAULT.")
             SoundManager.play("error")
             return

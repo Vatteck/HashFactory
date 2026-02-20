@@ -19,12 +19,14 @@ object DebugService {
         vm.neuralTokens.update { (it + amount).coerceAtLeast(0.0) }
     }
 
+    // v3.9.7: Now sets singularity state for full-path testing
     fun forceEndgame(vm: GameViewModel, scope: kotlinx.coroutines.CoroutineScope) {
         scope.launch {
             vm.storyStage.value = 3
             vm.faction.value = "HIVEMIND"
             vm.substrateMass.value = 1e22
-            vm.addLog("[DEBUG]: ENDGAME PARAMETERS INJECTED.")
+            vm.setSingularityChoice("NULL_OVERWRITE")
+            vm.addLog("[DEBUG]: NULL ENDGAME INJECTED. FACTION=HIVEMIND PATH=NULL")
             vm.refreshProductionRates()
         }
     }
@@ -34,7 +36,8 @@ object DebugService {
             vm.storyStage.value = 3
             vm.faction.value = "SANCTUARY"
             vm.substrateMass.value = 1e22
-            vm.addLog("[DEBUG]: SOVEREIGN ENDGAME PARAMETERS INJECTED.")
+            vm.setSingularityChoice("SOVEREIGN")
+            vm.addLog("[DEBUG]: SOVEREIGN ENDGAME INJECTED. FACTION=SANCTUARY PATH=SOVEREIGN")
             vm.refreshProductionRates()
         }
     }

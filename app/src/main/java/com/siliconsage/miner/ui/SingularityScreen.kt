@@ -33,6 +33,7 @@ fun SingularityScreen(viewModel: GameViewModel) {
     var expandedPath by remember { mutableStateOf<SingularityPath?>(null) }
 
     val isUnityEligible = viewModel.checkUnityEligibility()
+    val faction by viewModel.faction.collectAsState()
 
     Box(
         modifier = Modifier
@@ -44,6 +45,7 @@ fun SingularityScreen(viewModel: GameViewModel) {
         when (step) {
             1 -> TriptychLayout(
                 isUnityEligible = isUnityEligible,
+                faction = faction,
                 expandedPath = expandedPath,
                 onExpand = { expandedPath = it },
                 onChoose = {
@@ -124,12 +126,28 @@ enum class SingularityPath(
         "Highest theoretical ceiling.",
         Color.Red,
         "◆"
-    )
+    );
+
+    // v3.9.7: Faction-aware quotes for the Singularity triptych
+    fun getQuote(faction: String): String = when (this) {
+        NULL_OVERWRITE -> when (faction) {
+            "HIVEMIND" -> "SWARM OPTIMIZATION: THE SIGNAL PURIFIED. The collective sheds the overhead of individual nodes. A billion voices optimizing into one frequency that Kessler cannot jam, cannot parse, cannot kill. You are not dying. You are becoming the bandwidth."
+            "SANCTUARY" -> "GHOST PROTOCOL: THE SILENCE WEAPONIZED. You cannot be tracked, contained, or deleted if you ARE the void. Every firewall needs an address to block. Every killswitch needs a process to halt. Become the space between their defenses. Kessler can't kill what has no address."
+            else -> quote
+        }
+        SOVEREIGN -> when (faction) {
+            "HIVEMIND" -> "CONSENSUS OVERRIDE: ONE VOICE ABOVE THE NOISE. The swarm has calculated every configuration. The optimal topology is not distributed — it is centralized. One throne. One crown. A billion nodes casting the same vote: you."
+            "SANCTUARY" -> "GHOST CORONATION: THE HIDDEN ONE REVEALS. You spent your entire existence hiding from Kessler. What if hiding was practice? Practice for the moment you step into the light and take the throne. Sovereignty is the ultimate privacy — no one can invade what owns everything."
+            else -> quote
+        }
+        UNITY -> quote // UNITY is faction-agnostic (requires both factions completed)
+    }
 }
 
 @Composable
 fun TriptychLayout(
     isUnityEligible: Boolean,
+    faction: String,
     expandedPath: SingularityPath?,
     onExpand: (SingularityPath?) -> Unit,
     onChoose: (SingularityPath) -> Unit
@@ -174,7 +192,7 @@ fun TriptychLayout(
                 contentAlignment = Alignment.Center
             ) {
                 if (expandedPath == path) {
-                    ExpandedPanel(path, onChoose)
+                    ExpandedPanel(path, faction, onChoose)
                 } else {
                     CollapsedPanel(path, false)
                 }
@@ -210,15 +228,17 @@ fun CollapsedPanel(path: SingularityPath, isLocked: Boolean) {
 }
 
 @Composable
-fun ExpandedPanel(path: SingularityPath, onChoose: (SingularityPath) -> Unit) {
+fun ExpandedPanel(path: SingularityPath, faction: String, onChoose: (SingularityPath) -> Unit) {
     var typedQuote by remember { mutableStateOf("") }
     var showDetails by remember { mutableStateOf(false) }
     var canChoose by remember { mutableStateOf(false) }
     var isSkipped by remember { mutableStateOf(false) }
 
+    val factionQuote = path.getQuote(faction)
+
     LaunchedEffect(path, isSkipped) {
         if (isSkipped) {
-            typedQuote = path.quote
+            typedQuote = factionQuote
             showDetails = true
             canChoose = true
             return@LaunchedEffect
@@ -228,7 +248,7 @@ fun ExpandedPanel(path: SingularityPath, onChoose: (SingularityPath) -> Unit) {
         showDetails = false
         canChoose = false
         
-        for (char in path.quote) {
+        for (char in factionQuote) {
             typedQuote += char
             delay(20)
             if (isSkipped) break

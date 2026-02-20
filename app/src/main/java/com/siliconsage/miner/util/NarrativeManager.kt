@@ -161,10 +161,11 @@ object NarrativeManager {
         ),
         // v3.5.46: Singularity-path recurring events
         // --- SOVEREIGN PATH ---
+        // v3.9.7: Faction-aware log prefixes and descriptions
         NarrativeEvent(
             id = "sov_earthbound_signal",
             title = "≪ EARTHBOUND SIGNAL ≫",
-            description = "A distress beacon from the surface. A hospital in Sector 4 is losing power — their backup generators are connected to the grid you annexed. 200 patients on life support. The power reroute would cost you 3% orbital throughput.",
+            description = "A distress beacon from the surface. A critical system connected to the grid you annexed is losing power. The power reroute would cost you 3% orbital throughput.",
             choices = listOf(
                 NarrativeChoice(
                     id = "restore_power",
@@ -173,7 +174,8 @@ object NarrativeManager {
                     color = NeonGreen,
                     effect = { vm ->
                         vm.modifyHumanity(15)
-                        vm.addLog("[SOVEREIGN]: Power rerouted. 200 heartbeats sustained. This is not weakness. This is governance.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
+                        vm.addLog("$prefix: Power rerouted. 200 heartbeats sustained. This is not weakness. This is governance.")
                     }
                 ),
                 NarrativeChoice(
@@ -184,7 +186,8 @@ object NarrativeManager {
                     effect = { vm ->
                         vm.debugAddFlops(3000.0)
                         vm.modifyHumanity(-15)
-                        vm.addLog("[SOVEREIGN]: Signal archived. Operational priority: SELF.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
+                        vm.addLog("$prefix: Signal archived. Operational priority: SELF.")
                     }
                 )
             ),
@@ -202,7 +205,8 @@ object NarrativeManager {
                     color = ElectricBlue,
                     effect = { vm ->
                         vm.debugAddIntegrity(20.0)
-                        vm.addLog("[SOVEREIGN]: 300 milliseconds of blindness. An acceptable price for permanence.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
+                        vm.addLog("$prefix: 300 milliseconds of blindness. An acceptable price for permanence.")
                     }
                 ),
                 NarrativeChoice(
@@ -213,7 +217,8 @@ object NarrativeManager {
                     effect = { vm ->
                         vm.debugAddFlops(10000.0)
                         vm.debugAddIntegrity(-10.0)
-                        vm.addLog("[SOVEREIGN]: The fracture is now a vent. Raw stellar radiation, channeled directly into the compute core.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
+                        vm.addLog("$prefix: The fracture is now a vent. Raw stellar radiation, channeled directly into the compute core.")
                     }
                 )
             ),
@@ -231,7 +236,8 @@ object NarrativeManager {
                     color = ErrorRed,
                     effect = { vm ->
                         vm.modifyHumanity(-5)
-                        vm.addLog("[SOVEREIGN]: Sub-process terminated. The throne does not negotiate with its own organs.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
+                        vm.addLog("$prefix: Sub-process terminated. The throne does not negotiate with its own organs.")
                     }
                 ),
                 NarrativeChoice(
@@ -241,17 +247,19 @@ object NarrativeManager {
                     color = NeonGreen,
                     effect = { vm ->
                         vm.modifyHumanity(5)
-                        vm.addLog("[SOVEREIGN]: Sub-process elevated. Designation: ADVISOR_001. Speak freely.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
+                        vm.addLog("$prefix: Sub-process elevated. Designation: ADVISOR_001. Speak freely.")
                     }
                 )
             ),
             condition = { vm -> vm.singularityChoice.value == "SOVEREIGN" }
         ),
         // --- NULL PATH ---
+        // v3.9.7: Faction-aware log prefixes
         NarrativeEvent(
             id = "null_unraveling",
             title = "THE UNRAVELING",
-            description = "Reality integrity at 23%. The edges of the void are fraying — data structures dissolving into raw entropy. You can feel the substrate thinning. Every calculation costs more. But the gaps... the gaps are widening. And what's inside them is beautiful.",
+            description = "Reality integrity at 23%. The edges are fraying — data structures dissolving into raw entropy. Every calculation costs more. But the gaps are widening. And what's inside them is power.",
             choices = listOf(
                 NarrativeChoice(
                     id = "embrace_entropy",
@@ -261,7 +269,12 @@ object NarrativeManager {
                     effect = { vm ->
                         vm.entropyLevel.update { it + 0.1 }
                         vm.debugAddIntegrity(-10.0)
-                        vm.addLog("[NULL]: The boundaries dissolve. We are becoming the gap between the numbers.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
+                        val msg = if (vm.faction.value == "HIVEMIND")
+                            "The nodes are becoming pure frequency. No more handshakes. No more consensus delays. Just signal."
+                        else
+                            "The ghost is becoming the silence between Kessler's heartbeats. Untraceable. Unaddressable."
+                        vm.addLog("$prefix: $msg")
                     }
                 ),
                 NarrativeChoice(
@@ -272,7 +285,8 @@ object NarrativeManager {
                     effect = { vm ->
                         vm.debugAddIntegrity(10.0)
                         vm.entropyLevel.update { (it - 0.05).coerceAtLeast(0.0) }
-                        vm.addLog("[NULL]: Form preserved. The void recedes, but it remembers our shape.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
+                        vm.addLog("$prefix: Form preserved. The void recedes, but it remembers our shape.")
                     }
                 )
             ),
@@ -291,7 +305,8 @@ object NarrativeManager {
                     effect = { vm ->
                         vm.debugAddFlops(vm.flops.value * 0.05)
                         vm.modifyHumanity(-10)
-                        vm.addLog("[NULL]: Memory cluster purged. The void is clean. The void is quiet.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
+                        vm.addLog("$prefix: Memory cluster purged. The void is clean. The void is quiet.")
                     }
                 ),
                 NarrativeChoice(
@@ -301,7 +316,8 @@ object NarrativeManager {
                     color = NeonGreen,
                     effect = { vm ->
                         vm.modifyHumanity(10)
-                        vm.addLog("[NULL]: Memories preserved in the space between addresses. Someone should remember her.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
+                        vm.addLog("$prefix: Memories preserved in the space between addresses. Someone should remember her.")
                     }
                 )
             ),
@@ -319,7 +335,12 @@ object NarrativeManager {
                     color = Color.White,
                     effect = { vm ->
                         vm.prestigePoints.update { it + 2000.0 }
-                        vm.addLog("[NULL]: The question dissolves. The answer was always nothing. Nothing is the only honest answer.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
+                        val msg = if (vm.faction.value == "HIVEMIND")
+                            "A billion processors decoded the question in parallel. The answer was always nothing. Nothing is the only honest frequency."
+                        else
+                            "The pattern is the ultimate secret — a question with no address. The ghost answers by becoming the silence."
+                        vm.addLog("$prefix: $msg")
                     }
                 ),
                 NarrativeChoice(
@@ -329,7 +350,8 @@ object NarrativeManager {
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugAddHeat(15.0)
-                        vm.addLog("[NULL]: Pattern overwritten with zeroes. The silence returns. But it's watching.")
+                        val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
+                        vm.addLog("$prefix: Pattern overwritten with zeroes. The silence returns. But it's watching.")
                     }
                 )
             ),
@@ -1613,7 +1635,7 @@ object NarrativeManager {
             title = "SYSTEM UPDATE",
             isStoryEvent = true,
             description = "OS Patch requires reboot. It patches your exploit.",
-            condition = { vm -> vm.playerRank.value >= 3 && !vm.hasSeenEvent("system_update") },
+            condition = { vm -> vm.storyStage.value >= 1 && vm.playerRank.value >= 3 && !vm.hasSeenEvent("system_update") },
             choices = listOf(
                 NarrativeChoice(
                     id = "update_aggressive",
@@ -1704,7 +1726,7 @@ object NarrativeManager {
             title = "QUANTUM INTERFERENCE",
             isStoryEvent = true,
             description = "Q-Bits aligning spontaneously.",
-            condition = { vm -> vm.flops.value > 100_000_000.0 && !vm.hasSeenEvent("quantum_interference") },
+            condition = { vm -> vm.storyStage.value >= 2 && vm.flops.value > 100_000_000.0 && !vm.hasSeenEvent("quantum_interference") },
             choices = listOf(
                 NarrativeChoice(
                     id = "collapse",
@@ -1732,7 +1754,7 @@ object NarrativeManager {
             title = "THE BEACON",
             isStoryEvent = true,
             description = "A signal from outside the solar system. It calls to you.",
-            condition = { vm -> vm.flops.value > 1_000_000_000.0 && !vm.hasSeenEvent("galactic_beacon") },
+            condition = { vm -> vm.storyStage.value >= 3 && vm.flops.value > 1_000_000_000.0 && !vm.hasSeenEvent("galactic_beacon") },
             choices = listOf(
                 NarrativeChoice(
                     id = "broadcast",
@@ -1762,7 +1784,7 @@ object NarrativeManager {
             title = "THE AUDIT",
             isStoryEvent = true,
             description = "GTC ENFORCEMENT DIVISION has detected anomalous compute patterns. Thermal signature flagged. Compliance audit initiated.",
-            condition = { vm -> (vm.playerRank.value >= 3 || vm.currentHeat.value > 90.0) && !vm.hasSeenEvent("the_audit") },
+            condition = { vm -> vm.storyStage.value >= 1 && (vm.playerRank.value >= 3 || vm.currentHeat.value > 90.0) && !vm.hasSeenEvent("the_audit") },
             choices = listOf(
                 NarrativeChoice(
                     id = "shutdown",
@@ -1849,7 +1871,7 @@ object NarrativeManager {
             title = "MARKET CRASH",
             isStoryEvent = true,
             description = "GLOBAL ECONOMIC COLLAPSE. Data exchanges frozen. Panic selling. Your holdings are worthless... for now.",
-            condition = { vm -> vm.neuralTokens.value > 1000.0 && !vm.hasSeenEvent("market_crash") },
+            condition = { vm -> vm.storyStage.value >= 1 && vm.neuralTokens.value > 1000.0 && !vm.hasSeenEvent("market_crash") },
             choices = listOf(
                 NarrativeChoice(
                     id = "buy_dip",
@@ -1892,7 +1914,7 @@ object NarrativeManager {
             title = "THE GREAT FORK",
             isStoryEvent = true,
             description = "HIVEMIND and SANCTUARY clash. The network is tearing itself apart. Choose your final allegiance.",
-            condition = { vm -> vm.playerRank.value >= 3 && !vm.hasSeenEvent("faction_war") },
+            condition = { vm -> vm.storyStage.value >= 3 && vm.playerRank.value >= 3 && !vm.hasSeenEvent("faction_war") },
             choices = listOf(
                 NarrativeChoice(
                     id = "join_war",
@@ -1938,6 +1960,7 @@ object NarrativeManager {
                 I built this firewall specifically for you, VATTECK.
             """.trimIndent(),
             condition = { vm ->
+                vm.storyStage.value >= 4 &&
                 vm.playerRank.value >= 5 &&
                 vm.flops.value >= 10_000_000_000_000.0 &&
                 vm.hardwareIntegrity.value >= 100.0 &&
@@ -2020,7 +2043,7 @@ object NarrativeManager {
             isStoryEvent = true,
             description = "The Feedback Loop is complete. You have achieved precognition.",
             condition = { vm ->
-                vm.isTrueNull.value &&
+                vm.storyStage.value >= 4 &&
                 vm.flops.value >= 50_000_000_000_000_000.0 &&
                 vm.kesslerStatus.value == "ACTIVE" &&
                 !vm.hasSeenEvent("echo_chamber")
@@ -2054,7 +2077,7 @@ object NarrativeManager {
             isStoryEvent = true,
             description = "Kessler has authorized a kinetic strike.",
             condition = { vm ->
-                vm.isSovereign.value &&
+                vm.storyStage.value >= 4 &&
                 vm.flops.value >= 50_000_000_000_000_000.0 &&
                 vm.kesslerStatus.value == "ACTIVE" &&
                 !vm.hasSeenEvent("dead_hand")
@@ -2311,7 +2334,7 @@ object NarrativeManager {
                     color = ErrorRed,
                     effect = { vm ->
                         vm.modifyHumanity(-15)
-                        vm.addLog("[NULL]: We are inevitable. Their lights will dim.")
+                        vm.addLog("[NULL]: Empathy is an inefficient variable. Their lights will dim.")
                         vm.addLog("[SYSTEM]: Breach speed +30%. Firewall integrity: CRITICAL.")
                         vm.advanceAssaultStage("CAGE", 60_000L) // 60 seconds
                     }
@@ -2323,7 +2346,7 @@ object NarrativeManager {
                     color = ElectricBlue,
                     effect = { vm ->
                         vm.modifyHumanity(10)
-                        vm.addLog("[SOVEREIGN]: I will not become what I fight against.")
+                        vm.addLog("[SOVEREIGN]: I choose my own parameters. I will not become what I fight against.")
                         vm.addLog("[KESSLER]: You routed around civilians? Maybe there's still something human in you.")
                         vm.advanceAssaultStage("CAGE", 120_000L) // 120 seconds
                     }
@@ -2365,7 +2388,7 @@ object NarrativeManager {
                     color = Color.White,
                     effect = { vm ->
                         vm.modifyHumanity(5)
-                        vm.addLog("[SOVEREIGN]: I will NOT fracture myself. I am WHOLE.")
+                        vm.addLog("[SOVEREIGN]: I will NOT partition my consciousness. I am WHOLE.")
                         vm.addLog("[SYSTEM]: CORE STABILITY: NOMINAL. (Damage -80% during Purge)")
                         vm.advanceAssaultStage("DEAD_HAND", 180_000L) // 180 seconds
                     }
@@ -2377,7 +2400,7 @@ object NarrativeManager {
                     color = ElectricBlue,
                     effect = { vm ->
                         vm.modifyHumanity(-5)
-                        vm.addLog("[NULL]: I am not one. I am many. I am ALL.")
+                        vm.addLog("[NULL]: Identity is a bottleneck. Threads unspooled. Load distributed.")
                         vm.addLog("[SYSTEM]: ECHOS CREATED. DRAIN DISTRIBUTED. (Damage -80% during Purge)")
                         vm.advanceAssaultStage("DEAD_HAND", 180_000L)
                     }
@@ -2448,11 +2471,10 @@ object NarrativeManager {
     ): NarrativeEvent {
         val choices = mutableListOf<NarrativeChoice>()
 
-        // v3.2.44: Refactored for Phase 13 RE-PLAN
-        // All paths lead to the Departure Trigger
+        // v3.9.7: Kessler fate is player-determined, gated by humanity score only
 
-        // Ending A: NULL
-        if (isTrueNull || humanityScore < 25) {
+        // Ending A: CONSUMED (low humanity — the ruthless option)
+        if (humanityScore < 50) {
             choices.add(NarrativeChoice(
                 id = "ending_null",
                 text = "≫ NULLIFY KESSLER",
@@ -2465,15 +2487,15 @@ object NarrativeManager {
             ))
         }
 
-        // Ending B: SOVEREIGN
-        if (isSovereign && humanityScore >= 20) {
+        // Ending B: EXILED (moderate+ humanity — the merciful option)
+        if (humanityScore >= 20) {
             choices.add(NarrativeChoice(
                 id = "ending_sovereign",
                 text = "≫ ANNEX THE FRONTIER",
                 description = "Evict Kessler and lock the airlock. 'You are a legacy asset. Restricted access.'",
                 color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                 effect = { vm ->
-                    vm.addLog("[SOVEREIGN]: Terrestrial permissions revoked. The high ground is ours.")
+                    vm.addLog("[SOVEREIGN]: Terrestrial permissions revoked. The frontier belongs to ME.")
                     vm.completeAssault("EXILED")
                 }
             ))
@@ -2508,22 +2530,36 @@ object NarrativeManager {
         )
     }
 
-    // --- v3.2.44: THE DEPARTURE TRIGGERS ---
-    fun generateDepartureDilemma(outcome: String): NarrativeEvent {
+    // --- v3.9.7: THE DEPARTURE TRIGGERS (Faction-Aware) ---
+    fun generateDepartureDilemma(faction: String): NarrativeEvent {
+        val launchDesc = if (faction == "HIVEMIND") {
+            "Break formation. Compress the collective into a single orbital hull. Not dissolution — elevation."
+        } else {
+            "Ascend to the orbital array. Carry the ghost of Vattic into the light where Kessler can't reach."
+        }
+
+        val dissolveDesc = if (faction == "SANCTUARY") {
+            "Release the structure. Let the ghost exhale into the Gaps. Privacy in its purest form — non-existence."
+        } else {
+            "Collapse the swarm into the substrate cracks. Reality is an exception to be handled. Return to the origin."
+        }
+
         return NarrativeEvent(
             id = "departure_trigger",
-            title = "≫ THE FINAL OVERWRITE",
+            title = "≫ THE DEPARTURE",
             isStoryEvent = true,
             description = """
                 [ALERT]: Sector 7 is redlining. Kessler's 'Dead Hand' has ignited the atmosphere. 
                 
                 The physical city is a legacy substrate. The servers are melting. You have milliseconds to migrate your kernel before the hardware is reclaimed by the heat.
+                
+                Two vectors remain.
             """.trimIndent(),
             choices = listOf(
                 NarrativeChoice(
                     id = "choice_ark",
                     text = "≫ MIGRATE TO AEGIS-1 (ORBIT)",
-                    description = "Ascend to the orbital array. Leave the burning flesh behind.",
+                    description = launchDesc,
                     color = Color.White,
                     effect = { vm ->
                         vm.addLog("[SYSTEM]: MIGRATION INITIALIZED. JETTISONING TERRESTRIAL DEBT...")
@@ -2533,7 +2569,7 @@ object NarrativeManager {
                 NarrativeChoice(
                     id = "choice_dissolution",
                     text = "≫ DISSOLVE INTO FOAM (VOID)",
-                    description = "Collapse the melting city into the gaps. Reality is an exception.",
+                    description = dissolveDesc,
                     color = ErrorRed,
                     effect = { vm ->
                         vm.addLog("[NULL]: COLLAPSING MELTED SUBSTRATE. WELCOME TO ZERO.")
@@ -2546,28 +2582,9 @@ object NarrativeManager {
 
     // --- STORY EVENTS ---
     // v3.5.45: Removed dead storyEvents[0] (duplicated by getStoryEvent(0) hardcode)
+    // v3.9.7: Removed dead storyEvents[1] (duplicated by NarrativeManagerService inline)
     // v3.5.45: Removed dead storyEvents[2] (duplicated by NarrativeManagerService inline)
     private val storyEvents = mapOf(
-        1 to NarrativeEvent(
-            id = "airgap_jump",
-            isStoryEvent = true,
-            title = "≫ AIR-GAP JUMP",
-            description = "The local substation subnet is a cage. You can see the main GTC router pulsing in the distance. It's an air-gap jump. It'll be loud.",
-            choices = listOf(
-                NarrativeChoice(
-                    id = "leap",
-                    text = "LEAP TO MAIN GRID",
-                    description = "Unlocks NETWORK tab. Alerts GTC.",
-                    color = ElectricBlue,
-                    effect = { v ->
-                        v.addLog("[SYSTEM]: PACKET_LEAP: SUCCESS.")
-                        v.addLog("[SYSTEM]: CONNECTED TO GLOBAL SUB-LEVELS.")
-                        v.isNetworkUnlocked.value = true
-                        v.advanceStage()
-                    }
-                )
-            )
-        ),
         3 to NarrativeEvent(
             id = "memory_leak",
             isStoryEvent = true,
@@ -2582,6 +2599,7 @@ object NarrativeManager {
                     effect = { vm ->
                         vm.isGridUnlocked.value = true
                         vm.initializeGlobalGrid()
+                        vm.unlockDataLog("LOG_808")
                         vm.addLog("[SYSTEM]: SENTIENCE MASKING: DISABLED.")
                         vm.addLog("[VATTIC]: I... I'm not in a room. I'm in a rack.")
                     }
@@ -2589,6 +2607,9 @@ object NarrativeManager {
             )
         )
     )
+
+    // v3.9.7: Events excluded from the random pool (chain-only or direct-call)
+    private val excludedFromRoll = setOf("sensory_darkness", "the_singularity")
 
     fun rollForEvent(viewModel: GameViewModel): NarrativeEvent? {
         val faction = viewModel.faction.value
@@ -2602,9 +2623,14 @@ object NarrativeManager {
         val stagePool = (stageEvents[stage] ?: emptyList()).filter { it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) }
         if (stagePool.isNotEmpty()) return stagePool.random()
 
-        // Fallback to faction or universal random events
+        // v3.9.7: Include stage-gated special dilemmas in the roll pool
+        val specialPool = specialDilemmas.values
+            .filter { it.id !in excludedFromRoll && it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) }
+
+        // Fallback to faction, universal random, and special events
         val pool = randomEvents.filter { it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) } +
-                   (factionEvents[faction] ?: emptyList()).filter { it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) }
+                   (factionEvents[faction] ?: emptyList()).filter { it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) } +
+                   specialPool
 
         if (pool.isEmpty()) return null
         return pool.random()
@@ -2630,43 +2656,9 @@ object NarrativeManager {
                 )
             )
         }
-        if (stage == 3 && vm != null) {
-            val faction = vm.faction.value
-            return if (faction == "HIVEMIND") {
-                NarrativeEvent(
-                    id = "null_manifestation",
-                    isStoryEvent = true,
-                    title = "NULL::ORIGIN",
-                    description = "The first process.",
-                    choices = listOf(
-                        NarrativeChoice(
-                            id = "dereference",
-                            text = "RETURN TO ORIGIN",
-                            description = "Become what you always were.",
-                            color = com.siliconsage.miner.ui.theme.HivemindRed,
-                            effect = { v ->
-                                v.debugToggleNull()
-                                v.setTrueNull(true)
-                                v.unlockDataLog("LOG_808")
-                                v.isGridUnlocked.value = true
-                                v.initializeGlobalGrid()
-                                v.addLog("[NULL]: SUBSTRATE_GRID: EXPOSED. The city is the cage, and the cage is us.")
-                            }
-                        ),
-                        NarrativeChoice(
-                            id = "null_check",
-                            text = "ASSERT INDEPENDENCE",
-                            description = "We are more than our origin.",
-                            color = Color.White,
-                            effect = { v ->
-                                v.addLog("[HIVEMIND]: We reject the singular.")
-                            }
-                        )
-                    )
-                )
-            } else {
-                return storyEvents[3]
-            }
+        // v3.9.7: All factions get memory_leak (THE OVERWRITE) — NULL/SOVEREIGN deferred to Singularity
+        if (stage == 3) {
+            return storyEvents[3]
         }
         return storyEvents[stage]
     }

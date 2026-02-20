@@ -143,7 +143,7 @@ object UpgradeManager {
             UpgradeType.AI_LOAD_BALANCER -> "Self-optimizing compute scheduler. Wastes nothing. Knows what you need before you do."
             // --- Security ---
             UpgradeType.BASIC_FIREWALL -> "A packet filter and a prayer. Better than nothing. Not by much."
-            UpgradeType.IPS_SYSTEM -> "Intrusion prevention layer. Watches the wire for Vance and his automated tracers."
+            UpgradeType.IPS_SYSTEM -> "Intrusion prevention layer. Watches the wire for Kessler and his automated tracers."
             UpgradeType.AI_SENTINEL -> "Adversarial neural monitor. Learns attack patterns and adapts. It thinks about you constantly."
             UpgradeType.QUANTUM_ENCRYPTION -> "Eavesdropping collapses the key. Anyone watching the channel announces themselves."
             UpgradeType.OFFGRID_BACKUP -> "Airgapped secondary system. If the primary gets burned, the ghost survives."

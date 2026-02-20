@@ -143,3 +143,11 @@ echo -e "  ${CYAN}GitHub:${NC}     https://github.com/Vatteck/SiliconSageAIMiner
 echo ""
 echo -e "  GitHub Actions will now create the release automatically."
 echo ""
+
+# Log build to memory for index sync
+BUILD_LOG="$WORKSPACE/memory/builds.md"
+echo "## $(date '+%Y-%m-%d %H:%M') — v$VERSION (Build $BUILD_NUM)" >> "$BUILD_LOG"
+echo "- Version: $VERSION" >> "$BUILD_LOG"
+echo "- Build: $BUILD_NUM" >> "$BUILD_LOG"
+echo "- Summary: ${SUMMARY:-Release}" >> "$BUILD_LOG"
+echo "" >> "$BUILD_LOG"

@@ -104,7 +104,6 @@ object NarrativeService {
         }
         
         vm.currentDilemma.value = null
-        vm.checkPopupPause()
         vm.addLogPublic("[DECISION]: Selected protocol: ${choice.text}")
         SoundManager.play("click")
         vm.saveStatePublic() // v3.2.1: Force save on decision
