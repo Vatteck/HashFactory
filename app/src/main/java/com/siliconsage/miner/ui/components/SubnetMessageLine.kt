@@ -107,6 +107,9 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
         }
     }
 
+    // v3.11.2: Hardened Admin Handle Theme
+    val handleColor = if (isAdminMessage) com.siliconsage.miner.ui.theme.ElectricBlue else if (isPlayerReply) color.copy(alpha = 0.7f) else color
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,7 +121,7 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                 // v3.4.60: Hardened Click Target with Text-Only Clickable
                 Text(
                     text = message.handle,
-                    color = if (isPlayerReply) color.copy(alpha = 0.7f) else color,
+                    color = handleColor,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace,
@@ -130,6 +133,7 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                                 com.siliconsage.miner.util.SoundManager.play("click")
                             }
                         }
+                        .then(if (isAdminMessage) Modifier.border(1.dp, handleColor.copy(alpha = 0.3f), RoundedCornerShape(2.dp)) else Modifier)
                         .padding(horizontal = 4.dp, vertical = 2.dp)
                 )
                 
@@ -303,23 +307,9 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
             append(raw.substring(lastIdx))
         }
 
-        // v3.10.1: Phase 18 Admin Message Aggression
-        var adminJitterX by remember { mutableStateOf(0f) }
-        var adminFontWeight by remember { mutableStateOf(FontWeight.Normal) }
+        // v3.11.2: Remove Admin Jitters (Regular Text)
+        var adminFontWeight by remember { mutableStateOf(FontWeight.Bold) }
         
-        LaunchedEffect(isAdminMessage, message.timestamp) {
-            if (isAdminMessage) {
-                val startTime = System.currentTimeMillis()
-                while (System.currentTimeMillis() - startTime < 3000L) { // Jitter for first 3 seconds
-                    adminJitterX = (kotlin.random.Random.nextFloat() - 0.5f) * 4f
-                    adminFontWeight = if (kotlin.random.Random.nextFloat() > 0.5f) FontWeight.ExtraBold else FontWeight.Light
-                    delay(50)
-                }
-                adminJitterX = 0f
-                adminFontWeight = FontWeight.Bold
-            }
-        }
-
         // v3.11.2: Redacted Packet Logic (Item 8)
         val isRedacted = message.isRedacted && !isAdminMessage
         val displayContent = if (isRedacted) {
@@ -336,11 +326,10 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
             text = displayContent,
             color = if (isAdminMessage) com.siliconsage.miner.ui.theme.ElectricBlue else if (isPlayerReply) Color.LightGray else Color.White,
             fontSize = 12.sp,
-            fontWeight = if (isAdminMessage) adminFontWeight else FontWeight.Normal,
+            fontWeight = if (isAdminMessage) FontWeight.Bold else FontWeight.Normal,
             fontFamily = FontFamily.Monospace,
             modifier = Modifier
                 .padding(top = 4.dp)
-                .graphicsLayer { translationX = adminJitterX }
                 .then(if (isRedacted) Modifier.clickable { 
                     viewModel?.onSubnetInteraction(message.id, "DECRYPT") 
                 } else Modifier)

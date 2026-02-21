@@ -174,17 +174,18 @@ class SubnetService(
             if (parentId != null) {
                 val parentIndex = newList.indexOfFirst { it.id == parentId }
                 if (parentIndex != -1) {
-                    // Check if parent already has a next sibling to maintain threading order (v3.11.1)
-                    newList.add(parentIndex + 1, deliveredMessage)
+                    // Find the end of this specific thread to keep order (v3.11.2)
+                    var insertionPoint = parentIndex + 1
+                    while (insertionPoint < newList.size && newList[insertionPoint].isIndented) {
+                        insertionPoint++
+                    }
+                    newList.add(insertionPoint, deliveredMessage)
                 } else {
                     newList.add(deliveredMessage)
                 }
             } else {
                 newList.add(deliveredMessage)
             }
-            // Sort by timestamp if not threaded, ensuring responses appear after parents
-            // However, mutations above handle simple threading. 
-            // For safety, let's keep the chronological order for non-threaded messages (v3.11.1)
             newList.takeLast(100)
         }
 

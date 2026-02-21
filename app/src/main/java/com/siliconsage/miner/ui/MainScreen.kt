@@ -139,7 +139,11 @@ fun BottomNavBar(
     isGridUnlocked: Boolean,
     viewModel: GameViewModel // v3.4.63
 ) {
-    val hasSubnetPending by viewModel.isSubnetPaused.collectAsState()
+    val isSubnetPaused by viewModel.isSubnetPaused.collectAsState()
+    val hasNewDecision by viewModel.hasNewSubnetDecision.collectAsState()
+    val hasNewChatter by viewModel.hasNewSubnetChatter.collectAsState()
+    val hasSubnetAlert = isSubnetPaused || hasNewDecision || hasNewChatter
+
     val isRaidActive by viewModel.isRaidActive.collectAsState()
 
     val items = remember(storyStage, isNetworkUnlocked, isGridUnlocked) {
@@ -152,7 +156,8 @@ fun BottomNavBar(
     NavigationBar(containerColor = Color.Black, contentColor = primaryColor) {
         items.forEach { screen ->
             val hasAlert = when (screen) {
-                Screen.TERMINAL -> hasSubnetPending
+                Screen.TERMINAL -> false // Reserved for future use
+                Screen.NETWORK -> hasSubnetAlert
                 Screen.GRID -> isRaidActive
                 else -> false
             }
@@ -169,7 +174,10 @@ fun BottomNavBar(
                 },
                 label = { Text(screen.title, fontSize = 10.sp, fontWeight = FontWeight.Bold) },
                 selected = currentScreen == screen,
-                onClick = { onScreenSelected(screen) },
+                onClick = { 
+                    if (screen == Screen.NETWORK) viewModel.setTerminalMode("SUBNET")
+                    onScreenSelected(screen) 
+                },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black, selectedTextColor = primaryColor,
                     indicatorColor = primaryColor, unselectedIconColor = Color.Gray, unselectedTextColor = Color.Gray
@@ -492,7 +500,14 @@ fun ResourceDisplay(
     Column(horizontalAlignment = if (isRightAligned) Alignment.End else Alignment.Start, modifier = Modifier.width(width)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (!isRightAligned) Icon(icon, null, tint = Color.White.copy(alpha = droopAlpha), modifier = Modifier.size(11.dp).padding(end = 2.dp))
-            Text(text = label, color = color.copy(alpha = 0.9f * droopAlpha), fontSize = 11.sp, fontWeight = FontWeight.Black, style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.5f), blurRadius = 8f)))
+            Text(
+                text = "[$label]", 
+                color = color.copy(alpha = 0.9f * droopAlpha), 
+                fontSize = 10.sp, 
+                fontWeight = FontWeight.Black, 
+                fontFamily = FontFamily.Monospace,
+                style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.5f), blurRadius = 8f))
+            )
             if (isRightAligned) Icon(icon, null, tint = Color.White.copy(alpha = droopAlpha), modifier = Modifier.size(11.dp).padding(start = 2.dp))
         }
         

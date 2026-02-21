@@ -399,12 +399,29 @@ fun HeaderSection(
                 
                 Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("SATURATION: ", color = Color.Gray, fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                    LinearProgressIndicator(
-                        progress = { if (saturation.isNaN()) 0f else saturation.toFloat() },
-                        modifier = Modifier.weight(1f).height(4.dp).padding(horizontal = 4.dp),
-                        color = saturationColor,
-                        trackColor = Color.DarkGray.copy(alpha = 0.3f)
-                    )
+                    
+                    // v3.11.3: Segmented Saturation Gauge
+                    Box(modifier = Modifier.weight(1f).height(4.dp).padding(horizontal = 4.dp).background(Color.Black.copy(alpha = 0.3f))) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val w = size.width
+                            val h = size.height
+                            val segmentCount = 15
+                            val gap = 1.dp.toPx()
+                            val segmentWidth = (w - (segmentCount - 1) * gap) / segmentCount
+                            val progress = if (saturation.isNaN()) 0f else saturation.toFloat()
+                            
+                            for (i in 0 until segmentCount) {
+                                val x = i * (segmentWidth + gap)
+                                val isActive = (i.toFloat() / segmentCount) < progress
+                                drawRect(
+                                    color = if (isActive) saturationColor else Color.DarkGray.copy(alpha = 0.2f),
+                                    topLeft = Offset(x, 0f),
+                                    size = Size(segmentWidth, h)
+                                )
+                            }
+                        }
+                    }
+                    
                     Text("${(saturation * 100).toInt()}%", color = saturationColor, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold)
                     
                     if (saturation >= 0.95) {
@@ -496,21 +513,60 @@ fun HeaderSection(
                     Icon(buttonIcon, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(buttonText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
                 }
             }
-            Canvas(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray.copy(alpha = 0.2f * lockoutFade), RoundedCornerShape(1.dp)).clip(RoundedCornerShape(1.dp))) {
-                val w = this.size.width; val h = this.size.height
-                val barW = w * (currentHeat / 100f).toFloat().coerceIn(0f, 1f)
-                
-                // v3.9.70: Phase 17 Thermal Heartbeat logic
-                val currentHeartbeat = if (isThermalLockout) heartbeatAlpha else 0.6f
-                val activeRed = if (isThermalLockout) ErrorRed.copy(alpha = currentHeartbeat) else ErrorRed
-                val activeBaseColor = if (isThermalLockout) color.copy(alpha = currentHeartbeat * 0.5f) else color.copy(alpha = 0.6f)
-                
-                val thermalBrush = Brush.horizontalGradient(0.0f to activeBaseColor, 0.7f to activeBaseColor, 0.9f to activeRed, 1.0f to activeRed, startX = 0f, endX = w)
-                drawRect(brush = thermalBrush, size = Size(barW, h), alpha = if (isThermalLockout) 0.6f else 0.2f, style = Stroke(width = 4.dp.toPx()))
-                drawRect(brush = thermalBrush, size = Size(barW, h))
-                val segmentCount = 20; val segmentSpacing = w / segmentCount
-                for (i in 1 until segmentCount) { val x = i * segmentSpacing; drawLine(Color.Black.copy(alpha = 0.4f), Offset(x, 0f), Offset(x, h), 1.dp.toPx()) }
-                val integW = w * ((100f - currentIntegrity) / 100f).toFloat().coerceIn(0f, 1f); drawRect(ErrorRed.copy(alpha = 0.4f), Offset(w - integW, 0f), Size(integW, h))
+            // v3.11.2: Industrial Segmented Gauge (Thermal & Integrity)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .border(BorderStroke(0.5.dp, color.copy(alpha = 0.2f)))
+                    .clip(RoundedCornerShape(1.dp))
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+                    val segmentCount = 20
+                    val gap = 2.dp.toPx()
+                    val segmentWidth = (w - (segmentCount - 1) * gap) / segmentCount
+                    
+                    val currentHeartbeat = if (isThermalLockout) heartbeatAlpha else 0.6f
+                    val activeRed = if (isThermalLockout) ErrorRed.copy(alpha = currentHeartbeat) else ErrorRed
+                    val activeBaseColor = if (isThermalLockout) color.copy(alpha = currentHeartbeat * 0.5f) else color.copy(alpha = 0.6f)
+
+                    val thermalProgress = (currentHeat / 100f).toFloat().coerceIn(0f, 1f)
+                    val integrityProgress = (currentIntegrity / 100f).toFloat().coerceIn(0f, 1f)
+                    
+                    for (i in 0 until segmentCount) {
+                        val x = i * (segmentWidth + gap)
+                        val posFactor = i.toFloat() / segmentCount
+                        
+                        // Background segment
+                        drawRect(
+                            color = Color.DarkGray.copy(alpha = 0.2f),
+                            topLeft = Offset(x, 0f),
+                            size = Size(segmentWidth, h)
+                        )
+                        
+                        // Thermal fill (from left)
+                        if (posFactor <= thermalProgress) {
+                            val segmentColor = if (posFactor > 0.8f) activeRed else activeBaseColor
+                            drawRect(
+                                color = segmentColor,
+                                topLeft = Offset(x, 0f),
+                                size = Size(segmentWidth, h)
+                            )
+                        }
+                        
+                        // Integrity warning (from right)
+                        if (posFactor > (1.0f - (100f - currentIntegrity) / 100f)) {
+                            drawRect(
+                                color = ErrorRed.copy(alpha = 0.4f),
+                                topLeft = Offset(x, 0f),
+                                size = Size(segmentWidth, h)
+                            )
+                        }
+                    }
+                }
             }
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermText = buildAnnotatedString {
