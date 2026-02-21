@@ -1,10 +1,10 @@
 {
-  "version": "3.12.5",
-  "build": 416,
+  "version": "3.12.6",
+  "build": 417,
   "date": "2026-02-21",
   "changelog": [
-    "514dff1 fix: v3.12.5 - explicit generator basePower and gridContribution values (ordinal chaos purged)"
+    "972e9ad feat: v3.12.6 - GTC billing cycle (60s settle, auto-pay, demand charge escalation, net metering credit)"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.5",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.5/MINER_3.12.5.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.6",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.6/MINER_3.12.6.apk"
 }
