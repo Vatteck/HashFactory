@@ -1,7 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [3.9.20] - 2026-02-20
+## [3.11.2] - 2026-02-21
+### ⚠️ IMPORTANT: Signed Build - Manual Reinstall Required
+This release switches from **debug** to **signed** APK. Android will NOT recognize this as an update - you must:
+1. Uninstall the current Silicon Sage app
+2. Download and install the new signed APK from GitHub Releases
+
+Failure to uninstall first will result in a "Package Signature Conflict" error.
+
+### Added
+- **PACKET_REDACTED Decryption**: Redacted Subnet messages now show as `█████████`. Click to decrypt for a compute cost (scales with story stage).
+- **Power Utility Bill**: Real electrical costs accumulate based on production rate. Heat >95°C doubles the rate. GTC sends warnings when bill exceeds 1000 CRED.
+
+### Technical
+- Refactored "God Objects": Split `NarrativeEvents.kt` (2478→) and `DataLogEntries.kt` (1601→) into modular delegates for AI context management.
+- Added local compile check to V-GAP protocol (required before any push).
+- All high-line-count files now <1000 lines.
 ### Added
 - **Reputation System (Phase 14 Logic)**: Implemented `reputationScore` tracking (0-100) and computed tiers: **TRUSTED**, **NEUTRAL**, **FLAGGED**, and **BURNED**.
 - **Social Reactivity**: The Subnet now acts as a threat vector or asset. **TRUSTED** status grants early-warning sentinel messages (lowering risk). **BURNED** status triggers "snitch" leaks (spiking risk).
