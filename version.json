@@ -1,10 +1,10 @@
 {
-  "version": "3.12.2",
-  "build": 413,
+  "version": "3.12.3",
+  "build": 414,
   "date": "2026-02-21",
   "changelog": [
-    "144f0a2 fix: remove tech tree sync terminal spam"
+    "b6ff77f feat: v3.12.3 - re-consolidate player identity with hardware metrics"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.2",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.2/MINER_3.12.2.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.3",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.3/MINER_3.12.3.apk"
 }
