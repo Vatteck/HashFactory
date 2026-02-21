@@ -41,17 +41,20 @@
 - Summary: Manual Release
 
 ## 2026-02-21 15:31 — v3.12.3 (Build 414)
-- Summary: Manual Release
+- Summary: Re-consolidate player identity with hardware metrics
 
 ## 2026-02-21 16:04 — v3.12.4 (Build 415)
-- Summary: Manual Release
+- Summary: Dual-layer power rails (ElectricBlue gen + Red-Yellow GTC draw)
 
 ## 2026-02-21 16:11 — v3.12.5 (Build 416)
-- Summary: Manual Release
+- Summary: Fix generator basePower ordinal chaos (explicit values per tier)
 
 ## 2026-02-21 16:18 — v3.12.6 (Build 417)
-- Summary: Manual Release
+- Summary: GTC billing cycle (60s settle, auto-pay, demand charges, net metering)
 
 ## 2026-02-21 16:27 — v3.12.7 (Build 418)
-- Summary: Manual Release
+- Summary: HudTheme syntax-coloring system (8-state faction/path grammar)
+
+## 2026-02-21 16:30 — v3.12.8 (Build 419)
+- Summary: Room DB v30 bump for missedBillingPeriods schema
 
