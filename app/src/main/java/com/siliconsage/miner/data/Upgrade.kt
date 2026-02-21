@@ -55,25 +55,41 @@ enum class UpgradeType {
 
     // Values for Simulation Engines
     val basePower: Double get() = when {
-        isHardware -> 1.0 + (ordinal * 1.5) // Reduced early power draw
+        isHardware -> 1.0 + (ordinal * 1.5) // Scaled hardware draw
         isCooling -> {
             val coolingIndex = ordinal - 15
-            1.0 + (coolingIndex * 4.0) // Scaled cooling power
+            1.0 + (coolingIndex * 4.0) // Scaled cooling draw
         }
         isSecurity -> 10.0 + (ordinal % 10 * 10.0)
-        isGenerator -> -30.0 - (ordinal % 10 * 100.0) // Produces power
-        this == RESIDENTIAL_TAP -> 5.0
-        this == INDUSTRIAL_FEED -> 25.0
-        this == SUBSTATION_LEASE -> 100.0
+        // v3.12.4: Explicit generator output values — no more ordinal chaos
+        this == SOLAR_PANEL        ->    -15.0  // Trickle. Barely offsets a fan.
+        this == WIND_TURBINE       ->    -40.0  // Decent early-game offset.
+        this == DIESEL_GENERATOR   ->    -80.0  // Reliable. Costs heat narrative.
+        this == GEOTHERMAL_BORE    ->   -200.0  // Significant. Mid-late game.
+        this == NUCLEAR_REACTOR    ->   -600.0  // Game-changer. Near off-grid.
+        this == FUSION_CELL        ->  -2000.0  // One cell > most builds.
+        this == ORBITAL_COLLECTOR  ->  -8000.0  // Phase 13 tier.
+        this == DYSON_LINK         -> -50000.0  // Endgame. GTC sees nothing.
+        this == RESIDENTIAL_TAP    ->     5.0
+        this == INDUSTRIAL_FEED    ->    25.0
+        this == SUBSTATION_LEASE   ->   100.0
         else -> 0.0
     }
 
     val gridContribution: Double get() = when {
-        this == RESIDENTIAL_TAP -> 100.0
-        this == INDUSTRIAL_FEED -> 500.0
-        this == SUBSTATION_LEASE -> 2500.0
-        this == NUCLEAR_CORE -> 15000.0
-        isGenerator -> 50.0 + (ordinal % 10 * 100.0)
+        this == RESIDENTIAL_TAP    ->   100.0
+        this == INDUSTRIAL_FEED    ->   500.0
+        this == SUBSTATION_LEASE   ->  2500.0
+        this == NUCLEAR_CORE       -> 15000.0
+        // v3.12.4: Explicit generator capacity bonuses — mirrors basePower progression
+        this == SOLAR_PANEL        ->    20.0
+        this == WIND_TURBINE       ->    60.0
+        this == DIESEL_GENERATOR   ->   120.0
+        this == GEOTHERMAL_BORE    ->   300.0
+        this == NUCLEAR_REACTOR    ->   800.0
+        this == FUSION_CELL        ->  3000.0
+        this == ORBITAL_COLLECTOR  -> 12000.0
+        this == DYSON_LINK         -> 75000.0
         isSecurity -> 1.0 + (ordinal % 5)
         else -> 0.0
     }
