@@ -1,10 +1,10 @@
 {
-  "version": "3.9.24",
-  "build": 401,
+  "version": "3.9.25",
+  "build": 402,
   "date": "2026-02-20",
   "changelog": [
-    "Phase 12-13: ECLIPSE, Narrative Chains, Stage 0-5, Cross-Path UI"
+    "Phase 14: Narrative Audit, Cross-Path Polish, Debug Commands"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.9.24",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.9.24/MINER_3.9.24.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.9.25",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.9.25/MINER_3.9.25.apk"
 }
