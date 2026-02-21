@@ -378,40 +378,14 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val progress by viewModel.clickBufferProgress.collectAsState()
     val pellets by viewModel.clickBufferPellets.collectAsState()
     val hex by viewModel.activeCommandHex.collectAsState()
-    val stage by viewModel.storyStage.collectAsState()
-    val location by viewModel.currentLocation.collectAsState()
     val currentHeat by viewModel.currentHeat.collectAsState()
     val isTrueNull by viewModel.isTrueNull.collectAsState()
     val isSovereign by viewModel.isSovereign.collectAsState()
-    val humanity by viewModel.humanityScore.collectAsState()
     val speedLevel by viewModel.clickSpeedLevel.collectAsState()
 
-    val user by viewModel.playerTitle.collectAsState()
-    val systemTitle by viewModel.systemTitle.collectAsState()
-    
-    // Reverse engineer the host string from the system title, mimicking old behavior
-    // systemTitle is [THE SWARM THRONE] -> "throne"
-    // We already have the raw host string mapped inside of IdentityService via systemTitle (before GameViewModel formats it).
-    // Let's just create a quick host extraction:
-    val host = when {
-        // Special orbital/void overrides
-        location == "ORBITAL_SATELLITE" -> "ark"
-        location == "VOID_INTERFACE" -> "void"
-        
-        systemTitle.contains("COLLECTIVE") -> "collective"
-        systemTitle.contains("THRONE") -> "throne"
-        systemTitle.contains("VOID INTERFACE") -> "void"
-        systemTitle.contains("CITADEL") -> "citadel"
-        systemTitle.contains("GHOST GAPS") -> "the_gaps"
-        systemTitle.contains("SATELLITE") -> "sovereign"
-        systemTitle.contains("NULL") -> "null"
-        systemTitle.contains("TRANSCENDENT") -> "transcendent"
-        systemTitle.contains("ASCENSION") -> "ascension"
-        systemTitle.contains("AUTONOMOUS") -> "grid"
-        systemTitle.contains("SWARM NODE") -> "hive"
-        systemTitle.contains("SANCTUARY") -> "sanctuary"
-        else -> "sub-07"
-    }
+    val user = viewModel.getPromptUser()
+    val host = viewModel.getPromptHost()
+    val isMonitored = viewModel.isSubnetMonitored()
 
     val corruption by viewModel.identityCorruption.collectAsState()
     val promptUserColor = color
@@ -428,34 +402,31 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
             .graphicsLayer { 
                 if (globalGlitchIntensity > 0.3) {
-                    translationX = (Math.random().toFloat() * 4f - 2f) * globalGlitchIntensity
+                    translationX = (Random.nextFloat() * 4f - 2f) * globalGlitchIntensity
                 }
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val isFlickering = (humanity < 20 || corruption > 0.4) && Math.random() < (0.1 + corruption * 0.5)
-
-        var userLabel = user
-        if (corruption > 0.15) {
-            val glitchChars = "0123456789ABCDEF!@#$%^&*"
-            val builder = StringBuilder()
-            userLabel.forEach { char ->
-                if (Math.random() < (corruption * 0.6)) {
-                    builder.append(glitchChars.random())
-                } else {
-                    builder.append(char)
-                }
-            }
-            userLabel = builder.toString()
+        // v3.12.0: Subtle "The Eye" Glyph for Monitoring
+        if (isMonitored) {
+            val infiniteTransition = rememberInfiniteTransition(label = "EyePulse")
+            val eyeAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.1f, targetValue = 0.4f,
+                animationSpec = infiniteRepeatable(tween(2000, easing = LinearEasing), RepeatMode.Reverse),
+                label = "eye"
+            )
+            Text(
+                text = "👁",
+                color = Color.White.copy(alpha = eyeAlpha),
+                fontSize = 11.sp,
+                modifier = Modifier.padding(end = 4.dp)
+            )
         }
-
-        if (isFlickering && Math.random() < 0.2) userLabel = "???"
-        if (corruption > 0.8 && Math.random() < 0.1) userLabel = "0x" + "DEADC0DE".substring(0, userLabel.length.coerceAtMost(8))
 
         Text(
             text = androidx.compose.ui.text.buildAnnotatedString {
                 withStyle(androidx.compose.ui.text.SpanStyle(color = promptUserColor, fontWeight = FontWeight.ExtraBold)) {
-                    append(userLabel)
+                    append(user)
                 }
                 withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.8f))) {
                     append("@")
@@ -466,8 +437,14 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                 withStyle(androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.6f))) {
                     append(":~")
                 }
+                
+                // v3.12.0: High-integrity/heat bracket glitching
+                val promptToken = if (globalGlitchIntensity > 0.8 && Random.nextDouble() < 0.2) {
+                    listOf("{", "<", "§", "Ø").random()
+                } else "$"
+                
                 withStyle(androidx.compose.ui.text.SpanStyle(color = Color.Yellow, fontWeight = FontWeight.ExtraBold)) {
-                    append("$")
+                    append(promptToken)
                 }
                 append(" ")
                 
@@ -486,28 +463,47 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         val isCritical = currentHeat >= 100.0
         val isGlitching = currentHeat > 85.0
 
-        var isBursting by remember { mutableStateOf(false) }
+        // v3.12.0: Interactive Haptic Feedback on Progress
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+        var lastHapticStep by remember { mutableIntStateOf(0) }
+        LaunchedEffect(filledCount) {
+            val step = (progress * 10).toInt() // 0-10 steps
+            if (step > lastHapticStep && step > 0) {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                lastHapticStep = step
+            } else if (filledCount == 0) {
+                lastHapticStep = 0
+            }
+        }
+
+        var isBursting by remember { mutableLongStateOf(0L) }
         LaunchedEffect(progress) {
-            if (progress == 0f) {
-                isBursting = true
-                delay(500)
-                isBursting = false
-            } else {
-                isBursting = false
+            if (progress == 0f && filledCount == 0) {
+                isBursting = System.currentTimeMillis()
             }
         }
 
         val annotatedBar = androidx.compose.ui.text.buildAnnotatedString {
-            if (isBursting && !isCritical) {
-                val particles = listOf("*", ".", ":", "·", " ")
-                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) {
-                    append(" ".repeat(10))
-                    repeat(20) { append(particles.random()) }
-                    append(" [COMMITTED]")
+            val timeSinceBurst = System.currentTimeMillis() - isBursting
+            if (timeSinceBurst < 400 && isBursting > 0) {
+                // v3.12.0: ASCII Particle Drift
+                val driftProgress = timeSinceBurst / 400f
+                val particles = listOf("*", ".", ":", "·", "'", "`")
+                withStyle(androidx.compose.ui.text.SpanStyle(color = color.copy(alpha = (1f - driftProgress) * 0.8f), fontWeight = FontWeight.Bold)) {
+                    // Drift the starting point of the particle field
+                    val startPad = (driftProgress * 15).toInt()
+                    append(" ".repeat(startPad))
+                    repeat(25) { append(particles.random()) }
+                    if (driftProgress < 0.5f) append(" [COMMITTED]")
                 }
             } else {
                 val bracketColor = if (isCritical) ErrorRed else color.copy(alpha = 0.4f)
-                withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("[") }
+                
+                // v3.12.0: Bracket Glitching
+                val openBracket = if (globalGlitchIntensity > 0.7 && Random.nextDouble() < 0.1) "{" else "["
+                val closeBracket = if (globalGlitchIntensity > 0.7 && Random.nextDouble() < 0.1) "}" else "]"
+
+                withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append(openBracket) }
 
                 for (i in 0 until barLength) {
                     when {
@@ -517,6 +513,8 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                         }
                         i == filledCount -> {
                             val isOnPellet = pellets.contains(i)
+                            // v3.12.0: Pellet Jitter
+                            val jitterOffset = if (isGlitching && Random.nextDouble() < 0.2) (Random.nextInt(3) - 1) else 0
                             val entityChar = when {
                                 isTrueNull -> "0"
                                 isSovereign -> "Σ"
@@ -550,7 +548,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                         }
                     }
                 }
-                withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append("]") }
+                withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append(closeBracket) }
             }
         }
 

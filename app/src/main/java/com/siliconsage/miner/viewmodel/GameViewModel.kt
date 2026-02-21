@@ -690,6 +690,55 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         subnetService.tick(storyStage.value, faction.value, singularityChoice.value, identityCorruption.value, currentHeat.value, isRaidActive.value, activeTerminalMode.value, isSettingsPaused.value, flopsProductionRate.value, reputationTier.value)
     }
 
+    // v3.12.0: Centralized Prompt Logic
+    fun getPromptUser(): String {
+        val user = playerTitle.value
+        val corruption = identityCorruption.value
+        if (corruption <= 0.15) return user
+        
+        val glitchChars = "0123456789ABCDEF!@#$%^&*"
+        val builder = StringBuilder()
+        user.forEach { char ->
+            if (Random.nextDouble() < (corruption * 0.6)) {
+                builder.append(glitchChars.random())
+            } else {
+                builder.append(char)
+            }
+        }
+        var result = builder.toString()
+        if (corruption > 0.8 && Random.nextDouble() < 0.1) {
+            result = "0x" + "DEADC0DE".substring(0, result.length.coerceAtMost(8))
+        }
+        return result
+    }
+
+    fun getPromptHost(): String {
+        val location = currentLocation.value
+        val title = systemTitle.value
+        return when {
+            location == "ORBITAL_SATELLITE" -> "ark"
+            location == "VOID_INTERFACE" -> "void"
+            title.contains("COLLECTIVE") -> "collective"
+            title.contains("THRONE") -> "throne"
+            title.contains("VOID INTERFACE") -> "void"
+            title.contains("CITADEL") -> "citadel"
+            title.contains("GHOST GAPS") -> "the_gaps"
+            title.contains("SATELLITE") -> "sovereign"
+            title.contains("NULL") -> "null"
+            title.contains("TRANSCENDENT") -> "transcendent"
+            title.contains("ASCENSION") -> "ascension"
+            title.contains("AUTONOMOUS") -> "grid"
+            title.contains("SWARM NODE") -> "hive"
+            title.contains("SANCTUARY") -> "sanctuary"
+            else -> "sub-07"
+        }
+    }
+
+    fun isSubnetMonitored(): Boolean {
+        // Subtle tell: eye glyph shows if admin is monitoring or decision is pending
+        return isSubnetPaused.value || isSubnetHushed.value || hasNewSubnetDecision.value
+    }
+
     fun triggerSubnetReaction(type: String, metadata: String = "") {
         if (isSubnetHushed.value) return
         val template = when (type) {
