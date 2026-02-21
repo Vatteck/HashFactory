@@ -1,11 +1,10 @@
 {
-  "version": "3.12.0",
-  "build": 411,
+  "version": "3.12.1",
+  "build": 412,
   "date": "2026-02-21",
   "changelog": [
-    "681a27a feat: v3.12.0 - industrial terminal polish, decentralized prompt, haptic sync, and monitoring tell",
-    "c734670 docs: update build history to v3.11.5"
+    "d956f1a feat: v3.12.1 - elevated identity header in HUD"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.0/MINER_3.12.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.1",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.1/MINER_3.12.1.apk"
 }
