@@ -1,10 +1,10 @@
 {
-  "version": "3.11.0",
-  "build": 404,
+  "version": "3.11.1",
+  "build": 405,
   "date": "2026-02-21",
   "changelog": [
-    "See CHANGELOG.md for details"
+    "Verified build - Patched 7 bugs + full SYSTEMS.md documentation. Local compile passed."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.0/MINER_3.11.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.1",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.1/MINER_3.11.1.apk"
 }
