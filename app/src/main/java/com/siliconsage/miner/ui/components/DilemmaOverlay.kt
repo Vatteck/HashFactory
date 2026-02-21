@@ -37,12 +37,16 @@ fun DilemmaOverlay(
     onChoice: (NarrativeChoice) -> Unit
 ) {
     if (dilemma != null) {
+        // v3.11.1: Use pointerInput to block background touches without full-screen collision
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.9f))
-                .clickable { /* Block clicks */ }
-                .padding(32.dp),
+                .background(Color.Black.copy(alpha = 0.85f))
+                .pointerInput(Unit) { 
+                    // Consumes all gestures to prevent 'Training Model' clicks from leaking through
+                    androidx.compose.foundation.gestures.detectTapGestures { } 
+                }
+                .padding(24.dp), // v3.11.1: More breathing room for small screens
             contentAlignment = Alignment.Center
         ) {
             Column(

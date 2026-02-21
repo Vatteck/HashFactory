@@ -248,13 +248,13 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     val corruption by viewModel.identityCorruption.collectAsState()
     val flopsRate by viewModel.flopsProductionRate.collectAsState()
 
-    LaunchedEffect(logs.size, subnetMessages.size) {
-        if (mode == "IO" && logs.isNotEmpty()) {
-            delay(10)
-            listState.animateScrollToItem(logs.size - 1)
-        } else if (mode == "SUBNET" && subnetMessages.isNotEmpty()) {
-            delay(10)
-            listState.animateScrollToItem(subnetMessages.size - 1)
+    LaunchedEffect(logs.size, subnetMessages.size, mode) {
+        if (!isPaused) {
+            if (mode == "IO" && logs.isNotEmpty()) {
+                listState.scrollToItem(logs.size - 1)
+            } else if (mode == "SUBNET" && subnetMessages.isNotEmpty()) {
+                listState.scrollToItem(subnetMessages.size - 1)
+            }
         }
     }
 

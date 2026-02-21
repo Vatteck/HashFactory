@@ -48,14 +48,18 @@ fun DataLogDialog(
         onDismissRequest = { /* No-op to prevent outside dismissal */ },
         properties = DialogProperties(
             dismissOnBackPress = false,
-            dismissOnClickOutside = false
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false // v3.11.1: Full-width control
         )
     ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.7f)
+                .fillMaxHeight(0.75f) // v3.11.1: Slightly taller for better button clearance
                 .border(2.dp, ElectricBlue, RoundedCornerShape(8.dp))
+                .pointerInput(Unit) {
+                    androidx.compose.foundation.gestures.detectTapGestures { } // Block taps to MainScreen
+                }
                 .graphicsLayer {
                     if (isDismissing) {
                         translationX = (kotlin.random.Random.nextFloat() - 0.5f) * 40f

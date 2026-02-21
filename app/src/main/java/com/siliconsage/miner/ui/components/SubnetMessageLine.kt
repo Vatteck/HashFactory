@@ -211,58 +211,51 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         
-                        // Use a wrapping row for compact action chips
-                        Row(
+                        // v3.11.1: Multi-Row Bio Actions (No Clipping)
+                        FlowRow(
                             modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            // Split actions into rows of 2 if there are many, or just use a horizontal scroll
-                            // Given the terminal aesthetic, a simple wrapping FlowRow-like logic or 
-                            // just a scrollable Row is cleanest. Let's do scrollable Row for absolute vertical min.
-                            Row(
-                                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                info.specialActions.forEach { action ->
-                                    OutlinedButton(
-                                        onClick = { viewModel?.onBioAction(message.id, action) },
-                                        modifier = Modifier.height(28.dp),
-                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(
-                                            contentColor = if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.White
-                                        ),
-                                        shape = RoundedCornerShape(2.dp),
-                                        border = androidx.compose.foundation.BorderStroke(
-                                            1.dp, 
-                                            (if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.Gray).copy(alpha = 0.4f)
+                            info.specialActions.forEach { action ->
+                                OutlinedButton(
+                                    onClick = { viewModel?.onBioAction(message.id, action) },
+                                    modifier = Modifier.height(28.dp),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.White
+                                    ),
+                                    shape = RoundedCornerShape(2.dp),
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp, 
+                                        (if (action.riskDelta > 0) com.siliconsage.miner.ui.theme.ElectricBlue else Color.Gray).copy(alpha = 0.4f)
+                                    )
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = action.text.replace("_", " "),
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontFamily = FontFamily.Monospace
                                         )
-                                    ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                        
+                                        val badge = when {
+                                            action.productionBonus > 1.0 -> "⚡"
+                                            action.riskDelta > 0 -> "⚠️"
+                                            action.riskDelta < 0 -> "🛡️"
+                                            else -> ""
+                                        }
+                                        if (badge.isNotEmpty()) {
+                                            Text(" $badge", fontSize = 9.sp)
+                                        }
+                                        
+                                        if (action.cost > 0) {
                                             Text(
-                                                text = action.text.replace("_", " "),
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.ExtraBold,
-                                                fontFamily = FontFamily.Monospace
+                                                text = " [${viewModel?.formatLargeNumber(action.cost) ?: action.cost.toInt()}]",
+                                                color = if (action.riskDelta < 0) color else com.siliconsage.miner.ui.theme.ElectricBlue,
+                                                fontSize = 8.sp,
+                                                fontWeight = FontWeight.Bold
                                             )
-                                            
-                                            val badge = when {
-                                                action.productionBonus > 1.0 -> "⚡"
-                                                action.riskDelta > 0 -> "⚠️"
-                                                action.riskDelta < 0 -> "🛡️"
-                                                else -> ""
-                                            }
-                                            if (badge.isNotEmpty()) {
-                                                Text(" $badge", fontSize = 9.sp)
-                                            }
-                                            
-                                            if (action.cost > 0) {
-                                                Text(
-                                                    text = " [${viewModel?.formatLargeNumber(action.cost) ?: action.cost.toInt()}]",
-                                                    color = if (action.riskDelta < 0) color else com.siliconsage.miner.ui.theme.ElectricBlue,
-                                                    fontSize = 8.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
                                         }
                                     }
                                 }
@@ -328,7 +321,7 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
 
         Text(
             text = annotatedContent,
-            color = if (isAdminMessage) com.siliconsage.miner.ui.theme.ErrorRed else if (isPlayerReply) Color.LightGray else Color.White,
+            color = if (isAdminMessage) com.siliconsage.miner.ui.theme.ElectricBlue else if (isPlayerReply) Color.LightGray else Color.White,
             fontSize = 12.sp,
             fontWeight = if (isAdminMessage) adminFontWeight else FontWeight.Normal,
             fontFamily = FontFamily.Monospace,
@@ -365,7 +358,7 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                     // v3.5.37: Admin-aware button styling
                     val buttonAccent = when {
                         message.interactionType == InteractionType.COMMAND_LEAK -> com.siliconsage.miner.ui.theme.ElectricBlue
-                        isAdminMessage -> com.siliconsage.miner.ui.theme.ErrorRed
+                        isAdminMessage -> com.siliconsage.miner.ui.theme.ElectricBlue
                         else -> color
                     }
                     

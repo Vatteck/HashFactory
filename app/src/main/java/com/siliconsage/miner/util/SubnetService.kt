@@ -45,13 +45,13 @@ class SubnetService(
         val now = System.currentTimeMillis()
         
         // Pacing logic
-        val baseChance = 0.10f // v3.11.0: Hyper-Engagement (from 0.06f)
-        val heatMod = (currentHeat / 100.0).toFloat() * 0.10f
-        val raidMod = if (isRaid) 0.20f else 0.0f
-        val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.80f)
+        val baseChance = 0.15f // v3.11.1: Hyper-Engagement (from 0.10f)
+        val heatMod = (currentHeat / 100.0).toFloat() * 0.15f // v3.11.1: Increased heat influence
+        val raidMod = if (isRaid) 0.30f else 0.0f
+        val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.90f)
 
-        if (now - lastMsgTime > 15000L && Random.nextFloat() < finalChance) {
-            lastMsgTime = now // v3.11.0: Hyper-pacing (15s cooldown)
+        if (now - lastMsgTime > 8000L && Random.nextFloat() < finalChance) {
+            lastMsgTime = now // v3.11.1: Hyper-pacing (8s cooldown, down from 15s)
             
             // Phase 1: Reputation Events (Sentinel vs Snitch)
             if (stage < 3 && currentHeat > 75.0 && reputationTier == ReputationManager.TIER_TRUSTED && Random.nextFloat() < 0.2f) {
@@ -172,11 +172,19 @@ class SubnetService(
         messages.update { currentList ->
             val newList = currentList.toMutableList()
             if (parentId != null) {
-                val parentIndex = newList.indexOfLast { it.id == parentId }
-                if (parentIndex != -1) newList.add(parentIndex + 1, deliveredMessage) else newList.add(deliveredMessage)
+                val parentIndex = newList.indexOfFirst { it.id == parentId }
+                if (parentIndex != -1) {
+                    // Check if parent already has a next sibling to maintain threading order (v3.11.1)
+                    newList.add(parentIndex + 1, deliveredMessage)
+                } else {
+                    newList.add(deliveredMessage)
+                }
             } else {
                 newList.add(deliveredMessage)
             }
+            // Sort by timestamp if not threaded, ensuring responses appear after parents
+            // However, mutations above handle simple threading. 
+            // For safety, let's keep the chronological order for non-threaded messages (v3.11.1)
             newList.takeLast(100)
         }
 

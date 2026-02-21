@@ -707,7 +707,16 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
 
     fun setTerminalMode(mode: String) {
         activeTerminalMode.value = mode
-        if (mode == "IO") hasNewIOMessage.value = false else { hasNewSubnetDecision.value = false; hasNewSubnetChatter.value = false }
+        if (mode == "IO") {
+            hasNewIOMessage.value = false
+        } else if (mode == "SUBNET") {
+            hasNewSubnetDecision.value = false
+            hasNewSubnetChatter.value = false
+            // v3.11.1: Also reset the service-level flags
+            subnetService.clearAlerts()
+        }
+        SoundManager.play("click")
+        HapticManager.vibrateClick()
     }
 
     fun buyTranscendencePerk(id: String) {

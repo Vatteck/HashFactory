@@ -76,12 +76,17 @@ object ResourceEngine {
     }
 
     /**
-     * v3.2.1: Calculate scaling cost for Dilemmas based on production power
+     * v3.11.1: Calculate scaling cost for Dilemmas based on production power.
+     * Added variance to prevent "fixed cost" feeling.
      */
     fun calculateDilemmaCost(baseCost: Double, passiveRate: Double, stage: Int): Double {
         val stageMult = (stage + 1).toDouble().pow(1.5)
         val rateLog = log10(passiveRate + 10.0).coerceAtLeast(1.0)
-        return baseCost * stageMult * rateLog
+        
+        // Add +/- 15% random variance
+        val variance = 0.85 + (Math.random() * 0.30)
+        
+        return baseCost * stageMult * rateLog * variance
     }
 
     /**
