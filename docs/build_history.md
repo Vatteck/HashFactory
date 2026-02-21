@@ -52,3 +52,6 @@
 ## 2026-02-21 16:18 — v3.12.6 (Build 417)
 - Summary: Manual Release
 
+## 2026-02-21 16:27 — v3.12.7 (Build 418)
+- Summary: Manual Release
+
