@@ -1,10 +1,11 @@
 {
-  "version": "3.11.1",
-  "build": 405,
+  "version": "3.11.2",
+  "build": 406,
   "date": "2026-02-21",
   "changelog": [
-    "Verified build - Patched 7 bugs + full SYSTEMS.md documentation. Local compile passed."
+    "f36e5bb feat: implement Item 2 & 8 (Utility Bill & Redacted Decryption) and refactor Narrative/Log God Objects",
+    "7dab6a9 build: Signed release config + release.sh v3.0 improvements"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.1",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.1/MINER_3.11.1.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.2",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.2/MINER_3.11.2.apk"
 }
