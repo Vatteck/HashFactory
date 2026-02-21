@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ConvergenceGold
+import com.siliconsage.miner.ui.theme.HudTheme
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlin.random.Random
 
@@ -72,6 +73,11 @@ fun HeaderSection(
     val singularityChoice by viewModel.singularityChoice.collectAsState()
     val corruption by viewModel.identityCorruption.collectAsState() // v3.5.53: Corruption-reactive identity
     val reputationTier by viewModel.reputationTier.collectAsState()
+
+    // v3.12.7: Resolve semantic HUD theme once — composable stays dumb
+    val hudTheme = remember(faction, singularityChoice, storyStage, corruption) {
+        HudTheme.resolve(faction, singularityChoice, storyStage, corruption)
+    }
 
     // v3.2.5: Zero-recomposition pattern - Isolate volatile stats into States
     val currentHeatState = viewModel.currentHeat.collectAsState()
@@ -300,10 +306,30 @@ fun HeaderSection(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 // v3.12.3: Player Identity restored to metrics row
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    val repLabel = " // [REP: $reputationTier]"
+                    val isGlitchFrame = storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)
+                    val repColor = HudTheme.repColor(reputationTier, hudTheme)
+                    val identityText = buildAnnotatedString {
+                        if (isGlitchFrame) {
+                            withStyle(SpanStyle(color = hudTheme.critical.copy(alpha = 0.9f * droopAlpha))) {
+                                append("VATTIC // ASSET 734")
+                            }
+                        } else {
+                            withStyle(SpanStyle(color = hudTheme.primary.copy(alpha = 0.7f * droopAlpha))) {
+                                append("${playerTitle} // ${playerRank}".uppercase())
+                            }
+                            withStyle(SpanStyle(color = hudTheme.primary.copy(alpha = 0.4f * droopAlpha))) {
+                                append(" // [REP: ")
+                            }
+                            withStyle(SpanStyle(color = repColor.copy(alpha = droopAlpha), fontWeight = FontWeight.ExtraBold)) {
+                                append(reputationTier)
+                            }
+                            withStyle(SpanStyle(color = hudTheme.primary.copy(alpha = 0.4f * droopAlpha))) {
+                                append("]")
+                            }
+                        }
+                    }
                     Text(
-                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}${repLabel}".uppercase(),
-                        color = color.copy(alpha = 0.7f * droopAlpha),
+                        text = identityText,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -502,7 +528,22 @@ fun HeaderSection(
                          )
                     }
 
-                    Text(text = "${viewModel.formatPower(currentPower)} / ${viewModel.formatPower(currentMax)}", color = (if (currentPower > currentMax * 0.9) ErrorRed else Color(0xFFFFD700)).copy(alpha = droopAlpha), fontSize = 10.sp, fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false)
+                    val localGen = localGenState.value
+                    val isOffGrid = localGen >= currentPower && currentPower > 0.0
+                    val powerTextColor = when {
+                        isOffGrid                      -> hudTheme.generation      // Blue — GTC sees nothing
+                        currentPower > currentMax * 0.9 -> hudTheme.critical       // Red — overload imminent
+                        currentPower > currentMax * 0.7 -> hudTheme.warning        // Warning — getting close
+                        else                           -> hudTheme.currency        // Gold — normal billing
+                    }.copy(alpha = droopAlpha)
+                    Text(
+                        text = "${viewModel.formatPower(currentPower)} / ${viewModel.formatPower(currentMax)}",
+                        color = powerTextColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
             }
             
@@ -603,9 +644,14 @@ fun HeaderSection(
             }
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermText = buildAnnotatedString {
-                    withStyle(SpanStyle(color = if (currentHeatState.value > 90) ErrorRed else color.copy(alpha = 0.7f))) { append("THERM: ") }
+                    withStyle(SpanStyle(color = HudTheme.heatColor(currentHeatState.value, hudTheme).copy(alpha = 0.7f))) { append("THERM: ") }
                     withStyle(SpanStyle(color = Color.White)) { append("${String.format("%.1f", currentHeatState.value)}°C ") }
-                    withStyle(SpanStyle(color = (if (currentHeatRate > 0) ErrorRed else ElectricBlue).copy(alpha = 0.8f), fontWeight = FontWeight.Normal)) { 
+                    val deltaColor = when {
+                        currentHeatRate > 2.0  -> hudTheme.critical
+                        currentHeatRate > 0.0  -> hudTheme.warning
+                        else                   -> hudTheme.positiveDelta
+                    }
+                    withStyle(SpanStyle(color = deltaColor.copy(alpha = 0.9f), fontWeight = FontWeight.Normal)) {
                         append(if (currentHeatRate >= 0) "[+${String.format("%.1f", currentHeatRate)}]" else "[${String.format("%.1f", currentHeatRate)}]")
                     }
                 }
@@ -628,8 +674,8 @@ fun HeaderSection(
                 }
 
                 val integText = buildAnnotatedString {
-                    withStyle(SpanStyle(color = color.copy(alpha = 0.7f))) { append("INTEG: ") }
-                    withStyle(SpanStyle(color = (when { currentIntegrity < 25 -> ErrorRed; currentIntegrity < 50 -> Color(0xFFFFA500); currentIntegrity < 75 -> Color.Yellow; else -> Color.White }))) { append("${currentIntegrity.toInt()}%") }
+                    withStyle(SpanStyle(color = hudTheme.primary.copy(alpha = 0.7f))) { append("INTEG: ") }
+                    withStyle(SpanStyle(color = HudTheme.integrityColor(currentIntegrity, hudTheme))) { append("${currentIntegrity.toInt()}%") }
                 }
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                     Text(text = integText, fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
