@@ -1,12 +1,10 @@
 {
-  "version": "3.11.3",
-  "build": 408,
+  "version": "3.11.4",
+  "build": 409,
   "date": "2026-02-21",
   "changelog": [
-    "93217a2 feat: implement segmented gauges and fix Subnet threading/notifications",
-    "1c761b7 docs: update build history",
-    "8b1ea73 docs: add v3.11.2 changelog with signed build warning"
+    "fba8ca5 fix: restore color gradient progression to segmented thermal gauge"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.3",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.3/MINER_3.11.3.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.4",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.4/MINER_3.11.4.apk"
 }
