@@ -1,11 +1,10 @@
 {
-  "version": "3.12.7",
-  "build": 418,
+  "version": "3.12.8",
+  "build": 419,
   "date": "2026-02-21",
   "changelog": [
-    "cf4141e feat: v3.12.7 - HudTheme syntax-coloring system (8-state faction/path grammar, rep tiers, semantic power/heat/integ colors)",
-    "8855ac8 chore: purge old APK artifacts from releases/ (keep 3.12.5 + 3.12.6)"
+    "dcfb379 fix: v3.12.8 - bump Room DB to v30 for missedBillingPeriods schema change"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.7",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.7/MINER_3.12.7.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.8",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.8/MINER_3.12.8.apk"
 }
