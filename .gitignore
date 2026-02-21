@@ -17,3 +17,5 @@ local.properties
 !releases/*.apk
 CANON.md
 .openclaw/
+memory/
+skills/
