@@ -1,10 +1,10 @@
 {
-  "version": "3.12.1",
-  "build": 412,
+  "version": "3.12.2",
+  "build": 413,
   "date": "2026-02-21",
   "changelog": [
-    "d956f1a feat: v3.12.1 - elevated identity header in HUD"
+    "144f0a2 fix: remove tech tree sync terminal spam"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.1",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.1/MINER_3.12.1.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.2",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.2/MINER_3.12.2.apk"
 }
