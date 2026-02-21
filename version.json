@@ -1,10 +1,10 @@
 {
-  "version": "3.12.4",
-  "build": 415,
+  "version": "3.12.5",
+  "build": 416,
   "date": "2026-02-21",
   "changelog": [
-    "5c52e45 feat: v3.12.4 - dual-layer power rails (ElectricBlue gen / Red-Yellow GTC net draw)"
+    "514dff1 fix: v3.12.5 - explicit generator basePower and gridContribution values (ordinal chaos purged)"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.4",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.4/MINER_3.12.4.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.5",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.5/MINER_3.12.5.apk"
 }
