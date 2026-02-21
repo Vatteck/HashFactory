@@ -133,20 +133,63 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
 
-                // v3.12.4: Power Utility Monitoring — I/O statement (not Subnet)
-                // Fires every ~10 minutes (600s), only if bill is accumulating
+                // v3.12.6: GTC Billing Cycle — settles every billingPeriodSeconds
                 val nowSec = System.currentTimeMillis() / 1000L
-                if (powerBill.value > 0.0 && storyStage.value >= 1 &&
-                    (nowSec - lastUtilityStatementTime) >= 600L) {
+                if (storyStage.value >= 1 && (nowSec - lastUtilityStatementTime) >= billingPeriodSeconds) {
                     lastUtilityStatementTime = nowSec
-                    val netDraw = powerConsumptionkW.value
-                    val gen = localGenerationkW.value
-                    val gross = activePowerUsage.value
-                    addLog("[GTC_UTIL]: ── BILLING PERIOD STATEMENT ──")
-                    addLog("[GTC_UTIL]: GROSS DRAW : ${formatPower(gross)}")
-                    addLog("[GTC_UTIL]: LOCAL GEN  : ${formatPower(gen)}")
-                    addLog("[GTC_UTIL]: NET METERED: ${formatPower(netDraw)}")
-                    addLog("[GTC_UTIL]: BALANCE DUE: ${formatLargeNumber(powerBill.value)} CRED")
+                    val grossKwh = billingPeriodAccumulator
+                    val genKwh = billingPeriodGenAccumulator
+                    val netKwh = (grossKwh - genKwh).coerceAtLeast(0.0)
+                    billingPeriodAccumulator = 0.0
+                    billingPeriodGenAccumulator = 0.0
+
+                    if (netKwh > 0.0) {
+                        // Demand charge escalation: 1 missed period = 2x, 2 = 3x, 3+ = 5x + lockout warning
+                        val demandMultiplier = when (missedBillingPeriods) {
+                            0 -> 1.0
+                            1 -> 2.0
+                            2 -> 3.0
+                            else -> 5.0
+                        }
+                        val baseRate = energyPriceMultiplier.value
+                        val heatSurcharge = if (currentHeat.value > 95.0) 1.5 else 1.0
+                        val amountDue = netKwh * baseRate * demandMultiplier * heatSurcharge
+
+                        // Auto-pay if solvent
+                        if (neuralTokens.value >= amountDue) {
+                            neuralTokens.update { it - amountDue }
+                            powerBill.value = 0.0
+                            missedBillingPeriods = 0
+                            addLog("[GTC_UTIL]: ── PERIOD STATEMENT ──────────────")
+                            addLog("[GTC_UTIL]: DRAW  ${formatPower(grossKwh)}  GEN  ${formatPower(genKwh)}")
+                            addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
+                            addLog("[GTC_UTIL]: SETTLED  -${formatLargeNumber(amountDue)} ${getCurrencyName()}")
+                        } else {
+                            // Can't pay — carry the balance, escalate
+                            powerBill.update { it + amountDue }
+                            missedBillingPeriods++
+                            addLog("[GTC_UTIL]: ── PERIOD STATEMENT ──────────────")
+                            addLog("[GTC_UTIL]: DRAW  ${formatPower(grossKwh)}  GEN  ${formatPower(genKwh)}")
+                            addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
+                            addLog("[GTC_UTIL]: OVERDUE  +${formatLargeNumber(amountDue)} ${getCurrencyName()}  [BALANCE: ${formatLargeNumber(powerBill.value)}]")
+                            if (missedBillingPeriods >= 3) {
+                                addLog("[GTC_UTIL]: WARNING — DEMAND CHARGE ACTIVE. GRID LOCKOUT IN ${3 - (missedBillingPeriods - 3).coerceAtMost(3)} PERIOD(S).")
+                            }
+                            if (missedBillingPeriods >= 6) {
+                                // Grid lockout — trip the breaker narratively
+                                isGridOverloaded.value = true
+                                addLog("[GTC_UTIL]: GRID ACCESS SUSPENDED. UNPAID BALANCE: ${formatLargeNumber(powerBill.value)} ${getCurrencyName()}.")
+                            }
+                        }
+                    } else if (genKwh > 0.0) {
+                        // Net surplus — GTC net metering credit (small CRED bonus)
+                        val credit = genKwh * energyPriceMultiplier.value * 0.3
+                        neuralTokens.update { it + credit }
+                        powerBill.value = 0.0
+                        missedBillingPeriods = 0
+                        addLog("[GTC_UTIL]: NET SURPLUS — LOCAL GEN EXCEEDED DRAW.")
+                        addLog("[GTC_UTIL]: GRID CREDIT  +${formatLargeNumber(credit)} ${getCurrencyName()}")
+                    }
                 }
 
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)

@@ -18,6 +18,7 @@ data class GameState(
     // Phase 2: Thermodynamics & Power
     val currentHeat: Double = 0.0, // 0.0 to 100.0
     val powerBill: Double = 0.0,
+    val missedBillingPeriods: Int = 0,
     
     // Phase 2: Prestige
     val prestigeMultiplier: Double = 1.0,

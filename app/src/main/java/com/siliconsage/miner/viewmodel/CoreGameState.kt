@@ -172,6 +172,10 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     protected var lastSubnetMsgTime = 0L
     var lastPopupTime = 0L
     var lastUtilityStatementTime = 0L
+    var billingPeriodAccumulator = 0.0   // kWh drawn this period
+    var billingPeriodGenAccumulator = 0.0 // kWh generated this period
+    var missedBillingPeriods = 0          // unpaid periods — drives demand charge escalation
+    val billingPeriodSeconds = 60L        // one GTC billing period = 60 seconds
     var raidsSurvived = 0
     var lastRaidTime = 0L
     var lastStageChangeTime = System.currentTimeMillis()

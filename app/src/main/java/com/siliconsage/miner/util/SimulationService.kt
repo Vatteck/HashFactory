@@ -117,11 +117,10 @@ object SimulationService {
         vm.localGenerationkW.value = selfGeneratedKw
         vm.powerConsumptionkW.value = gridUsage
 
-        // v3.11.2: Utility Bill Accumulation (Item 2)
+        // v3.12.6: Billing period accumulators (replaces infinite bill)
         if (vm.storyStage.value >= 1) {
-            val baseRate = vm.energyPriceMultiplier.value
-            val heatPenalty = if (vm.currentHeat.value > 95.0) 2.0 else 1.0
-            vm.powerBill.update { it + (gridUsage * baseRate * heatPenalty) }
+            vm.billingPeriodAccumulator += gridUsage
+            vm.billingPeriodGenAccumulator += vm.localGenerationkW.value
         }
         
         // v3.3.17: Only trip overload if it's a power issue. Don't clear active raids.
