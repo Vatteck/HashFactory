@@ -17,7 +17,7 @@ android {
         // ║  DO NOT MANUALLY EDIT VERSION BELOW                           ║
         // ║  Use ./release.sh <version> to bump versions automatically    ║
         // ╚═══════════════════════════════════════════════════════════════╝
-        versionCode = 400
+        versionCode = 401
         versionName = "3.9.24"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

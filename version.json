@@ -1,9 +1,9 @@
 {
   "version": "3.9.24",
-  "build": 400,
+  "build": 401,
   "date": "2026-02-20",
   "changelog": [
-    "Persistence rename + extended NaN guards"
+    "Phase 12-13: ECLIPSE, Narrative Chains, Stage 0-5, Cross-Path UI"
   ],
   "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.9.24",
   "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.9.24/MINER_3.9.24.apk"
