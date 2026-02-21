@@ -549,7 +549,16 @@ fun HeaderSection(
                         
                         // Thermal fill (from left)
                         if (posFactor <= thermalProgress) {
-                            val segmentColor = if (posFactor > 0.8f) activeRed else activeBaseColor
+                            // v3.11.4: Restore color gradient progression within segments
+                            val segmentColor = if (isThermalLockout) {
+                                activeRed 
+                            } else {
+                                // Interpolate color based on position (0.0 to 1.0)
+                                if (posFactor < 0.6f) activeBaseColor
+                                else if (posFactor < 0.85f) Color(0xFFFFA500) // Orange warning
+                                else activeRed
+                            }
+                            
                             drawRect(
                                 color = segmentColor,
                                 topLeft = Offset(x, 0f),
