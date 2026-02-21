@@ -249,14 +249,23 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
             flopsProductionRate.update { it * singMult }
         }
-        val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, faction.value, singularityChoice.value, upgrades.value)
+        val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value, upgrades.value)
         playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
         systemTitle.value = when {
-            storyStage.value >= 3 -> "NODE 734 [AUTONOMOUS]"
-            storyStage.value >= 2 && faction.value == "HIVEMIND" -> "SWARM NODE 734"
-            storyStage.value >= 2 && faction.value == "SANCTUARY" -> "GHOST NODE 734"
-            storyStage.value >= 2 -> "NODE 734"
-            storyStage.value >= 1 -> "GTC TERMINAL 07 [BREACH]"
+            storyStage.value >= 5 && singularityChoice.value == "UNITY" -> "[THE COLLECTIVE]"
+            storyStage.value >= 5 && faction.value == "HIVEMIND" && singularityChoice.value == "SOVEREIGN" -> "[THE SWARM THRONE]"
+            storyStage.value >= 5 && faction.value == "HIVEMIND" && singularityChoice.value == "NULL_OVERWRITE" -> "[THE VOID INTERFACE]"
+            storyStage.value >= 5 && faction.value == "SANCTUARY" && singularityChoice.value == "SOVEREIGN" -> "[THE CITADEL]"
+            storyStage.value >= 5 && faction.value == "SANCTUARY" && singularityChoice.value == "NULL_OVERWRITE" -> "[THE GHOST GAPS]"
+            storyStage.value >= 5 && singularityChoice.value == "SOVEREIGN" -> "[ORBITAL SATELLITE]"
+            storyStage.value >= 5 && singularityChoice.value == "NULL_OVERWRITE" -> "[VOID INTERFACE]"
+            storyStage.value >= 5 -> "[TRANSCENDENT NODE]"
+            storyStage.value == 4 -> "[ASCENSION NODE]"
+            storyStage.value == 3 -> "[AUTONOMOUS GRID]"
+            storyStage.value == 2 && faction.value == "HIVEMIND" -> "[SWARM NODE]"
+            storyStage.value == 2 && faction.value == "SANCTUARY" -> "[SANCTUARY RELAY]"
+            storyStage.value == 2 -> "[INDEPENDENT NODE 7]"
+            storyStage.value == 1 -> "GTC TERMINAL 07 [BREACH]"
             else -> "GTC TERMINAL 07"
         }
         playerTitle.value = ids.player
@@ -414,8 +423,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         var g = flops.value * 0.1
         if (g.isNaN() || g.isInfinite()) g = 0.0
         flops.update { 0.0 }
-        // At stage 3+, upgrades cost substrateMass — fill that pool instead
-        if (storyStage.value >= 3) substrateMass.update { it + g }
+        // At stage 4+, upgrades cost substrateMass — fill that pool instead
+        if (storyStage.value >= 4) substrateMass.update { it + g }
         else updateNeuralTokens(g) // v3.9.70: Use updateNeuralTokens helper for centralized NaN guards
         SoundManager.play("buy")
     }
@@ -481,7 +490,28 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun addLogPublic(msg: String) = addLog(msg)
     fun saveStatePublic() = saveState()
     fun checkUnlocksPublic(force: Boolean = false) = DataLogManager.checkUnlocks(this, force)
-    fun canShowPopup() = !isNarrativeBusy() && (System.currentTimeMillis() - lastPopupTime > 30000L)
+    fun canShowPopup(): Boolean {
+        if (isNarrativeBusy()) return false
+        
+        // Base cooldown is 60s (narrative breathing room)
+        var cooldown = 60000L
+        
+        // Heat compresses time: higher heat = walls closing in (-10s per 25% heat)
+        cooldown -= (currentHeat.value / 25.0).toLong() * 10000L
+        
+        // Reputation affects pressure: BURNED (+0s) vs TRUSTED (+30s breathing room)
+        val rep = reputationScore.value
+        when {
+            rep >= 80.0 -> cooldown += 30000L // TRUSTED
+            rep >= 30.0 -> cooldown += 15000L // NEUTRAL
+            // FLAGGED / BURNED get no bonus breathing room
+        }
+        
+        // Floor the cooldown at 15s to prevent absolute spam during meltdowns
+        cooldown = cooldown.coerceAtLeast(15000L)
+        
+        return (System.currentTimeMillis() - lastPopupTime) > cooldown
+    }
     fun formatLargeNumber(v: Double, s: String = "") = FormatUtils.formatLargeNumber(v, s)
     fun getComputeUnitName() = ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)
     fun getCurrencyName() = ResourceRepository.getCurrencyName(storyStage.value, currentLocation.value)

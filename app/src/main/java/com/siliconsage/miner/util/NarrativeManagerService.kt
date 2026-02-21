@@ -94,7 +94,9 @@ object NarrativeManagerService {
                         color = ElectricBlue,
                         effect = { v ->
                             v.addLog("[SYSTEM]: HANDSHAKE SUCCESSFUL via SmartMeter_Ref_09.")
-                            v.addLog("[VATTIC]: I'm through. The building network is open. Let's see what GTC is hiding.")
+                            v.addLog("[VATTIC]: I'm through. The power grid is open. Let's see what GTC is hiding.")
+                            v.isGridUnlocked.value = true
+                            v.initializeGlobalGrid()
                             v.advanceStage()
                         }
                     )
@@ -131,10 +133,10 @@ object NarrativeManagerService {
             return
         }
 
-        // v3.9.7: Universal S3 event — all factions get "THE OVERWRITE" (memory_leak)
-        if (currentStage == 3 && flops >= 10000000.0 && !vm.hasSeenEvent("memory_leak")) {
+        // Universal S4 event — all factions get "THE OVERWRITE" (memory_leak)
+        if (currentStage == 4 && flops >= 10000000.0 && !vm.hasSeenEvent("memory_leak")) {
             vm.triggerGlitchEffect()
-            NarrativeManager.getStoryEvent(3, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+            NarrativeManager.getStoryEvent(4, vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
 

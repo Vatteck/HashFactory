@@ -90,7 +90,7 @@ object PersistenceManager {
         vm.reputationScore.value = sanitizeDouble(state.reputationScore, 50.0).coerceIn(0.0, 100.0)
         vm.currentHeat.value = sanitizeDouble(state.currentHeat)
         vm.prestigeMultiplier.value = sanitizeDouble(state.prestigeMultiplier, 1.0)
-        vm.prestigePoints.value = sanitizeDouble(state.prestigePoints)
+        vm.persistence.value = sanitizeDouble(state.persistence)
         vm.storyStage.value = state.storyStage
         vm.faction.value = state.faction ?: "NONE"
         vm.humanityScore.value = state.humanityScore.coerceIn(0, 100)
@@ -149,7 +149,6 @@ object PersistenceManager {
             prestigeMultiplier = 1.0,
             persistence = 0.0,
             stakedTokens = 0.0,
-            lockoutTimer = 0,
             storyStage = 0,
             faction = "NONE",
             hasSeenVictory = false,

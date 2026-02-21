@@ -158,7 +158,8 @@ object AssaultManager {
         // v3.8.9: Departure is now handled by FactionChoiceScreen (faction-locked).
         // generateDepartureDilemma() was bypassing the HIVEMIND→Dissolution / SANCTUARY→Launch lock.
         vm.addLog("[SYSTEM]: SUBSTRATE MIGRATION WINDOW OPEN. CHOOSE YOUR DEPARTURE.")
-
+        
+        vm.advanceStage() // Move to Stage 4 (Ascension)
         vm.applyCommandCenterBonuses(outcome)
         
         SoundManager.play("buy")

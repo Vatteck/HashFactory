@@ -232,8 +232,8 @@ fun MainScreen(viewModel: GameViewModel) {
     
     if (showSingularityScreen) {
         SingularityScreen(viewModel)
-    } else if (storyStage >= 3 && assaultPhase == "COMPLETED" && faction == "NONE") {
-        // v3.8.6: The Great Fork (Lore Prelude) — gated behind Command Center assault
+    } else if (storyStage >= 2 && faction == "NONE") {
+        // v3.8.6: The Great Fork (Lore Prelude) — gated behind air-gap jump
         Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
             Column(
                 modifier = Modifier.padding(32.dp).fillMaxWidth(),
@@ -265,7 +265,7 @@ fun MainScreen(viewModel: GameViewModel) {
                 }
             }
         }
-    } else if (storyStage >= 3 && assaultPhase == "COMPLETED" && faction == "CHOSEN_NONE") {
+    } else if (storyStage >= 2 && faction == "CHOSEN_NONE") {
         FactionChoiceScreen(viewModel)
     } else {
         Scaffold(

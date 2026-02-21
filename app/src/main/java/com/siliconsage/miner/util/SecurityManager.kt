@@ -245,8 +245,8 @@ object SecurityManager {
         vm.isAuditChallengeActive.value = false
         SoundManager.stop("alarm")
         if (success) {
-            val reward = vm.prestigePoints.value * 0.1 + 1000.0
-            vm.prestigePoints.update { it + reward }
+            val reward = vm.persistence.value * 0.1 + 1000.0
+            vm.updatePersistence(reward.toDouble())
             vm.addLogPublic("[GTC]: Audit passed. Efficiency profile within margins. Bonus PERSISTENCE: ${vm.formatBytes(reward)}")
             SoundManager.play("success")
         } else {

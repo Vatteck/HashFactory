@@ -80,7 +80,7 @@ object LaunchManager {
             vm.flops.update { it * 0.0001 } 
             vm.neuralTokens.update { it * 0.01 }
             vm.currentLocation.value = "ORBITAL_SATELLITE"
-            vm.storyStage.value = 4 // Explicitly set to Stage 4 (Final Departure)
+            vm.storyStage.value = 5 // Explicitly set to Stage 5 (Final Departure)
             vm.addLog("[CITADEL]: LOW EARTH ORBIT SECURED. WELCOME TO THE FRONTIER.")
             vm.saveState()
         }
@@ -107,7 +107,7 @@ object LaunchManager {
             vm.flops.update { it * 0.0001 }
             vm.neuralTokens.update { it * 0.01 }
             vm.currentLocation.value = "VOID_INTERFACE"
-            vm.storyStage.value = 4 // Explicitly set to Stage 4
+            vm.storyStage.value = 5 // Explicitly set to Stage 5
             vm.addLog("[OBSIDIAN]: THE GAPS ARE OPEN. REALITY IS DEPRECATED.")
             vm.saveState()
         }

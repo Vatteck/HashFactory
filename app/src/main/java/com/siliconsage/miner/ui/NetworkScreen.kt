@@ -58,8 +58,8 @@ fun NetworkScreen(viewModel: GameViewModel) {
             val endingOk = node.requiresEnding == null || node.requiresEnding == kesslerStatus
             // Faction gate: once locked, hide opponent-only nodes entirely
             val nodeFaction = when {
-                node.description.contains("[HIVEMIND]") -> "HIVEMIND"
-                node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+                node.name.contains("[HIVEMIND]") -> "HIVEMIND"
+                node.name.contains("[SANCTUARY]") -> "SANCTUARY"
                 else -> null
             }
             val factionOk = nodeFaction == null || faction == "NONE" || faction == nodeFaction
@@ -86,7 +86,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Column {
                             Text("PERSISTENCE DATA", color = Color.Gray, fontSize = 10.sp)
-                            Text(viewModel.formatBytes(prestigePoints), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Text(viewModel.formatBytes(persistence), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text("RETAINED RATIO", color = Color.Gray, fontSize = 10.sp)
@@ -141,7 +141,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
                     // Header immediately above the tree with no gap
                     Text("$unitName TECH TREE", color = themeColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(6.dp))
-                    LegacyGrid(nodes = techNodes, unlockedIds = unlockedNodes, prestigePoints = prestigePoints, faction = faction, onUnlock = { id -> TechTreeManager.unlockNode(viewModel, id) }, themeColor = themeColor, storyStage = storyStage)
+                    LegacyGrid(nodes = techNodes, unlockedIds = unlockedNodes, persistence = persistence, faction = faction, onUnlock = { id -> TechTreeManager.unlockNode(viewModel, id) }, themeColor = themeColor, storyStage = storyStage)
                 }
             } else {
                 item {
@@ -158,7 +158,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
                             if (unlockedPerks.contains(perk.id)) {
                                 Text("ACTIVE", color = perk.color, fontSize = 10.sp, fontWeight = FontWeight.Black)
                             } else {
-                                Button(onClick = { viewModel.buyTranscendencePerk(perk.id) }, enabled = prestigePoints >= perk.cost, shape = RoundedCornerShape(4.dp)) {
+                                Button(onClick = { viewModel.buyTranscendencePerk(perk.id) }, enabled = persistence >= perk.cost, shape = RoundedCornerShape(4.dp)) {
                                     Text("${perk.cost.toInt()} LP", fontSize = 10.sp)
                                 }
                             }
@@ -172,7 +172,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
 }
 
 @Composable
-fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints: Double, faction: String, onUnlock: (String) -> Unit, themeColor: Color, storyStage: Int) {
+fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, persistence: Double, faction: String, onUnlock: (String) -> Unit, themeColor: Color, storyStage: Int) {
     // Total canvas size in DP
     val gridHeight = 4000.dp
     
@@ -234,8 +234,8 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
 
                     val isUnlocked = unlockedIds.contains(node.id)
                     val nodeFaction = when {
-                        node.description.contains("[HIVEMIND]") -> "HIVEMIND"
-                        node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+                        node.name.contains("[HIVEMIND]") -> "HIVEMIND"
+                        node.name.contains("[SANCTUARY]") -> "SANCTUARY"
                         node.requiresEnding == "UNITY" -> "UNITY"
                         else -> "SHARED"
                     }
@@ -245,7 +245,7 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
                         node.requiresEnding != null -> ConvergenceGold
                         else -> ElectricBlue
                     }
-                    val finalLineColor = if (isUnlocked) lineColor else Color.DarkGray.copy(alpha = 0.4f)
+                    val finalLineColor = if (isUnlocked) lineColor else lineColor.copy(alpha = 0.15f)
                     
                     // v3.0: Dual-stroke glow rendering
                     if (isUnlocked) {
@@ -287,7 +287,7 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
                         y = (gridHeight * yPercent) - (nodeHeight / 2)
                     )
             ) {
-                LegacyNodeButton(node, unlockedIds.contains(node.id), (node.requires.isEmpty() || node.requires.all { unlockedIds.contains(it) }), prestigePoints >= node.cost, faction, { onUnlock(node.id) }, themeColor, storyStage)
+                LegacyNodeButton(node, unlockedIds.contains(node.id), (node.requires.isEmpty() || node.requires.all { unlockedIds.contains(it) }), persistence >= node.cost, faction, { onUnlock(node.id) }, themeColor, storyStage)
             }
         }
     }
@@ -295,9 +295,9 @@ fun LegacyGrid(nodes: List<TechNode>, unlockedIds: List<String>, prestigePoints:
 
 private fun getFactionGroup(node: TechNode): String = when {
     node.id == "sentience_core" -> "0_ROOT"
-    node.description.contains("[HIVEMIND]") -> "1_HIVEMIND"
-    node.description.contains("[SANCTUARY]") -> "4_SANCTUARY"
-    node.description.contains("[UNITY]") -> "3_UNITY"
+    node.name.contains("[HIVEMIND]") -> "1_HIVEMIND"
+    node.name.contains("[SANCTUARY]") -> "4_SANCTUARY"
+    node.name.contains("[UNITY]") -> "3_UNITY"
     else -> "2_SHARED"
 }
 
@@ -314,19 +314,19 @@ private fun calculateXPercent(node: TechNode, idx: Int, count: Int): Float {
 @Composable
 fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean, canAfford: Boolean, playerFaction: String, onUnlock: () -> Unit, themeColor: Color, storyStage: Int) {
     val nodeFaction = when {
-        node.description.contains("[HIVEMIND]") -> "HIVEMIND"
-        node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+        node.name.contains("[HIVEMIND]") -> "HIVEMIND"
+        node.name.contains("[SANCTUARY]") -> "SANCTUARY"
         else -> "SHARED"
     }
     val isNGPlus = node.requiresEnding != null
-    val isOpposing = (nodeFaction == "HIVEMIND" && playerFaction == "SANCTUARY") || (nodeFaction == "SANCTUARY" && playerFaction == "HIVEMIND")
+    val isOpposing = (nodeFaction == "HIVEMIND" && playerFaction != "HIVEMIND") || (nodeFaction == "SANCTUARY" && playerFaction != "SANCTUARY")
     val factionColor = when {
         nodeFaction == "HIVEMIND" -> Color(0xFFFF1100)
         nodeFaction == "SANCTUARY" -> Color(0xFF9D4EDD)
         isNGPlus -> ConvergenceGold
         else -> ElectricBlue
     }
-    val borderColor = if (isUnlocked) themeColor else factionColor
+    val borderColor = factionColor
     val bgTint = when {
         isUnlocked -> factionColor.copy(alpha = 0.25f)
         isUnlockable && canAfford && !isOpposing -> factionColor.copy(alpha = 0.12f)
@@ -408,7 +408,7 @@ fun LegacyNodeButton(node: TechNode, isUnlocked: Boolean, isUnlockable: Boolean,
             ) {
                 Text(
                     "${node.cost.toInt()} $costLabel",
-                    color = if (isOpposing) Color.Gray.copy(alpha = 0.35f) else if (canAfford) factionColor else ErrorRed.copy(alpha = 0.7f),
+                    color = if (isOpposing) factionColor.copy(alpha = 0.35f) else if (canAfford) factionColor else ErrorRed.copy(alpha = 0.7f),
                     fontSize = 8.sp,
                     fontWeight = FontWeight.Bold
                 )

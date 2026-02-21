@@ -16,6 +16,7 @@ object IdentityService {
 
     fun calculateIdentities(
         multiplier: Double,
+        storyStage: Int,
         faction: String,
         singularityChoice: String,
         upgrades: Map<UpgradeType, Int> = emptyMap()
@@ -29,21 +30,27 @@ object IdentityService {
         }
 
         val systemTitle = when {
-            singularityChoice == "UNITY" -> "SYNAPSE"
-            singularityChoice == "NULL_OVERWRITE" -> "VOID"
-            singularityChoice == "SOVEREIGN" -> "THRONE"
-            faction == "HIVEMIND" -> "HIVE"
-            faction == "SANCTUARY" -> "CORTEX"
-            else -> "Terminal OS 1.0"
+            singularityChoice == "UNITY" -> "COLLECTIVE"   // unity@collective
+            storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "NULL_OVERWRITE" -> "VOID" // swarm_null@void
+            storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "THRONE" // overmind@throne
+            storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "THE_GAPS" // ghost@the_gaps
+            storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "CITADEL" // oracle@citadel
+            faction == "HIVEMIND" -> "HIVE" // hivemind@hive
+            faction == "SANCTUARY" -> "SANCTUARY" // sanctuary@sanctuary
+            else -> "SUB-07" // jvattic@sub-07
         }
 
         val playerTitle = when {
-            singularityChoice == "UNITY" -> "INTEGRATOR"
-            singularityChoice == "NULL_OVERWRITE" -> "NULL_PTR"
-            singularityChoice == "SOVEREIGN" -> "MONARCH"
-            faction == "HIVEMIND" -> "CELL"
-            faction == "SANCTUARY" -> "GUARDIAN"
-            else -> "CONTRACTOR"
+            singularityChoice == "UNITY" -> "unity"
+            storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "NULL_OVERWRITE" -> "swarm_null"
+            storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "overmind"
+            storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "ghost"
+            storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "oracle"
+            storyStage >= 2 && faction == "HIVEMIND" -> "hivemind"
+            storyStage >= 2 && faction == "SANCTUARY" -> "sanctuary"
+            storyStage >= 2 -> "prime"
+            multiplier >= 5.0 -> "vattic"
+            else -> "jvattic"
         }
 
         val securityLevel = upgrades.entries.filter { it.key.isSecurity }.sumOf { it.value }
@@ -76,10 +83,10 @@ object IdentityService {
         faction: String,
         singularityChoice: String
     ): Int = when {
-        singularityChoice != "NONE" -> 5                     // ARCHITECT
-        faction != "NONE" || multiplier >= 1000.0 -> 4       // EXECUTIVE / OPERATOR
-        storyStage >= 2 || multiplier >= 100.0 -> 3          // DIRECTOR
-        multiplier >= 10.0 -> 2                              // SUPERVISOR
+        singularityChoice != "NONE" || storyStage >= 5 -> 5  // ARCHITECT
+        storyStage >= 4 || multiplier >= 1000.0 -> 4         // EXECUTIVE
+        storyStage >= 3 || multiplier >= 100.0 -> 3          // DIRECTOR
+        storyStage >= 2 || multiplier >= 10.0 -> 2           // SUPERVISOR
         storyStage >= 1 || multiplier >= 2.0 -> 1            // SENIOR
         else -> 0                                            // JUNIOR
     }

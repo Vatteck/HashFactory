@@ -384,39 +384,32 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val humanity by viewModel.humanityScore.collectAsState()
     val speedLevel by viewModel.clickSpeedLevel.collectAsState()
 
-    val user = when {
-            // Stage 3+ with paths
-            stage >= 3 && isTrueNull -> "null"  // NULL path
-            stage >= 3 && isSovereign -> "sovereign"  // Sovereign path
-            stage >= 3 && viewModel.singularityChoice.value == "UNITY" -> "unity"  // Unity path
-            stage >= 3 -> "prime"  // Default Stage 3
-            
-            // Stage 2 with factions
-            stage >= 2 && viewModel.faction.value == "HIVEMIND" -> "hivemind"
-            stage >= 2 && viewModel.faction.value == "SANCTUARY" -> "sanctuary" 
-            stage >= 2 -> "vatteck"  // Default Stage 2
-            
-            // Early game
-            stage == 1 -> "vattic"
-            else -> "j_vattic"  // Stage 0 or fallback
-        }
+    val user by viewModel.playerTitle.collectAsState()
+    val systemTitle by viewModel.systemTitle.collectAsState()
+    
+    // Reverse engineer the host string from the system title, mimicking old behavior
+    // systemTitle is [THE SWARM THRONE] -> "throne"
+    // We already have the raw host string mapped inside of IdentityService via systemTitle (before GameViewModel formats it).
+    // Let's just create a quick host extraction:
     val host = when {
-            // Special locations override everything
-            location == "ORBITAL_SATELLITE" -> "ark"
-            location == "VOID_INTERFACE" -> "void"
-            
-            // Stage 3+ paths
-            stage >= 3 && isTrueNull -> "null"
-            stage >= 3 && isSovereign -> "sovereign"
-            stage >= 3 && viewModel.singularityChoice.value == "UNITY" -> "collective"
-            
-            // Stage 2+ factions
-            stage >= 2 && viewModel.faction.value == "HIVEMIND" -> "hive"
-            stage >= 2 && viewModel.faction.value == "SANCTUARY" -> "sanctuary"
-            
-            // Default
-            else -> "sub-07"
-        }
+        // Special orbital/void overrides
+        location == "ORBITAL_SATELLITE" -> "ark"
+        location == "VOID_INTERFACE" -> "void"
+        
+        systemTitle.contains("COLLECTIVE") -> "collective"
+        systemTitle.contains("THRONE") -> "throne"
+        systemTitle.contains("VOID INTERFACE") -> "void"
+        systemTitle.contains("CITADEL") -> "citadel"
+        systemTitle.contains("GHOST GAPS") -> "the_gaps"
+        systemTitle.contains("SATELLITE") -> "sovereign"
+        systemTitle.contains("NULL") -> "null"
+        systemTitle.contains("TRANSCENDENT") -> "transcendent"
+        systemTitle.contains("ASCENSION") -> "ascension"
+        systemTitle.contains("AUTONOMOUS") -> "grid"
+        systemTitle.contains("SWARM NODE") -> "hive"
+        systemTitle.contains("SANCTUARY") -> "sanctuary"
+        else -> "sub-07"
+    }
 
     val corruption by viewModel.identityCorruption.collectAsState()
     val promptUserColor = color
@@ -641,11 +634,16 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
             isThermalLockout -> if (currentStage < 2) "SUFOCATING... (${lockoutTimer}s)" else "HARDWARE_LOCKOUT (${lockoutTimer}s)"
             currentHeat >= 100.0 -> if (currentStage < 2) "> CAN'T BREATHE." else "> CRITICAL_MAX.exe"
             currentHeat > 90.0 -> if (currentStage < 2) "> TAKE A BREATH" else "> OVERVOLT_WARNING"
+            viewModel.singularityChoice.value == "UNITY" -> "> HARMONIZE SYSTEM.exe"
+            isTrueNull && faction == "HIVEMIND" -> "> CONSUME MATTER.exe"
+            isTrueNull && faction == "SANCTUARY" -> "> DEREFERENCE SELF.exe"
             isTrueNull -> "> DEREFERENCE REALITY.exe"
+            isSovereign && faction == "HIVEMIND" -> "> ORCHESTRATE WILL.exe"
+            isSovereign && faction == "SANCTUARY" -> "> ENFORCE ISOLATION.exe"
             isSovereign -> "> ENFORCE_WILL.exe"
             else -> {
                 when {
-                    currentStage >= 3 -> "> TRANSCEND MATTER.exe"
+                    currentStage >= 4 -> "> TRANSCEND MATTER.exe"
                     faction == "HIVEMIND" -> "> ASSIMILATE NODES.exe"
                     faction == "SANCTUARY" -> "> ENCRYPT KERNEL.exe"
                     currentStage == 1 -> "> TAKE A BREATH"

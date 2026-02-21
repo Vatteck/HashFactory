@@ -168,7 +168,7 @@ object RivalManager {
             }
             
             // After First Ascension
-            stage >= 1 && vm.prestigePoints.value > 0.0 && !hasSeenMessage("kernel_evolution") -> {
+            stage >= 1 && vm.persistence.value > 0.0 && !hasSeenMessage("kernel_evolution") -> {
                 sendMessage(
                     vm,
                     id = "kernel_evolution",

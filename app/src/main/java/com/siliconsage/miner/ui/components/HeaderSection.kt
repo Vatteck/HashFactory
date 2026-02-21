@@ -384,7 +384,7 @@ fun HeaderSection(
             }
             
             // v3.2.52: Substrate Saturation Monitor
-            if (storyStage >= 3) {
+            if (storyStage >= 4) {
                 val saturation by viewModel.substrateSaturation.collectAsState()
                 val saturationColor = if (saturation > 0.9) ErrorRed else Color.Cyan
                 
@@ -413,36 +413,36 @@ fun HeaderSection(
             Spacer(modifier = Modifier.height(2.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 val flopsLabel = when {
-                    singularityChoice == "NULL_OVERWRITE" -> "VF"
-                    singularityChoice == "SOVEREIGN" -> "CD"
                     singularityChoice == "UNITY" -> "SYN"
-                    currentLocation == "ORBITAL_SATELLITE" -> "CD"
-                    currentLocation == "VOID_INTERFACE" -> "VF"
-                    storyStage < 1 -> "HASH"
-                    storyStage < 2 -> "TELEM"
+                    singularityChoice == "SOVEREIGN" || currentLocation == "ORBITAL_SATELLITE" -> "CD"
+                    singularityChoice == "NULL_OVERWRITE" || currentLocation == "VOID_INTERFACE" -> "VF"
+                    storyStage < 2 -> "HASH"
                     else -> "FLOPS"
                 }
                 ResourceDisplay(viewModel.flops, viewModel.flopsProductionRate, flopsLabel, Icons.Default.Computer, color, droopAlpha, currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE", if (currentHeatState.value > 98) 0.4 else 0.08, false, 110.dp) { viewModel.formatLargeNumber(it) }
                 Box(modifier = Modifier.weight(1f).height(48.dp), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.EnhancedAnalyzingAnimation(flopsRateState.value, currentHeatState.value, isOverclocked, isThermalLockout, isBreakerTripped, isPurging, isBreachActive, isTrueNull || singularityChoice == "NULL_OVERWRITE", isSovereign || singularityChoice == "SOVEREIGN", lockoutTimer, faction, color.copy(alpha = droopAlpha), manualClickFlow) }
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(130.dp)) {
                     val tokensLabel = when {
+                        singularityChoice == "UNITY" -> "SYN"
+                        faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "SYN"
+                        faction == "HIVEMIND" && singularityChoice == "NULL_OVERWRITE" -> "ENT"
+                        faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "CRYP"
+                        faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "NIL"
                         singularityChoice == "NULL_OVERWRITE" -> "CD"
                         singularityChoice == "SOVEREIGN" -> "VF"
-                        singularityChoice == "UNITY" -> "SYN"
                         currentLocation == "ORBITAL_SATELLITE" -> "CD"
                         currentLocation == "VOID_INTERFACE" -> "VF"
-                        storyStage < 1 -> "CRED"
-                        storyStage < 2 -> "DATA"
+                        storyStage < 2 -> "CRED"
                         else -> "NEUR"
                     }
                     val tokenSource = when {
-                        storyStage >= 3 -> viewModel.substrateMass
+                        storyStage >= 4 -> viewModel.substrateMass
                         else -> viewModel.neuralTokens
                     }
                     
                     ResourceDisplay(tokenSource, null, tokensLabel, Icons.Default.AttachMoney, color, droopAlpha, false, 0.1, true, 130.dp) { viewModel.formatLargeNumber(it) }
                     
-                    if (storyStage >= 3) {
+                    if (storyStage >= 4) {
                          Text(
                              text = "SUBSTRATE ACTIVE",
                              color = Color.White.copy(alpha = 0.5f * droopAlpha),

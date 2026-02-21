@@ -92,14 +92,12 @@ object NarrativeManager {
             )
         }
         // v3.9.7: All factions get memory_leak (THE OVERWRITE) — NULL/SOVEREIGN deferred to Singularity
-        if (stage == 3) {
-            return AssaultDialogue.storyEvents[3]
-        }
         return AssaultDialogue.storyEvents[stage]
     }
 
     fun getEventById(eventId: String): NarrativeEvent? {
         return specialDilemmas[eventId]
+            ?: NarrativeChains.chainEvents.find { it.id == eventId }
             ?: stageEvents.values.flatten().find { it.id == eventId }
             ?: randomEvents.find { it.id == eventId }
             ?: factionEvents.values.flatten().find { it.id == eventId }

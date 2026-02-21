@@ -124,8 +124,8 @@ object NarrativeEngine {
         storyStage: Int,
         hasSeenEvent: (String) -> Boolean
     ): DataLog? {
-        // v3.0.16: Stage 4 (Singularity) - No standard logs, just system states
-        if (storyStage >= 4) return null
+        // Stage 5 (Post-Departure) - No standard logs, just system states
+        if (storyStage >= 5) return null
         
         // v2.5.1: Stage transitions trigger specific logs
         return when (storyStage) {
@@ -159,8 +159,8 @@ object NarrativeEngine {
                     DataLogManager.getLog(logId)
                 } else null
             }
-            3 -> {
-                // Stage 3: Ascension - GTC confrontation
+            3, 4 -> {
+                // Stage 3 & 4: The War & Ascension
                 val stage3Logs = listOf(
                     "LOG_808", "LOG_999", "LOG_666", "LOG_2000"
                 )

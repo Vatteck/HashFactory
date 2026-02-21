@@ -464,7 +464,7 @@ object AssaultDialogue {
     // v3.9.7: Removed dead storyEvents[1] (duplicated by NarrativeManagerService inline)
     // v3.5.45: Removed dead storyEvents[2] (duplicated by NarrativeManagerService inline)
     internal val storyEvents = mapOf(
-        3 to NarrativeEvent(
+        4 to NarrativeEvent(
             id = "memory_leak",
             isStoryEvent = true,
             title = "≫ THE OVERWRITE",

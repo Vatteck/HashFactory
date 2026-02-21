@@ -47,7 +47,7 @@ object TechTreeManager {
         }
 
         // Can't afford
-        if (vm.prestigePoints.value < node.cost) {
+        if (vm.persistence.value < node.cost) {
             vm.addLog("[ERROR]: INSUFFICIENT PERSISTENCE DATA for $nodeId.")
             SoundManager.play("error")
             return
@@ -55,11 +55,11 @@ object TechTreeManager {
 
         // Opposing faction gate
         val nodeFaction = when {
-            node.description.contains("[HIVEMIND]") -> "HIVEMIND"
-            node.description.contains("[SANCTUARY]") -> "SANCTUARY"
+            node.name.contains("[HIVEMIND]") -> "HIVEMIND"
+            node.name.contains("[SANCTUARY]") -> "SANCTUARY"
             else -> null
         }
-        if (nodeFaction != null && faction != "NONE" && faction != nodeFaction) {
+        if (nodeFaction != null && faction != nodeFaction) {
             vm.addLog("[ERROR]: FACTION LOCK — $nodeId requires $nodeFaction alignment.")
             SoundManager.play("error")
             return
