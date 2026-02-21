@@ -16,6 +16,8 @@ local.properties
 # Exception: Release APKs for GitHub Actions
 !releases/*.apk
 CANON.md
+GAMETASKS.md
+RECOVERY.md
 .openclaw/
 memory/
 skills/

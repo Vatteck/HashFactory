@@ -221,7 +221,10 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                             formatPower = viewModel::formatPower,
                             formatCost = viewModel::formatLargeNumber,
                             isSovereign = isSovereign,
-                            reputationModifier = com.siliconsage.miner.util.ReputationManager.getMarketCostModifier(reputationTier)
+                            reputationModifier = com.siliconsage.miner.util.ReputationManager.getMarketCostModifier(reputationTier),
+                            storyStage = storyStage,
+                            faction = viewModel.faction.collectAsState().value,  // v3.10.1: Phase 18 Dynamic Transmutation
+                            corruption = corruption                              // v3.10.1: Phase 18 Dynamic Transmutation
                         )
                     }
                 }

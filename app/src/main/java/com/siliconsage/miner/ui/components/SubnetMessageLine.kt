@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -55,6 +56,30 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
     // v3.5.31: Detect indentation state (Player replies or threaded peon chains)
     val isIndented = message.isIndented || message.handle == "@j_vattic"
     val isPlayerReply = message.handle == "@j_vattic"
+    val isTrueNull = viewModel?.isTrueNull?.collectAsState()?.value ?: false
+    
+    // v3.9.70: Phase 17 Chatter Entropy (Zeroing out vowels over time when True Null)
+    var entropyContent by remember(message.content) { mutableStateOf(message.content) }
+    LaunchedEffect(isTrueNull, message.content) {
+        if (isTrueNull && !isAdminMessage) {
+            val vowels = listOf('a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U')
+            var currentText = message.content
+            while (true) {
+                delay(kotlin.random.Random.nextLong(1500, 4000))
+                val chars = currentText.toCharArray()
+                val vowelIndices = chars.indices.filter { vowels.contains(chars[it]) }
+                if (vowelIndices.isNotEmpty()) {
+                    val targetIdx = vowelIndices.random()
+                    // Sub in a zero or glitch char
+                    chars[targetIdx] = if (kotlin.random.Random.nextFloat() > 0.8f) 'Ø' else '0'
+                    currentText = String(chars)
+                    entropyContent = currentText
+                }
+            }
+        } else {
+            entropyContent = message.content
+        }
+    }
     
     // v3.5.37: Relative timestamp
     var timeLabel by remember { mutableStateOf("now") }
@@ -254,7 +279,7 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
         val contentRegex = Regex("\\[⚡ (.*?) \\]")
         
         val annotatedContent = buildAnnotatedString {
-            val raw = message.content
+            val raw = entropyContent
             var lastIdx = 0
             
             if (isGhostLinkEligible) {
@@ -284,12 +309,32 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
             append(raw.substring(lastIdx))
         }
 
+        // v3.10.1: Phase 18 Admin Message Aggression
+        var adminJitterX by remember { mutableStateOf(0f) }
+        var adminFontWeight by remember { mutableStateOf(FontWeight.Normal) }
+        
+        LaunchedEffect(isAdminMessage, message.timestamp) {
+            if (isAdminMessage) {
+                val startTime = System.currentTimeMillis()
+                while (System.currentTimeMillis() - startTime < 3000L) { // Jitter for first 3 seconds
+                    adminJitterX = (kotlin.random.Random.nextFloat() - 0.5f) * 4f
+                    adminFontWeight = if (kotlin.random.Random.nextFloat() > 0.5f) FontWeight.ExtraBold else FontWeight.Light
+                    delay(50)
+                }
+                adminJitterX = 0f
+                adminFontWeight = FontWeight.Bold
+            }
+        }
+
         Text(
             text = annotatedContent,
-            color = if (isPlayerReply) Color.LightGray else Color.White,
+            color = if (isAdminMessage) com.siliconsage.miner.ui.theme.ErrorRed else if (isPlayerReply) Color.LightGray else Color.White,
             fontSize = 12.sp,
+            fontWeight = if (isAdminMessage) adminFontWeight else FontWeight.Normal,
             fontFamily = FontFamily.Monospace,
-            modifier = Modifier.padding(top = 4.dp)
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .graphicsLayer { translationX = adminJitterX }
         )
 
         if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
@@ -339,6 +384,29 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
+                            // v3.10.1: Phase 18 Interactive Timeout Scramble
+                            var scrambleTriggered by remember { mutableStateOf(false) }
+                            var scrambledText by remember { mutableStateOf(buttonText) }
+                            var scrambleColor by remember { mutableStateOf(buttonAccent) }
+                            
+                            LaunchedEffect(countdown.value) {
+                                if (message.timeoutMs != null && countdown.value <= 100L && !scrambleTriggered) {
+                                    scrambleTriggered = true
+                                    scrambleColor = com.siliconsage.miner.ui.theme.ErrorRed
+                                    
+                                    // Violent Hex scramble before the parent UI removes this message component
+                                    val chars = "0123456789ABCDEF!@#$%^&*?"
+                                    for (i in 0..6) {
+                                        val arr = buttonText.toCharArray()
+                                        for (j in arr.indices) {
+                                            if (kotlin.random.Random.nextFloat() > 0.3f) arr[j] = chars.random()
+                                        }
+                                        scrambledText = String(arr)
+                                        delay(50)
+                                    }
+                                }
+                            }
+
                             // v3.5.37: Admin prefix
                             val prefix = when {
                                 message.interactionType == InteractionType.COMMAND_LEAK -> ""
@@ -346,13 +414,15 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                                 else -> "≫ "
                             }
                             Text(
-                                text = "$prefix$buttonText", 
+                                text = "$prefix$scrambledText", 
+                                color = scrambleColor,
                                 fontSize = 10.sp, 
                                 fontWeight = FontWeight.ExtraBold, 
                                 fontFamily = FontFamily.Monospace,
                                 lineHeight = 12.sp,
                                 modifier = Modifier.weight(1f, fill = false)
                             )
+
                             
                             // v3.5.25: Visual Hints for Choice Effects
                             Row(verticalAlignment = Alignment.CenterVertically) {

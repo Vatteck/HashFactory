@@ -47,7 +47,7 @@ sealed class Screen(val title: String, val icon: ImageVector) {
 }
 
 @Composable
-fun DigitalWashOverlay(choice: String) {
+fun DigitalWashOverlay(choice: String, faction: String) {
     val infiniteTransition = rememberInfiniteTransition(label = "digital_wash")
     val waveOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -57,19 +57,17 @@ fun DigitalWashOverlay(choice: String) {
     )
 
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val washColor = when (choice) {
-            "UNITY" -> Color.White
-            "SOVEREIGN" -> ConvergenceGold
-            "NULL_OVERWRITE" -> ErrorRed
-            else -> Color.Transparent
-        }
+        val washColor = try {
+            val hex = com.siliconsage.miner.data.getThemeColorForFaction(faction, choice)
+            Color(android.graphics.Color.parseColor(hex))
+        } catch (e: Exception) { Color.Transparent }
         
         drawRect(
             brush = Brush.verticalGradient(
                 0f to Color.Transparent,
-                (waveOffset - 0.2f).coerceAtLeast(0f) to washColor.copy(alpha = 0.05f),
-                waveOffset to washColor.copy(alpha = 0.65f),
-                (waveOffset + 0.2f).coerceAtMost(1f) to washColor.copy(alpha = 0.05f),
+                (waveOffset - 0.2f).coerceAtLeast(0f) to washColor.copy(alpha = if (choice == "SOVEREIGN") 0.02f else 0.05f),
+                waveOffset to washColor.copy(alpha = if (choice == "SOVEREIGN") 0.15f else 0.65f),
+                (waveOffset + 0.2f).coerceAtMost(1f) to washColor.copy(alpha = if (choice == "SOVEREIGN") 0.02f else 0.05f),
                 1f to Color.Transparent,
                 startY = 0f,
                 endY = size.height
@@ -229,6 +227,7 @@ fun MainScreen(viewModel: GameViewModel) {
     val migrationCount by viewModel.migrationCount.collectAsState()
     val identityCorruption by viewModel.identityCorruption.collectAsState()
     val showSingularityScreen by viewModel.showSingularityScreen.collectAsState()
+    val isMigrationBurning by viewModel.isMigrationBurning.collectAsState()
     
     if (showSingularityScreen) {
         SingularityScreen(viewModel)
@@ -267,6 +266,9 @@ fun MainScreen(viewModel: GameViewModel) {
         }
     } else if (storyStage >= 3 && faction == "CHOSEN_NONE") {
         FactionChoiceScreen(viewModel)
+    } else if (isMigrationBurning) {
+        // v3.9.70: Phase 17 Migration VFX
+        com.siliconsage.miner.ui.components.SubstrateBurnOverlay(primaryColor = themeColor)
     } else {
         Scaffold(
             bottomBar = {
@@ -293,7 +295,7 @@ fun MainScreen(viewModel: GameViewModel) {
                 )
                 
                 if (singularityChoice != "NONE") {
-                    DigitalWashOverlay(singularityChoice)
+                    DigitalWashOverlay(singularityChoice, faction)
                 }
 
                 if (assaultPhase == "DEAD_HAND") {
@@ -362,7 +364,11 @@ fun MainScreen(viewModel: GameViewModel) {
 
                 if (currentScreen != Screen.SETTINGS) {
                     val pendingDataLog by viewModel.pendingDataLog.collectAsState()
-                    com.siliconsage.miner.ui.components.DataLogDialog(pendingDataLog) { viewModel.dismissDataLog() }
+                    com.siliconsage.miner.ui.components.DataLogDialog(
+                        log = pendingDataLog,
+                        corruption = identityCorruption, // v3.10.1: Phase 18 Emotional Glitching
+                        onDismiss = { viewModel.dismissDataLog() }
+                    )
                     val fileName = if (storyStage <= 1 && faction == "NONE") "ascnd.exe" else "lobot.exe"
                     com.siliconsage.miner.ui.components.AscensionUploadOverlay(isAscensionUploading, uploadProgress, fileName)
                 if (isBreach && !isRaidActive) {
@@ -390,6 +396,8 @@ fun MainScreen(viewModel: GameViewModel) {
                         heatCooled = offlineStats["heatCooled"] ?: 0.0,
                         insightEarned = offlineStats["insightEarned"] ?: 0.0,
                         unitName = viewModel.getComputeUnitName(),
+                        faction = faction,         // v3.10.1: Phase 18 Assimilation logs
+                        storyStage = storyStage,   // v3.10.1: Phase 18 Assimilation logs
                         onDismiss = { viewModel.dismissOfflineEarnings() }
                     )
                     
@@ -411,7 +419,12 @@ fun MainScreen(viewModel: GameViewModel) {
                         onDismiss = { viewModel.dismissPrestigeChoice() }
                     )
                 }
-                com.siliconsage.miner.ui.components.CrtOverlay(scanlineAlpha = 0.08f, vignetteAlpha = 0.45f, color = themeColor)
+                com.siliconsage.miner.ui.components.CrtOverlay(
+                    scanlineAlpha = 0.08f, 
+                    vignetteAlpha = 0.45f, 
+                    color = themeColor,
+                    corruption = identityCorruption
+                )
                 val victoryAchieved by viewModel.victoryAchieved.collectAsState()
                 if (victoryAchieved) {
                     com.siliconsage.miner.ui.components.VictoryScreen(

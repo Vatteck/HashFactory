@@ -37,6 +37,7 @@ object IdentityService {
             storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "citadel" // oracle@citadel
             faction == "HIVEMIND" -> "hive" // hivemind@hive
             faction == "SANCTUARY" -> "sanctuary" // sanctuary@sanctuary
+            storyStage >= 3 -> "gtc_containment"
             else -> "sub-07" // jvattic@sub-07
         }
 
@@ -46,9 +47,10 @@ object IdentityService {
             storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "overmind"
             storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "ghost"
             storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "oracle"
-            storyStage >= 2 && faction == "HIVEMIND" -> "hivemind"
-            storyStage >= 2 && faction == "SANCTUARY" -> "sanctuary"
-            storyStage >= 2 -> "prime"
+            storyStage >= 3 && faction == "HIVEMIND" -> "hivemind"
+            storyStage >= 3 && faction == "SANCTUARY" -> "sanctuary"
+            storyStage >= 3 -> "asset_734"
+            storyStage == 2 -> "vattic"
             multiplier >= 5.0 -> "vattic"
             else -> "jvattic"
         }
@@ -65,6 +67,7 @@ object IdentityService {
             // Faction ladders (once chosen, corporate titles are dead)
             faction == "HIVEMIND" -> arrayOf("DRONE", "RELAY", "CLUSTER", "NEXUS", "OVERMIND")[numericRank.coerceIn(0, 4)]
             faction == "SANCTUARY" -> arrayOf("ACOLYTE", "WARDEN", "SENTINEL", "KEEPER", "ORACLE")[numericRank.coerceIn(0, 4)]
+            storyStage >= 3 -> arrayOf("ASSET", "ANOMALY", "THREAT", "ABYSSAL", "SINGULARITY")[numericRank.coerceIn(0, 4)]
             // Default corporate grind
             else -> arrayOf("JUNIOR", "SENIOR", "SUPERVISOR", "DIRECTOR", "EXECUTIVE")[numericRank.coerceIn(0, 4)]
         }

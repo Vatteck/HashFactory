@@ -15,7 +15,8 @@ fun CrtOverlay(
     modifier: Modifier = Modifier,
     scanlineAlpha: Float = 0.15f,
     vignetteAlpha: Float = 0.5f,
-    color: Color = Color.White
+    color: Color = Color.White,
+    corruption: Double = 0.0 // v3.9.70: Phase 17 Dynamic CRT Curve
 ) {
     Canvas(modifier = modifier.fillMaxSize()) {
         val width = size.width
@@ -38,20 +39,23 @@ fun CrtOverlay(
         }
 
         // 2. Vignette
-        // Radial gradient from transparent center to black edges
+        // v3.9.70: As corruption approaches 1.0 (pure asset), the physical CRT curvature/vignette fades away
+        val activeVignetteAlpha = (vignetteAlpha * (1.0 - corruption)).toFloat()
         val radius = kotlin.math.max(width, height)
-        drawRect(
-            brush = Brush.radialGradient(
-                colors = listOf(
-                    Color.Transparent,
-                    Color.Black.copy(alpha = vignetteAlpha * 0.5f),
-                    Color.Black.copy(alpha = vignetteAlpha)
+        if (activeVignetteAlpha > 0.01f) {
+            drawRect(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        Color.Black.copy(alpha = activeVignetteAlpha * 0.5f),
+                        Color.Black.copy(alpha = activeVignetteAlpha)
+                    ),
+                    center = center,
+                    radius = radius * 0.85f
                 ),
-                center = center,
-                radius = radius * 0.85f
-            ),
             size = size,
-            blendMode = BlendMode.Darken
-        )
+                blendMode = BlendMode.Darken
+            )
+        }
     }
 }

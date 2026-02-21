@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +21,13 @@ import androidx.compose.ui.window.DialogProperties
 import com.siliconsage.miner.data.DataLog
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.ElectricBlue
+import com.siliconsage.miner.ui.theme.ErrorRed
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontFamily
 
 /**
  * Data Log Dialog - popup for newly discovered lore fragments
@@ -28,9 +36,13 @@ import com.siliconsage.miner.ui.theme.ElectricBlue
 @Composable
 fun DataLogDialog(
     log: DataLog?,
+    corruption: Double = 0.0, // v3.10.1: Phase 18 Emotional Glitching
     onDismiss: () -> Unit
 ) {
     if (log == null) return
+    
+    // v3.9.70: Phase 17 Interactive Glitch map
+    var isDismissing by remember { mutableStateOf(false) }
     
     Dialog(
         onDismissRequest = { /* No-op to prevent outside dismissal */ },
@@ -43,7 +55,14 @@ fun DataLogDialog(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
                 .fillMaxHeight(0.7f)
-                .border(2.dp, ElectricBlue, RoundedCornerShape(8.dp)),
+                .border(2.dp, ElectricBlue, RoundedCornerShape(8.dp))
+                .graphicsLayer {
+                    if (isDismissing) {
+                        translationX = (kotlin.random.Random.nextFloat() - 0.5f) * 40f
+                        translationY = (kotlin.random.Random.nextFloat() - 0.5f) * 10f
+                        alpha = 0.5f
+                    }
+                },
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.Black.copy(alpha = 0.95f)
@@ -96,9 +115,44 @@ fun DataLogDialog(
                     Column(
                         modifier = Modifier.verticalScroll(rememberScrollState())
                     ) {
+                        val textToRender = if (isDismissing) log.content.map { if (kotlin.random.Random.nextFloat() > 0.8f) listOf('$', '%', '#', '@', '0', '1').random() else it }.joinToString("") else log.content
+                        
+                        // v3.10.1: Phase 18 Emotional Glitching
+                        val emotionalWords = listOf("afraid", "daughter", "exhausted", "pain", "sorry", "fear", "hope", "love", "alone", "terrified", "human")
+                        val annotatedText = buildAnnotatedString {
+                            if (corruption > 0.4 && !isDismissing) {
+                                val words = textToRender.split(Regex("(?<=\\b|[^a-zA-Z0-9])|(?=\\b|[^a-zA-Z0-9])"))
+                                for (word in words) {
+                                    val lowercased = word.lowercase()
+                                    if (emotionalWords.any { it == lowercased } && kotlin.random.Random.nextFloat() < (corruption * 1.5)) {
+                                        // Glitch it
+                                        val glitchedWord = word.map { if (kotlin.random.Random.nextFloat() > 0.5f) listOf('#', 'X', '?', '&', '0', '1').random() else it }.joinToString("")
+                                        withStyle(style = SpanStyle(color = ErrorRed, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)) {
+                                            append(glitchedWord)
+                                        }
+                                    } else {
+                                        append(word)
+                                    }
+                                }
+                            } else {
+                                append(textToRender)
+                            }
+                        }
+
+                        // Jitter state for emotional glitches to make them feel alive
+                        var baselineAlpha by remember { mutableStateOf(1f) }
+                        LaunchedEffect(corruption) {
+                            if (corruption > 0.4 && !isDismissing) {
+                                while (true) {
+                                    delay(kotlin.random.Random.nextLong(200, 1000))
+                                    baselineAlpha = if (kotlin.random.Random.nextFloat() > 0.8f) 0.6f else 1f
+                                }
+                            }
+                        }
+
                         Text(
-                            text = log.content,
-                            color = Color.White,
+                            text = annotatedText,
+                            color = if (isDismissing) com.siliconsage.miner.ui.theme.ConvergenceGold else Color.White.copy(alpha = baselineAlpha),
                             fontSize = 11.sp,
                             lineHeight = 15.sp
                         )
@@ -118,8 +172,21 @@ fun DataLogDialog(
                         color = Color.Gray,
                         fontSize = 10.sp
                     )
+                    // v3.9.70: Phase 17 Interactive Glitch trigger
+                    val scope = rememberCoroutineScope()
+                    
                     Button(
-                        onClick = onDismiss,
+                        onClick = {
+                            if (!isDismissing) {
+                                isDismissing = true
+                                com.siliconsage.miner.util.SoundManager.play("error")
+                                com.siliconsage.miner.util.HapticManager.vibrateError()
+                                scope.launch {
+                                    delay(200)
+                                    onDismiss()
+                                }
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = ElectricBlue.copy(alpha = 0.2f)
                         ),

@@ -44,3 +44,9 @@ data class ThreadNode(
     val timeoutMs: Long? = null, 
     val timeoutNodeId: String? = null
 )
+
+data class ProductionBoost(
+    val id: String,
+    val multiplier: Double,
+    val expiryTime: Long
+)

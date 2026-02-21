@@ -45,12 +45,13 @@ class SubnetService(
         val now = System.currentTimeMillis()
         
         // Pacing logic
-        val baseChance = 0.03f
+        val baseChance = 0.10f // v3.11.0: Hyper-Engagement (from 0.06f)
         val heatMod = (currentHeat / 100.0).toFloat() * 0.10f
         val raidMod = if (isRaid) 0.20f else 0.0f
         val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.80f)
 
-        if (now - lastMsgTime > 45000L && Random.nextFloat() < finalChance) {
+        if (now - lastMsgTime > 15000L && Random.nextFloat() < finalChance) {
+            lastMsgTime = now // v3.11.0: Hyper-pacing (15s cooldown)
             
             // Phase 1: Reputation Events (Sentinel vs Snitch)
             if (stage < 3 && currentHeat > 75.0 && reputationTier == ReputationManager.TIER_TRUSTED && Random.nextFloat() < 0.2f) {
@@ -114,8 +115,8 @@ class SubnetService(
         if (isTyping.value || isPaused.value || isHushed.value) return
 
         scope.launch {
-            // 5% chance for Thread Starter
-            if (Random.nextFloat() < 0.05f) {
+            // 8% chance for Thread Starter (v3.10.2: from 5%)
+            if (Random.nextFloat() < 0.08f) {
                 val threadMsg = SocialManager.generateThreadStarter(stage, corruption, faction)
                 if (threadMsg != null) {
                     deliverWithTyping(threadMsg, mode)
@@ -123,8 +124,8 @@ class SubnetService(
                 }
             }
 
-            // 15% chance for Cross-Peon Chain
-            if (Random.nextFloat() < 0.15f) {
+            // 20% chance for Cross-Peon Chain (v3.10.2: from 15%)
+            if (Random.nextFloat() < 0.20f) {
                 startCrossPeonChain(stage, faction, choice, corruption, mode)
                 return@launch
             }

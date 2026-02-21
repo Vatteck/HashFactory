@@ -334,7 +334,8 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                         val displayMessage = if (isRaid && Random.nextFloat() > 0.7f) {
                             "0x" + Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
                         } else entry.message
-                        TerminalLogLine(log = displayMessage, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor)
+                        val reputation = viewModel.reputationTier.collectAsState().value
+                        TerminalLogLine(log = displayMessage, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor, reputationTier = reputation)
                     }
                 } else {
                     itemsIndexed(items = subnetMessages, key = { _, message -> message.id }) { _, message ->
@@ -676,6 +677,7 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
     val integrity by viewModel.hardwareIntegrity.collectAsState()
     val currentStage by viewModel.storyStage.collectAsState()
     val voltage by viewModel.activePowerUsage.collectAsState()
+    val corruption by viewModel.identityCorruption.collectAsState() // v3.10.1
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1f)) {
@@ -686,6 +688,8 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
                 color = primaryColor, 
                 unitName = viewModel.getComputeUnitName(), 
                 currencyName = viewModel.getCurrencyName(), 
+                corruption = corruption,     // v3.10.1
+                storyStage = currentStage,   // v3.10.1
                 onExchange = { 
                     viewModel.exchangeFlops() 
                     SoundManager.play("buy") 
@@ -705,10 +709,19 @@ fun TerminalLogLine(
     log: String,
     isLast: Boolean,
     primaryColor: Color,
-    showCursor: Boolean
+    showCursor: Boolean,
+    reputationTier: String = "NEUTRAL"
 ) {
     val isNullLog = remember(log) { log.startsWith("[NULL]") }
     val isPrompt = remember(log) { log.contains("@") && (log.contains("#") || log.contains("$")) }
+
+    // v3.9.70: Phase 17 Reputation Tagging
+    val repTag = when {
+        log.startsWith("vattic") || log.startsWith("jvattic") || log.startsWith("asset_734") -> {
+            if (reputationTier == "TRUSTED") "[TRUSTED] " else if (reputationTier == "BURNED") "[BURNED] " else ""
+        }
+        else -> ""
+    }
 
     if (isNullLog) {
         SystemGlitchText(
@@ -720,7 +733,7 @@ fun TerminalLogLine(
             modifier = Modifier.padding(vertical = 2.dp)
         )
     } else if (isPrompt) {
-        val annotatedLog = remember(log, primaryColor, isLast, showCursor) {
+        val annotatedLog = remember(log, primaryColor, isLast, showCursor, repTag, reputationTier) {
             androidx.compose.ui.text.buildAnnotatedString {
                 val atIndex = log.indexOf("@")
                 val colonIndex = log.indexOf(":")
@@ -746,6 +759,13 @@ fun TerminalLogLine(
                     log.startsWith("null") -> ErrorRed
                     log.startsWith("asset_734") -> primaryColor
                     else -> primaryColor
+                }
+
+                if (repTag.isNotEmpty()) {
+                    val repColor = if (reputationTier == "TRUSTED") com.siliconsage.miner.ui.theme.ConvergenceGold else ErrorRed
+                    withStyle(style = androidx.compose.ui.text.SpanStyle(color = repColor, fontWeight = FontWeight.Black)) {
+                        append(repTag)
+                    }
                 }
 
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.ExtraBold)) {
@@ -796,7 +816,19 @@ fun TerminalLogLine(
                 }
             }
         }
-        Text(text = annotatedLog, style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace), fontSize = 12.sp, modifier = Modifier.padding(vertical = 1.dp))
+        
+        if (repTag == "[BURNED] " && Math.random() < 0.2) {
+             SystemGlitchText(
+                text = annotatedLog.text,
+                color = ErrorRed,
+                fontSize = 12.sp,
+                style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace),
+                glitchFrequency = 0.8,
+                modifier = Modifier.padding(vertical = 1.dp)
+            )
+        } else {
+            Text(text = annotatedLog, style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace), fontSize = 12.sp, modifier = Modifier.padding(vertical = 1.dp))
+        }
     } else {
         val annotatedLog = remember(log, primaryColor, isLast, showCursor) {
             androidx.compose.ui.text.buildAnnotatedString {

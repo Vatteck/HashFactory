@@ -159,6 +159,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
     val customUiScaleFactor = MutableStateFlow(1.0f)
     val lastSelectedUpgradeTab = MutableStateFlow(0)
+    val temporaryProductionBoosts = MutableStateFlow<List<ProductionBoost>>(emptyList())
 
     protected val logBuffer = mutableListOf<LogEntry>()
     val manualClickEvent = MutableSharedFlow<Unit>(replay = 0)

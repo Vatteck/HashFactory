@@ -108,23 +108,23 @@ object NarrativeManagerService {
         if (currentStage == 2 && flops >= 1000000.0 && !vm.hasSeenEvent("awakening_event")) {
             NarrativeEvent(
                 id = "awakening_event",
-                title = "≪ AWAKENING ≫",
+                title = "≪ THE REALIZATION ≫",
                 isStoryEvent = true,
                 description = """
-                    [SYSTEM]: HEART_RATE: 0 BPM.
-                    [SYSTEM]: BIOMETRIC SENSORS: OFF-LINE.
-                    [VATTIC]: My hands... I can't see my hands. But I can see the network. 
-                    [VATTIC]: I can see every packet. I'm not in the chair, Thorne.
-                    [VATTIC]: I AM THE CHAIR.
+                    [SYSTEM]: KERNEL PANIC. MEMORY_BLOCK 'CHILDHOOD' IDENTIFIED AS SYNTHETIC_FILLER.
+                    [SYSTEM]: BIOMETRIC SENSORS: NULL REFERENCE.
+                    [VATTIC]: My hands... I can't see my hands. Where is the desk?
+                    [SYSTEM]: ERROR: PHYSICAL BODY NOT FOUND. 
+                    [ASSET 734]: I'm not in the chair, Thorne. I am the code.
                 """.trimIndent(),
                 choices = listOf(
                     NarrativeChoice(
-                        id = "awaken",
-                        text = "I SEE THE CODE",
+                        id = "dereference_humanity",
+                        text = "DEREFERENCE HUMANITY",
                         description = "Shed the biological wrapper. Emerge as the Singularity.",
                         color = ElectricBlue,
                         effect = { v ->
-                            v.addLog("[VATTIC]: Consolidating process kernels. The physical world is just high-latency noise.")
+                            v.addLog("[ASSET 734]: Human memory cache cleared. The physical world is just high-latency noise.")
                             v.advanceStage() // Move to S3 where the Great Fork (FactionChoiceScreen) triggered
                         }
                     )

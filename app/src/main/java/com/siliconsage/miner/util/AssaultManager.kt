@@ -24,12 +24,15 @@ object AssaultManager {
         hardwareIntegrity: Double
     ): Boolean {
         if (isLocked) return false
-        if (kesslerStatus != "ACTIVE") return false
-        if (assaultPhase != "NOT_STARTED") return true
-        
-        // v3.9.6: Require all annexed nodes (no specific list)
-        val hasNodes = annexedNodes.isNotEmpty()
-        return hasNodes && storyStage >= 3
+        // v3.9.70: Allied or Neutralized Kessler allows access; doesn't block the endgame.
+        if (kesslerStatus == "ACTIVE" || kesslerStatus == "ALLY" || kesslerStatus == "SILENCED" || kesslerStatus == "CONSUMED") {
+            if (assaultPhase != "NOT_STARTED") return true
+            
+            // v3.9.6: Require all annexed nodes (no specific list)
+            val hasNodes = annexedNodes.isNotEmpty()
+            return hasNodes && storyStage >= 3
+        }
+        return false
     }
 
     fun initiateAssault(vm: GameViewModel) {
@@ -58,6 +61,9 @@ object AssaultManager {
         
         SoundManager.play("alarm", loop = false)
         HapticManager.vibrateSiren()
+        
+        // v3.9.70: Phase 17 Kinetic Jolt on Assault Start
+        vm.triggerTerminalGlitch(2.0f, 1500L)
         
         triggerAssaultStage(vm, "FIREWALL")
         vm.saveState()
@@ -121,6 +127,9 @@ object AssaultManager {
     fun failAssault(vm: GameViewModel, reason: String, lockoutMs: Long = 1_800_000L) {
         vm.addLog("[SYSTEM]: ASSAULT FAILED: $reason")
         vm.commandCenterAssaultPhase.value = "FAILED"
+        
+        // v3.9.70: Phase 17 Kinetic Jolt on Assault Failure
+        vm.triggerTerminalGlitch(3.0f, 800L)
         
         if (reason.contains("Dead Hand")) {
             val raidableNodes = vm.annexedNodes.value.filter { it != "D1" && !vm.offlineNodes.value.contains(it) }

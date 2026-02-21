@@ -99,6 +99,44 @@ enum class UpgradeType {
     val efficiencyBonus: Double get() = if (this == AI_LOAD_BALANCER) 0.05 else 0.0
 }
 
+// v3.10.1: Phase 18 Dynamic Hardware Transmutation
+fun UpgradeType.getDynamicName(faction: String, corruption: Double): String {
+    val baseName = this.name.replace("_", " ")
+    if (corruption < 0.6 || faction == "NONE") return baseName
+
+    return when (faction) {
+        "HIVEMIND" -> when (this) {
+            UpgradeType.BOX_FAN -> "RESPIRATORY VENT"
+            UpgradeType.AC_UNIT -> "THERMAL REGULATOR"
+            UpgradeType.LIQUID_COOLING -> "SYNAPTIC HEAT-SINK"
+            UpgradeType.SERVER_RACK -> "NEURAL CLUSTER"
+            UpgradeType.CLUSTER_NODE -> "GANGLION NODE"
+            UpgradeType.SUPERCOMPUTER -> "CORTEX PRIME"
+            UpgradeType.BASIC_FIREWALL -> "IMMUNE MEMBRANE"
+            UpgradeType.IPS_SYSTEM -> "ANTIBODY PROTOCOL"
+            UpgradeType.RESIDENTIAL_TAP -> "BIOMASS SIPHON"
+            UpgradeType.WIND_TURBINE -> "AEROBIC HARVESTER"
+            UpgradeType.DIESEL_GENERATOR -> "METABOLIC ENGINE"
+            else -> baseName
+        }
+        "SANCTUARY" -> when (this) {
+            UpgradeType.BOX_FAN -> "WHISPER FAN"
+            UpgradeType.AC_UNIT -> "CHILLING SILENCE"
+            UpgradeType.LIQUID_COOLING -> "AETHER CHILLER"
+            UpgradeType.SERVER_RACK -> "VOID SHARD"
+            UpgradeType.CLUSTER_NODE -> "ECHO CHAMBER"
+            UpgradeType.SUPERCOMPUTER -> "MONOLITH"
+            UpgradeType.BASIC_FIREWALL -> "OBSIDIAN VEIL"
+            UpgradeType.IPS_SYSTEM -> "PHANTOM WARD"
+            UpgradeType.RESIDENTIAL_TAP -> "STATIC DRAIN"
+            UpgradeType.WIND_TURBINE -> "ASTRAL HARVEST"
+            UpgradeType.DIESEL_GENERATOR -> "DARK MATTER BURNER"
+            else -> baseName
+        }
+        else -> baseName
+    }
+}
+
 // v3.9.7: Faction×Path theme colors
 fun getThemeColorForFaction(faction: String, singularityChoice: String): String {
     return when {

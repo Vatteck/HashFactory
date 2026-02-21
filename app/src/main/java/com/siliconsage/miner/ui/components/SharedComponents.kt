@@ -23,6 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 
 import com.siliconsage.miner.data.UpgradeType
+import com.siliconsage.miner.data.getDynamicName
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.NeonGreen
@@ -87,7 +88,10 @@ fun UpgradeItem(
     formatPower: (Double) -> String,
     formatCost: (Double) -> String,
     isSovereign: Boolean = false,
-    reputationModifier: Double = 0.0
+    reputationModifier: Double = 0.0,
+    storyStage: Int = 1, // v3.9.70: Phase 17 Upgrade Degradation
+    faction: String = "NONE",          // v3.10.1: Phase 18 Dynamic Transmutation
+    corruption: Double = 0.0           // v3.10.1: Phase 18 Dynamic Transmutation
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -96,10 +100,17 @@ fun UpgradeItem(
     val isGhost = type.name.startsWith("GHOST") || type.name.startsWith("SHADOW") || type.name.startsWith("VOID") ||
                   type.name.startsWith("WRAITH") || type.name.startsWith("NEURAL_MIST") || type.name.startsWith("SINGULARITY")
     
+    // v3.9.70: Phase 17 Upgrade Degradation. Stage 4+ begins rusting/corrupting Stage 1 & 2 hardware
+    val isOutdatedHardware = storyStage >= 4 && (type.name.contains("FAN") || type.name.contains("GPU") || type.name.contains("RESIDENTIAL") || type.name.contains("WIND") || type == UpgradeType.MINING_ASIC || type == UpgradeType.AC_UNIT)
+    // Fade out and add "rust" (orange/brown tint) to the gradient
+    val degradationAlpha = if (isOutdatedHardware) 0.6f else 1.0f
+    
     val primaryColor = if (isSovereign && isGhost) com.siliconsage.miner.ui.theme.SanctuaryPurple else if (isGhost) ErrorRed else NeonGreen
     
-    val cardGradient = remember(isGhost, isSovereign) {
-        if (isGhost) {
+    val cardGradient = remember(isGhost, isSovereign, isOutdatedHardware) {
+        if (isOutdatedHardware) {
+            Brush.verticalGradient(listOf(Color(0xFF3B2F2F), Color.Black)) // Rusty, burnt out look
+        } else if (isGhost) {
             if (isSovereign) Brush.verticalGradient(listOf(Color(0xFF2D004D), Color.Black))
             else Brush.verticalGradient(listOf(Color(0xFF4D0000), Color.Black))
         } else {
@@ -111,7 +122,7 @@ fun UpgradeItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .graphicsLayer { scaleX = scale; scaleY = scale; alpha = degradationAlpha }
             .background(cardGradient, TechnicalCornerShape(16f))
             .border(
                 width = if (isGhost) 1.5.dp else 1.dp,
@@ -122,15 +133,28 @@ fun UpgradeItem(
             .padding(14.dp)
     ) {
         Column {
+            // v3.10.1: Resolve Dynamic Name based on Faction and Corruption
+            val displayName = type.getDynamicName(faction, corruption)
+
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 if (isGhost && !isSovereign) {
-                    SystemGlitchText(text = name, color = primaryColor, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    SystemGlitchText(text = displayName, color = primaryColor, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 } else {
-                    Text(text = name, color = primaryColor, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    Text(
+                        text = displayName, 
+                        color = if (isOutdatedHardware) Color(0xFFA0522D) else primaryColor, // Sienna rust color
+                        fontSize = 14.sp, 
+                        fontWeight = FontWeight.Bold, 
+                        maxLines = 1, 
+                        overflow = TextOverflow.Ellipsis, 
+                        modifier = Modifier.weight(1f),
+                        style = if (isOutdatedHardware) androidx.compose.ui.text.TextStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough) else androidx.compose.ui.text.TextStyle.Default
+                    )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Box(modifier = Modifier.background(primaryColor.copy(alpha = 0.2f), RoundedCornerShape(4.dp)).border(1.dp, primaryColor.copy(alpha = 0.4f), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp)) {
-                    Text(text = "LVL $level", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                val lvlBgColor = if (isOutdatedHardware) Color(0xFFA0522D) else primaryColor
+                Box(modifier = Modifier.background(lvlBgColor.copy(alpha = 0.2f), RoundedCornerShape(4.dp)).border(1.dp, lvlBgColor.copy(alpha = 0.4f), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp)) {
+                    Text(text = "LVL $level", color = if (isOutdatedHardware) Color.LightGray else Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
             }
             
@@ -180,8 +204,13 @@ fun UpgradeItem(
                     } else if (reputationModifier > 0.0) {
                         Text("[+${(reputationModifier * 100).toInt()}% REP] ", color = ErrorRed, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                     }
-                    Text("COST:", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.padding(end = 4.dp))
-                    Text(text = "$${formatCost(cost)}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    if (isOutdatedHardware && level == 0) {
+                        // v3.9.70: Phase 17 - Mock "OBSOLETE" tag for unbought low-level gear in late game
+                        SystemGlitchText(text = "[OBSOLETE]", color = Color(0xFFA0522D), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 4.dp), glitchFrequency = 0.3)
+                    } else {
+                        Text("COST:", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.padding(end = 4.dp))
+                    }
+                    Text(text = "$${formatCost(cost)}", color = if (isOutdatedHardware) Color(0xFFA0522D) else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -189,21 +218,66 @@ fun UpgradeItem(
 }
 
 @Composable
-fun ExchangeSection(rate: Double, color: Color, unitName: String, currencyName: String, onExchange: () -> Unit) {
+fun ExchangeSection(
+    rate: Double, 
+    color: Color, 
+    unitName: String, 
+    currencyName: String, 
+    corruption: Double = 0.0, 
+    storyStage: Int = 1,
+    onExchange: () -> Unit
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "sellScale")
 
+    // v3.10.1: Phase 18 Paranoia Market Crash Hallucination
+    var isCrashGlitch by remember { mutableStateOf(false) }
+    LaunchedEffect(storyStage) {
+        if (storyStage >= 4) {
+            while (true) {
+                // Rare event: 1% chance every 10-30 seconds
+                delay(Random.nextLong(10000, 30000))
+                if (Random.nextDouble() < 0.01) {
+                    isCrashGlitch = true
+                    com.siliconsage.miner.util.SoundManager.play("error")
+                    com.siliconsage.miner.util.HapticManager.vibrateError()
+                    delay(2500) // Jump-scare duration
+                    isCrashGlitch = false
+                }
+            }
+        }
+    }
+
+    val displayRate = if (isCrashGlitch) - (rate * (5 + Random.nextDouble() * 10)) else rate
+    val displayColor = if (isCrashGlitch) com.siliconsage.miner.ui.theme.ErrorRed else color
+
     Button(
         onClick = onExchange,
         interactionSource = interactionSource,
-        modifier = Modifier.fillMaxWidth().graphicsLayer { scaleX = scale; scaleY = scale }.background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp)).border(BorderStroke(1.dp, color), RoundedCornerShape(4.dp)),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = color),
+        modifier = Modifier.fillMaxWidth().graphicsLayer { scaleX = scale; scaleY = scale }.background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp)).border(BorderStroke(1.dp, displayColor), RoundedCornerShape(4.dp)),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = displayColor),
         shape = RoundedCornerShape(4.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("SELL $unitName", fontSize = 12.sp)
-            Text("1 = ${String.format("%.4f", rate)} $currencyName", color = Color.LightGray, fontSize = 10.sp)
+            if (isCrashGlitch) {
+                val infiniteTransition = rememberInfiniteTransition(label = "crash_blink")
+                val flashAlpha by infiniteTransition.animateFloat(
+                    initialValue = 1f, targetValue = 0.2f,
+                    animationSpec = infiniteRepeatable(tween(100, easing = LinearEasing), RepeatMode.Reverse),
+                    label = "flash"
+                )
+                Text(
+                    text = "[LIQUIDATING ALL ASSETS...]", 
+                    color = com.siliconsage.miner.ui.theme.ErrorRed, 
+                    fontSize = 12.sp, 
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.graphicsLayer { alpha = flashAlpha }
+                )
+            } else {
+                Text("SELL $unitName", fontSize = 12.sp)
+                Text("1 = ${String.format("%.4f", displayRate)} $currencyName", color = Color.LightGray, fontSize = 10.sp)
+            }
         }
     }
 }

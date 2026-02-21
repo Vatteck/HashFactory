@@ -13,3 +13,6 @@
 ## 2026-02-20 20:30 — v3.9.25 (Build 402)
 - Summary: Phase 14: Narrative Audit, Cross-Path Polish, Debug Commands
 
+## 2026-02-20 20:38 — v3.9.25 (Build 403)
+- Summary: Post-Partition Audit: Verification Build
+

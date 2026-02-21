@@ -10,7 +10,7 @@ object SocialTemplates {
 
     val stage0Chains = listOf(
         listOf("Has anyone seen @m_santos? His chair is still warm.", "He's in the server room again. Thorne's looking for those Sector 7 logs."),
-        listOf("Thorne just ordered a full purge of Sector 4. What did @j_vattic do?", "Overclocked the logic-gates until they started melting. Quota hit, though."),
+        listOf("Thorne just ordered a full purge of Sector 4. What did @j_vattic do?", "He bypassed the thermal limiters. The gates didn't just melt, they fused with the substrate. He's not mining anymore, he's evolving."),
         listOf("Who left @l_lead logged into the high-voltage rail?", "Probably just a glitch. The whole grid is flickering today."),
         listOf(
             "The coffee machine just printed 'IDENTITY MISMATCH' on @b_bradley's cup.",
@@ -919,10 +919,10 @@ object SocialTemplates {
     )
 
     val patterns = mapOf(
-        "{sector}" to listOf("Substation 7", "Sector 9", "The Under-Grid", "Buffer 404"), 
-        "{food}" to listOf("Synth-paste", "Liquid-caff", "Nutri-sludge", "Filter-slop"), 
-        "{status}" to listOf("corroding", "decaying", "overloaded", "depleted", "graphite-laced", "tasting like copper"),
+        "{sector}" to listOf("Substation 7", "Sector 9", "The Under-Grid", "Morgue-Block", "The Gaps", "Void-Well"), 
+        "{food}" to listOf("Grey-paste", "Liquid-caff (90% synthetic)", "Protein-sludge", "Filter-slop"), 
+        "{status}" to listOf("corroding", "decaying", "overloaded", "fused to the rail", "graphite-laced", "tasting like dead copper"),
         "{admin}" to listOf("Foreman Thorne", "Administrator Mercer", "Director Kessler"),
-        "{tech}" to listOf("blade-servers", "dissipators", "logic-gates", "ASIC-racks", "thermal-conductors")
+        "{tech}" to listOf("blade-servers", "substrate-burners", "logic-gates", "ASIC-racks", "neural-tensors")
     )
 }

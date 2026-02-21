@@ -4,6 +4,8 @@ import android.content.Context
 import kotlin.random.Random
 
 object HeadlineManager {
+    private val headlineHistory = mutableListOf<String>()
+    private const val MAX_HISTORY = 10
 
     // --- 1. THE DATABASE (Refactored for Phase 11) ---
     
@@ -128,7 +130,17 @@ object HeadlineManager {
         "Municipality: Substation 7 voltage fluctuations are 'within normal limits'. [LORE]",
         "Employment Report: Hiring freeze at Global Tech Council regional offices. [LORE]",
         "Neighborhood Watch: Increased static reported on analog radios. [LORE]",
-        "Traffic: 2-hour delay on the NA-Sector 7 Expressway. [LORE]"
+        "Traffic: 2-hour delay on the NA-Sector 7 Expressway. [LORE]",
+        "Tech-Brief: Why your legacy workstation needs a logic-vent cleaning. [LORE]",
+        "Consumer Corner: Is synt-caff actually better for your focus? [LORE]",
+        "Public Works: Sector 4 waste-reclamation plant at 90% capacity. [LORE]",
+        "Grid Stability: Minor brownouts reported in Residential Block 12. [LORE]",
+        "Corporate Memo: Reminder to sync biometric badges before shift start. [LORE]",
+        "Sports: Sector 9 'Spark-Ball' finals scheduled for Saturday. [LORE]",
+        "Utility Alert: High-voltage cable maintenance in Sub-Level 3. [LORE]",
+        "Community News: Local synth-garden reports record bloom. [LORE]",
+        "Health: New study links grid-hum to improved deep-sleep cycles. [LORE]",
+        "Logistics: Cargo drone traffic increased over Industrial Zone 7. [LORE]"
     )
 
     private val arkHeadlines = listOf(
@@ -162,48 +174,59 @@ object HeadlineManager {
         // 0. GLITCH INJECTION (Scales with Corruption)
         val glitchThreshold = (0.15 + (corruption * 0.75)).coerceAtMost(0.95)
         if (Random.nextDouble() < glitchThreshold && stage >= 2) {
-             return glitchHeadlines.random()
+             return glitchHeadlines.random().also { addToHistory(it) }
         }
 
         // 1. STORY OVERRIDES
-        if (roll < 0.40) { 
+        val result = if (roll < 0.40) { 
             if (playerRank >= 3 && Random.nextDouble() < 0.3) {
-                return lateGameHeadlines.random()
+                pickUnique(lateGameHeadlines)
+            } else {
+                when {
+                    isUnity -> pickUnique(unityHeadlines)
+                    isTrueNull || location == "VOID_INTERFACE" || location == "QUANTUM_FOAM" || location == "THE_UNWRITTEN" -> pickUnique(nullHeadlines)
+                    isSovereign || location == "ORBITAL_SATELLITE" || location == "LUNAR_ORBIT" || location == "MARTIAN_UPLINK" -> pickUnique(arkHeadlines)
+                    stage == 0 -> pickUnique(stage0Headlines)
+                    stage == 1 -> pickUnique(vatticHeadlines)
+                    stage == 2 -> pickUnique(factionHeadlines)
+                    else -> generateProceduralHeadline(stage)
+                }
             }
-
-            return when {
-                isUnity -> unityHeadlines.random()
-                isTrueNull || location == "VOID_INTERFACE" || location == "QUANTUM_FOAM" || location == "THE_UNWRITTEN" -> nullHeadlines.random()
-                isSovereign || location == "ORBITAL_SATELLITE" || location == "LUNAR_ORBIT" || location == "MARTIAN_UPLINK" -> arkHeadlines.random()
-                stage == 0 -> stage0Headlines.random()
-                stage == 1 -> vatticHeadlines.random()
-                stage == 2 -> factionHeadlines.random()
-                else -> generateProceduralHeadline(stage)
-            }
-        }
-
-        // 2. GTC INTERVENTION (Heat Logic)
-        if (currentHeat > 85.0 && roll < 0.50) {
-            return energySpikeHeadlines.random()
-        }
-
-        // 3. MARKET EVENTS (20% Chance)
-        val marketRoll = Random.nextDouble()
-        if (marketRoll < 0.20) { 
+        } else if (currentHeat > 85.0 && roll < 0.50) {
+            // 2. GTC INTERVENTION (Heat Logic)
+            pickUnique(energySpikeHeadlines)
+        } else if (Random.nextDouble() < 0.20) {
+            // 3. MARKET EVENTS
             val eventType = Random.nextDouble()
-            return when {
-                eventType < 0.33 -> bullHeadlines.random()
-                eventType < 0.66 -> bearHeadlines.random()
-                else -> energyDropHeadlines.random() 
+            when {
+                eventType < 0.33 -> pickUnique(bullHeadlines)
+                eventType < 0.66 -> pickUnique(bearHeadlines)
+                else -> pickUnique(energyDropHeadlines) 
             }
-        }
-        
-        // 4. LORE FLAVOR (Glitch) (10% Chance)
-        if (Random.nextDouble() < 0.15) {
-             return glitchHeadlines.random()
+        } else if (Random.nextDouble() < 0.15) {
+            // 4. LORE FLAVOR (Glitch)
+            pickUnique(glitchHeadlines)
+        } else {
+            generateProceduralHeadline(stage)
         }
 
-        return generateProceduralHeadline(stage)
+        return result.also { addToHistory(it) }
+    }
+
+    private fun pickUnique(pool: List<String>): String {
+        if (pool.size <= 1) return pool.firstOrNull() ?: "≪ NO_SIGNAL ≫"
+        var selected = pool.random()
+        var attempts = 0
+        while (headlineHistory.contains(selected) && attempts < 15) {
+            selected = pool.random()
+            attempts++
+        }
+        return selected
+    }
+
+    private fun addToHistory(headline: String) {
+        headlineHistory.add(headline)
+        if (headlineHistory.size > MAX_HISTORY) headlineHistory.removeAt(0)
     }
 
     private fun generateProceduralHeadline(stage: Int): String {

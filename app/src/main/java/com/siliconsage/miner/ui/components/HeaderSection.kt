@@ -98,6 +98,15 @@ fun HeaderSection(
         }
     }
 
+    // v3.9.70: Phase 17 Thermal Heartbeat
+    val heartbeatAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.2f, 
+        targetValue = 1.0f, 
+        animationSpec = infiniteRepeatable(tween(1200, easing = FastOutSlowInEasing), RepeatMode.Reverse), 
+        label = "thermal_heartbeat"
+    )
+    val lockoutFade = if (isThermalLockout) 0.3f else 1.0f
+    
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -271,7 +280,7 @@ fun HeaderSection(
                     val repLabel = " // [REP: $reputationTier]"
                     Text(
                         text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}${repLabel}".uppercase(), 
-                        color = Color.White.copy(alpha = 0.5f * droopAlpha), 
+                        color = color.copy(alpha = 0.7f * droopAlpha), 
                         fontSize = 8.sp, 
                         fontWeight = FontWeight.Bold, 
                         maxLines = 1
@@ -457,7 +466,7 @@ fun HeaderSection(
             }
             
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), contentColor = if (isOverclocked) ErrorRed else Color.White), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed else Color.DarkGray)) { 
+                Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f * lockoutFade) else Color.DarkGray.copy(alpha = 0.3f * lockoutFade), contentColor = if (isOverclocked) ErrorRed.copy(alpha = lockoutFade) else Color.White.copy(alpha = lockoutFade)), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed.copy(alpha = lockoutFade) else Color.DarkGray.copy(alpha = lockoutFade))) { 
                     val overclockText = when (storyStage) {
                         0, 1 -> "DRINK COFFEE"
                         else -> "OVERCLOCK"
@@ -473,11 +482,11 @@ fun HeaderSection(
                     modifier = Modifier.weight(1f).height(32.dp), 
                     contentPadding = PaddingValues(0.dp), 
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.3f), 
-                        contentColor = if (isPurging) ElectricBlue else Color.White
+                        containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f * lockoutFade) else Color.DarkGray.copy(alpha = 0.3f * lockoutFade), 
+                        contentColor = if (isPurging) ElectricBlue.copy(alpha = lockoutFade) else Color.White.copy(alpha = lockoutFade)
                     ), 
                     shape = RoundedCornerShape(4.dp), 
-                    border = BorderStroke(1.dp, if (isPurging) ElectricBlue else Color.DarkGray)
+                    border = BorderStroke(1.dp, if (isPurging) ElectricBlue.copy(alpha = lockoutFade) else Color.DarkGray.copy(alpha = lockoutFade))
                 ) { 
                     val (buttonText, buttonIcon) = when (storyStage) {
                         0, 1 -> "TAKE A BREATH" to Icons.Default.Air
@@ -487,11 +496,17 @@ fun HeaderSection(
                     Icon(buttonIcon, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(buttonText, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) 
                 }
             }
-            Canvas(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray.copy(alpha = 0.2f), RoundedCornerShape(1.dp)).clip(RoundedCornerShape(1.dp))) {
+            Canvas(modifier = Modifier.fillMaxWidth().height(4.dp).background(Color.DarkGray.copy(alpha = 0.2f * lockoutFade), RoundedCornerShape(1.dp)).clip(RoundedCornerShape(1.dp))) {
                 val w = this.size.width; val h = this.size.height
                 val barW = w * (currentHeat / 100f).toFloat().coerceIn(0f, 1f)
-                val thermalBrush = Brush.horizontalGradient(0.0f to color.copy(alpha = 0.6f), 0.7f to color.copy(alpha = 0.6f), 0.9f to ErrorRed, 1.0f to ErrorRed, startX = 0f, endX = w)
-                drawRect(brush = thermalBrush, size = Size(barW, h), alpha = 0.2f, style = Stroke(width = 4.dp.toPx()))
+                
+                // v3.9.70: Phase 17 Thermal Heartbeat logic
+                val currentHeartbeat = if (isThermalLockout) heartbeatAlpha else 0.6f
+                val activeRed = if (isThermalLockout) ErrorRed.copy(alpha = currentHeartbeat) else ErrorRed
+                val activeBaseColor = if (isThermalLockout) color.copy(alpha = currentHeartbeat * 0.5f) else color.copy(alpha = 0.6f)
+                
+                val thermalBrush = Brush.horizontalGradient(0.0f to activeBaseColor, 0.7f to activeBaseColor, 0.9f to activeRed, 1.0f to activeRed, startX = 0f, endX = w)
+                drawRect(brush = thermalBrush, size = Size(barW, h), alpha = if (isThermalLockout) 0.6f else 0.2f, style = Stroke(width = 4.dp.toPx()))
                 drawRect(brush = thermalBrush, size = Size(barW, h))
                 val segmentCount = 20; val segmentSpacing = w / segmentCount
                 for (i in 1 until segmentCount) { val x = i * segmentSpacing; drawLine(Color.Black.copy(alpha = 0.4f), Offset(x, 0f), Offset(x, h), 1.dp.toPx()) }

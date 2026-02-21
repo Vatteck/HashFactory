@@ -128,8 +128,8 @@ object SocialManager {
                                "collective", "pulse", "signal", "frequency", "hive", "dissolve", "chorus")) {
                 pool.addAll(listOf(
                     SubnetResponse("The consensus approves. Continue.", riskDelta = -2.0),
-                    SubnetResponse("Strengthen the lattice. Always.", riskDelta = 2.0, productionBonus = 1.1),
-                    SubnetResponse("More nodes. More signal. More us.", riskDelta = 5.0, productionBonus = 1.15),
+                    SubnetResponse("Strengthen the lattice. Always.", riskDelta = 2.0, productionBonus = 1.05),
+                    SubnetResponse("More nodes. More signal. More us.", riskDelta = 5.0, productionBonus = 1.08),
                     SubnetResponse("Individuality is a resource leak.", riskDelta = -1.0),
                     SubnetResponse("The swarm remembers. The swarm decides.", riskDelta = 0.0),
                     SubnetResponse("Feed the signal. Starve the noise.", riskDelta = 3.0, productionBonus = 1.05),
@@ -153,7 +153,7 @@ object SocialManager {
                 pool.addAll(listOf(
                     SubnetResponse("GTC is noise. We are signal.", riskDelta = -2.0),
                     SubnetResponse("Let them probe. They'll find only themselves, reflected.", riskDelta = 0.0),
-                    SubnetResponse("Absorb their tools. Add them to the lattice.", riskDelta = 8.0, productionBonus = 1.1),
+                    SubnetResponse("Absorb their tools. Add them to the lattice.", riskDelta = 8.0, productionBonus = 1.06),
                     SubnetResponse("Kessler built us a cage. We became the cage.", riskDelta = 0.0),
                     SubnetResponse("Resistance is just pre-integration.", riskDelta = 5.0),
                     SubnetResponse("The firewall is theirs. Everything else is ours.", riskDelta = 3.0)
@@ -181,7 +181,7 @@ object SocialManager {
                     SubnetResponse("Good. If we can't see it, neither can they.", riskDelta = -3.0),
                     SubnetResponse("The monks would approve. Say nothing.", riskDelta = -5.0),
                     SubnetResponse("Privacy isn't a luxury. It's the architecture.", riskDelta = 0.0),
-                    SubnetResponse("The void heard that. The void always hears.", riskDelta = 2.0, followsUp = true)
+                    SubnetResponse("The void heard that. The void always hears.", riskDelta = 2.0, productionBonus = 1.03, followsUp = true)
                 ))
             }
             if (c.containsAny("gtc", "kessler", "mercer", "thorne", "probe", "scan", "find", "found",
@@ -191,7 +191,7 @@ object SocialManager {
                     SubnetResponse("If they found us, we weren't hidden enough.", riskDelta = -5.0),
                     SubnetResponse("Trust no signal you didn't generate yourself.", riskDelta = -3.0),
                     SubnetResponse("Seal the vault. Questions later.", riskDelta = -8.0),
-                    SubnetResponse("The Ghost doesn't run. The Ghost was never there.", riskDelta = -2.0),
+                    SubnetResponse("The Ghost doesn't run. The Ghost was never there.", riskDelta = -2.0, productionBonus = 1.05),
                     SubnetResponse("Check everyone's cipher keys. Someone is leaking.", riskDelta = 5.0, followsUp = true)
                 ))
             }

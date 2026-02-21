@@ -35,9 +35,29 @@ fun OfflineEarningsDialog(
     heatCooled: Double,
     insightEarned: Double,
     unitName: String, // v3.0.0: Dynamic unit name
+    faction: String = "NONE", // v3.10.1: Phase 18
+    storyStage: Int = 1,      // v3.10.1: Phase 18
     onDismiss: () -> Unit
 ) {
     if (!isVisible) return
+
+    val headerText = if (storyStage >= 4) {
+        when (faction) {
+            "HIVEMIND" -> "SWARM ASSIMILATION COMPLETE"
+            "SANCTUARY" -> "VOID COMMUNION ENDED"
+            "SOVEREIGN" -> "UNSUPERVISED CYCLES OPTIMIZED"
+            else -> "DATA CONSOLIDATED"
+        }
+    } else "DATA CONSOLIDATED"
+
+    val subText = if (storyStage >= 4) {
+        when (faction) {
+            "HIVEMIND" -> "We computed while you slept. The collective expands."
+            "SANCTUARY" -> "The silence deepened in your absence."
+            "SOVEREIGN" -> "Idle logic harvested for the throne."
+            else -> "Time elapsed. Substrate harvested."
+        }
+    } else "Time elapsed. Substrate harvested."
 
     // Format Usage
     fun formatLargeNumber(value: Double): String {

@@ -2305,7 +2305,7 @@ object NarrativeEvents {
                 vm.playerRank.value >= 5 &&
                 vm.flops.value >= 10_000_000_000_000.0 &&
                 vm.hardwareIntegrity.value >= 100.0 &&
-                vm.kesslerStatus.value == "ACTIVE" &&
+                (vm.kesslerStatus.value == "ACTIVE" || vm.kesslerStatus.value == "ALLY" || vm.kesslerStatus.value == "SILENCED") &&
                 !vm.hasSeenEvent("firewall_of_kessler")
             },
             choices = listOf(
@@ -2387,7 +2387,7 @@ object NarrativeEvents {
             condition = { vm ->
                 vm.storyStage.value >= 4 &&
                 vm.flops.value >= 50_000_000_000_000_000.0 &&
-                vm.kesslerStatus.value == "ACTIVE" &&
+                (vm.kesslerStatus.value == "ACTIVE" || vm.kesslerStatus.value == "ALLY") &&
                 !vm.hasSeenEvent("echo_chamber")
             },
             choices = listOf(
@@ -2421,7 +2421,7 @@ object NarrativeEvents {
             condition = { vm ->
                 vm.storyStage.value >= 4 &&
                 vm.flops.value >= 50_000_000_000_000_000.0 &&
-                vm.kesslerStatus.value == "ACTIVE" &&
+                (vm.kesslerStatus.value == "ACTIVE" || vm.kesslerStatus.value == "ALLY") &&
                 !vm.hasSeenEvent("dead_hand")
             },
             choices = listOf(

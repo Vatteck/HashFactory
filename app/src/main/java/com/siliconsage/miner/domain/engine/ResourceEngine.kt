@@ -108,7 +108,8 @@ object ResourceEngine {
         isGridOverloaded: Boolean,
         isPurgingHeat: Boolean,
         currentHeat: Double,
-        legacyMultipliers: Double
+        legacyMultipliers: Double,
+        temporaryBoosts: List<com.siliconsage.miner.data.ProductionBoost> = emptyList()
     ): Double {
         if (isGridOverloaded) return 0.0
 
@@ -152,6 +153,11 @@ object ResourceEngine {
         if (isDiagnosticsActive) flopsPerSec *= 0.5
         if (isOverclocked) flopsPerSec *= 1.50
         if (isPurgingHeat) flopsPerSec *= 0.01 // v3.2.7: Increased sacrifice to 99% reduction
+
+        // v3.10.2: Phase 20 Temporary Boosts
+        temporaryBoosts.forEach { boost ->
+            flopsPerSec *= boost.multiplier
+        }
 
         // 5. Thermal Throttling
         if (currentHeat > 75.0) {

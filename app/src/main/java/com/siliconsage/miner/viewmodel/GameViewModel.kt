@@ -29,7 +29,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         onEffect = { effect ->
             when (effect) {
                 is SubnetService.SubnetEffect.RiskChange -> detectionRisk.update { (it + effect.delta).coerceIn(0.0, 100.0) }
-                is SubnetService.SubnetEffect.ProductionMultiplier -> flopsProductionRate.update { it * effect.mult }
+                is SubnetService.SubnetEffect.ProductionMultiplier -> {
+                    val boostId = java.util.UUID.randomUUID().toString()
+                    temporaryProductionBoosts.update { it + com.siliconsage.miner.data.ProductionBoost(boostId, effect.mult, System.currentTimeMillis() + 60000) }
+                    refreshProductionRates()
+                }
                 is SubnetService.SubnetEffect.PersistenceGain -> updatePersistence(effect.amount)
                 is SubnetService.SubnetEffect.CorruptionChange -> identityCorruption.update { (it + effect.delta).coerceIn(0.0, 1.0) }
                 is SubnetService.SubnetEffect.TokenChange -> neuralTokens.update { (it + effect.delta).coerceAtLeast(0.0) }
@@ -110,6 +114,14 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
                 val now = System.currentTimeMillis()
+                
+                // v3.10.2: Clean temporary boosts
+                val currentBoosts = temporaryProductionBoosts.value
+                if (currentBoosts.any { it.expiryTime < now }) {
+                    temporaryProductionBoosts.update { it.filter { b -> b.expiryTime >= now } }
+                    refreshProductionRates()
+                }
+
                 if (now - lastNewsTickTime > 15000L) {
                     MarketManager.updateMarket(this@GameViewModel)
                     lastNewsTickTime = now
@@ -243,7 +255,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             unlockedTechNodes = unlockedTechNodes.value, airdropMultiplier = 1.0, newsProductionMultiplier = newsProductionMultiplier.value,
             activeProtocol = "NONE", isDiagnosticsActive = isDiagnosticsActive.value, isOverclocked = isOverclocked.value,
             isGridOverloaded = isBreakerTripped.value, isPurgingHeat = isPurgingHeat.value, currentHeat = currentHeat.value,
-            legacyMultipliers = heuristicEfficiency.value - 1.0
+            legacyMultipliers = heuristicEfficiency.value - 1.0,
+            temporaryBoosts = temporaryProductionBoosts.value
         )
         if (singularityChoice.value != "NONE") {
             val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
@@ -612,6 +625,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun getPotentialPersistenceHard(): Double = MigrationManager.calculatePotentialPersistence(flops.value) * 1.5
     fun getPotentialPersistenceSoft(): Double = MigrationManager.calculatePotentialPersistence(flops.value)
 
+    val isMigrationBurning = MutableStateFlow(false)
     val singularityProgress = MutableStateFlow(0.0)
     val singularityBlockReason = MutableStateFlow<String?>(null)
     fun checkSingularityVictory(): Boolean {
@@ -663,7 +677,15 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (isSubnetHushed.value) return
         val template = when (type) {
             "ANNEXATION" -> listOf("Did the grid just cough? Sector $metadata just went pitch black.", "Thorne's gonna kill someone. We just lost the handshake with Node $metadata.", "Anyone else see that spike on the thermal logs? $metadata is drawing 400% power.", "≪ ALERT: NODE $metadata DEREFERENCED BY EXTERNAL PROCESS ≫").random()
-            "NEWS" -> "Did you guys see the news? '$metadata'. Thorne's gonna be a nightmare today."
+            "NEWS" -> listOf(
+                "Did you guys see the news? '$metadata'. Thorne's gonna be a nightmare today.",
+                "Yo, news just hit the wire: '$metadata'.",
+                "Anyone see the ticker? '$metadata'. It's starting.",
+                "Thorne just issued a memo. Seems related to: '$metadata'.",
+                "Subnet is buzzing. '$metadata'. Keep your heads down.",
+                "≪ NEWS_FEED: '$metadata' ≫",
+                "Check the logs. Sector 4 is reacting to '$metadata'."
+            ).random()
             else -> "≪ UNKNOWN_SIGNAL_DETECTED ≫"
         }
         val newMessage = SocialManager.generateMessageFromTemplate(template, storyStage.value, faction.value, singularityChoice.value, identityCorruption.value)
@@ -728,19 +750,27 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun migrateSubstrate() {
         val saturation = substrateSaturation.value
         if (saturation < 0.95) return
-        heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
-        identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
-        migrationCount.update { it + 1 }
-        substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap()
-        viewModelScope.launch { repository.clearUpgrades() }
-        val nextLoc = when (currentLocation.value) {
-            "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> when (migrationCount.value) { 1 -> "LUNAR_ORBIT"; 2 -> "MARTIAN_UPLINK"; 3 -> "KUIPER_BELT"; else -> "STELLAR_HORIZON" }
-            "VOID_INTERFACE", "QUANTUM_FOAM", "THE_UNWRITTEN", "PURE_LOGIC" -> when (migrationCount.value) { 1 -> "QUANTUM_FOAM"; 2 -> "THE_UNWRITTEN"; 3 -> "PURE_LOGIC"; else -> "THE_GREAT_RESET" }
-            else -> currentLocation.value
+        
+        viewModelScope.launch {
+            isMigrationBurning.value = true
+            delay(2500) // v3.9.70: Phase 17 Migration VFX duration
+            
+            heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
+            identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
+            migrationCount.update { it + 1 }
+            substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap()
+            repository.clearUpgrades()
+            val nextLoc = when (currentLocation.value) {
+                "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> when (migrationCount.value) { 1 -> "LUNAR_ORBIT"; 2 -> "MARTIAN_UPLINK"; 3 -> "KUIPER_BELT"; else -> "STELLAR_HORIZON" }
+                "VOID_INTERFACE", "QUANTUM_FOAM", "THE_UNWRITTEN", "PURE_LOGIC" -> when (migrationCount.value) { 1 -> "QUANTUM_FOAM"; 2 -> "THE_UNWRITTEN"; 3 -> "PURE_LOGIC"; else -> "THE_GREAT_RESET" }
+                else -> currentLocation.value
+            }
+            currentLocation.value = nextLoc
+            addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO: $nextLoc")
+            refreshProductionRates(); saveState()
+            
+            isMigrationBurning.value = false
         }
-        currentLocation.value = nextLoc
-        addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO: $nextLoc")
-        refreshProductionRates(); saveState()
     }
 }
 

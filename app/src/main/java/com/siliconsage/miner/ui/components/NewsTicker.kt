@@ -125,9 +125,22 @@ fun NewsTicker(
                 val isGlitch = currentNewsText.contains("[GLITCH]")
                 val finalColor = if (isGlitch) Color(0xFFFFD700).copy(alpha = 0.9f) else baseColor.copy(alpha = 0.9f)
                 
+                // v3.9.70: Phase 17 Anomaly Scrambler
+                val isScrambleTarget = remember(tickerKey) { kotlin.random.Random.nextFloat() < 0.05f }
+                var scrambleDisplay by remember { mutableStateOf(displayText) }
+                
+                LaunchedEffect(offsetX, isScrambleTarget) {
+                    if (isScrambleTarget && offsetX < 0f && offsetX > -estimatedWidth / 2f) {
+                        // Scramble active when halfway off screen
+                        scrambleDisplay = displayText.map { if (kotlin.random.Random.nextFloat() > 0.8f) "0123456789ABCDEF".random() else it }.joinToString("")
+                    } else if (isScrambleTarget) {
+                        scrambleDisplay = displayText // Restore
+                    }
+                }
+                
                 if (isGlitch) {
                      SystemGlitchText(
-                        text = ">>> MARKET UPDATE: $displayText <<<",
+                        text = ">>> MARKET UPDATE: $scrambleDisplay <<<",
                         color = finalColor,
                         fontSize = 10.sp, 
                         fontWeight = FontWeight.Bold,
@@ -141,7 +154,7 @@ fun NewsTicker(
                     )
                 } else {
                     Text(
-                        text = ">>> MARKET UPDATE: $displayText <<<",
+                        text = ">>> MARKET UPDATE: $scrambleDisplay <<<",
                         color = finalColor,
                         fontSize = 10.sp, 
                         fontWeight = FontWeight.Normal,
