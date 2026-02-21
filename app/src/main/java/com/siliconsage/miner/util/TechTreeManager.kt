@@ -20,7 +20,7 @@ object TechTreeManager {
                 val root = Json.decodeFromString<TechTreeRoot>(jsonString)
                 withContext(Dispatchers.Main) {
                     vm.techNodes.value = root.tech_tree
-                    vm.addLog("[SYSTEM]: TECH TREE SYNCHRONIZED.")
+                    // v3.12.2: Removed terminal log spam
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
