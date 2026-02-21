@@ -177,21 +177,24 @@ object AmbientEffectsService {
             delay(5000)
             vm.flopsProductionRate.value = originalRate
             
-            // v3.4.16: Chance for Admin Redaction on Subnet instead of parity log
+            // v3.11.5: Fix Admin Redaction Handle & Sync with Subnet State 
             if (Random.nextBoolean()) {
                 vm.addLog("[SYSTEM]: PARITY ERROR IN SECTOR 7. CALIBRATING...")
             } else {
-                vm.hasNewSubnetMessage.value = true
-                delay(1000)
-                vm.subnetService.deliverMessage(
-                    com.siliconsage.miner.data.SubnetMessage(
-                        id = java.util.UUID.randomUUID().toString(),
-                        handle = "@gtc_node_${Random.nextInt(100, 999)}",
-                        content = "[GTC INTERNAL] DATA_FRAG_${Random.nextInt(1000, 9999)}_RECOVERY",
-                        isRedacted = true
-                    ),
-                    mode = vm.activeTerminalMode.value
-                )
+                // Check if Subnet is receptive
+                if (!vm.isSubnetPaused.value && !vm.isSubnetHushed.value) {
+                    vm.hasNewSubnetMessage.value = true
+                    delay(1000)
+                    vm.subnetService.deliverMessage(
+                        com.siliconsage.miner.data.SubnetMessage(
+                            id = java.util.UUID.randomUUID().toString(),
+                            handle = "@gtc_node_544",
+                            content = "≪ [GTC INTERNAL] DATA FRAG 5243 RECOVERY IN PROGRESS... ≫",
+                            isRedacted = true
+                        ),
+                        mode = vm.activeTerminalMode.value
+                    )
+                }
             }
             
             vm.terminalGlitchOffset.value = 5f
