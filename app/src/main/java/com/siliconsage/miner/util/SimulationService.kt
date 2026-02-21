@@ -113,6 +113,14 @@ object SimulationService {
         maxCap += vm.currentGridPowerBonus.value
         val gridUsage = (totalKw - selfGeneratedKw).coerceAtLeast(0.0)
         vm.activePowerUsage.value = totalKw; vm.maxPowerkW.value = maxCap
+        vm.powerConsumptionkW.value = gridUsage
+
+        // v3.11.2: Utility Bill Accumulation (Item 2)
+        if (vm.storyStage.value >= 1) {
+            val baseRate = vm.energyPriceMultiplier.value
+            val heatPenalty = if (vm.currentHeat.value > 95.0) 2.0 else 1.0
+            vm.powerBill.update { it + (gridUsage * baseRate * heatPenalty) }
+        }
         
         // v3.3.17: Only trip overload if it's a power issue. Don't clear active raids.
         val powerOverload = gridUsage > maxCap

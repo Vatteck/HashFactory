@@ -21,7 +21,7 @@ sealed class NarrativeItem {
 }
 
 class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
-    private val subnetService = SubnetService(
+    val subnetService = SubnetService(
         scope = viewModelScope,
         onLog = { addLog(it) },
         onNotify = { msg -> viewModelScope.launch { terminalNotification.emit(msg) } },
@@ -132,6 +132,22 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 SecurityManager.checkGridRaid(this@GameViewModel)
                 AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
+
+                // v3.11.2: Power Utility Monitoring (Item 2)
+                if (powerBill.value > 1000.0 && Random.nextFloat() < 0.05f && storyStage.value >= 1) {
+                    if (!hasNewSubnetMessage.value) {
+                        subnetService.deliverMessage(
+                            com.siliconsage.miner.data.SubnetMessage(
+                                id = java.util.UUID.randomUUID().toString(),
+                                handle = "@gtc_utility",
+                                content = "[U_BILL]: UNPAID BALANCE: ${formatLargeNumber(powerBill.value)} CRED. SETTLEMENT REQUIRED.",
+                                isRedacted = true
+                            ),
+                            mode = activeTerminalMode.value
+                        )
+                    }
+                }
+
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
                 addSubnetChatter()
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
@@ -196,6 +212,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         viewModelScope.launch {
             repository.updateGameState(PersistenceManager.createSaveState(
                 flops = flops.value, neuralTokens = neuralTokens.value, currentHeat = currentHeat.value,
+                powerBill = powerBill.value,
                 stakedTokens = stakedTokens.value, prestigeMultiplier = prestigeMultiplier.value, persistence = persistence.value,
                 unlockedTechNodes = unlockedTechNodes.value, storyStage = storyStage.value, faction = faction.value,
                 hasSeenVictory = hasSeenVictory.value, isTrueNull = isTrueNull.value, isSovereign = isSovereign.value,

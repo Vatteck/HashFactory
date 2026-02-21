@@ -26,7 +26,8 @@ data class SubnetMessage(
     val timeoutMs: Long? = null,
     val isForceReply: Boolean = false,
     val employeeInfo: EmployeeInfo? = null,
-    val isIndented: Boolean = false
+    val isIndented: Boolean = false,
+    val isRedacted: Boolean = false
 )
 
 data class EmployeeInfo(

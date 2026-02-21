@@ -183,7 +183,15 @@ object AmbientEffectsService {
             } else {
                 vm.hasNewSubnetMessage.value = true
                 delay(1000)
-                vm.addLog("[GTC]: ≪ PACKET_REDACTED_BY_ADMIN ≫")
+                vm.subnetService.deliverMessage(
+                    com.siliconsage.miner.data.SubnetMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        handle = "@gtc_node_${Random.nextInt(100, 999)}",
+                        content = "[GTC INTERNAL] DATA_FRAG_${Random.nextInt(1000, 9999)}_RECOVERY",
+                        isRedacted = true
+                    ),
+                    mode = vm.activeTerminalMode.value
+                )
             }
             
             vm.terminalGlitchOffset.value = 5f

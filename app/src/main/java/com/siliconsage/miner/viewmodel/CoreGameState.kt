@@ -19,6 +19,8 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val neuralTokens = MutableStateFlow(0.0)
     val substrateMass = MutableStateFlow(0.0)
     val currentHeat = MutableStateFlow(0.0)
+    val powerBill = MutableStateFlow(0.0)
+    val powerConsumptionkW = MutableStateFlow(0.0)
     val activePowerUsage = MutableStateFlow(0.0)
     val maxPowerkW = MutableStateFlow(100.0)
     val flopsProductionRate = MutableStateFlow(0.0)

@@ -16,7 +16,7 @@ object PersistenceManager {
     }
 
     fun createSaveState(
-        flops: Double, neuralTokens: Double, currentHeat: Double,
+        flops: Double, neuralTokens: Double, currentHeat: Double, powerBill: Double,
         stakedTokens: Double, prestigeMultiplier: Double, persistence: Double,
         unlockedTechNodes: List<String>, storyStage: Int, faction: String,
         hasSeenVictory: Boolean, isTrueNull: Boolean, isSovereign: Boolean,
@@ -46,7 +46,7 @@ object PersistenceManager {
         return GameState(
             id = 1, flops = sanitizeDouble(flops), neuralTokens = sanitizeDouble(neuralTokens), 
             currentHeat = sanitizeDouble(currentHeat),
-            powerBill = 0.0, stakedTokens = sanitizeDouble(stakedTokens), 
+            powerBill = sanitizeDouble(powerBill), stakedTokens = sanitizeDouble(stakedTokens), 
             prestigeMultiplier = sanitizeDouble(prestigeMultiplier, 1.0),
             persistence = sanitizeDouble(persistence), unlockedTechNodes = unlockedTechNodes,
             storyStage = storyStage, faction = faction, hasSeenVictory = hasSeenVictory,
@@ -89,6 +89,7 @@ object PersistenceManager {
         vm.migrationCount.value = state.migrationCount
         vm.reputationScore.value = sanitizeDouble(state.reputationScore, 50.0).coerceIn(0.0, 100.0)
         vm.currentHeat.value = sanitizeDouble(state.currentHeat)
+        vm.powerBill.value = sanitizeDouble(state.powerBill)
         vm.prestigeMultiplier.value = sanitizeDouble(state.prestigeMultiplier, 1.0)
         vm.persistence.value = sanitizeDouble(state.persistence)
         vm.storyStage.value = state.storyStage
@@ -197,6 +198,7 @@ object PersistenceManager {
     fun exportToJson(vm: GameViewModel): String {
         val state = createSaveState(
             flops = vm.flops.value, neuralTokens = vm.neuralTokens.value, currentHeat = vm.currentHeat.value,
+            powerBill = vm.powerBill.value,
             stakedTokens = vm.stakedTokens.value,
             prestigeMultiplier = vm.prestigeMultiplier.value, persistence = vm.persistence.value,
             unlockedTechNodes = vm.unlockedTechNodes.value, storyStage = vm.storyStage.value,

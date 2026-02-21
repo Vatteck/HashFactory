@@ -239,6 +239,21 @@ class SubnetService(
     fun handleInteraction(messageId: String, responseText: String, stage: Int, faction: String, mode: String, isSettingsPaused: Boolean, reputationTier: String = ReputationManager.TIER_NEUTRAL) {
         val message = messages.value.find { it.id == messageId } ?: return
 
+        // v3.11.2: Redacted Packet Logic (Item 8)
+        if (responseText == "DECRYPT") {
+            messages.update { currentList ->
+                val newList = currentList.toMutableList()
+                val index = newList.indexOfFirst { it.id == messageId }
+                if (index != -1 && newList[index].isRedacted) {
+                    onEffect(SubnetEffect.TokenChange(-(500.0 * (stage + 1))))
+                    newList[index] = newList[index].copy(isRedacted = false)
+                    onGlitch(0.3f, 500L)
+                }
+                newList
+            }
+            return
+        }
+
         // Ghost Link
         if (responseText.startsWith("[⚡") && responseText.endsWith("]")) {
             val cmd = responseText.substring(2, responseText.length - 1).trim()

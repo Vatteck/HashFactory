@@ -320,8 +320,20 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
             }
         }
 
+        // v3.11.2: Redacted Packet Logic (Item 8)
+        val isRedacted = message.isRedacted && !isAdminMessage
+        val displayContent = if (isRedacted) {
+            buildAnnotatedString {
+                withStyle(SpanStyle(background = Color.White.copy(alpha = 0.2f), color = Color.Transparent)) {
+                    append(message.content.map { "█" }.joinToString(""))
+                }
+            }
+        } else {
+            annotatedContent
+        }
+
         Text(
-            text = annotatedContent,
+            text = displayContent,
             color = if (isAdminMessage) com.siliconsage.miner.ui.theme.ElectricBlue else if (isPlayerReply) Color.LightGray else Color.White,
             fontSize = 12.sp,
             fontWeight = if (isAdminMessage) adminFontWeight else FontWeight.Normal,
@@ -329,6 +341,9 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
             modifier = Modifier
                 .padding(top = 4.dp)
                 .graphicsLayer { translationX = adminJitterX }
+                .then(if (isRedacted) Modifier.clickable { 
+                    viewModel?.onSubnetInteraction(message.id, "DECRYPT") 
+                } else Modifier)
         )
 
         if (viewModel != null && (message.interactionType != null || message.isForceReply)) {
