@@ -46,7 +46,7 @@ fun DilemmaOverlay(
                 .background(Color.Black.copy(alpha = 0.85f))
                 .pointerInput(Unit) { 
                     // Consumes all gestures to prevent 'Training Model' clicks from leaking through
-                    androidx.compose.foundation.gestures.detectTapGestures { } 
+                    detectTapGestures { } 
                 }
                 .padding(24.dp), // v3.11.1: More breathing room for small screens
             contentAlignment = Alignment.Center

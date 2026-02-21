@@ -212,6 +212,7 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                         Spacer(modifier = Modifier.height(4.dp))
                         
                         // v3.11.1: Multi-Row Bio Actions (No Clipping)
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
                         FlowRow(
                             modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),

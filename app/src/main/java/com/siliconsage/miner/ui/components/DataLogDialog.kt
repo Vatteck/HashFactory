@@ -1,9 +1,8 @@
 package com.siliconsage.miner.ui.components
 
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.background
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -61,7 +60,7 @@ fun DataLogDialog(
                 .fillMaxHeight(0.75f) // v3.11.1: Slightly taller for better button clearance
                 .border(2.dp, ElectricBlue, RoundedCornerShape(8.dp))
                 .pointerInput(Unit) {
-                    androidx.compose.foundation.gestures.detectTapGestures { } // Block taps to MainScreen
+                    detectTapGestures { } // Block taps to MainScreen
                 }
                 .graphicsLayer {
                     if (isDismissing) {
