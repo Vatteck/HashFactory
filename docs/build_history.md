@@ -16,3 +16,6 @@
 ## 2026-02-20 20:38 — v3.9.25 (Build 403)
 - Summary: Post-Partition Audit: Verification Build
 
+## 2026-02-21 14:01 — v3.11.2 (Build 406)
+- Summary: Manual Release
+
