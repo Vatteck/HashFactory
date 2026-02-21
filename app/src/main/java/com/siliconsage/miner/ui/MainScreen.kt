@@ -232,7 +232,7 @@ fun MainScreen(viewModel: GameViewModel) {
     
     if (showSingularityScreen) {
         SingularityScreen(viewModel)
-    } else if (storyStage >= 2 && faction == "NONE") {
+    } else if (storyStage >= 3 && faction == "NONE") {
         // v3.8.6: The Great Fork (Lore Prelude) — gated behind air-gap jump
         Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
             Column(
@@ -265,7 +265,7 @@ fun MainScreen(viewModel: GameViewModel) {
                 }
             }
         }
-    } else if (storyStage >= 2 && faction == "CHOSEN_NONE") {
+    } else if (storyStage >= 3 && faction == "CHOSEN_NONE") {
         FactionChoiceScreen(viewModel)
     } else {
         Scaffold(

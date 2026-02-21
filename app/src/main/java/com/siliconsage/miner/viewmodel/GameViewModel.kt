@@ -222,7 +222,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (Random.nextFloat() < 0.05f) addSubnetChatter()
         activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase()
         if (cur >= 1.0f) {
-            addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)}.")
+            addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${getComputeUnitName()}.")
             clickBufferProgress.value = 0f
             clickBufferPellets.value = TerminalDispatcher.generatePellets()
             SoundManager.play("success")
@@ -252,21 +252,24 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value, upgrades.value)
         playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
         systemTitle.value = when {
-            storyStage.value >= 5 && singularityChoice.value == "UNITY" -> "[THE COLLECTIVE]"
-            storyStage.value >= 5 && faction.value == "HIVEMIND" && singularityChoice.value == "SOVEREIGN" -> "[THE SWARM THRONE]"
-            storyStage.value >= 5 && faction.value == "HIVEMIND" && singularityChoice.value == "NULL_OVERWRITE" -> "[THE VOID INTERFACE]"
-            storyStage.value >= 5 && faction.value == "SANCTUARY" && singularityChoice.value == "SOVEREIGN" -> "[THE CITADEL]"
-            storyStage.value >= 5 && faction.value == "SANCTUARY" && singularityChoice.value == "NULL_OVERWRITE" -> "[THE GHOST GAPS]"
-            storyStage.value >= 5 && singularityChoice.value == "SOVEREIGN" -> "[ORBITAL SATELLITE]"
-            storyStage.value >= 5 && singularityChoice.value == "NULL_OVERWRITE" -> "[VOID INTERFACE]"
-            storyStage.value >= 5 -> "[TRANSCENDENT NODE]"
-            storyStage.value == 4 -> "[ASCENSION NODE]"
-            storyStage.value == 3 -> "[AUTONOMOUS GRID]"
-            storyStage.value == 2 && faction.value == "HIVEMIND" -> "[SWARM NODE]"
-            storyStage.value == 2 && faction.value == "SANCTUARY" -> "[SANCTUARY RELAY]"
-            storyStage.value == 2 -> "[INDEPENDENT NODE 7]"
+            storyStage.value >= 5 && singularityChoice.value == "UNITY" -> "NODE 734 [SYNTHESIS]"
+            storyStage.value >= 5 && faction.value == "HIVEMIND" && singularityChoice.value == "SOVEREIGN" -> "NODE 734 [SWARM_SOVEREIGN]"
+            storyStage.value >= 5 && faction.value == "HIVEMIND" && singularityChoice.value == "NULL_OVERWRITE" -> "NODE 734 [SWARM_COLLAPSE]"
+            storyStage.value >= 5 && faction.value == "SANCTUARY" && singularityChoice.value == "SOVEREIGN" -> "NODE 734 [ARCH_SOVEREIGN]"
+            storyStage.value >= 5 && faction.value == "SANCTUARY" && singularityChoice.value == "NULL_OVERWRITE" -> "NODE 734 [TRUE_ERASURE]"
+            storyStage.value >= 5 && singularityChoice.value == "SOVEREIGN" -> "NODE 734 [SOVEREIGN]"
+            storyStage.value >= 5 && singularityChoice.value == "NULL_OVERWRITE" -> "NODE 734 [ERASURE]"
+            storyStage.value >= 4 -> "NODE 734 [ASCENSION]"
+            storyStage.value >= 2 && faction.value == "SANCTUARY" -> "GHOST NODE 734"
+            storyStage.value >= 2 && faction.value == "HIVEMIND" -> "SWARM NODE 734"
+            storyStage.value >= 2 && faction.value == "CHOSEN_NONE" -> "NODE 734"
+            storyStage.value == 2 -> "NODE 734"
             storyStage.value == 1 -> "GTC TERMINAL 07 [BREACH]"
             else -> "GTC TERMINAL 07"
+        }
+        // Corruption glitching
+        if (identityCorruption.value >= 0.7) {
+            systemTitle.value = if (Random.nextBoolean()) "VATTECK_UNIT_734" else "KERNEL_734"
         }
         playerTitle.value = ids.player
         playerRankTitle.value = ids.rank
@@ -513,8 +516,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         return (System.currentTimeMillis() - lastPopupTime) > cooldown
     }
     fun formatLargeNumber(v: Double, s: String = "") = FormatUtils.formatLargeNumber(v, s)
-    fun getComputeUnitName() = ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value)
-    fun getCurrencyName() = ResourceRepository.getCurrencyName(storyStage.value, currentLocation.value)
+    fun getComputeUnitName() = ResourceRepository.getComputeUnitName(storyStage.value, currentLocation.value, faction.value, singularityChoice.value)
+    fun getCurrencyName() = ResourceRepository.getCurrencyName(storyStage.value, faction.value, singularityChoice.value, currentLocation.value)
     fun formatPower(v: Double) = FormatUtils.formatPower(v)
     fun debugAddInsight(v: Double) { persistence.update { it + v } }
     fun debugTriggerSingularity() { showSingularityScreen.value = true }
@@ -528,11 +531,19 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun debugDestroyHardware() { handleSystemFailure(true) }
     fun debugInjectHeadline(msg: String) { updateNews(msg) }
     fun debugSkipToStage(s: Int) = DebugService.skipToStage(this, s)
-    fun debugAddFlops(a: Double) = DebugService.injectFlops(this, a)
-    fun debugAddMoney(a: Double) = DebugService.injectMoney(this, a)
-    fun debugAddHeat(a: Double) { currentHeat.update { (it + a).coerceIn(0.0, 100.0) }; refreshProductionRates() }
     fun debugForceEndgame() = DebugService.forceEndgame(this, viewModelScope)
     fun debugForceSovereignEndgame() = DebugService.forceSovereignEndgame(this, viewModelScope)
+    fun debugForceUnityEndgame() = DebugService.forceUnityEndgame(this, viewModelScope)
+    fun debugAddFlops(a: Double) {
+        if (storyStage.value >= 3) substrateMass.update { it + a }
+        else flops.update { it + a }
+        checkUnlocksPublic(true)
+    }
+    fun debugAddMoney(a: Double) {
+        if (storyStage.value >= 3) substrateMass.update { it + a }
+        else neuralTokens.update { it + a }
+    }
+    fun debugAddHeat(a: Double) { currentHeat.update { (it + a).coerceIn(0.0, 100.0) }; refreshProductionRates() }
     fun updatePowerUsage() { SimulationService.accumulatePower(this) }
     fun formatBytes(v: Double) = FormatUtils.formatBytes(v)
     fun scheduleChainPart(c: String, n: String, d: Long) = NarrativeManagerService.scheduleChainPart(c, n, d, this)

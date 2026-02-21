@@ -730,14 +730,21 @@ fun TerminalLogLine(
 
                 val identityColor = when {
                     log.startsWith("jvattic") -> primaryColor
+                    log.startsWith("vattic") -> primaryColor
                     log.startsWith("vatteck") -> primaryColor
-                    log.startsWith("[VATTIC]") -> primaryColor
-                    log.contains(" VATTIC:", false) -> primaryColor // Special catch for [TIME] VATTIC:
+                    log.contains("vattic:", true) -> primaryColor // Case-insensitive catch
+                    log.startsWith("prime") -> primaryColor
                     log.startsWith("consensus") -> com.siliconsage.miner.ui.theme.HivemindRed
+                    log.startsWith("hivemind") -> com.siliconsage.miner.ui.theme.HivemindRed
+                    log.startsWith("swarm_null") -> ErrorRed
+                    log.startsWith("overmind") -> com.siliconsage.miner.ui.theme.HivemindRed
                     log.startsWith("shadow") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
+                    log.startsWith("sanctuary") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
+                    log.startsWith("ghost") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
+                    log.startsWith("oracle") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
                     log.startsWith("dominion") -> com.siliconsage.miner.ui.theme.SanctuaryPurple
                     log.startsWith("null") -> ErrorRed
-                    log.startsWith("ASSET_734") -> primaryColor
+                    log.startsWith("asset_734") -> primaryColor
                     else -> primaryColor
                 }
 
@@ -814,6 +821,7 @@ fun TerminalLogLine(
                     log.startsWith("SANCTUARY:") -> com.siliconsage.miner.ui.theme.SanctuaryTeal
                     log.startsWith("[SOVEREIGN]") -> com.siliconsage.miner.ui.theme.ConvergenceGold
                     log.startsWith("[NULL]") -> com.siliconsage.miner.ui.theme.ErrorRed
+                    log.startsWith("[UNITY]") -> com.siliconsage.miner.ui.theme.ConvergenceGold
                     log.startsWith("[SYSTEM]") || log.startsWith("SYSTEM:") -> Color(0xFFFFFF00)
                     log.startsWith("[VATTIC]:") -> primaryColor
                     log.startsWith("[NEWS]") || log.startsWith("[LORE]:") -> Color(0xFFFFA500)

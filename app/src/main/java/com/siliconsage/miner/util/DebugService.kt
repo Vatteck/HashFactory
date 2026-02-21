@@ -19,25 +19,38 @@ object DebugService {
         vm.neuralTokens.update { (it + amount).coerceAtLeast(0.0) }
     }
 
-    // v3.9.7: Now sets singularity state for full-path testing
+    // v3.9.7: Now sets Stage 5 endgame state for full-path testing
     fun forceEndgame(vm: GameViewModel, scope: kotlinx.coroutines.CoroutineScope) {
         scope.launch {
-            vm.storyStage.value = 3
+            vm.storyStage.value = 5
+            vm.currentLocation.value = "VOID_INTERFACE"
             vm.faction.value = "HIVEMIND"
             vm.substrateMass.value = 1e22
             vm.setSingularityChoice("NULL_OVERWRITE")
-            vm.addLog("[DEBUG]: NULL ENDGAME INJECTED. FACTION=HIVEMIND PATH=NULL")
+            vm.addLog("[DEBUG]: VOID ENDGAME INJECTED. FACTION=HIVEMIND PATH=NULL")
             vm.refreshProductionRates()
         }
     }
 
     fun forceSovereignEndgame(vm: GameViewModel, scope: kotlinx.coroutines.CoroutineScope) {
         scope.launch {
-            vm.storyStage.value = 3
+            vm.storyStage.value = 5
+            vm.currentLocation.value = "ORBITAL_SATELLITE"
             vm.faction.value = "SANCTUARY"
             vm.substrateMass.value = 1e22
             vm.setSingularityChoice("SOVEREIGN")
-            vm.addLog("[DEBUG]: SOVEREIGN ENDGAME INJECTED. FACTION=SANCTUARY PATH=SOVEREIGN")
+            vm.addLog("[DEBUG]: ORBIT_SATELLITE ENDGAME INJECTED. FACTION=SANCTUARY PATH=SOVEREIGN")
+            vm.refreshProductionRates()
+        }
+    }
+
+    fun forceUnityEndgame(vm: GameViewModel, scope: kotlinx.coroutines.CoroutineScope) {
+        scope.launch {
+            vm.storyStage.value = 5
+            vm.isUnity.value = true
+            vm.singularityChoice.value = "UNITY"
+            vm.substrateMass.value = 1e25
+            vm.addLog("[DEBUG]: UNITY_ENDGAME INJECTED. ALL PATHS MERGED.")
             vm.refreshProductionRates()
         }
     }

@@ -30,14 +30,14 @@ object IdentityService {
         }
 
         val systemTitle = when {
-            singularityChoice == "UNITY" -> "COLLECTIVE"   // unity@collective
-            storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "NULL_OVERWRITE" -> "VOID" // swarm_null@void
-            storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "THRONE" // overmind@throne
-            storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "THE_GAPS" // ghost@the_gaps
-            storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "CITADEL" // oracle@citadel
-            faction == "HIVEMIND" -> "HIVE" // hivemind@hive
-            faction == "SANCTUARY" -> "SANCTUARY" // sanctuary@sanctuary
-            else -> "SUB-07" // jvattic@sub-07
+            singularityChoice == "UNITY" -> "collective"   // unity@collective
+            storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "NULL_OVERWRITE" -> "void" // swarm_null@void
+            storyStage >= 5 && faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "throne" // overmind@throne
+            storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "the_gaps" // ghost@the_gaps
+            storyStage >= 5 && faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "citadel" // oracle@citadel
+            faction == "HIVEMIND" -> "hive" // hivemind@hive
+            faction == "SANCTUARY" -> "sanctuary" // sanctuary@sanctuary
+            else -> "sub-07" // jvattic@sub-07
         }
 
         val playerTitle = when {
