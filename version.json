@@ -1,10 +1,10 @@
 {
-  "version": "3.11.4",
-  "build": 409,
+  "version": "3.11.5",
+  "build": 410,
   "date": "2026-02-21",
   "changelog": [
-    "fba8ca5 fix: restore color gradient progression to segmented thermal gauge"
+    "390c51c fix: hardcode node handle to 544 and sync ghost messages with subnet state"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.4",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.4/MINER_3.11.4.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.5",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.5/MINER_3.11.5.apk"
 }
