@@ -1,11 +1,10 @@
 {
-  "version": "3.11.2",
-  "build": 406,
+  "version": "3.11.2-FINAL",
+  "build": 407,
   "date": "2026-02-21",
   "changelog": [
-    "f36e5bb feat: implement Item 2 & 8 (Utility Bill & Redacted Decryption) and refactor Narrative/Log God Objects",
-    "7dab6a9 build: Signed release config + release.sh v3.0 improvements"
+    "cc21984 feat: implement Item 2 & 8 (Utility Bill & Redacted Decryption) and refactor Narrative/Log God Objects (Final Fixes)"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.2",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.2/MINER_3.11.2.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.11.2-FINAL",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.11.2-FINAL/MINER_3.11.2-FINAL.apk"
 }
