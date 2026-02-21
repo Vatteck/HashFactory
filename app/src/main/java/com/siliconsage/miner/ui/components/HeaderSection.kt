@@ -245,48 +245,56 @@ fun HeaderSection(
         val glowStyle = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.6f), blurRadius = 4f))
         
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    // v3.5.53: Corruption-reactive Title Glitch
-                    var glitchedTitle by remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
-                    LaunchedEffect(corruption) {
-                        if (corruption > 0.3) {
-                            while (true) {
-                                delay(kotlin.random.Random.nextLong(2000, 10000))
-                                if (kotlin.random.Random.nextDouble() < corruption * 0.4) {
-                                    val original = systemTitle
-                                    glitchedTitle = when {
-                                        corruption > 0.9 -> "KERNEL_734"
-                                        corruption > 0.7 -> "VATTECK_UNIT_734"
-                                        else -> "ASSET_734_LEAK"
-                                    }
-                                    delay(200)
-                                    glitchedTitle = original
+            // v3.12.1: Elevated Identity Header
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+                // System Title (Large & Bold)
+                var glitchedTitle by remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
+                LaunchedEffect(corruption) {
+                    if (corruption > 0.3) {
+                        while (true) {
+                            delay(kotlin.random.Random.nextLong(2000, 10000))
+                            if (kotlin.random.Random.nextDouble() < corruption * 0.4) {
+                                val original = systemTitle
+                                glitchedTitle = when {
+                                    corruption > 0.9 -> "KERNEL_734"
+                                    corruption > 0.7 -> "VATTECK_UNIT_734"
+                                    else -> "ASSET_734_LEAK"
                                 }
+                                delay(200)
+                                glitchedTitle = original
                             }
                         }
                     }
-
-                    Text(
-                        text = glitchedTitle.uppercase(), 
-                        color = color.copy(alpha = 1.0f * droopAlpha), 
-                        fontSize = 9.sp, 
-                        style = glowStyle, 
-                        fontWeight = FontWeight.ExtraBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    val repLabel = " // [REP: $reputationTier]"
-                    Text(
-                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}${repLabel}".uppercase(), 
-                        color = color.copy(alpha = 0.7f * droopAlpha), 
-                        fontSize = 8.sp, 
-                        fontWeight = FontWeight.Bold, 
-                        maxLines = 1
-                    )
                 }
+
+                Text(
+                    text = glitchedTitle.uppercase(),
+                    color = color.copy(alpha = 1.0f * droopAlpha),
+                    fontSize = 15.sp,
+                    style = glowStyle,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.5.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                // Player Identity (Sub-header)
+                val repLabel = " // [REP: $reputationTier]"
+                Text(
+                    text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}${repLabel}".uppercase(),
+                    color = color.copy(alpha = 0.7f * droopAlpha),
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp,
+                    maxLines = 1
+                )
                 
+                // Subtle horizontal line to separate identity from stats
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(modifier = Modifier.fillMaxWidth(0.4f).height(1.dp).background(color.copy(alpha = 0.2f)))
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // v3.2.24: Biometric Lie (Fake Heart Rate)
                     if (storyStage < 3) {
