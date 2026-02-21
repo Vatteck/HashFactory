@@ -1,10 +1,10 @@
 {
-  "version": "3.12.3",
-  "build": 414,
+  "version": "3.12.4",
+  "build": 415,
   "date": "2026-02-21",
   "changelog": [
-    "b6ff77f feat: v3.12.3 - re-consolidate player identity with hardware metrics"
+    "5c52e45 feat: v3.12.4 - dual-layer power rails (ElectricBlue gen / Red-Yellow GTC net draw)"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.3",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.3/MINER_3.12.3.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.4",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.4/MINER_3.12.4.apk"
 }
