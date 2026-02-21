@@ -23,6 +23,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val powerConsumptionkW = MutableStateFlow(0.0)
     val activePowerUsage = MutableStateFlow(0.0)
     val maxPowerkW = MutableStateFlow(100.0)
+    val localGenerationkW = MutableStateFlow(0.0)
     val flopsProductionRate = MutableStateFlow(0.0)
     val heatGenerationRate = MutableStateFlow(0.0)
     val hardwareIntegrity = MutableStateFlow(100.0)
@@ -170,6 +171,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     var lastNewsTickTime = 0L
     protected var lastSubnetMsgTime = 0L
     var lastPopupTime = 0L
+    var lastUtilityStatementTime = 0L
     var raidsSurvived = 0
     var lastRaidTime = 0L
     var lastStageChangeTime = System.currentTimeMillis()

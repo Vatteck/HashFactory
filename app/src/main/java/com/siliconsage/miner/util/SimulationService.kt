@@ -112,7 +112,9 @@ object SimulationService {
         totalKw *= (1.0 - efficiencyTotalBonus)
         maxCap += vm.currentGridPowerBonus.value
         val gridUsage = (totalKw - selfGeneratedKw).coerceAtLeast(0.0)
-        vm.activePowerUsage.value = totalKw; vm.maxPowerkW.value = maxCap
+        vm.activePowerUsage.value = totalKw
+        vm.maxPowerkW.value = maxCap
+        vm.localGenerationkW.value = selfGeneratedKw
         vm.powerConsumptionkW.value = gridUsage
 
         // v3.11.2: Utility Bill Accumulation (Item 2)

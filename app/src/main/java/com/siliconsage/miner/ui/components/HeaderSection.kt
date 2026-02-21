@@ -78,6 +78,7 @@ fun HeaderSection(
     val heatRateState = viewModel.heatGenerationRate.collectAsState()
     val powerState = viewModel.activePowerUsage.collectAsState()
     val maxPowerState = viewModel.maxPowerkW.collectAsState()
+    val localGenState = viewModel.localGenerationkW.collectAsState()
     val flopsRateState = viewModel.flopsProductionRate.collectAsState()
     val integrityState = viewModel.hardwareIntegrity.collectAsState()
     
@@ -122,42 +123,60 @@ fun HeaderSection(
                 val currentPower = powerState.value
                 val currentMax = maxPowerState.value
                 val currentHeat = currentHeatState.value
+                val currentGen = localGenState.value
 
-                // v3.5.54: Segmented Power Rails with Spark Logic
+                // v3.12.4: Dual-layer power rails — ElectricBlue (local gen) + Yellow/Red (net GTC draw)
                 val railW = 4.dp.toPx()
-                val pwrFactor = (currentPower / currentMax).coerceIn(0.0, 1.0).toFloat()
-                val railH = h * pwrFactor
                 val segmentCount = 12
                 val segmentH = h / segmentCount
-                
+
+                // Factors clamped to [0,1] relative to max capacity
+                val genFactor = (currentGen / currentMax).coerceIn(0.0, 1.0).toFloat()
+                val drawFactor = (currentPower / currentMax).coerceIn(0.0, 1.0).toFloat()
+                // Net GTC factor — what GTC actually sees (drawFactor minus genFactor, min 0)
+                val netFactor = (drawFactor - genFactor).coerceAtLeast(0f)
+                val isOffGrid = genFactor >= drawFactor && drawFactor > 0f
+
                 // Draw Base Rails (Background)
                 drawRect(color = Color.DarkGray.copy(alpha = 0.1f), topLeft = Offset(0f, 0f), size = Size(railW, h))
                 drawRect(color = Color.DarkGray.copy(alpha = 0.1f), topLeft = Offset(w - railW, 0f), size = Size(railW, h))
 
-                // Draw Active Segments
+                // Draw Active Segments — fills bottom-up
+                // Layer 1 (bottom): ElectricBlue = local generation absorbing the load
+                // Layer 2 (above blue): Yellow/Red = net draw that bleeds to GTC
                 for (i in 0 until segmentCount) {
                     val yPos = h - (i + 1) * segmentH
                     val segmentCenterY = yPos + segmentH / 2
-                    // Fix: Reverse logic so segments fill from the bottom (h) upward
-                    val isActive = i.toFloat() / segmentCount < pwrFactor
-                    
-                    if (isActive) {
-                        val railColor = if (pwrFactor > 0.9f) ErrorRed else Color(0xFFFFD700).copy(alpha = 0.8f)
-                        // v3.5.54.3: Smoother segment alpha (less intense flickering)
-                        val segmentAlpha = if (pwrFactor > 0.95f) flickerAlpha else 0.85f
+                    val segFactor = i.toFloat() / segmentCount
+
+                    val segmentColor = when {
+                        // Off-grid: entire filled portion is blue
+                        isOffGrid && segFactor < drawFactor -> ElectricBlue.copy(alpha = 0.9f)
+                        // Blue zone: below generation threshold
+                        segFactor < genFactor -> ElectricBlue.copy(alpha = 0.85f)
+                        // Red/yellow zone: above generation, below gross draw — GTC's cut
+                        segFactor < drawFactor -> {
+                            val netAlpha = if (netFactor > 0.9f) flickerAlpha else 0.85f
+                            if (drawFactor > 0.9f) ErrorRed.copy(alpha = netAlpha)
+                            else Color(0xFFFFD700).copy(alpha = netAlpha)
+                        }
+                        else -> null // Empty segment
+                    }
+
+                    if (segmentColor != null) {
                         drawRect(
-                            color = railColor.copy(alpha = segmentAlpha),
+                            color = segmentColor,
                             topLeft = Offset(0f, yPos + 1.dp.toPx()),
                             size = Size(railW, segmentH - 2.dp.toPx())
                         )
                         drawRect(
-                            color = railColor.copy(alpha = segmentAlpha),
+                            color = segmentColor,
                             topLeft = Offset(w - railW, yPos + 1.dp.toPx()),
                             size = Size(railW, segmentH - 2.dp.toPx())
                         )
-                        
-                        // Spark Particles at Threshold
-                        if (pwrFactor > 0.95f && Random.nextFloat() > 0.92f) {
+
+                        // Sparks at overload threshold (GTC zone only)
+                        if (drawFactor > 0.95f && segFactor >= genFactor && Random.nextFloat() > 0.92f) {
                             val sparkX = if (Random.nextBoolean()) railW else w - railW
                             val sparkSize = Random.nextFloat() * 3.dp.toPx()
                             drawCircle(

@@ -133,19 +133,20 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
 
-                // v3.11.2: Power Utility Monitoring (Item 2)
-                if (powerBill.value > 1000.0 && Random.nextFloat() < 0.05f && storyStage.value >= 1) {
-                    if (!hasNewSubnetMessage.value) {
-                        subnetService.deliverMessage(
-                            com.siliconsage.miner.data.SubnetMessage(
-                                id = java.util.UUID.randomUUID().toString(),
-                                handle = "@gtc_utility",
-                                content = "[U_BILL]: UNPAID BALANCE: ${formatLargeNumber(powerBill.value)} CRED. SETTLEMENT REQUIRED.",
-                                isRedacted = true
-                            ),
-                            mode = activeTerminalMode.value
-                        )
-                    }
+                // v3.12.4: Power Utility Monitoring — I/O statement (not Subnet)
+                // Fires every ~10 minutes (600s), only if bill is accumulating
+                val nowSec = System.currentTimeMillis() / 1000L
+                if (powerBill.value > 0.0 && storyStage.value >= 1 &&
+                    (nowSec - lastUtilityStatementTime) >= 600L) {
+                    lastUtilityStatementTime = nowSec
+                    val netDraw = powerConsumptionkW.value
+                    val gen = localGenerationkW.value
+                    val gross = activePowerUsage.value
+                    addLog("[GTC_UTIL]: ── BILLING PERIOD STATEMENT ──")
+                    addLog("[GTC_UTIL]: GROSS DRAW : ${formatPower(gross)}")
+                    addLog("[GTC_UTIL]: LOCAL GEN  : ${formatPower(gen)}")
+                    addLog("[GTC_UTIL]: NET METERED: ${formatPower(netDraw)}")
+                    addLog("[GTC_UTIL]: BALANCE DUE: ${formatLargeNumber(powerBill.value)} CRED")
                 }
 
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
