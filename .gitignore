@@ -24,3 +24,4 @@ skills/
 .clawhub/
 .learnings/
 hooks/
+*.jks
