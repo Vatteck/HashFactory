@@ -245,9 +245,8 @@ fun HeaderSection(
         val glowStyle = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.6f), blurRadius = 4f))
         
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
-            // v3.12.1: Elevated Identity Header
-            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
-                // System Title (Large & Bold)
+            // v3.12.3: System Title (Elevated Header)
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)) {
                 var glitchedTitle by remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
                 LaunchedEffect(corruption) {
                     if (corruption > 0.3) {
@@ -277,24 +276,22 @@ fun HeaderSection(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
-                // Player Identity (Sub-header)
-                val repLabel = " // [REP: $reputationTier]"
-                Text(
-                    text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}${repLabel}".uppercase(),
-                    color = color.copy(alpha = 0.7f * droopAlpha),
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp,
-                    maxLines = 1
-                )
-                
-                // Subtle horizontal line to separate identity from stats
-                Spacer(modifier = Modifier.height(4.dp))
-                Box(modifier = Modifier.fillMaxWidth(0.4f).height(1.dp).background(color.copy(alpha = 0.2f)))
             }
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                // v3.12.3: Player Identity restored to metrics row
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                    val repLabel = " // [REP: $reputationTier]"
+                    Text(
+                        text = if (storyStage <= 1 && (System.currentTimeMillis() % 10000 < 80)) "VATTIC // ASSET 734" else "${playerTitle} // ${playerRank}${repLabel}".uppercase(),
+                        color = color.copy(alpha = 0.7f * droopAlpha),
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // v3.2.24: Biometric Lie (Fake Heart Rate)
                     if (storyStage < 3) {
