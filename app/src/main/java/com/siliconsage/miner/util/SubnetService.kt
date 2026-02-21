@@ -512,4 +512,10 @@ class SubnetService(
         isTyping.value = false
         isHushed.value = false
     }
+
+    // v3.11.1: Clear notification flags only
+    fun clearAlerts() {
+        hasNewDecision.value = false
+        hasNewChatter.value = false
+    }
 }
