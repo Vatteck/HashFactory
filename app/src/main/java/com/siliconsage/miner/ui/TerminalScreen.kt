@@ -235,6 +235,7 @@ fun TerminalTabButton(text: String, active: Boolean, hasNew: Boolean, color: Col
 
 @Composable
 fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Boolean) {
+    val isPaused by viewModel.isSubnetPaused.collectAsState()
     val logs by viewModel.logs.collectAsState()
     val subnetMessages by viewModel.subnetMessages.collectAsState()
     val mode by viewModel.activeTerminalMode.collectAsState()
