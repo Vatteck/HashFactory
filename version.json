@@ -1,12 +1,11 @@
 {
-  "version": "3.13.0",
-  "build": 420,
+  "version": "3.13.1",
+  "build": 421,
   "date": "2026-02-21",
   "changelog": [
-    "1dfb168 feat: Phase 23 - Water-Migration Hook (aquifer depletion, municipal rationing, faction relief tech)",
-    "7b5a225 chore: symlink SYSTEMS.md, add gametasks.md synced from workspace",
-    "16d71a4 docs: update build_history with v3.12.x summaries"
+    "2c25f55 feat: Phase 23 completion - saturation stall, substrate tap-out mechanic forcing migration",
+    "f816093 docs: v3.13.0 - Phase 23 Water-Migration Hook specs"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.13.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.13.0/MINER_3.13.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.13.1",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.13.1/MINER_3.13.1.apk"
 }
