@@ -111,6 +111,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 DataLogManager.checkUnlocks(this@GameViewModel)
                 saveState()
                 if (isSettingsPaused.value || showOfflineEarnings.value) continue
+                SimulationService.accumulateWater(this@GameViewModel)
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
                 val now = System.currentTimeMillis()

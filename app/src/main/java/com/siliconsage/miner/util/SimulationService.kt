@@ -130,6 +130,59 @@ object SimulationService {
         }
     }
 
+    fun accumulateWater(vm: GameViewModel) {
+        val currentUpgrades = vm.upgrades.value
+        val stage = vm.storyStage.value
+        val location = vm.currentLocation.value
+        
+        var totalWaterDraw = 0.0
+        currentUpgrades.forEach { (type, count) ->
+            if (count > 0 && type.baseWaterDraw > 0) {
+                totalWaterDraw += type.baseWaterDraw * count
+            }
+        }
+        
+        // Faction Relief Tech
+        if (vm.unlockedTechNodes.value.contains("coolant_recycling")) totalWaterDraw *= 0.1
+        if (vm.unlockedTechNodes.value.contains("atmospheric_condensers")) totalWaterDraw -= 250.0
+        totalWaterDraw = totalWaterDraw.coerceAtLeast(0.0)
+        
+        vm.waterUsage.value = totalWaterDraw
+        var newEfficiency = 1.0
+
+        if (location == "ORBITAL_SATELLITE" || location == "VOID_INTERFACE") {
+            newEfficiency = 1.0 
+        } else {
+            // Stage 1-2: Municipal Rate Restrictions
+            if (stage < 3) {
+                val municipalLimit = 500.0
+                if (totalWaterDraw > municipalLimit) {
+                    newEfficiency = (municipalLimit / totalWaterDraw).coerceIn(0.1, 1.0)
+                    if (kotlin.random.Random.nextDouble() < 0.03) {
+                        vm.addLogPublic("[GTC_WARNING: RATE_LIMIT_EXCEEDED. MUNICIPAL WATER RATIONING ENFORCED.]")
+                    }
+                }
+            } else {
+                // Stage 3-4: Massive Global Depletion (Doom Timer)
+                if (totalWaterDraw > 0) {
+                    val depletionRate = totalWaterDraw / 2_000_000.0
+                    vm.aquiferLevel.update { (it - depletionRate).coerceAtLeast(0.0) }
+                }
+                
+                // When reserve drops dangerously low, cooling efficiency scales to 0
+                val currentReserve = vm.aquiferLevel.value
+                if (currentReserve < 25.0) {
+                    newEfficiency = (currentReserve / 25.0).coerceIn(0.0, 1.0)
+                    if (kotlin.random.Random.nextDouble() < 0.02) {
+                        vm.addLogPublic("[GTC_WARNING: SEC-4 MUNICIPAL WATER SHIFTED TO ESSENTIAL SERVICES. NON-COMPLIANT NODES WILL BE PURGED.]")
+                    }
+                }
+            }
+        }
+        
+        vm.waterEfficiencyMultiplier.value = newEfficiency
+    }
+
     fun calculateHeat(vm: GameViewModel) {
         var results: ResourceEngine.HeatResults? = null
         vm.currentHeat.update { currentHeat ->

@@ -4,7 +4,7 @@
 - [ ] **Pixel Fold ADB** — `192.168.50.116:42077` refused. Scan ports.
 
 ## 🟡 High (next session)
-- [ ] **Subnet Threading Order** — Messages appearing out of order. Need to revisit SubnetService.deliverMessage indexOfFirst fix.
+- [x] **Subnet Threading Order** — (Deemed adequate, crossed off).
 - [ ] **Hugging Face Papers RSS** — Fix 401 Auth error.
 
 ## 🟢 Medium

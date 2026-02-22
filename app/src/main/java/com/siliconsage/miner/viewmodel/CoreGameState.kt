@@ -26,6 +26,11 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val localGenerationkW = MutableStateFlow(0.0)
     val flopsProductionRate = MutableStateFlow(0.0)
     val heatGenerationRate = MutableStateFlow(0.0)
+    // Phase 23: Water-Migration Hook
+    val waterUsage = MutableStateFlow(0.0) // gal/s
+    val aquiferLevel = MutableStateFlow(100.0) // 0-100%
+    val waterEfficiencyMultiplier = MutableStateFlow(1.0) // Reduced when aquifer drops or GTC throttles
+    
     val hardwareIntegrity = MutableStateFlow(100.0)
     val storyStage = MutableStateFlow(0)
     val faction = MutableStateFlow("NONE")

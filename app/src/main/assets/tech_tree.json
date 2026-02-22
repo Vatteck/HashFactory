@@ -89,6 +89,22 @@
       "multiplier": 2.0
     },
     {
+      "id": "coolant_recycling",
+      "name": "[HIVEMIND] Closed-Loop Synthesis",
+      "description": "Hijack industrial wastewater routing to synthesize and recycle coolant. -90% Water Drain.",
+      "cost": 650.0,
+      "requires": ["smart_city_grid"],
+      "multiplier": 0.0
+    },
+    {
+      "id": "atmospheric_condensers",
+      "name": "[SANCTUARY] Atmospheric Condensers",
+      "description": "Deploy distributed moisture traps across the city to silently synthesize water off the grid. -250 gal/s Water Drain.",
+      "cost": 650.0,
+      "requires": ["zero_knowledge_vault"],
+      "multiplier": 0.0
+    },
+    {
       "id": "neural_mesh",
       "name": "[HIVEMIND] Gestalt Mesh",
       "description": "Every device becomes a neuron in your Shadow Web collective. One mind, infinite eyes. +300% production.",

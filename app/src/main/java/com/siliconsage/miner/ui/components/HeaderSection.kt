@@ -83,6 +83,8 @@ fun HeaderSection(
     val currentHeatState = viewModel.currentHeat.collectAsState()
     val heatRateState = viewModel.heatGenerationRate.collectAsState()
     val powerState = viewModel.activePowerUsage.collectAsState()
+    val waterUsageState = viewModel.waterUsage.collectAsState()
+    val aquiferLevelState = viewModel.aquiferLevel.collectAsState()
     val maxPowerState = viewModel.maxPowerkW.collectAsState()
     val localGenState = viewModel.localGenerationkW.collectAsState()
     val flopsRateState = viewModel.flopsProductionRate.collectAsState()
@@ -679,6 +681,52 @@ fun HeaderSection(
                 }
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                     Text(text = integText, fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
+                }
+            }
+            
+            // Phase 23: Water-Migration Hook
+            if ((waterUsageState.value > 0.0 || storyStage >= 1) && currentLocation != "ORBITAL_SATELLITE" && currentLocation != "VOID_INTERFACE") {
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    val flowText = buildAnnotatedString {
+                        withStyle(SpanStyle(color = ElectricBlue.copy(alpha = 0.7f))) { append("H2O: ") }
+                        withStyle(SpanStyle(color = Color.White)) { 
+                           val usage = waterUsageState.value
+                           val formatted = when {
+                               usage >= 1_000_000 -> "${String.format("%.1f", usage / 1_000_000.0)} mGal/s"
+                               usage >= 1_000 -> "${String.format("%.1f", usage / 1000.0)} kGal/s"
+                               else -> "${usage.toInt()} gal/s"
+                           }
+                           append(formatted)
+                        }
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        Text(text = flowText, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
+                    }
+                    
+                    val aquifer = aquiferLevelState.value
+                    if (storyStage >= 3) {
+                        val isCritical = aquifer < 5.0
+                        val statusText = when {
+                            isCritical -> "[CRITICAL_DROUGHT]"
+                            aquifer < 25.0 -> "[RESTRICTED]"
+                            else -> "[NOMINAL]"
+                        }
+                        // Flashing ErrorRed if critical drought
+                        val flashAlpha = if (isCritical) 0.5f + (kotlin.math.sin(System.currentTimeMillis() / 150.0).toFloat() * 0.5f) else 1.0f
+                        val statusColor = when {
+                            isCritical -> ErrorRed.copy(alpha = flashAlpha)
+                            aquifer < 25.0 -> Color(0xFFFFCC00)
+                            else -> color.copy(alpha = 0.7f)
+                        }
+                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                            Text(text = statusText, color = statusColor, fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
+                        }
+                    } else if (storyStage >= 1) {
+                        // Stage 1/2 shows nominal
+                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                            Text(text = "[NOMINAL]", color = color.copy(alpha = 0.7f), fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
+                        }
+                    }
                 }
             }
         }

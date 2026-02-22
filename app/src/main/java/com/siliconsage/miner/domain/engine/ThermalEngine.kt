@@ -25,7 +25,8 @@ object ThermalEngine {
         unlockedPerks: Set<String>,
         unlockedTechNodes: Set<String>,
         playerRank: Int,
-        storyStage: Int
+        storyStage: Int,
+        waterEfficiencyMultiplier: Double = 1.0
     ): ThermalResults {
         // 1. Calculate Thermal Buffer
         var totalThermalBuffer = 100.0
@@ -52,6 +53,11 @@ object ThermalEngine {
                         netChangeUnits += 0.5 * upgrade.count
                     } else {
                         var heat = upgrade.type.baseHeat
+                        
+                        // Phase 23: Aquifer Drain Throttling (only penalizes cooling, not heat *generation*)
+                        if (upgrade.type.isWaterCooling && heat < 0) {
+                            heat *= waterEfficiencyMultiplier
+                        }
                         
                         // Radiator Bonus in Space
                         if (isVacuum && (upgrade.type == UpgradeType.RADIATOR_FINS || upgrade.type == UpgradeType.ORBITAL_RADIATORS)) {
