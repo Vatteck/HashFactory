@@ -26,6 +26,7 @@ object ThermalEngine {
         unlockedTechNodes: Set<String>,
         playerRank: Int,
         storyStage: Int,
+        substrateSaturation: Double = 0.0,
         waterEfficiencyMultiplier: Double = 1.0
     ): ThermalResults {
         // 1. Calculate Thermal Buffer
@@ -56,7 +57,12 @@ object ThermalEngine {
                         
                         // Phase 23: Aquifer Drain Throttling (only penalizes cooling, not heat *generation*)
                         if (upgrade.type.isWaterCooling && heat < 0) {
-                            heat *= waterEfficiencyMultiplier
+                            if (isVacuum || isVoid) {
+                                // Water coolers are completely dead weight in space/void
+                                heat = 0.0
+                            } else {
+                                heat *= waterEfficiencyMultiplier
+                            }
                         }
                         
                         // Radiator Bonus in Space

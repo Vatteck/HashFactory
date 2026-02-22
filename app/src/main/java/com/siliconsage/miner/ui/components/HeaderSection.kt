@@ -444,13 +444,21 @@ fun HeaderSection(
                 }
             }
             
-            // v3.2.52: Substrate Saturation Monitor
+            // v3.2.52: Substrate Saturation Monitor -> Phase 23, Step 5: Stage 5 Sector Capacity
             if (storyStage >= 4) {
                 val saturation by viewModel.substrateSaturation.collectAsState()
-                val saturationColor = if (saturation > 0.9) ErrorRed else Color.Cyan
+                
+                // Color gets aggressively red as you tap out the local sector (saturation -> 1.0)
+                val isDanger = saturation > 0.85
+                val saturationColor = when {
+                    saturation > 0.95 -> ErrorRed
+                    saturation > 0.70 -> Color(0xFFFFCC00)
+                    else -> ElectricBlue
+                }
                 
                 Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("SATURATION: ", color = Color.Gray, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    val labelText = if (storyStage >= 5) "CAPACITY: " else "SATURATION: "
+                    Text(labelText, color = Color.Gray, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                     
                     // v3.11.3: Segmented Saturation Gauge
                     Box(modifier = Modifier.weight(1f).height(4.dp).padding(horizontal = 4.dp).background(Color.Black.copy(alpha = 0.3f))) {
@@ -475,16 +483,6 @@ fun HeaderSection(
                     }
                     
                     Text("${(saturation * 100).toInt()}%", color = saturationColor, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold)
-                    
-                    if (saturation >= 0.95) {
-                        Text(
-                            " ≫ READY TO BURN", 
-                            color = ErrorRed, 
-                            fontSize = 8.sp, 
-                            fontWeight = FontWeight.Black,
-                            modifier = Modifier.padding(start = 4.dp).clickable { viewModel.migrateSubstrate() }
-                        )
-                    }
                 }
             }
 

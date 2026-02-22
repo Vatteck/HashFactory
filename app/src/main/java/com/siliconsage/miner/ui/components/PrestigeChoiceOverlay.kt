@@ -190,6 +190,7 @@ fun PrestigeChoiceOverlay(
                                     PrestigeStatLine("FACTION STATUS", "PURGED", ErrorRed)
                                     PrestigeStatLine("UPGRADES", "PURGED", ErrorRed)
                                     PrestigeStatLine("TOKENS", "PURGED", ErrorRed)
+                                    PrestigeStatLine("SUBSTRATE SATURATION", "PURGED", ElectricBlue)
                                     PrestigeStatLine("SNIFF ARCHIVES", "PRESERVED", ElectricBlue)
                                     PrestigeStatLine("DATA LOGS", "PRESERVED", ElectricBlue)
                                 }
@@ -282,6 +283,7 @@ fun PrestigeChoiceOverlay(
                                     PrestigeStatLine("FACTION STATUS", if (currentFaction != "NONE") "PRESERVED" else "N/A", ElectricBlue)
                                     PrestigeStatLine("UPGRADES", "PURGED", ErrorRed)
                                     PrestigeStatLine("TOKENS", "PURGED", ErrorRed)
+                                    PrestigeStatLine("SUBSTRATE SATURATION", "PERSISTENT", Color(0xFFFFAA00))
                                     PrestigeStatLine("SNIFF ARCHIVES", "PRESERVED", ElectricBlue)
                                     PrestigeStatLine("DATA LOGS", "PRESERVED", ElectricBlue)
                                 }

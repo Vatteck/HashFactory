@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.DeviceThermostat
 import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import com.siliconsage.miner.util.FormatUtils
@@ -182,6 +183,9 @@ fun UpgradeItem(
                 }
                 if (type.isHardware && type.baseHeat > 0) {
                     StatPill(text = "+${String.format("%.1f", type.baseHeat)}/S", icon = Icons.Default.DeviceThermostat, color = ErrorRed)
+                }
+                if (type.baseWaterDraw > 0) {
+                    StatPill(text = "-${String.format("%.1f", type.baseWaterDraw)} GAL/S", icon = Icons.Default.Opacity, color = Color.Cyan)
                 }
                 if (type.efficiencyBonus > 0) {
                     StatPill(text = "+${(type.efficiencyBonus * 100).toInt()}% EFF", icon = Icons.Default.Settings, color = NeonGreen)

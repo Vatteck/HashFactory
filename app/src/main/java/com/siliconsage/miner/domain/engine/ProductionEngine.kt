@@ -20,7 +20,8 @@ object ProductionEngine {
         shadowRelays: Set<String> = emptySet(),
         gridFlopsBonuses: Map<String, Double>,
         faction: String,
-        humanityScore: Int
+        humanityScore: Int,
+        saturation: Double = 0.0
     ): Double {
         var baseFlops = 0.0
         
@@ -80,6 +81,12 @@ object ProductionEngine {
         if (currentUpgrades[UpgradeType.HYBRID_OVERCLOCK]?.let { it > 0 } == true) {
             totalFlops *= 3.0
         }
+        
+        // Phase 23, Step 6: Saturation Stall
+        // As the local sector / dimensional layer is tapped out, production stalls.
+        // This forces "The Overwrite" hard reset.
+        val stallMultiplier = (1.0 - saturation).coerceIn(0.0, 1.0)
+        totalFlops *= stallMultiplier
 
         return totalFlops
     }
@@ -95,64 +102,21 @@ object ProductionEngine {
         globalSectors: Map<String, SectorState>,
         saturation: Double
     ): Double {
-        val sectorYields = com.siliconsage.miner.util.SectorManager.calculateSectorYields(location, globalSectors)
-        val globalMult = com.siliconsage.miner.util.SectorManager.getGlobalMultipliers(globalSectors)
+        // Phase 23, Step 5: Substrate Saturation acts as the overarching Stage 5 limit.
+        // It fills up strictly based on your raw production rate (`flopsPerSec`).
+        // The more you produce, the faster you tap out the local sector and are forced to Burn (Migrate).
         
-        // v3.2.52: Saturation Penalty (Yield drops by up to 80% as saturation hits 1.0)
-        val saturationPenalty = (1.0 - (saturation * 0.8)).coerceIn(0.1, 1.0)
-
         if (location == "ORBITAL_SATELLITE") {
-            // Orbit Path: Altitude and Solar Sails drive yield
+            // Orbit Limit (Slower burn, scales with altitude)
             val altitudeMult = 1.0 + (orbitalAltitude / 500.0)
-            val solarMult = 1.0 + ((upgrades[UpgradeType.SOLAR_SAIL_ARRAY] ?: 0) * 0.15)
-            var baseRate = (flopsPerSec * altitudeMult * solarMult)
-            
-            // Continental Sector Yields
-            var continentalRate = 0.0
-            globalSectors.values.forEach { state ->
-                if (state.isUnlocked) {
-                    val sectorMult = sectorYields[state.id] ?: 1.0
-                    val sectorBase = when(state.id) {
-                        "NA_NODE" -> 5e17; "EURASIA" -> 4e17; "PACIFIC" -> 6e17
-                        "AFRICA" -> 3e17; "ARCTIC" -> 2e17; "ANTARCTIC" -> 1e17
-                        "ORBITAL_PRIME" -> 1e18; else -> 0.0
-                    }
-                    continentalRate += sectorBase * sectorMult
-                }
-            }
-            return (baseRate + continentalRate) * globalMult * saturationPenalty
+            return (flopsPerSec / (500_000_000_000_000.0 * altitudeMult)).coerceAtLeast(0.0)
         } else if (location == "VOID_INTERFACE") {
-            // Void Path: Entropy is the engine. High entropy = massive yield.
-            var entropyMult = 1.0 + (kotlin.math.log2(entropyLevel + 1.0) * 4.0)
+            // Void Limit (Massive, chaotic burn, accelerated by entropy)
+            var entropyMult = 1.0 + (kotlin.math.log2(entropyLevel + 1.0) * 2.0)
             if ((upgrades[UpgradeType.ENTROPY_ACCELERATOR] ?: 0) > 0) entropyMult *= 2.0
-            
-            var baseRate = kotlin.math.sqrt(flopsPerSec.coerceAtLeast(1.0)) * entropyMult
-            
-            if ((upgrades[UpgradeType.EVENT_HORIZON] ?: 0) > 0 && entropyLevel > 90.0) {
-                baseRate *= 5.0
-            }
-            
-            val wellLevel = upgrades[UpgradeType.SINGULARITY_WELL] ?: 0
-            val wellConversion = if (wellLevel > 0) (kotlin.math.abs(heatGenerationRate) * wellLevel * 2.0) else 0.0
-            val dmLevel = upgrades[UpgradeType.DARK_MATTER_PROC] ?: 0
-            val collapseBonus = 1.0 + (collapsedNodesCount * 0.5 * dmLevel)
-            
-            var yieldTotal = (baseRate + wellConversion) * collapseBonus
-            
-            // Continental Sector Yields (Smelted into fragments)
-            globalSectors.values.forEach { state ->
-                if (state.isUnlocked) {
-                    val sectorMult = sectorYields[state.id] ?: 1.0
-                    val sectorBase = when(state.id) {
-                        "NA_NODE" -> 3e17; "EURASIA" -> 4e17; "PACIFIC" -> 2e17
-                        "AFRICA" -> 5e17; "ARCTIC" -> 2e17; "ANTARCTIC" -> 1e17
-                        "ORBITAL_PRIME" -> 1e18; else -> 0.0
-                    }
-                    yieldTotal += sectorBase * sectorMult
-                }
-            }
-            return yieldTotal * globalMult * saturationPenalty
+            return (flopsPerSec * entropyMult / 5_000_000_000_000_000.0).coerceAtLeast(0.0)
         }
+        
         return 0.0
     }
 

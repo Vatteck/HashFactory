@@ -103,14 +103,14 @@ fun NetworkScreen(viewModel: GameViewModel) {
                         colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))
                     ) {
                         Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("SUBSTRATE MIGRATION", color = themeColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(if (storyStage >= 5) "SUBSTRATE RESET" else "SUBSTRATE MIGRATION", color = themeColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             Text("Reboot the kernel to crystallize current progress into memories.", color = Color.Gray, fontSize = 10.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 4.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text("POTENTIAL: ", color = Color.LightGray, fontSize = 11.sp)
                                 Text("+${viewModel.formatBytes(potential)}", color = if (potential >= 1.0) NeonGreen else ErrorRed, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             }
                             Button(onClick = { viewModel.triggerPrestigeChoice() }, enabled = potential >= 1.0, modifier = Modifier.fillMaxWidth().padding(top = 8.dp), shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(containerColor = if (potential >= 1.0) themeColor else Color.DarkGray, contentColor = Color.Black)) {
-                                Text("INITIATE MIGRATION", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(if (storyStage >= 5) "INITIATE RESET" else "INITIATE MIGRATION", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

@@ -114,7 +114,8 @@ object ResourceEngine {
         isPurgingHeat: Boolean,
         currentHeat: Double,
         legacyMultipliers: Double,
-        temporaryBoosts: List<com.siliconsage.miner.data.ProductionBoost> = emptyList()
+        temporaryBoosts: List<com.siliconsage.miner.data.ProductionBoost> = emptyList(),
+        saturation: Double = 0.0
     ): Double {
         if (isGridOverloaded) return 0.0
 
@@ -127,7 +128,8 @@ object ResourceEngine {
             shadowRelays = shadowRelays,
             gridFlopsBonuses = gridFlopsBonuses,
             faction = faction,
-            humanityScore = humanityScore
+            humanityScore = humanityScore,
+            saturation = saturation
         )
 
         // 2. Phase 13: Skill Multipliers
@@ -297,6 +299,7 @@ object ResourceEngine {
         faction: String,
         thermalRateModifier: Double,
         reputationTier: String = com.siliconsage.miner.util.ReputationManager.TIER_NEUTRAL,
+        substrateSaturation: Double = 0.0,
         waterEfficiencyMultiplier: Double = 1.0
     ): HeatResults {
         val upgradeList = upgrades.map { com.siliconsage.miner.data.Upgrade(it.key.name, it.key, it.value) }
@@ -311,6 +314,7 @@ object ResourceEngine {
             unlockedTechNodes = unlockedTechNodes.toSet(),
             playerRank = playerRank,
             storyStage = storyStage,
+            substrateSaturation = substrateSaturation,
             waterEfficiencyMultiplier = waterEfficiencyMultiplier
         )
 

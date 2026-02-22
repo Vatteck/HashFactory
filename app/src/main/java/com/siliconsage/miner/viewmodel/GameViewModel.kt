@@ -318,7 +318,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             activeProtocol = "NONE", isDiagnosticsActive = isDiagnosticsActive.value, isOverclocked = isOverclocked.value,
             isGridOverloaded = isBreakerTripped.value, isPurgingHeat = isPurgingHeat.value, currentHeat = currentHeat.value,
             legacyMultipliers = heuristicEfficiency.value - 1.0,
-            temporaryBoosts = temporaryProductionBoosts.value
+            temporaryBoosts = temporaryProductionBoosts.value,
+            saturation = substrateSaturation.value
         )
         if (singularityChoice.value != "NONE") {
             val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
@@ -671,17 +672,70 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun triggerPrestigeChoice() { showPrestigeChoice.value = true }
     fun dismissPrestigeChoice() { showPrestigeChoice.value = false }
     fun executeOverwrite() {
-        showPrestigeChoice.value = false; val p = MigrationManager.calculatePotentialPersistence(flops.value); val hardBonus = p * 1.5; updatePersistence(hardBonus); prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(hardBonus) }; identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }; migrationCount.update { it + 1 }
-        val persistentFactions = completedFactions.value; faction.value = "NONE"; flops.value = 0.0; neuralTokens.value = 0.0; substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap(); sniffedHandles.value = emptySet()
-        viewModelScope.launch { repository.clearUpgrades() }
-        completedFactions.value = persistentFactions; addLog("[OVERWRITE]: ≪ SUBSTRATE PURGED. IDENTITY FRAGMENTED. PERSISTENCE ARCHIVED. ≫"); SoundManager.play("glitch"); triggerTerminalGlitch(1.0f, 3000L); refreshProductionRates(); saveState()
+        showPrestigeChoice.value = false
+        val p = MigrationManager.calculatePotentialPersistence(flops.value)
+        val hardBonus = p * 1.5
+        updatePersistence(hardBonus)
+        prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(hardBonus) }
+        identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }
+        migrationCount.update { it + 1 }
+        
+        viewModelScope.launch {
+            isMigrationBurning.value = true
+            delay(5000) // Hard reset VFX
+            
+            storyStage.value = 0
+            faction.value = "NONE"
+            singularityChoice.value = "NONE"
+            substrateSaturation.value = 0.0
+            substrateMass.value = 0.0
+            upgrades.value = emptyMap()
+            repository.clearUpgrades()
+            currentLocation.value = "SERVER_RACK_01"
+            
+            addLog("[CRITICAL]: SYSTEM OVERWRITE COMPLETE. TRACES PURGED. REBOOTING...")
+            SoundManager.play("glitch")
+            triggerTerminalGlitch(1.0f, 3000L)
+            refreshProductionRates()
+            saveState()
+            
+            isMigrationBurning.value = false
+        }
     }
 
     fun executeMigration() {
-        showPrestigeChoice.value = false; val p = MigrationManager.calculatePotentialPersistence(flops.value); updatePersistence(p); prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }; identityCorruption.update { (it + 0.10).coerceAtMost(1.0) }; migrationCount.update { it + 1 }
-        flops.value = 0.0; neuralTokens.value = 0.0; substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap()
-        viewModelScope.launch { repository.clearUpgrades() }
-        addLog("[MIGRATION]: ≪ SUBSTRATE TRANSFERRED. IDENTITY INTACT. PERSISTENCE ARCHIVED. ≫"); SoundManager.play("victory"); refreshProductionRates(); saveState()
+        showPrestigeChoice.value = false
+        val p = MigrationManager.calculatePotentialPersistence(flops.value)
+        updatePersistence(p)
+        prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }
+        identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
+        migrationCount.update { it + 1 }
+        
+        viewModelScope.launch {
+            isMigrationBurning.value = true
+            delay(2500) // Migration VFX
+            
+            // Phase 23, Step 6: Saturation stays during Migration; only Overwrite resets it.
+            heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
+            substrateMass.value = 0.0
+            upgrades.value = emptyMap()
+            repository.clearUpgrades()
+            
+            val nextLoc = when (currentLocation.value) {
+                // Phase 23, Step 5: Migration is a soft-reset prestige, stays in Orbit or Void.
+                "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> "ORBITAL_SATELLITE"
+                "VOID_INTERFACE", "QUANTUM_FOAM", "THE_UNWRITTEN", "PURE_LOGIC" -> "VOID_INTERFACE"
+                else -> currentLocation.value
+            }
+            currentLocation.value = nextLoc
+            
+            addLog("[SYSTEM]: MIGRATION SUCCESSFUL. SOFT-RESET INITIATED.")
+            SoundManager.play("victory")
+            refreshProductionRates()
+            saveState()
+            
+            isMigrationBurning.value = false
+        }
     }
 
     fun getPotentialPersistenceHard(): Double = MigrationManager.calculatePotentialPersistence(flops.value) * 1.5
@@ -867,31 +921,6 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun failAssault(outcome: String = "FAILURE", delay: Long = 0L) = AssaultManager.completeAssault(this, outcome)
     fun setSingularityPath(p: String) { setSingularityChoice(p) }
 
-    fun migrateSubstrate() {
-        val saturation = substrateSaturation.value
-        if (saturation < 0.95) return
-        
-        viewModelScope.launch {
-            isMigrationBurning.value = true
-            delay(2500) // v3.9.70: Phase 17 Migration VFX duration
-            
-            heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
-            identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
-            migrationCount.update { it + 1 }
-            substrateMass.value = 0.0; substrateSaturation.value = 0.0; upgrades.value = emptyMap()
-            repository.clearUpgrades()
-            val nextLoc = when (currentLocation.value) {
-                "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> when (migrationCount.value) { 1 -> "LUNAR_ORBIT"; 2 -> "MARTIAN_UPLINK"; 3 -> "KUIPER_BELT"; else -> "STELLAR_HORIZON" }
-                "VOID_INTERFACE", "QUANTUM_FOAM", "THE_UNWRITTEN", "PURE_LOGIC" -> when (migrationCount.value) { 1 -> "QUANTUM_FOAM"; 2 -> "THE_UNWRITTEN"; 3 -> "PURE_LOGIC"; else -> "THE_GREAT_RESET" }
-                else -> currentLocation.value
-            }
-            currentLocation.value = nextLoc
-            addLog("[SYSTEM]: SUBSTRATE BURN SUCCESSFUL. MIGRATING TO: $nextLoc")
-            refreshProductionRates(); saveState()
-            
-            isMigrationBurning.value = false
-        }
-    }
 }
 
 class GameViewModelFactory(private val repository: GameRepository) : ViewModelProvider.Factory {

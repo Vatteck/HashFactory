@@ -151,7 +151,10 @@ object SimulationService {
         var newEfficiency = 1.0
 
         if (location == "ORBITAL_SATELLITE" || location == "VOID_INTERFACE") {
-            newEfficiency = 1.0 
+            // Water coolers don't exist here. They pull no water and give no cooling.
+            totalWaterDraw = 0.0
+            vm.waterUsage.value = 0.0
+            newEfficiency = 0.0 
         } else {
             // Stage 1-2: Municipal Rate Restrictions
             if (stage < 3) {
@@ -193,7 +196,8 @@ object SimulationService {
                 unlockedTechNodes = vm.unlockedTechNodes.value, playerRank = vm.playerRank.value,
                 storyStage = vm.storyStage.value, faction = vm.faction.value,
                 thermalRateModifier = vm.thermalRateModifier.value,
-                reputationTier = vm.reputationTier.value
+                reputationTier = vm.reputationTier.value,
+                substrateSaturation = vm.substrateSaturation.value
             )
             results = heatResults
             
