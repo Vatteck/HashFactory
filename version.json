@@ -1,10 +1,12 @@
 {
-  "version": "3.12.8",
-  "build": 419,
+  "version": "3.13.0",
+  "build": 420,
   "date": "2026-02-21",
   "changelog": [
-    "dcfb379 fix: v3.12.8 - bump Room DB to v30 for missedBillingPeriods schema change"
+    "1dfb168 feat: Phase 23 - Water-Migration Hook (aquifer depletion, municipal rationing, faction relief tech)",
+    "7b5a225 chore: symlink SYSTEMS.md, add gametasks.md synced from workspace",
+    "16d71a4 docs: update build_history with v3.12.x summaries"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.12.8",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.12.8/MINER_3.12.8.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.13.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.13.0/MINER_3.13.0.apk"
 }
