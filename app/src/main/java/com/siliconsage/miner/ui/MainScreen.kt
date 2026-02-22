@@ -418,6 +418,7 @@ fun MainScreen(viewModel: GameViewModel) {
                         isVisible = showPrestigeChoice,
                         migrationCount = migrationCount,
                         currentFaction = faction,
+                        storyStage = storyStage,
                         potentialPersistenceHard = viewModel.getPotentialPersistenceHard(),
                         potentialPersistenceSoft = viewModel.getPotentialPersistenceSoft(),
                         currentCorruption = identityCorruption,

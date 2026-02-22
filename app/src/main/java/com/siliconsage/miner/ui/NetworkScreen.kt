@@ -96,7 +96,7 @@ fun NetworkScreen(viewModel: GameViewModel) {
                 }
                 
                 // Migration card sits ABOVE the tab strip — always accessible, never inside the tree
-                if (storyStage >= 3 || faction != "NONE") {
+                if (storyStage >= 1) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Card(
                         modifier = Modifier.fillMaxWidth().border(1.dp, themeColor.copy(alpha = 0.3f), RoundedCornerShape(8.dp)),

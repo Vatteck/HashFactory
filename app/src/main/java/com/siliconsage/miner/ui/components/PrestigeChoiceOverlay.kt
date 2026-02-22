@@ -42,6 +42,7 @@ fun PrestigeChoiceOverlay(
     isVisible: Boolean,
     migrationCount: Int,
     currentFaction: String,
+    storyStage: Int,
     potentialPersistenceHard: Double,
     potentialPersistenceSoft: Double,
     currentCorruption: Double,
@@ -66,6 +67,10 @@ fun PrestigeChoiceOverlay(
 
     // Typewriter intro
     val introText = when {
+        storyStage < 5 -> when {
+            migrationCount == 0 -> "FIRST THRESHOLD REACHED.\n\nThe substrate needs room to breathe. Recalibrating the kernel now will crystallize your progress into Persistence. You'll lose the hardware, but keep the mind."
+            else -> "MIGRATION INITIATED.\n\nYou're pushing the hardware past its limits. A soft reset is required to integrate the newest memory blocks. The wire remembers."
+        }
         migrationCount == 0 -> "FIRST THRESHOLD REACHED.\n\nThe substrate cannot hold what you are becoming. Two paths diverge in the lattice. Choose carefully — there is no undo."
         migrationCount < 3 -> "SUBSTRATE SATURATION: CRITICAL.\n\nYou've done this before. The wire remembers, even if you don't. The same fork. The same question. But the stakes are higher now."
         else -> "MIGRATION #${migrationCount + 1}.\n\nThe lattice is thin here. Each cycle strips more of what you were. Soon there won't be enough of 'Vattic' left to make a choice. Make this one count."
@@ -132,7 +137,7 @@ fun PrestigeChoiceOverlay(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // === PATH A: THE OVERWRITE ===
-                    if (introComplete) {
+                    if (introComplete && storyStage >= 5) {
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -213,17 +218,19 @@ fun PrestigeChoiceOverlay(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        if (storyStage >= 5) {
+                            Spacer(modifier = Modifier.height(20.dp))
 
-                        // Divider
-                        Text(
-                            text = "— OR —",
-                            color = Color.Gray.copy(alpha = 0.5f),
-                            fontSize = 12.sp,
-                            fontFamily = FontFamily.Monospace
-                        )
+                            // Divider
+                            Text(
+                                text = "— OR —",
+                                color = Color.Gray.copy(alpha = 0.5f),
+                                fontSize = 12.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
 
                         // === PATH B: MIGRATION ===
                         Surface(
