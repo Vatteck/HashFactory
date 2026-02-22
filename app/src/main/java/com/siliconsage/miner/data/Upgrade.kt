@@ -54,12 +54,11 @@ enum class UpgradeType {
     val isSecurity: Boolean get() = this in listOf(BASIC_FIREWALL, IPS_SYSTEM, AI_SENTINEL, QUANTUM_ENCRYPTION, OFFGRID_BACKUP)
     val isHardware: Boolean get() = !isCooling && !isPowerRelated && !isSecurity && !name.contains("PROTOCOL") && !name.contains("ASCENDANCE")
 
-    // Phase 23: Water-Migration Hook
+    // v3.13.3: Phase 23 - Industrial Water Renaming
     val baseWaterDraw: Double get() = when(this) {
-        LIQUID_COOLING -> 4.0        // Early game municipal drain
-        SUBMERSION_VAT -> 40.0       // Massive industrial tap
-        CRYOGENIC_CHAMBER -> 120.0   // Extreme drain
-        LIQUID_NITROGEN -> 250.0     // Ecosystem destruction
+        LIQUID_COOLING -> 4.0        // MUNICIPAL_TAP
+        SUBMERSION_VAT -> 40.0       // AQUIFER_PUMP_STATION
+        INDUSTRIAL_CHILLER -> 80.0    // RESERVOIR_INTAKE
         else -> 0.0
     }
 
