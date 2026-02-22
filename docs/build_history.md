@@ -58,3 +58,6 @@
 ## 2026-02-21 16:30 — v3.12.8 (Build 419)
 - Summary: Room DB v30 bump for missedBillingPeriods schema
 
+## 2026-02-21 19:22 — v3.13.0 (Build 420)
+- Summary: Manual Release
+
