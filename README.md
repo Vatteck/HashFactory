@@ -10,7 +10,7 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/BUILD-v3.11.0-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
+[![Version](https://img.shields.io/badge/BUILD-v3.13.2-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
 [![Platform](https://img.shields.io/badge/PLATFORM-Android_7.0+-00b4d8?style=for-the-badge&labelColor=0a0a0a&logo=android&logoColor=00ff41)](#technical-specifications)&nbsp;
 [![Status](https://img.shields.io/badge/UPLINK-🟢_NOMINAL-00ff41?style=for-the-badge&labelColor=0a0a0a)](#)&nbsp;
 [![Kotlin](https://img.shields.io/badge/KOTLIN-2.0-7F52FF?style=for-the-badge&labelColor=0a0a0a&logo=kotlin&logoColor=7F52FF)](#technical-specifications)&nbsp;
