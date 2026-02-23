@@ -266,7 +266,7 @@ fun HeaderSection(
                 val bLen = 8.dp.toPx(); val bStroke = 1.5f.dp.toPx()
                 drawLine(color, Offset(0f, 0f), Offset(bLen, 0f), bStroke); drawLine(color, Offset(0f, 0f), Offset(0f, bLen), bStroke)
                 drawLine(color, Offset(w, h), Offset(w - bLen, h), bStroke); drawLine(color, Offset(w, h), Offset(w, h - bLen), bStroke)
-            }.padding(horizontal = 12.dp, vertical = 8.dp)
+            }.padding(horizontal = 12.dp, vertical = 2.dp)
     ) {
         val currentPower = powerState.value; val currentMax = maxPowerState.value; val currentHeat = currentHeatState.value; val currentIntegrity = integrityState.value
         val currentHeatRate = heatRateState.value
@@ -276,7 +276,7 @@ fun HeaderSection(
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
             // v3.12.3: System Title (Elevated Header)
             Box(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
                 val glitchedState = remember(systemTitle, corruption) { mutableStateOf(systemTitle) }

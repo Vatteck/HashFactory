@@ -87,7 +87,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
         val currentHeat by viewModel.currentHeat.collectAsState()
 
         Row(
-            modifier = Modifier.fillMaxWidth(), 
+            modifier = Modifier.fillMaxWidth().offset(y = 1.dp), // Chrome-style overlap
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             val corruption by viewModel.identityCorruption.collectAsState()
@@ -658,8 +658,8 @@ fun TerminalTab(
     Box(
         modifier = modifier
             .background(
-                if (active) Color.Black.copy(alpha = 0.75f) else Color.DarkGray.copy(alpha = 0.1f),
-                TechnicalCornerShape(16f) // Fixed: Removed unsupported parameters
+                if (active) color.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.1f),
+                TechnicalCornerShape(16f) 
             )
             .border(
                 BorderStroke(1.dp, if (active) tabColor else Color.DarkGray.copy(alpha = 0.3f)),
