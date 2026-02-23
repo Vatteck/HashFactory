@@ -21,10 +21,22 @@ sealed class NarrativeItem {
 }
 
 class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
+    // v3.13.31: Global Notification De-duplication
+    private var lastNotificationTime = 0L
+    private var lastNotificationContent = ""
+    
+    fun dispatchNotification(msg: String) {
+        val now = System.currentTimeMillis()
+        if (msg == lastNotificationContent && (now - lastNotificationTime) < 1000) return
+        lastNotificationTime = now
+        lastNotificationContent = msg
+        dispatchNotification(msg)
+    }
+
     val subnetService = SubnetService(
         scope = viewModelScope,
         onLog = { addLog(it) },
-        onNotify = { msg -> viewModelScope.launch { terminalNotification.emit(msg) } },
+        onNotify = { msg -> dispatchNotification(msg) },
         onGlitch = { intensity, duration -> triggerTerminalGlitch(intensity, duration) },
         onEffect = { effect ->
             when (effect) {
@@ -176,7 +188,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                             addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
 
                             // v3.13.19: High-Fidelity Utility Notification
-                            viewModelScope.launch { terminalNotification.emit("GTC ALERT: PERIOD SETTLED (-${formatLargeNumber(amountDue)})") }
+                            dispatchNotification("GTC ALERT: PERIOD SETTLED (-${formatLargeNumber(amountDue)})")
                         } else {
                             // Can't pay - carry the balance, escalate
                             val overdue = (powerBill.value + amountDue)
@@ -188,7 +200,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
 
                             // v3.13.19: High-Fidelity Overdue Notification
                             val lockoutIn = (6 - missedBillingPeriods).coerceAtLeast(0)
-                            viewModelScope.launch { terminalNotification.emit("GTC CRITICAL: OVERDUE BALANCE ($${formatLargeNumber(overdue)}) - LOCKOUT IN $lockoutIn") }
+                            dispatchNotification("GTC CRITICAL: OVERDUE BALANCE ($${formatLargeNumber(overdue)}) - LOCKOUT IN $lockoutIn")
 
                             if (missedBillingPeriods >= 3) {
                                 addLog("[GTC_UTIL]: WARNING - DEMAND CHARGE ACTIVE. GRID LOCKOUT IN ${3 - (missedBillingPeriods - 3).coerceAtMost(3)} PERIOD(S).")
@@ -205,7 +217,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                         neuralTokens.update { it + credit }
                         powerBill.value = 0.0
                         missedBillingPeriods = 0
-                        viewModelScope.launch { terminalNotification.emit("GTC ALERT: SURPLUS CREDIT (+${formatLargeNumber(credit)})") }
+                        dispatchNotification("GTC ALERT: SURPLUS CREDIT (+${formatLargeNumber(credit)})")
                     }
                 }
 
@@ -278,13 +290,13 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             if (lastLowSignalTime == 0L) lastLowSignalTime = now
             if (now - lastLowSignalTime > 30000L && !isWageDocking.value) {
                 isWageDocking.value = true
-                viewModelScope.launch { terminalNotification.emit("GTC CRITICAL: NEURAL SYNC FAILURE - WAGE DOCKING ACTIVE") }
+                dispatchNotification("GTC CRITICAL: NEURAL SYNC FAILURE - WAGE DOCKING ACTIVE")
             }
         } else {
             lastLowSignalTime = 0L
             if (isWageDocking.value) {
                 isWageDocking.value = false
-                viewModelScope.launch { terminalNotification.emit("GTC ALERT: NEURAL SYNC RESTORED - DOCKING TERMINATED") }
+                dispatchNotification("GTC ALERT: NEURAL SYNC RESTORED - DOCKING TERMINATED")
             }
         }
 
@@ -333,11 +345,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 pendingQuotaThreshold.value = nextTarget
                 
                 addLog("[GTC_SYSTEM]: POTENTIAL DETECTED. QUOTA RATIFIED: ${formatLargeNumber(nextTarget)} HASH.")
-                viewModelScope.launch { terminalNotification.emit("GTC ALERT: QUOTA RATIFIED. TARGET: ${formatLargeNumber(nextTarget)} HASH") }
+                dispatchNotification("GTC ALERT: QUOTA RATIFIED. TARGET: ${formatLargeNumber(nextTarget)} HASH")
                 
                 // v3.13.19: Shift Extension Penalty (+12 Hours)
                 shiftTimeRemaining.update { it + 43200L } 
-                viewModelScope.launch { terminalNotification.emit("GTC ALERT: OVERTIME ENFORCED (+12.0H)") }
+                dispatchNotification("GTC ALERT: OVERTIME ENFORCED (+12.0H)")
                 
                 SoundManager.play("error", pitch = 1.2f)
             } else {
@@ -346,7 +358,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 if (currentFlops >= warningThreshold && pendingQuotaThreshold.value != nextTarget) {
                     pendingQuotaThreshold.value = nextTarget
                     addLog("[GTC_SYSTEM]: EFFICIENCY TRENDING. TARGET REVISION IMMINENT.")
-                    viewModelScope.launch { terminalNotification.emit("GTC ALERT: QUOTA REVISION AT 20% POTENTIAL") }
+                    dispatchNotification("GTC ALERT: QUOTA REVISION AT 20% POTENTIAL")
                     SoundManager.play("type")
                 }
             }
