@@ -117,8 +117,8 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
 
         Box(
             modifier = Modifier.weight(1f).fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.75f), TechnicalCornerShape(16f))
-                .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.5f)), TechnicalCornerShape(16f))
+                .background(Color.Black.copy(alpha = 0.75f), TechnicalCornerShape(bottomStart = 16f, bottomEnd = 16f))
+                .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.5f)), TechnicalCornerShape(bottomStart = 16f, bottomEnd = 16f))
         ) {
             TerminalLogs(viewModel, primaryColor, showCursor)
         }
@@ -659,11 +659,11 @@ fun TerminalTab(
         modifier = modifier
             .background(
                 if (active) color.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.1f),
-                TechnicalCornerShape(16f) 
+                TechnicalCornerShape(topStart = 16f, topEnd = 16f) 
             )
             .border(
                 BorderStroke(1.dp, if (active) tabColor else Color.DarkGray.copy(alpha = 0.3f)),
-                TechnicalCornerShape(16f)
+                TechnicalCornerShape(topStart = 16f, topEnd = 16f)
             )
             .clickable { onClick() }
             .padding(vertical = 10.dp),
