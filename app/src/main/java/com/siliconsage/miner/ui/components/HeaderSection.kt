@@ -720,8 +720,8 @@ fun HeaderSection(
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                             Text(text = statusText, color = statusColor, fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
                         }
-                    } else if (storyStage >= 1 && storyStage < 3) {
-                        // Stage 1/2: show RATE_LIMITED if over municipal cap
+                    } else if (storyStage < 3) {
+                        // Stage 0-2: show RATE_LIMITED if over municipal cap
                         val stage1Status = if (waterEfficiencyState.value < 1.0) "[RATE_LIMITED]" else "[NOMINAL]"
                         val stage1Color = if (waterEfficiencyState.value < 1.0) Color(0xFFFFCC00) else color.copy(alpha = 0.7f)
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
