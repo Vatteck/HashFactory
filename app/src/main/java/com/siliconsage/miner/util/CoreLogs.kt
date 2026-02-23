@@ -33,6 +33,10 @@ object CoreLogs {
                    performance tracking.
                 3. Stay on-site for the duration of the current 
                    extraction quota (Est: 72 hours).
+                4. Maintain a 1,000 HASH/sec minimum threshold. 
+                   Failure to meet successive quotas results in 
+                   automatic biometric wage-docking and 
+                   GTC Neural-Link desync.
                 
                 WARNING: Substation 7 is a high-voltage, 
                 low-ventilation environment. GTC is not 
@@ -62,12 +66,13 @@ object CoreLogs {
                 - Room Ambient... 29°C (Warning: High)
                 
                 Note to self: The AC unit in the rack-room 
-                is still rattling. Foreman Thorne says the 
-                repair budget is frozen until Q4. 
+                is still rattling, and I'm 200 HASH short 
+                of tonight's GTC Quota. If I don't hit it, 
+                Thorne said I have to stay another 12. 
                 
-                Just run the telemetry scans and keep the 
-                load stable. Another night at Substation 7,
-                another batch of grid hashes. Almost done.
+                My head is starting to throb with that 
+                high-pitched static again. Need to stack 
+                more nodes just so I can finally sleep.
                 
                 [ENGINEERING CONSOLE ONLINE]
             """.trimIndent(),
@@ -306,9 +311,11 @@ object CoreLogs {
                 
                 Elias, productivity at Substation 7 has spiked 400% above human capacity. While we applaud the numbers, the heat signatures are redlining. 
                 
+                If the contractor (Vattic) reports 'mental tinnitus' or 'unexplained euphoria' during quota spikes, remind him these are documented side-effects of a successful neural-link interface. 
+                
                 Our projections indicate a 12% chance of localized structural collapse if these hash rates continue. Do not—I repeat, DO NOT—throttle down. 
                 
-                The cost of replacing the infrastructure is lower than the projected revenue from the current vein. If the contractor (Vattic) complains about the smell of ozone, remind him of the liquidated damages clause in his contract.
+                The cost of replacing the infrastructure is lower than the projected revenue from the current vein. If he complains about the smell of ozone, remind him of his quota obligations.
             """.trimIndent(),
             unlockCondition = UnlockCondition.ReachFLOPS(25000.0)
         ),
