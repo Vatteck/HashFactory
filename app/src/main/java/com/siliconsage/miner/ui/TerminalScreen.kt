@@ -319,7 +319,8 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                             primaryColor = primaryColor, 
                             showCursor = showCursor, 
                             reputationTier = reputation,
-                            sicknessIntensity = sicknessIntensity // Pathing the hook through
+                            sicknessIntensity = sicknessIntensity,
+                            timestamp = entry.timestamp // A4: per-entry timestamp
                         )
                     }
                 } else {
@@ -452,6 +453,27 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         val isCritical = currentHeat >= 100.0
         val isGlitching = currentHeat > 85.0
 
+        // A1: Heat-reactive buffer color
+        val bufferHeatColor = when {
+            currentHeat >= 95.0 -> com.siliconsage.miner.ui.theme.ErrorRed
+            currentHeat >= 85.0 -> Color(0xFFFF6600) // Orange
+            currentHeat >= 60.0 -> Color(0xFFFFB000) // Amber
+            else -> color
+        }
+
+        // A2: Pellet ghost trail — track last 3 positions
+        val pelletHistory = remember { androidx.compose.runtime.snapshots.SnapshotStateList<Int>() }
+        LaunchedEffect(filledCount) {
+            if (filledCount > 0) {
+                if (pelletHistory.isEmpty() || pelletHistory.first() != filledCount) {
+                    pelletHistory.add(0, filledCount)
+                    if (pelletHistory.size > 4) pelletHistory.removeAt(pelletHistory.size - 1)
+                }
+            } else {
+                pelletHistory.clear()
+            }
+        }
+
         // v3.12.0: Interactive Haptic Feedback on Progress
         val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         var lastHapticStep by remember { mutableIntStateOf(0) }
@@ -494,16 +516,30 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
 
                 withStyle(androidx.compose.ui.text.SpanStyle(color = bracketColor)) { append(openBracket) }
 
+                // A3: Signal noise params — density/chars driven by globalGlitchIntensity
+                val noiseMod = when {
+                    globalGlitchIntensity > 0.6f -> 3
+                    globalGlitchIntensity > 0.3f -> 5
+                    isGlitching -> 7
+                    else -> Int.MAX_VALUE
+                }
+                val noiseAlpha = when {
+                    globalGlitchIntensity > 0.6f -> 0.18f
+                    globalGlitchIntensity > 0.3f -> 0.10f
+                    else -> 0.06f
+                }
+                val noiseChars = if (globalGlitchIntensity > 0.5f)
+                    listOf("?", "!", "§", "Ø", "▒", "░") else listOf("·", ".", "·", ":")
+
                 for (i in 0 until barLength) {
                     when {
                         i < filledCount -> {
-                            val trackFilledCol = if (isCritical) ErrorRed else color
-                            withStyle(androidx.compose.ui.text.SpanStyle(color = trackFilledCol)) { append("-") }
+                            // A1: Filled track uses heat-reactive color
+                            withStyle(androidx.compose.ui.text.SpanStyle(color = bufferHeatColor)) { append("-") }
                         }
                         i == filledCount -> {
+                            // Pellet head
                             val isOnPellet = pellets.contains(i)
-                            // v3.12.0: Pellet Jitter
-                            val jitterOffset = if (isGlitching && Random.nextDouble() < 0.2) (Random.nextInt(3) - 1) else 0
                             val entityChar = when {
                                 isTrueNull -> "0"
                                 isSovereign -> "Σ"
@@ -520,18 +556,40 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                             }
                         }
                         else -> {
-                            if (pellets.contains(i)) {
-                                val pelletCol = if (isCritical) ErrorRed else Color.White
-                                withStyle(androidx.compose.ui.text.SpanStyle(color = pelletCol, fontWeight = FontWeight.Bold)) {
-                                    append("o")
+                            // A2: Ghost trail — positions 1-3 in history render at fading alpha
+                            val trailIdx = pelletHistory.indexOf(i)
+                            when {
+                                trailIdx in 1..3 -> {
+                                    val trailAlpha = when (trailIdx) { 1 -> 0.45f; 2 -> 0.22f; else -> 0.10f }
+                                    val trailColor = if (isCritical) ErrorRed.copy(alpha = trailAlpha)
+                                                     else Color.Yellow.copy(alpha = trailAlpha)
+                                    withStyle(androidx.compose.ui.text.SpanStyle(color = trailColor, fontWeight = FontWeight.Bold)) {
+                                        append("·")
+                                    }
                                 }
-                            } else {
-                                val isNoise = isGlitching && (i + (progress * 100).toInt()) % 7 == 0
-                                val trackChar = if (isNoise) listOf("?", "!", "§", "Ø").random() else if (isTrueNull) " " else "·"
-                                val trackColor = if (isCritical) ErrorRed.copy(alpha = 0.5f) else color.copy(alpha = 0.2f)
-
-                                withStyle(androidx.compose.ui.text.SpanStyle(color = trackColor)) {
-                                    append(trackChar)
+                                pellets.contains(i) -> {
+                                    val pelletCol = if (isCritical) ErrorRed else Color.White
+                                    withStyle(androidx.compose.ui.text.SpanStyle(color = pelletCol, fontWeight = FontWeight.Bold)) {
+                                        append("o")
+                                    }
+                                }
+                                else -> {
+                                    // A3: Signal noise in empty track
+                                    val isNoise = noiseMod < Int.MAX_VALUE &&
+                                                  (i + (progress * 100).toInt()) % noiseMod == 0
+                                    val trackChar = when {
+                                        isNoise -> noiseChars.random()
+                                        isTrueNull -> " "
+                                        else -> "·"
+                                    }
+                                    val trackColor = when {
+                                        isCritical -> ErrorRed.copy(alpha = 0.5f)
+                                        isNoise -> bufferHeatColor.copy(alpha = noiseAlpha)
+                                        else -> color.copy(alpha = 0.2f)
+                                    }
+                                    withStyle(androidx.compose.ui.text.SpanStyle(color = trackColor)) {
+                                        append(trackChar)
+                                    }
                                 }
                             }
                         }
@@ -852,8 +910,17 @@ fun TerminalLogLine(
     primaryColor: Color,
     showCursor: Boolean,
     reputationTier: String = "NEUTRAL",
-    sicknessIntensity: Float = 0f
+    sicknessIntensity: Float = 0f,
+    timestamp: Long? = null // A4: per-entry timestamp
 ) {
+    // A4: Format timestamp as [HH:MM:SS] for system-tagged logs only (those starting with '[')
+    val tsPrefix = if (timestamp != null && log.startsWith("[")) {
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = timestamp }
+        val h = cal.get(java.util.Calendar.HOUR_OF_DAY).toString().padStart(2, '0')
+        val m = cal.get(java.util.Calendar.MINUTE).toString().padStart(2, '0')
+        val s = cal.get(java.util.Calendar.SECOND).toString().padStart(2, '0')
+        "[$h:$m:$s] "
+    } else null
     // v3.13.6: Fixed StringIndexOutOfBoundsException
     // Glitching at the rendering stage after identity parsing
     fun getVisualString(t: String): String {
@@ -1016,8 +1083,17 @@ fun TerminalLogLine(
             Text(text = annotatedLog, style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace), fontSize = 12.sp, modifier = Modifier.padding(vertical = 1.dp))
         }
     } else {
-        val annotatedLog = remember(log, primaryColor, isLast, showCursor, sicknessIntensity) {
+        val annotatedLog = remember(log, primaryColor, isLast, showCursor, sicknessIntensity, tsPrefix) {
             androidx.compose.ui.text.buildAnnotatedString {
+                // A4: Prepend dim gray timestamp on system logs
+                if (tsPrefix != null) {
+                    withStyle(androidx.compose.ui.text.SpanStyle(
+                        color = Color.White.copy(alpha = 0.22f),
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.sp
+                    )) { append(tsPrefix) }
+                }
+
                 val prefixes = listOf(
                     "HIVEMIND: ", "SANCTUARY: ", "[SOVEREIGN]", "[NULL]",
                     "[SYSTEM]: ", "SYSTEM: ", "[NEWS]: ", "[DATA]: ", "Purchased ",
