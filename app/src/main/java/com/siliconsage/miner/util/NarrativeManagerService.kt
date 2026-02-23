@@ -105,6 +105,22 @@ object NarrativeManagerService {
             return
         }
 
+        // v3.13.34: Bureaucratic Panic (The Employee Reality)
+        if (flops >= 450000.0 && currentStage == 2 && !vm.hasSeenEvent("mercer_panic")) {
+            vm.viewModelScope.launch {
+                vm.seenEvents.update { it + "mercer_panic" }
+                vm.addLog("[GTC_OVERSIGHT]: ALERT - UNAUTHORIZED GRID REROUTE DETECTED.")
+                vm.dispatchNotification("GTC CRITICAL: HR INTERVENTION PENDING")
+                vm.rivalMessages.update { it + com.siliconsage.miner.data.RivalMessage(
+                    id = "MERCER_PANIC",
+                    source = com.siliconsage.miner.data.RivalSource.GTC,
+                    message = "Vattic? This is Alex Mercer. I'm looking at a draw signature that shouldn't be possible for a human contractor. I'm sending a tech team to Sub-07. Lock your terminal now.",
+                    timestamp = System.currentTimeMillis()
+                ) }
+                com.siliconsage.miner.util.SoundManager.play("error", pitch = 0.5f)
+            }
+        }
+
         if (currentStage == 2 && flops >= 500000.0 && !vm.hasSeenEvent("kessler_handshake")) {
             vm.viewModelScope.launch {
                 vm.seenEvents.update { it + "kessler_handshake" }
