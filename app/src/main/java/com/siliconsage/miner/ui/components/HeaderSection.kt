@@ -328,27 +328,33 @@ fun HeaderSection(
                     )
                 }
 
-                // v3.13.7: Signal Intensity Indicator (Relocated to Top Right)
+                // v3.13.20: Signal Intensity Indicator (Relocated to dedicated top-right box)
                 val signalStability by viewModel.signalStability.collectAsState()
                 val isQuotaActive by viewModel.isQuotaActive.collectAsState()
                 
                 if (isQuotaActive) {
                     val signalColor = when {
-                        signalStability >= 1.0 -> color.copy(alpha = 0.7f)
-                        signalStability >= 0.5 -> Color(0xFFFFCC00)
+                        signalStability >= 1.0 -> color // Solid Green
+                        signalStability >= 0.5 -> Color(0xFFFFCC00) // Warning Yellow
                         else -> ErrorRed
                     }
-                    val signalLabel = if (storyStage >= 2) "SYNC: " else "SIG: "
+                    val signalLabel = if (storyStage >= 2) "SYNC" else "SIG"
                     
-                    Text(
-                        text = "$signalLabel${(signalStability * 100).toInt()}%",
-                        color = signalColor,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.Monospace,
-                        textAlign = TextAlign.End,
+                    Surface(
+                        color = signalColor.copy(alpha = 0.1f),
+                        border = BorderStroke(1.dp, signalColor.copy(alpha = 0.4f)),
+                        shape = TechnicalCornerShape(4f),
                         modifier = Modifier.padding(start = 8.dp)
-                    )
+                    ) {
+                        Text(
+                            text = "$signalLabel: ${(signalStability * 100).toInt()}%",
+                            color = signalColor,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontFamily = FontFamily.Monospace,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
                 }
             }
 
