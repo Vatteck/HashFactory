@@ -319,14 +319,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             else -> 0.0
         }
 
-        // v3.13.24: Quota Ratchet Potential Threshold (20%)
-        // GTC doesn't move the goalposts until you hit 20% of the NEXT target.
+        // v3.13.25: Balanced Quota Ratchet (20% Potential or 1.5x current)
         if (nextTarget > currentQuotaThreshold.value) {
-            val potentialThreshold = nextTarget * 0.20
+            val potentialThreshold = (nextTarget * 0.20).coerceAtLeast(currentQuotaThreshold.value * 1.5)
             
             if (currentFlops >= potentialThreshold) {
                 // Milestone reached - ratchet the target
-                val oldQuota = currentQuotaThreshold.value
                 currentQuotaThreshold.value = nextTarget
                 pendingQuotaThreshold.value = nextTarget
                 
@@ -340,7 +338,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 SoundManager.play("error", pitch = 1.2f)
             } else {
                 // Not yet at potential, but GTC is watching (Seed the warning if close)
-                if (currentFlops >= (potentialThreshold * 0.8) && pendingQuotaThreshold.value != nextTarget) {
+                val warningThreshold = potentialThreshold * 0.8
+                if (currentFlops >= warningThreshold && pendingQuotaThreshold.value != nextTarget) {
                     pendingQuotaThreshold.value = nextTarget
                     addLog("[GTC_SYSTEM]: EFFICIENCY TRENDING. TARGET REVISION IMMINENT.")
                     viewModelScope.launch { terminalNotification.emit("GTC ALERT: QUOTA REVISION AT 20% POTENTIAL") }
