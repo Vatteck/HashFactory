@@ -314,6 +314,19 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
     }
 
+    fun triggerSnapEffect() {
+        isSnapEffectActive.value = true
+        SoundManager.play("buy", pitch = 0.5f)
+        viewModelScope.launch {
+            delay(150)
+            SoundManager.play("glitch", pitch = 1.5f)
+        }
+    }
+
+    fun onSnapComplete() {
+        isSnapEffectActive.value = false
+    }
+
     fun addLog(msg: String) {
         if (showOfflineEarnings.value && !msg.startsWith("[SYSTEM]") && !msg.contains("BREACH")) return
         logCounter++
@@ -560,7 +573,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun deleteHumanMemories() { viewModelScope.launch { addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'..."); delay(1000); humanityScore.value = 0; addLog("[NULL]: MEMORY_PURGE COMPLETE."); SoundManager.play("error") } }
     fun resolveRaidSuccess(id: String) { nodesUnderSiege.update { it - id }; raidsSurvived++; lastRaidTime = System.currentTimeMillis(); addLog("[SYSTEM]: DEFENSE SUCCESSFUL."); SoundManager.play("success"); refreshProductionRates() }
     fun resolveRaidFailure(id: String) { nodesUnderSiege.update { it - id }; lastRaidTime = System.currentTimeMillis(); SectorManager.resolveRaidFailure(id, this) {}; refreshProductionRates() }
-    fun advanceStage() { storyStage.update { it + 1 }; lastStageChangeTime = System.currentTimeMillis(); lastNewsTickTime = 0L }
+    fun advanceStage() { 
+        storyStage.update { it + 1 }
+        lastStageChangeTime = System.currentTimeMillis()
+        lastNewsTickTime = 0L 
+        triggerSnapEffect()
+    }
     fun advanceToFactionChoice() { faction.value = "CHOSEN_NONE" }
     fun triggerChainEvent(id: String, d: Long = 0L) { viewModelScope.launch { if (d > 0) delay(d); NarrativeManager.getEventById(id)?.let { NarrativeService.queueNarrativeItem(this@GameViewModel, NarrativeItem.EventItem(it)) } } }
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
@@ -723,6 +741,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun confirmFaction(f: String) {
         faction.value = f
         addLog("[$f]: SUBSTRATE MIGRATION LOCK ENGAGED.")
+        triggerSnapEffect()
     }
 
     fun cancelFactionSelection() {

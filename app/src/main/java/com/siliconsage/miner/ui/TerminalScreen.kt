@@ -245,6 +245,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     
     val glitchOffset by viewModel.terminalGlitchOffset.collectAsState()
     val glitchAlpha by viewModel.terminalGlitchAlpha.collectAsState()
+    val sicknessIntensity by viewModel.substrateStaticIntensity.collectAsState()
 
     val corruption by viewModel.identityCorruption.collectAsState()
     val flopsRate by viewModel.flopsProductionRate.collectAsState()
@@ -332,9 +333,24 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
             ) {
                 if (mode == "IO") {
                     itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
-                        val displayMessage = if (isRaid && Random.nextFloat() > 0.7f) {
+                        // v3.13.4: Substrate Sickness Glitch (Static)
+                        val sicknessIntensity = sicknessIntensity
+                        var displayMessage = if (isRaid && Random.nextFloat() > 0.7f) {
                             "0x" + Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
                         } else entry.message
+
+                        if (sicknessIntensity > 0.05f) {
+                            val chars = displayMessage.toCharArray()
+                            val glitchChars = "$#&%@!01"
+                            val factor = if (displayMessage.startsWith("[SYSTEM]") || displayMessage.startsWith("[VATTIC]")) 0.3f else 1.0f
+                            for (i in chars.indices) {
+                                if (Random.nextFloat() < (sicknessIntensity * 0.12f * factor)) {
+                                    chars[i] = glitchChars[Random.nextInt(glitchChars.length)]
+                                }
+                            }
+                            displayMessage = String(chars)
+                        }
+
                         val reputation = viewModel.reputationTier.collectAsState().value
                         TerminalLogLine(log = displayMessage, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor, reputationTier = reputation)
                     }

@@ -65,6 +65,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val isSettingsPaused = MutableStateFlow(false)
     val isNarrativeSyncing = MutableStateFlow(false)
     val isUpdateDownloading = MutableStateFlow(false)
+    val isSnapEffectActive = MutableStateFlow(false)
 
     val activeTerminalMode = MutableStateFlow("IO") 
     val hasNewSubnetMessage = MutableStateFlow(false)
@@ -164,6 +165,15 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val migrationCount = MutableStateFlow(0)
     val reputationScore = MutableStateFlow(50.0)
     val reputationTier = MutableStateFlow("NEUTRAL")
+
+    // Substrate Sickness & Compute Fever (Phase 1)
+    val computeHeadroomBonus = MutableStateFlow(1.0)
+    val isSignalClear = MutableStateFlow(true)
+    val isQuotaActive = MutableStateFlow(false)
+    val signalStability = MutableStateFlow(1.0)
+    val substrateStaticIntensity = MutableStateFlow(0f)
+    val currentQuotaThreshold = MutableStateFlow(1000.0) // Stage 0 HASH quota
+
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
     val customUiScaleFactor = MutableStateFlow(1.0f)
     val lastSelectedUpgradeTab = MutableStateFlow(0)

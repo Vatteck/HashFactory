@@ -37,7 +37,7 @@ object ResourceEngine {
     )
 
     /**
-     * v3.0.14: Calculate current manual click power based on hardware
+     * v3.13.4: Calculate current manual click power based on hardware
      */
     fun calculateClickPower(
         upgrades: Map<UpgradeType, Int>,
@@ -45,7 +45,8 @@ object ResourceEngine {
         singularityChoice: String,
         prestigeMultiplier: Double,
         isOverclocked: Boolean,
-        newsProductionMultiplier: Double
+        newsProductionMultiplier: Double,
+        computeHeadroomBonus: Double = 1.0 // Sickness Bonus hook
     ): Double {
         val totalLevels = upgrades.values.sum()
         
@@ -59,7 +60,7 @@ object ResourceEngine {
         hardwareMult += (upgrades[UpgradeType.DYSON_NANO_SWARM] ?: 0) * 0.50
         
         // 3. Prestige and Overclock
-        var multiplier = prestigeMultiplier * newsProductionMultiplier
+        var multiplier = prestigeMultiplier * newsProductionMultiplier * computeHeadroomBonus
         if (isOverclocked) {
             // v3.0.19: Path-specific overclock scaling
             multiplier *= if (singularityChoice == "NULL_OVERWRITE") 2.5 else 1.5

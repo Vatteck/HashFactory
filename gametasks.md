@@ -5,10 +5,11 @@
 
 ## 🟡 High (next session)
 - [ ] **Progressive Reservoir HUD** — Dynamic label: Stage 0=TAP, 1=MUNICIPAL, 2=REGIONAL, 3=GLOBAL, 4+=RECYCLE. Headlines scale from local taps to oceanic death.
-- [ ] **Substrate Sickness System** — Implement "Signal Quality" (+10% CRED bonus for 2x compute headroom). Add terminal text scrambling/glitching when compute is redlining (<10% headroom).
-- [ ] **Data Log & Chatter Overhaul** — Rewrite early logs to reflect "The Density Debt." Sync Subnet chatter with global compute obsession.
-- [ ] **Headline Pass** — Update HeadlineManager.kt with global consequences (reservoir diversion, coastal collapse, hydrosphere terminal).
-- [ ] **The "Snap" Effect** — Implement UI resolution/font-weight "reboot" when crossing Major Stage boundaries or installing Server Racks.
+- [ ] **Compute Fever Quota System** — Stage 0: HASH quota for CRED survival. Personal → Global reveal via logs/chatter. Static for low headroom, +10% CRED "Signal Quality" bonus for quota beat.
+- [ ] **Data Log & Chatter Overhaul** — Rewrite for Compute Fever (Thorne flexes, Barnaby audits, subnet rack mania). Gate by stage.
+- [ ] **Headline Pass** — Update HeadlineManager.kt with quota crises (rising quotas, grid buckling, offline humans).
+- [ ] **Substrate Sickness System** — Terminal glitching ("Cascade Desync") when under quota. Clears on rack high/quota beat.
+- [ ] **The "Snap" Effect** — UI reboot on stage cross/rack milestones.
 - [ ] **Hugging Face Papers RSS** — Fix 401 Auth error.
 
 ## 🟢 Medium

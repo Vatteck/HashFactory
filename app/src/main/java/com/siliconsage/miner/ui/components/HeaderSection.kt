@@ -687,7 +687,14 @@ fun HeaderSection(
             if ((waterUsageState.value > 0.0 || storyStage >= 1) && currentLocation != "ORBITAL_SATELLITE" && currentLocation != "VOID_INTERFACE") {
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     val flowText = buildAnnotatedString {
-                        withStyle(SpanStyle(color = ElectricBlue.copy(alpha = 0.7f))) { append("H2O: ") }
+                        val reservoirLabel = when {
+                            storyStage == 0 -> "TAP: "
+                            storyStage == 1 -> "MUNICIPAL: "
+                            storyStage == 2 -> "REGIONAL: "
+                            storyStage == 3 -> "GLOBAL: "
+                            else -> "RECYCLE: "
+                        }
+                        withStyle(SpanStyle(color = ElectricBlue.copy(alpha = 0.7f))) { append(reservoirLabel) }
                         withStyle(SpanStyle(color = Color.White)) { 
                            val usage = waterUsageState.value
                            val formatted = when {
@@ -700,6 +707,27 @@ fun HeaderSection(
                     }
                     Box(modifier = Modifier.weight(1f)) {
                         Text(text = flowText, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
+                    }
+
+                    // v3.13.4: Signal Intensity Indicator
+                    val signalStability by viewModel.signalStability.collectAsState()
+                    val isQuotaActive by viewModel.isQuotaActive.collectAsState()
+                    
+                    if (isQuotaActive) {
+                        val signalColor = when {
+                            signalStability >= 1.0 -> color.copy(alpha = 0.7f)
+                            signalStability >= 0.5 -> Color(0xFFFFCC00)
+                            else -> ErrorRed
+                        }
+                        val signalLabel = if (storyStage >= 2) "SYNC: " else "SIG: "
+                        
+                        Text(
+                            text = "$signalLabel${(signalStability * 100).toInt()}%",
+                            color = signalColor,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
                     }
                     
                     val aquifer = aquiferLevelState.value

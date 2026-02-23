@@ -345,6 +345,12 @@ fun MainScreen(viewModel: GameViewModel) {
                             Screen.NETWORK -> NetworkScreen(viewModel)
                             Screen.SETTINGS -> SettingsScreen(viewModel) { currentScreen = it }
                         }
+                        
+                        val isSnapActive by viewModel.isSnapEffectActive.collectAsState()
+                        com.siliconsage.miner.ui.components.SnapOverlay(
+                            isActive = isSnapActive,
+                            onComplete = { viewModel.onSnapComplete() }
+                        )
                     }
                 }
                 if ((isBreakerTripped || isGridOverloaded) && currentScreen != Screen.SETTINGS) {
