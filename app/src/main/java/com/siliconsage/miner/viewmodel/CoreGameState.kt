@@ -64,6 +64,9 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val failsafeTargets = MutableStateFlow<List<Int>>(emptyList()) // grid of targets to tap
     val failsafeAbortCountdown = MutableStateFlow(0L) // countdown for successful abort
 
+    // B4: Black Market — cooldown tracking
+    val lastBlackMarketTime = MutableStateFlow(0L) // timestamp of last appearance
+
     val isKernelInitializing = MutableStateFlow(true)
     val isSettingsPaused = MutableStateFlow(false)
     val isNarrativeSyncing = MutableStateFlow(false)

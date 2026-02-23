@@ -414,6 +414,39 @@ class SubnetService(
         reputationTier: String = ReputationManager.TIER_NEUTRAL,
         isSilent: Boolean = false
     ) {
+        // B3: Kessler's Last Bargain — handle ACCEPT
+        if (message.id == "KESSLER_BARGAIN" && responseText == "ACCEPT") {
+            // Apply permanent ×2.5 production multiplier
+            onEffect(SubnetEffect.ProductionMultiplier(2.5))
+            // Reset reputation to 0
+            onEffect(SubnetEffect.ReputationChange(-1000.0)) // Reset to 0
+            // Notify via log
+            onLog("[KESSLER]: Deal accepted. Reputation purged. Production multiplier applied: ×2.5")
+            messages.value.find { it.id == message.id }?.let {
+                messages.update { list -> list.filter { it.id != message.id } }
+            }
+            isPaused.value = false
+            hasNewDecision.value = false
+            return
+        }
+
+        // B4: Black Market — handle SHOW ME (give random stolen upgrade)
+        if (message.id == "BLACK_MARKET" && responseText == "SHOW ME") {
+            // B4: Increase detection risk by 5 (dirty goods)
+            onEffect(SubnetEffect.RiskChange(5.0))
+            // TODO: Give actual stolen upgrade - for now just notify
+            onLog("[null_vendor]: ≪ TRANSMITTING STOLEN TECH... ≫")
+            onLog("[SYSTEM]: DETECTION RISK INCREASED +5% (BLACK MARKET)")
+            // Close the vendor message
+            messages.value.find { it.id == message.id }?.let {
+                messages.update { list -> list.filter { it.id != message.id } }
+            }
+            isPaused.value = false
+            hasNewDecision.value = false
+            // Mark this appearance as done so player must wait for next BURNED + 10min
+            return
+        }
+
         // 1. Cost Handling (Delegated back via effect if needed, but we check here)
         val baseCost = responseData?.cost ?: 0.0
         // Cost scaling logic... should probably be an effect or passed in

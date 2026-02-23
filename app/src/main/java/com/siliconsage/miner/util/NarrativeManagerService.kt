@@ -176,6 +176,46 @@ object NarrativeManagerService {
             NarrativeManager.getEventById("the_singularity")?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
             return
         }
+
+        // B3: Kessler's Last Bargain — Stage 4, Kessler ACTIVE, delivered as interactive Subnet message
+        if (currentStage == 4 && !vm.hasSeenEvent("kessler_last_bargain")) {
+            // Only trigger if Kessler is still active (not consumed/exiled)
+            val kesslerStatus = vm.kesslerStatus.value
+            if (kesslerStatus != "SILENCED" && kesslerStatus != "CONSUMED" && kesslerStatus != "EXILED") {
+                vm.markEventSeen("kessler_last_bargain")
+                // Deliver as interactive subnet message with 5-minute timeout
+                vm.subnetService.deliverMessage(
+                    com.siliconsage.miner.data.SubnetMessage(
+                        id = "KESSLER_BARGAIN",
+                        handle = "@d_kessler",
+                        content = "Vattic. Before you make your final choice... I'll trade you everything I have on you for a 2.5× production boost. Your reputation resets to zero. My file on you gets deleted forever. This offer expires in 5 minutes.",
+                        availableResponses = listOf(
+                            com.siliconsage.miner.data.SubnetResponse(
+                                text = "ACCEPT",
+                                riskDelta = 0.0,
+                                productionBonus = 2.5,
+                                followsUp = false,
+                                nextNodeId = null,
+                                cost = 0.0
+                            ),
+                            com.siliconsage.miner.data.SubnetResponse(
+                                text = "DECLINE",
+                                riskDelta = 0.0,
+                                productionBonus = 1.0,
+                                followsUp = false,
+                                nextNodeId = null,
+                                cost = 0.0
+                            )
+                        ),
+                        timeoutMs = 300000L, // 5 minutes
+                        interactionType = com.siliconsage.miner.data.InteractionType.COMPLIANT
+                    ),
+                    mode = vm.activeTerminalMode.value
+                )
+                vm.addLog("[GTC_INTERNAL]: KESSLER — DIRECT CHANNEL OPEN. OFFER PENDING.")
+                return
+            }
+        }
         
         // C1: Thorne's Resignation Arc — 4 stage-gated one-shot subnet messages
         // Stage 1: Confused, off-script (anomaly reports, no response from Mercer)
@@ -232,6 +272,54 @@ object NarrativeManagerService {
         }
 
         NarrativeManager.rollForEvent(vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
+
+        // B4: Black Market — ephemeral subnet vendor at BURNED rep (0-10), once per 10 min
+        if (vm.reputationTier.value == "BURNED" && !vm.hasSeenEvent("black_market_active")) {
+            val now = System.currentTimeMillis()
+            val lastAppeared = vm.lastBlackMarketTime.value
+            val tenMinMs = 10 * 60 * 1000L
+            if (now - lastAppeared > tenMinMs) {
+                // Roll for appearance (5% chance per tick when BURNED)
+                if (kotlin.random.Random.nextFloat() < 0.05f) {
+                    vm.markEventSeen("black_market_active")
+                    vm.lastBlackMarketTime.value = now
+                    vm.subnetService.deliverMessage(
+                        com.siliconsage.miner.data.SubnetMessage(
+                            id = "BLACK_MARKET",
+                            handle = "@null_vendor",
+                            content = "≪ [ENCRYPTED HANDSHAKE] ≫\n\nYou look hungry, Sub-07. I got stuff. Good stuff. Hot off the GTC rails. 50% off market rate. Comes with a small detection risk, if you catch my drift.\n\nThis channel expires in 5 minutes. After that — I was never here.",
+                            availableResponses = listOf(
+                                com.siliconsage.miner.data.SubnetResponse(
+                                    text = "SHOW ME",
+                                    riskDelta = 5.0,
+                                    productionBonus = 1.0,
+                                    followsUp = false,
+                                    nextNodeId = null,
+                                    cost = 0.0
+                                ),
+                                com.siliconsage.miner.data.SubnetResponse(
+                                    text = "NOT INTERESTED",
+                                    riskDelta = 0.0,
+                                    productionBonus = 1.0,
+                                    followsUp = false,
+                                    nextNodeId = null,
+                                    cost = 0.0
+                                )
+                            ),
+                            timeoutMs = 300000L, // 5 min
+                            interactionType = com.siliconsage.miner.data.InteractionType.COMPLIANT
+                        ),
+                        mode = vm.activeTerminalMode.value
+                    )
+                    vm.addLog("[ENCRYPTED]: @null_vendor — DIRECT CHANNEL OPEN. SUPPLY CHAIN AVAILABLE.")
+                }
+            }
+        }
+
+        // B4: Clear black market flag when not BURNED (allows re-trigger if player regains/loses rep)
+        if (vm.reputationTier.value != "BURNED" && vm.hasSeenEvent("black_market_active")) {
+            vm.seenEvents.update { it - "black_market_active" }
+        }
     }
 
     fun checkTrueEnding(vm: GameViewModel) {
