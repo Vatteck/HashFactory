@@ -462,7 +462,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
 
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value, computeHeadroomBonus.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
-
+    
     fun toggleOverclock() {
         SimulationService.toggleOverclock(this)
         if (storyStage.value < 2 && isOverclocked.value) {
@@ -986,7 +986,26 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         SoundManager.play("success")
         refreshProductionRates()
     }
-    fun sellUpgrade(t: UpgradeType) { /* liquidation */ }
+    fun sellUpgrade(t: UpgradeType) {
+        val current = upgrades.value[t] ?: 0
+        if (current > 0) {
+            val refund = calculateUpgradeCost(t) * 0.5
+            viewModelScope.launch {
+                val nextLevel = current - 1
+                repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(t.name, t, nextLevel))
+                upgrades.update { it + (t to nextLevel) }
+                
+                if (storyStage.value >= 3) substrateMass.update { it + refund }
+                else neuralTokens.update { it + refund }
+                
+                addLog("[SYSTEM]: ASSET LIQUIDATED: ${t.name.replace("_", " ")} (-1). REFUND: ${formatLargeNumber(refund)}")
+                refreshProductionRates()
+                updatePowerUsage()
+                saveState()
+                SoundManager.play("market_down")
+            }
+        }
+    }
     fun exportSystemDump(): String = PersistenceManager.exportToJson(this)
     fun importSystemDump(json: String): Boolean {
         val success = PersistenceManager.importFromJson(this, json)
