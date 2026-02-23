@@ -21,7 +21,11 @@ sealed class NarrativeItem {
 }
 
 class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
-    // v3.13.31: Global Notification De-duplication
+    // v3.13.32: Signal Momentum & Adaptive Decay
+    private var signalDecayStartTime = 0L
+    private var lastStabilityBase = 1.0
+    
+    private val signalDecayDurationMs = 300000L // 5 Minute Window
     private var lastNotificationTime = 0L
     private var lastNotificationContent = ""
     
@@ -267,8 +271,32 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             return
         }
 
-        // Signal Stability (0.0 to 1.0)
-        val stability = (currentFlops / quota).coerceIn(0.0, 1.0)
+        // v3.13.32: Signal Stability with 5-Minute Adaptive Decay
+        val rawStability = (currentFlops / quota).coerceIn(0.0, 1.0)
+        
+        if (rawStability < lastStabilityBase && signalDecayStartTime == 0L) {
+            // Potential drop detected (likely quota jump) - Start the 5-minute bleed
+            signalDecayStartTime = now
+        } else if (rawStability >= lastStabilityBase) {
+            // Recovery or stable - reset the decay window
+            signalDecayStartTime = 0L
+        }
+
+        val stability = if (signalDecayStartTime > 0L) {
+            val elapsed = now - signalDecayStartTime
+            val progress = (elapsed.toDouble() / signalDecayDurationMs).coerceIn(0.0, 1.0)
+            
+            // For the first 60 seconds, hold a 70% floor if raw is lower
+            val floor = if (elapsed < 60000L) 0.7 else 0.0
+            
+            // Lerp from last stability toward raw reality
+            val lerped = lastStabilityBase + (rawStability - lastStabilityBase) * progress
+            lerped.coerceAtLeast(floor).coerceIn(0.0, 1.0)
+        } else {
+            rawStability
+        }
+
+        lastStabilityBase = stability
         signalStability.value = stability
 
         // v3.13.4: Signal Quality Bonus (Clear Signal = 2x Quota)
