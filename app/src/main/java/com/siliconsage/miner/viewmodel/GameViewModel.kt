@@ -186,7 +186,6 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                             addLog("[GTC_UTIL]: ── PERIOD STATEMENT ──────────────")
                             addLog("[GTC_UTIL]: DRAW  ${formatPower(grossKwh)}  GEN  ${formatPower(genKwh)}")
                             addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
-                            addLog("[GTC_UTIL]: OVERDUE  +${formatLargeNumber(amountDue)} ${getCurrencyName()}  [BALANCE: ${formatLargeNumber(powerBill.value)}]")
 
                             // v3.13.19: High-Fidelity Overdue Notification
                             val lockoutIn = (6 - missedBillingPeriods).coerceAtLeast(0)
