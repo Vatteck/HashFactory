@@ -4,7 +4,10 @@
 - [x] **Pixel Fold ADB** — Reconnected at `192.168.50.116:34663`. Fixed.
 
 ## 🟡 High (next session)
-- [x] **Phase 23 Water System Fixes** — Fixed `isWaterCooling` logic (removed cryogenic/nitrogen, added chiller), added faction renames for large coolers, fixed `[RATE_LIMITED]` header status.
+- [ ] **Substrate Sickness System** — Implement "Signal Quality" (+10% CRED bonus for 2x compute headroom). Add terminal text scrambling/glitching when compute is redlining (<10% headroom).
+- [ ] **Data Log & Chatter Overhaul** — Rewrite early logs to reflect "The Density Debt." Sync Subnet chatter with global compute obsession.
+- [ ] **Headline Pass** — Update HeadlineManager.kt with global consequences (aquifer riots, rolling blackouts, corporate sanitization audits).
+- [ ] **The "Snap" Effect** — Implement UI resolution/font-weight "reboot" when crossing Major Stage boundaries or installing Server Racks.
 - [ ] **Hugging Face Papers RSS** — Fix 401 Auth error.
 
 ## 🟢 Medium
