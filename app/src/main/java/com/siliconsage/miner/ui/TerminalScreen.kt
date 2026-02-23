@@ -746,6 +746,26 @@ fun TerminalLogLine(
         else -> ""
     }
 
+    // v3.13.37: Deep Syntax Colorizer (Tokenize numbers, units, and entities)
+    fun androidx.compose.ui.text.AnnotatedString.Builder.colorizeContent(text: String, defaultColor: Color) {
+        val tokens = text.split(" ")
+        for ((i, token) in tokens.withIndex()) {
+            val visualToken = getVisualString(token)
+            val color = when {
+                token.any { it.isDigit() } -> com.siliconsage.miner.ui.theme.NeonGreen
+                token.contains("HASH") || token.contains("FLOPS") || token.contains("NEUR") || token.contains("CRED") -> com.siliconsage.miner.ui.theme.ElectricBlue
+                token.contains("Vattic") || token.contains("jvattic") || token.contains("Asset 734") || token.contains("Kessler") || token.contains("GTC") -> com.siliconsage.miner.ui.theme.ConvergenceGold
+                token.contains("SUCCESS") || token.contains("SETTLED") -> com.siliconsage.miner.ui.theme.NeonGreen
+                token.contains("FAILURE") || token.contains("ERROR") || token.contains("CRITICAL") -> com.siliconsage.miner.ui.theme.ErrorRed
+                else -> defaultColor
+            }
+            withStyle(style = androidx.compose.ui.text.SpanStyle(color = color, fontWeight = if (color != defaultColor) FontWeight.Bold else FontWeight.Normal)) {
+                append(visualToken)
+            }
+            if (i < tokens.size - 1) append(" ")
+        }
+    }
+
     if (isNullLog) {
         SystemGlitchText(
             text = getVisualString(log), // Sickness applied
@@ -895,14 +915,11 @@ fun TerminalLogLine(
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = tagColor, fontWeight = FontWeight.Bold)) {
                         append(getVisualString(foundPrefix))
                     }
-                    withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) {
-                        append(getVisualString(log.substring(foundPrefix.length)))
-                    }
+                    val remainingText = log.substring(foundPrefix.length)
+                    colorizeContent(remainingText, primaryColor)
                 } else {
                     val fullLineColor = if (log.contains("WARNING") || log.contains("FAILURE") || log.contains("DANGER")) ErrorRed else Color.White
-                    withStyle(style = androidx.compose.ui.text.SpanStyle(color = fullLineColor)) {
-                        append(getVisualString(log))
-                    }
+                    colorizeContent(log, fullLineColor)
                 }
 
                 if (isLast) {
