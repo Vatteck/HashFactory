@@ -525,7 +525,8 @@ fun HeaderSection(
                     storyStage < 2 -> "HASH"
                     else -> "FLOPS"
                 }
-                val marketMult by viewModel.marketMultiplier.collectAsState()
+                // v3.13.16: Accurate Production Modifier Readout (News Multiplier)
+                val prodMult by viewModel.newsProductionMultiplier.collectAsState()
                 
                 ResourceDisplay(
                     labelFlow = viewModel.flops, 
@@ -537,8 +538,8 @@ fun HeaderSection(
                     isGlitchy = currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE", 
                     glitchIntensity = if (currentHeatState.value > 98) 0.4 else 0.08, 
                     isRightAligned = false, 
-                    width = 115.dp, // v3.13.14: Widened to accommodate EFF tag
-                    efficiencyMult = marketMult,
+                    width = 135.dp, // Widened to prevent clipping of EFF tag
+                    efficiencyMult = prodMult,
                     formatFn = { viewModel.formatLargeNumber(it) }
                 )
 
