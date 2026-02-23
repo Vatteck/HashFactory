@@ -549,7 +549,8 @@ fun ResourceDisplay(
     val rateStr = remember(rate, efficiencyMult) { 
         if (rate > 0) {
             val base = formatFn(rate)
-            "$base/s"
+            if (efficiencyMult != 1.0) "$base/s [${String.format("%.2f", efficiencyMult)}x]"
+            else "$base/s"
         } else ""
     }
     val fontSizeByLength = if (valueStr.length > 8) 18.sp else 22.sp
@@ -558,11 +559,9 @@ fun ResourceDisplay(
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (!isRightAligned) Icon(icon, null, tint = Color.White.copy(alpha = droopAlpha), modifier = Modifier.size(11.dp).padding(end = 2.dp))
             
-            // v3.13.20: EFF Multiplier moved to Label row for better visibility
-            val effText = if (efficiencyMult != 1.0) " [${String.format("%.2f", efficiencyMult)}x]" else ""
             Text(
-                text = "[$label]$effText", 
-                color = if (efficiencyMult < 1.0) Color(0xFFFFCC00).copy(alpha = 0.9f * droopAlpha) else color.copy(alpha = 0.9f * droopAlpha), 
+                text = "[$label]", 
+                color = color.copy(alpha = 0.9f * droopAlpha), 
                 fontSize = 10.sp, 
                 fontWeight = FontWeight.Black, 
                 fontFamily = FontFamily.Monospace,
@@ -579,7 +578,7 @@ fun ResourceDisplay(
                 if (rateStr.isNotEmpty()) {
                     Text(
                         text = rateStr,
-                        color = Color(0xFF7DF9FF).copy(alpha = 0.9f * droopAlpha),
+                        color = if (efficiencyMult < 1.0) Color(0xFFFFCC00).copy(alpha = 0.9f * droopAlpha) else Color(0xFF7DF9FF).copy(alpha = 0.9f * droopAlpha),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace,
