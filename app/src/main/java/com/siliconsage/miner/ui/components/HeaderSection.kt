@@ -274,7 +274,11 @@ fun HeaderSection(
         
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
             // v3.12.3: System Title (Elevated Header)
-            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 var glitchedTitle by remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
                 LaunchedEffect(corruption) {
                     if (corruption > 0.3) {
@@ -303,7 +307,7 @@ fun HeaderSection(
                     letterSpacing = 1.5.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f, fill = false) // Don't force fill, just take what's needed
                 )
 
                 // v3.13.7: Signal Intensity Indicator (Relocated to Top Right)
