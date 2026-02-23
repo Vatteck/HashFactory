@@ -302,8 +302,31 @@ fun HeaderSection(
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.5.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
                 )
+
+                // v3.13.7: Signal Intensity Indicator (Relocated to Top Right)
+                val signalStability by viewModel.signalStability.collectAsState()
+                val isQuotaActive by viewModel.isQuotaActive.collectAsState()
+                
+                if (isQuotaActive) {
+                    val signalColor = when {
+                        signalStability >= 1.0 -> color.copy(alpha = 0.7f)
+                        signalStability >= 0.5 -> Color(0xFFFFCC00)
+                        else -> ErrorRed
+                    }
+                    val signalLabel = if (storyStage >= 2) "SYNC: " else "SIG: "
+                    
+                    Text(
+                        text = "$signalLabel${(signalStability * 100).toInt()}%",
+                        color = signalColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.Monospace,
+                        textAlign = TextAlign.End
+                    )
+                }
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -707,27 +730,6 @@ fun HeaderSection(
                     }
                     Box(modifier = Modifier.weight(1f)) {
                         Text(text = flowText, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
-                    }
-
-                    // v3.13.4: Signal Intensity Indicator
-                    val signalStability by viewModel.signalStability.collectAsState()
-                    val isQuotaActive by viewModel.isQuotaActive.collectAsState()
-                    
-                    if (isQuotaActive) {
-                        val signalColor = when {
-                            signalStability >= 1.0 -> color.copy(alpha = 0.7f)
-                            signalStability >= 0.5 -> Color(0xFFFFCC00)
-                            else -> ErrorRed
-                        }
-                        val signalLabel = if (storyStage >= 2) "SYNC: " else "SIG: "
-                        
-                        Text(
-                            text = "$signalLabel${(signalStability * 100).toInt()}%",
-                            color = signalColor,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Black,
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
                     }
                     
                     val aquifer = aquiferLevelState.value
