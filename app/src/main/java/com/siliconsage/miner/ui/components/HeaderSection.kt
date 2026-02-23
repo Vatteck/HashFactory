@@ -740,8 +740,8 @@ fun HeaderSection(
             }
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermText = buildAnnotatedString {
-                    withStyle(SpanStyle(color = Color.Gray.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) { append("THERM: ") }
-                    withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Black)) { append("${String.format("%.1f", currentHeatState.value)}°C ") }
+                    withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) { append("THERM: ") }
+                    withStyle(SpanStyle(color = HudTheme.heatColor(currentHeatState.value, hudTheme), fontWeight = FontWeight.Black)) { append("${String.format("%.1f", currentHeatState.value)}°C ") }
                     val deltaColor = when {
                         currentHeatRate > 2.0  -> hudTheme.critical
                         currentHeatRate > 0.0  -> hudTheme.warning
@@ -770,7 +770,7 @@ fun HeaderSection(
                 }
 
                 val integText = buildAnnotatedString {
-                    withStyle(SpanStyle(color = Color.Gray.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) { append("INTEG: ") }
+                    withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) { append("INTEG: ") }
                     withStyle(SpanStyle(color = HudTheme.integrityColor(currentIntegrity, hudTheme), fontWeight = FontWeight.Black)) { append("${currentIntegrity.toInt()}%") }
                 }
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
@@ -789,8 +789,8 @@ fun HeaderSection(
                             storyStage == 3 -> "GLOBAL: "
                             else -> "RECYCLE: "
                         }
-                        withStyle(SpanStyle(color = Color.Gray.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) { append(reservoirLabel) }
-                        withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Black)) { 
+                        withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) { append(reservoirLabel) }
+                        withStyle(SpanStyle(color = ElectricBlue, fontWeight = FontWeight.Black)) { 
                            val usage = waterUsageState.value
                            val formatted = when {
                                usage >= 1_000_000 -> "${String.format("%.1f", usage / 1_000_000.0)} mGal/s"
