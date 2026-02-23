@@ -304,7 +304,7 @@ fun HeaderSection(
                 // Left: System Title
                 Text(
                     text = glitchedState.value.uppercase(),
-                    color = color.copy(alpha = 1.0f * droopAlpha),
+                    color = (if (isBreachActive) ErrorRed else color).copy(alpha = 1.0f * droopAlpha),
                     fontSize = 14.sp,
                     style = glowStyle,
                     fontWeight = FontWeight.Black,
@@ -316,15 +316,17 @@ fun HeaderSection(
                 
                 // Center: Mandatory Shift Timer
                 val shiftSeconds by viewModel.shiftTimeRemaining.collectAsState()
+                val isBreachActive by viewModel.isBreachActive.collectAsState()
+                
                 val shiftHours = shiftSeconds / 3600
                 val shiftMinutes = (shiftSeconds % 3600) / 60
                 val shiftSecs = shiftSeconds % 60
-                val shiftStr = String.format("%02d:%02d:%02d", shiftHours, shiftMinutes, shiftSecs)
+                val shiftStr = if (isBreachActive) "XX:XX:XX" else String.format("%02d:%02d:%02d", shiftHours, shiftMinutes, shiftSecs)
                 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "SHIFT REMAINING",
-                        color = color.copy(alpha = 0.3f * droopAlpha),
+                        text = if (isBreachActive) "TIME_REDACTED" else "SHIFT REMAINING",
+                        color = (if (isBreachActive) ErrorRed else color).copy(alpha = 0.3f * droopAlpha),
                         fontSize = 7.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace,

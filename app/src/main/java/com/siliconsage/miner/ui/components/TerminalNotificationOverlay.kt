@@ -39,7 +39,7 @@ fun TerminalNotificationOverlay(viewModel: GameViewModel) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().padding(top = 48.dp, start = 16.dp, end = 16.dp, bottom = 16.dp), contentAlignment = Alignment.TopCenter) {
+    Box(modifier = Modifier.fillMaxSize().padding(top = 72.dp, start = 16.dp, end = 16.dp, bottom = 16.dp), contentAlignment = Alignment.TopCenter) {
         AnimatedVisibility(
             visible = notification.value != null,
             enter = fadeIn() + slideInVertically(),
