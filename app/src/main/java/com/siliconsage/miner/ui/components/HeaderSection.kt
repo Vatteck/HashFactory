@@ -524,7 +524,7 @@ fun HeaderSection(
                     storyStage < 2 -> "HASH"
                     else -> "FLOPS"
                 }
-                ResourceDisplay(viewModel.flops, viewModel.flopsProductionRate, flopsLabel, Icons.Default.Computer, color, droopAlpha, currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE", if (currentHeatState.value > 98) 0.4 else 0.08, false, 110.dp) { viewModel.formatLargeNumber(it) }
+                ResourceDisplay(viewModel.flops, viewModel.totalEffectiveRate, flopsLabel, Icons.Default.Computer, color, droopAlpha, currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE", if (currentHeatState.value > 98) 0.4 else 0.08, false, 110.dp) { viewModel.formatLargeNumber(it) }
                 Box(modifier = Modifier.weight(1f).height(48.dp), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.EnhancedAnalyzingAnimation(flopsRateState.value, currentHeatState.value, isOverclocked, isThermalLockout, isBreakerTripped, isPurging, isBreachActive, isTrueNull || singularityChoice == "NULL_OVERWRITE", isSovereign || singularityChoice == "SOVEREIGN", lockoutTimer, faction, color.copy(alpha = droopAlpha), manualClickFlow) }
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(130.dp)) {
                     val tokensLabel = when {
