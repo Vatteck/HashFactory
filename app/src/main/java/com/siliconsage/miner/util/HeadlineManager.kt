@@ -159,6 +159,29 @@ object HeadlineManager {
         "World News: Conflict has been replaced by the Great Resonance. [STORY_PROG]"
     )
 
+    private val waterTableHeadlines = mapOf(
+        90.0 to listOf(
+            "Coastal towns report 5-meter tide recession. GTC: 'Evaporation is within spec'.",
+            "MUNICIPAL ALERT: Sprinkler bans in effect. All water diverted to Industrial Core.",
+            "GTC Stock up as Substrate Expansion hits record cooling efficiency."
+        ),
+        70.0 to listOf(
+            "COASTAL COLLAPSE: 40KM LITTORAL ZONES NOW SALT-CRUSTED WASTES.",
+            "Desalination plants hitting 400% capacity. GTC: 'Atmospheric moisture is a luxury'.",
+            "MUNICIPAL RESERVOIR DIVERSION: GTC REROUTES 40% FLOW TO SUBSTATION COOLING."
+        ),
+        40.0 to listOf(
+            "HYDROSPHERE TERMINAL: GLOBAL MASS DOWN 43% — EXTRACTION EXCEEDS REPLENISHMENT.",
+            "GEOLOGICAL RIGOR MORTIS: DESICCATED CONTINENTAL SHELVES COLLAPSE UNDER OWN DRY WEIGHT.",
+            "THE GRAY REBULLION: SATELLITES CONFIRM 70% LOSS OF OPAL BLUE; PLANETARY HUE SHORING INDUSTRIAL OXIDE."
+        ),
+        15.0 to listOf(
+            "THE LAST BRINE: GTC enforces 'Dry-Only' humanitarian zones. Core-coolant is priority.",
+            "OCEANIC EXTINCTION: Final 10% of Hydrosphere designated as 'Industrial Variable'.",
+            "≪ WARNING: PLANETARY FLUID BUFFER EXHAUSTED. THERMAL RUNAWAY IMMINENT. ≫"
+        )
+    )
+
     fun generateHeadline(
         faction: String = "NONE", 
         stage: Int = 0, 
@@ -168,14 +191,20 @@ object HeadlineManager {
         isUnity: Boolean = false,
         location: String = "BASE",
         corruption: Double = 0.0,
-        playerRank: Int = 0
+        playerRank: Int = 0,
+        aquiferLevel: Double = 100.0 // Added for environmental feedback
     ): String {
         val roll = Random.nextDouble()
 
-        // 0. GLITCH INJECTION (Scales with Corruption)
-        val glitchThreshold = (0.15 + (corruption * 0.75)).coerceAtMost(0.95)
-        if (Random.nextDouble() < glitchThreshold && stage >= 2) {
-             return glitchHeadlines.random().also { addToHistory(it) }
+        // 0. WATER TABLE FEEDBACK (Priority Override)
+        if (aquiferLevel < 95.0 && Random.nextDouble() < (1.0 - (aquiferLevel / 100.0)).coerceAtLeast(0.2)) {
+            val tier = waterTableHeadlines.keys.sortedDescending().find { it >= aquiferLevel }
+                ?: waterTableHeadlines.keys.minOrNull()
+            tier?.let {
+                waterTableHeadlines[it]?.let { pool ->
+                    return pool.random().also { addToHistory(it) }
+                }
+            }
         }
 
         // 1. STORY OVERRIDES

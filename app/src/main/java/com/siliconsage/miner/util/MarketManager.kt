@@ -28,7 +28,8 @@ object MarketManager {
             isUnity = vm.isUnity.value,
             location = vm.currentLocation.value,
             corruption = vm.identityCorruption.value,
-            playerRank = vm.playerRank.value
+            playerRank = vm.playerRank.value,
+            aquiferLevel = vm.aquiferLevel.value
         )
         
         vm.updateNews(headline)
