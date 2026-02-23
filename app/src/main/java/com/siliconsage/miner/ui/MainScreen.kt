@@ -502,7 +502,7 @@ fun ResourceDisplay(
     val value by labelFlow.collectAsState()
     val rate by (rateFlow ?: MutableStateFlow(0.0)).collectAsState()
     val valueStr = remember(value) { formatFn(value) }
-    val rateStr = remember(rate) { 
+    val rateStr = remember(rate, efficiencyMult) { 
         if (rate > 0) {
             val base = formatFn(rate)
             if (efficiencyMult != 1.0) "$base/s [${String.format("%.2f", efficiencyMult)}x]"
