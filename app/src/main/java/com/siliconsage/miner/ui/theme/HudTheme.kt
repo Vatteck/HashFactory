@@ -156,8 +156,8 @@ data class HudTheme(
         fun integrityColor(integrity: Double, theme: HudTheme): Color = when {
             integrity < 25.0 -> theme.critical
             integrity < 50.0 -> Color(0xFFFFA500)
-            integrity < 75.0 -> theme.warning
-            else             -> Color.White
+            integrity < 85.0 -> theme.warning
+            else             -> theme.positiveDelta       // v3.13.42: Restored semantic glow for high integrity
         }
     }
 }
