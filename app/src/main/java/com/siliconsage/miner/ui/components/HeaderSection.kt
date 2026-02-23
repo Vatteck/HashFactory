@@ -45,6 +45,7 @@ import com.siliconsage.miner.ui.theme.ConvergenceGold
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.HudTheme
 import com.siliconsage.miner.viewmodel.GameViewModel
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 @Composable
@@ -103,10 +104,22 @@ fun HeaderSection(
     val joltAnim = remember { Animatable(0f) }
     val pulseIntensity by viewModel.clickPulseIntensity.collectAsState()
     
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(manualClickFlow) {
         manualClickFlow.collect {
             val current = joltAnim.value
             joltAnim.snapTo((current + 0.6f * pulseIntensity).coerceAtMost(1.5f))
+            
+            // v3.13.33: Compute High (Chroma-Fever)
+            if (viewModel.isSignalClear.value) {
+                com.siliconsage.miner.util.HapticManager.vibrateClick()
+                viewModel.globalGlitchIntensity.value = (viewModel.globalGlitchIntensity.value + 0.05f).coerceAtMost(0.4f)
+                coroutineScope.launch {
+                    delay(200)
+                    viewModel.globalGlitchIntensity.value = (viewModel.globalGlitchIntensity.value - 0.05f).coerceAtLeast(0f)
+                }
+            }
+            
             // v3.7.4: Tightened animation stiffness to prevent "hanging" pulse after rapid clicks
             joltAnim.animateTo(0f, animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessMedium))
         }

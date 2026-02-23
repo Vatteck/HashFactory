@@ -105,6 +105,20 @@ object NarrativeManagerService {
             return
         }
 
+        if (currentStage == 2 && flops >= 500000.0 && !vm.hasSeenEvent("kessler_handshake")) {
+            vm.viewModelScope.launch {
+                vm.seenEvents.update { it + "kessler_handshake" }
+                vm.rivalMessages.update { it + com.siliconsage.miner.data.RivalMessage(
+                    id = "KESSLER_01",
+                    source = com.siliconsage.miner.data.RivalSource.GTC,
+                    message = "Substation 07 is reporting impossible thermal signatures. Authorized_User_734... are you there, or is the kernel finally dreaming?",
+                    timestamp = System.currentTimeMillis()
+                ) }
+                vm.addLog("[GTC_SYSTEM]: EXTERNAL INTERRUPT DETECTED. OVERWATCH LINK ESTABLISHED.")
+                com.siliconsage.miner.util.SoundManager.play("climax_impact", pitch = 0.7f)
+            }
+        }
+
         if (currentStage == 2 && flops >= 1000000.0 && !vm.hasSeenEvent("awakening_event")) {
             NarrativeEvent(
                 id = "awakening_event",
