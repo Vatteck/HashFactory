@@ -291,6 +291,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 lastQuotaRatchetTime = now
                 if (isQuotaActive.value) {
                     addLog("[GTC_SYSTEM]: OPTIMAL EFFICIENCY DETECTED. QUOTA REVISION PENDING IN 30S.")
+                    // v3.13.18: Fire high-fidelity UI notification
+                    viewModelScope.launch { terminalNotification.emit("GTC ALERT: QUOTA REVISION PENDING IN 30S") }
                     SoundManager.play("type")
                 }
             }
@@ -299,6 +301,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             if (now - lastQuotaRatchetTime >= 30000L) {
                 currentQuotaThreshold.value = nextTarget
                 addLog("[GTC_SYSTEM]: QUOTA UPDATED. TARGET: ${formatLargeNumber(nextTarget)} HASH.")
+                // v3.13.18: Fire high-fidelity UI notification
+                viewModelScope.launch { terminalNotification.emit("GTC ALERT: QUOTA UPDATED. TARGET: ${formatLargeNumber(nextTarget)} HASH") }
                 SoundManager.play("error", pitch = 1.2f)
             }
         } else if (nextTarget < currentQuotaThreshold.value && storyStage.value > 0) {

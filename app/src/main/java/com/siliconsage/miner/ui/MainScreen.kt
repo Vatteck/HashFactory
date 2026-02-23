@@ -195,6 +195,17 @@ fun MainScreen(viewModel: GameViewModel) {
     val storyStage by viewModel.storyStage.collectAsState()
     val themeColorHex by viewModel.themeColor.collectAsState()
     val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
+    
+    // v3.13.18: GTC Terminal Notification Toast System
+    var notificationMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        viewModel.terminalNotification.collect {
+            notificationMessage = it
+            delay(4000)
+            notificationMessage = null
+        }
+    }
+
     val updateInfo by viewModel.updateInfo.collectAsState(null)
     val isUpdateDownloading by viewModel.isUpdateDownloading.collectAsState(false)
     val updateProgress by viewModel.updateDownloadProgress.collectAsState(0f)
@@ -353,6 +364,39 @@ fun MainScreen(viewModel: GameViewModel) {
                         )
                     }
                 }
+
+                // v3.13.18: GTC Terminal Notification (High-Fidelity Overlay)
+                notificationMessage?.let { msg ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 100.dp, start = 32.dp, end = 32.dp)
+                    ) {
+                        Surface(
+                            color = Color.Black.copy(alpha = 0.9f),
+                            shape = TechnicalCornerShape(8f),
+                            border = BorderStroke(1.dp, if (msg.contains("UPDATE") || msg.contains("REVISED")) ErrorRed else themeColor.copy(alpha = 0.5f)),
+                            shadowElevation = 8.dp
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val icon = if (msg.contains("UPDATE") || msg.contains("REVISED")) Icons.Default.Bolt else Icons.Default.Computer
+                                Icon(icon, null, tint = if (msg.contains("UPDATE") || msg.contains("REVISED")) ErrorRed else themeColor, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = msg.uppercase(),
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                        }
+                    }
+                }
+
                 if ((isBreakerTripped || isGridOverloaded) && currentScreen != Screen.SETTINGS) {
                     Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.95f)).border(BorderStroke(2.dp, ErrorRed), TechnicalCornerShape(24f)).padding(16.dp), contentAlignment = Alignment.Center) {
                          Column(horizontalAlignment = Alignment.CenterHorizontally) {
