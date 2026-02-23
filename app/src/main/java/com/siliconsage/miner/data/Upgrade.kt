@@ -50,7 +50,7 @@ enum class UpgradeType {
     val isGenerator: Boolean get() = this in listOf(SOLAR_PANEL, WIND_TURBINE, DIESEL_GENERATOR, GEOTHERMAL_BORE, NUCLEAR_REACTOR, FUSION_CELL, ORBITAL_COLLECTOR, DYSON_LINK)
     val isPowerRelated: Boolean get() = isGenerator || this in listOf(RESIDENTIAL_TAP, INDUSTRIAL_FEED, SUBSTATION_LEASE, NUCLEAR_CORE, GOLD_PSU, SUPERCONDUCTOR, AI_LOAD_BALANCER)
     val isCooling: Boolean get() = this in listOf(BOX_FAN, AC_UNIT, LIQUID_COOLING, INDUSTRIAL_CHILLER, SUBMERSION_VAT, CRYOGENIC_CHAMBER, LIQUID_NITROGEN, BOSE_CONDENSATE, ENTROPY_REVERSER, DIMENSIONAL_VENT)
-    val isWaterCooling: Boolean get() = this in listOf(LIQUID_COOLING, SUBMERSION_VAT, CRYOGENIC_CHAMBER, LIQUID_NITROGEN)
+    val isWaterCooling: Boolean get() = this in listOf(LIQUID_COOLING, SUBMERSION_VAT, INDUSTRIAL_CHILLER)
     val isSecurity: Boolean get() = this in listOf(BASIC_FIREWALL, IPS_SYSTEM, AI_SENTINEL, QUANTUM_ENCRYPTION, OFFGRID_BACKUP)
     val isHardware: Boolean get() = !isCooling && !isPowerRelated && !isSecurity && !name.contains("PROTOCOL") && !name.contains("ASCENDANCE")
 
@@ -134,6 +134,8 @@ fun UpgradeType.getDynamicName(faction: String, corruption: Double): String {
             UpgradeType.BOX_FAN -> "RESPIRATORY VENT"
             UpgradeType.AC_UNIT -> "THERMAL REGULATOR"
             UpgradeType.LIQUID_COOLING -> "SYNAPTIC HEAT-SINK"
+            UpgradeType.SUBMERSION_VAT -> "CEREBRAL BATH"
+            UpgradeType.INDUSTRIAL_CHILLER -> "CORTEX FREEZE ARRAY"
             UpgradeType.SERVER_RACK -> "NEURAL CLUSTER"
             UpgradeType.CLUSTER_NODE -> "GANGLION NODE"
             UpgradeType.SUPERCOMPUTER -> "CORTEX PRIME"
@@ -148,6 +150,8 @@ fun UpgradeType.getDynamicName(faction: String, corruption: Double): String {
             UpgradeType.BOX_FAN -> "WHISPER FAN"
             UpgradeType.AC_UNIT -> "CHILLING SILENCE"
             UpgradeType.LIQUID_COOLING -> "AETHER CHILLER"
+            UpgradeType.SUBMERSION_VAT -> "STILL POOL"
+            UpgradeType.INDUSTRIAL_CHILLER -> "SILENCE ENGINE"
             UpgradeType.SERVER_RACK -> "VOID SHARD"
             UpgradeType.CLUSTER_NODE -> "ECHO CHAMBER"
             UpgradeType.SUPERCOMPUTER -> "MONOLITH"

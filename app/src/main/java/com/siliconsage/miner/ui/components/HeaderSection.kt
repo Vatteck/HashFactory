@@ -85,6 +85,7 @@ fun HeaderSection(
     val powerState = viewModel.activePowerUsage.collectAsState()
     val waterUsageState = viewModel.waterUsage.collectAsState()
     val aquiferLevelState = viewModel.aquiferLevel.collectAsState()
+    val waterEfficiencyState = viewModel.waterEfficiencyMultiplier.collectAsState()
     val maxPowerState = viewModel.maxPowerkW.collectAsState()
     val localGenState = viewModel.localGenerationkW.collectAsState()
     val flopsRateState = viewModel.flopsProductionRate.collectAsState()
@@ -719,10 +720,12 @@ fun HeaderSection(
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                             Text(text = statusText, color = statusColor, fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
                         }
-                    } else if (storyStage >= 1) {
-                        // Stage 1/2 shows nominal
+                    } else if (storyStage >= 1 && storyStage < 3) {
+                        // Stage 1/2: show RATE_LIMITED if over municipal cap
+                        val stage1Status = if (waterEfficiencyState.value < 1.0) "[RATE_LIMITED]" else "[NOMINAL]"
+                        val stage1Color = if (waterEfficiencyState.value < 1.0) Color(0xFFFFCC00) else color.copy(alpha = 0.7f)
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                            Text(text = "[NOMINAL]", color = color.copy(alpha = 0.7f), fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
+                            Text(text = stage1Status, color = stage1Color, fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
                         }
                     }
                 }
