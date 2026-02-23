@@ -496,12 +496,19 @@ fun ResourceDisplay(
     glitchIntensity: Double = 0.1,
     isRightAligned: Boolean = false,
     width: Dp = 120.dp,
+    efficiencyMult: Double = 1.0, // v3.13.14: Substrate Efficiency hook
     formatFn: (Double) -> String
 ) {
     val value by labelFlow.collectAsState()
     val rate by (rateFlow ?: MutableStateFlow(0.0)).collectAsState()
     val valueStr = remember(value) { formatFn(value) }
-    val rateStr = remember(rate) { if (rate > 0) "${formatFn(rate)}/s" else "" }
+    val rateStr = remember(rate) { 
+        if (rate > 0) {
+            val base = formatFn(rate)
+            if (efficiencyMult != 1.0) "$base/s [${String.format("%.2f", efficiencyMult)}x]"
+            else "$base/s"
+        } else ""
+    }
     val fontSizeByLength = if (valueStr.length > 8) 18.sp else 22.sp
 
     Column(horizontalAlignment = if (isRightAligned) Alignment.End else Alignment.Start, modifier = Modifier.width(width)) {
