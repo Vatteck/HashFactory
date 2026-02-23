@@ -886,6 +886,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         } else if (mode == "SUBNET") {
             hasNewSubnetDecision.value = false
             hasNewSubnetChatter.value = false
+            hasNewSubnetMessage.value = false // v3.16.2: Clear orphaned ambient flag
             // v3.11.1: Also reset the service-level flags
             subnetService.clearAlerts()
         }

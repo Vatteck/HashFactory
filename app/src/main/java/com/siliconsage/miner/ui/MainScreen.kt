@@ -143,7 +143,10 @@ fun BottomNavBar(
     val isSubnetPaused by viewModel.isSubnetPaused.collectAsState()
     val hasNewDecision by viewModel.hasNewSubnetDecision.collectAsState()
     val hasNewChatter by viewModel.hasNewSubnetChatter.collectAsState()
-    val hasSubnetAlert = isSubnetPaused || hasNewDecision || hasNewChatter
+    // v3.16.2: Suppress badge if user is already viewing SUBNET — no point alerting when they're watching live
+    val activeTerminalMode by viewModel.activeTerminalMode.collectAsState()
+    val isViewingSubnet = currentScreen == Screen.NETWORK && activeTerminalMode == "SUBNET"
+    val hasSubnetAlert = !isViewingSubnet && (isSubnetPaused || hasNewDecision || hasNewChatter)
 
     val isRaidActive by viewModel.isRaidActive.collectAsState()
 

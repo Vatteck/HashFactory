@@ -119,6 +119,7 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
         if (!isSystemStyle) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // v3.4.60: Hardened Click Target with Text-Only Clickable
+                // v3.16.2: Admin handle gets ElectricBlue glow effect; body text stays plain white
                 Text(
                     text = message.handle,
                     color = handleColor,
@@ -126,6 +127,12 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace,
                     textDecoration = if (isPlayerReply) TextDecoration.None else TextDecoration.Underline,
+                    style = if (isAdminMessage) androidx.compose.ui.text.TextStyle(
+                        shadow = androidx.compose.ui.graphics.Shadow(
+                            color = com.siliconsage.miner.ui.theme.ElectricBlue.copy(alpha = 0.7f),
+                            blurRadius = 8f
+                        )
+                    ) else androidx.compose.ui.text.TextStyle.Default,
                     modifier = Modifier
                         .clickable(enabled = !isPlayerReply) { 
                             if (message.employeeInfo != null) {
@@ -133,7 +140,7 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                                 com.siliconsage.miner.util.SoundManager.play("click")
                             }
                         }
-                        .then(if (isAdminMessage) Modifier.border(1.dp, handleColor.copy(alpha = 0.3f), RoundedCornerShape(2.dp)) else Modifier)
+                        .then(if (isAdminMessage) Modifier.border(1.dp, handleColor.copy(alpha = 0.4f), RoundedCornerShape(2.dp)) else Modifier)
                         .padding(horizontal = 4.dp, vertical = 2.dp)
                 )
                 
@@ -322,11 +329,12 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
             annotatedContent
         }
 
+        // v3.16.2: Admin body text is plain white (regular). Only the handle gets ElectricBlue + glow.
         Text(
             text = displayContent,
-            color = if (isAdminMessage) com.siliconsage.miner.ui.theme.ElectricBlue else if (isPlayerReply) Color.LightGray else Color.White,
+            color = if (isPlayerReply) Color.LightGray else Color.White,
             fontSize = 12.sp,
-            fontWeight = if (isAdminMessage) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = FontWeight.Normal,
             fontFamily = FontFamily.Monospace,
             modifier = Modifier
                 .padding(top = 4.dp)

@@ -6,16 +6,16 @@
 ## 🟡 High (next session)
 - [x] **Compute Fever Quota System (v3.16.1)** — Stage 0: HASH quota for CRED survival. Personal → Global reveal via logs/chatter. Static for low headroom, +10% CRED "Signal Quality" bonus for quota beat.
 - [x] **Data Log & Chatter Overhaul (v3.16.1)** — Rewrite for Compute Fever (Thorne flexes, Barnaby audits, subnet rack mania). Gate by stage.
-- [ ] **Substrate Sickness System** — Terminal glitching ("Cascade Desync") when under quota. Clears on rack high/quota beat.
-- [ ] **The "Snap" Effect** — UI reboot on stage cross/rack milestones.
-- [ ] **Hugging Face Papers RSS** — Fix 401 Auth error.
+- [x] **Substrate Sickness System (v3.16.0)** — Cascade Desync (CRT shimmer + log spam) when signal < 0.5 for 30s. Clears on rack high/quota beat.
+- [x] **The "Snap" Effect (v3.16.0)** — CRT reboot animation on stage transitions, rack highs, quota ratification.
+- [x] **Hugging Face Papers RSS** — Fixed. RSS dropped (401, no auth support). Replaced with `scripts/hf-papers-pulse.sh` hitting public `api/daily_papers` endpoint. Cron every 12h.
 
 ## 🟢 Medium
-- [ ] **ExpansionLogs.kt Refactor** — Split 1164-line file into smaller modules for AI context management.
-- [ ] **Admin Subnet Handle Fix** — Admin handle should be Electric Blue with effects, but text should be regular (not glitched).
-- [ ] **Notification Bubble Fix** — Notification dot on main screen not clearing properly.
+- [x] **ExpansionLogs.kt Refactor** — Split into CharacterDossierLogs (241L), MemoryHallucinationLogs (377L), EndgameLogs (476L), CoreLogs (535L). ExpansionLogs.kt is now a 11-line aggregator. .bak cleaned up.
+- [x] **Admin Subnet Handle Fix (v3.16.2)** — Handle: ElectricBlue + Shadow glow (blurRadius=8). Body text: plain white, FontWeight.Normal. No more blue body text.
+- [x] **Notification Bubble Fix (v3.16.2)** — Badge suppressed when user is already viewing SUBNET. Dead `hasNewSubnetMessage` flag now cleared on SUBNET mode entry.
 - [ ] **Progress Bar/Terminal UI Enhancement Pass** — Improve visual design of progress bars and command line UI elements.
-- [ ] **WAL Protocol Adoption** — standardize one-line pre-delete logging in decisions/.
+- [x] **WAL Protocol Adoption** — `scripts/wal.sh` helper created. Protocol documented in AGENTS.md. Decisions dir at `memory/decisions/`.
 
 ## ✅ Completed (v3.12.x - v3.15.x)
 - [x] **Water-Migration Hook (v3.15.x)** — Aquifer depletion, staged municipal caps (S0=100, S1=500, S2=2000), production stall (saturation penalty), soft/hard prestige split.
