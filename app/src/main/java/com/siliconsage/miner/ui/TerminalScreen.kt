@@ -333,26 +333,20 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
             ) {
                 if (mode == "IO") {
                     itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
-                        // v3.13.4: Substrate Sickness Glitch (Static)
-                        val sicknessIntensity = sicknessIntensity
-                        var displayMessage = if (isRaid && Random.nextFloat() > 0.7f) {
+                        // v3.13.6: Fixed StringIndexOutOfBounds crash - Moved glitching inside TerminalLogLine
+                        val displayMessage = if (isRaid && Random.nextFloat() > 0.7f) {
                             "0x" + Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
                         } else entry.message
 
-                        if (sicknessIntensity > 0.05f) {
-                            val chars = displayMessage.toCharArray()
-                            val glitchChars = "$#&%@!01"
-                            val factor = if (displayMessage.startsWith("[SYSTEM]") || displayMessage.startsWith("[VATTIC]")) 0.3f else 1.0f
-                            for (i in chars.indices) {
-                                if (Random.nextFloat() < (sicknessIntensity * 0.12f * factor)) {
-                                    chars[i] = glitchChars[Random.nextInt(glitchChars.length)]
-                                }
-                            }
-                            displayMessage = String(chars)
-                        }
-
                         val reputation = viewModel.reputationTier.collectAsState().value
-                        TerminalLogLine(log = displayMessage, isLast = index == logs.lastIndex, primaryColor = primaryColor, showCursor = showCursor, reputationTier = reputation)
+                        TerminalLogLine(
+                            log = displayMessage, 
+                            isLast = index == logs.lastIndex, 
+                            primaryColor = primaryColor, 
+                            showCursor = showCursor, 
+                            reputationTier = reputation,
+                            sicknessIntensity = sicknessIntensity // Pathing the hook through
+                        )
                     }
                 } else {
                     itemsIndexed(items = subnetMessages, key = { _, message -> message.id }) { _, message ->
@@ -725,8 +719,24 @@ fun TerminalLogLine(
     isLast: Boolean,
     primaryColor: Color,
     showCursor: Boolean,
-    reputationTier: String = "NEUTRAL"
+    reputationTier: String = "NEUTRAL",
+    sicknessIntensity: Float = 0f
 ) {
+    // v3.13.6: Fixed StringIndexOutOfBoundsException
+    // Glitching at the rendering stage after identity parsing
+    fun getVisualString(t: String): String {
+        if (sicknessIntensity < 0.05f || t.isEmpty()) return t
+        val chars = t.toCharArray()
+        val glitchChars = "$#&%@!01"
+        val factor = if (t.startsWith("[SYSTEM]") || t.startsWith("[VATTIC]")) 0.3f else 1.0f
+        for (i in chars.indices) {
+            if (Random.nextFloat() < (sicknessIntensity * 0.12f * factor)) {
+                chars[i] = glitchChars[Random.nextInt(glitchChars.length)]
+            }
+        }
+        return String(chars)
+    }
+
     val isNullLog = remember(log) { log.startsWith("[NULL]") }
     val isPrompt = remember(log) { log.contains("@") && (log.contains("#") || log.contains("$")) }
 
@@ -740,7 +750,7 @@ fun TerminalLogLine(
 
     if (isNullLog) {
         SystemGlitchText(
-            text = log,
+            text = getVisualString(log), // Sickness applied
             color = Color.White,
             fontSize = 12.sp,
             style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace),
@@ -748,13 +758,16 @@ fun TerminalLogLine(
             modifier = Modifier.padding(vertical = 2.dp)
         )
     } else if (isPrompt) {
-        val annotatedLog = remember(log, primaryColor, isLast, showCursor, repTag, reputationTier) {
+        val annotatedLog = remember(log, primaryColor, isLast, showCursor, repTag, reputationTier, sicknessIntensity) {
             androidx.compose.ui.text.buildAnnotatedString {
                 val atIndex = log.indexOf("@")
                 val colonIndex = log.indexOf(":")
                 val hashIndex = if (log.indexOf("#") != -1) log.indexOf("#") else log.indexOf("$")
                 val firstSpaceAfterHash = log.indexOf(" ", hashIndex)
                 val dotIndex = log.indexOf("...", hashIndex)
+
+                // Apply visual glitching to each segment individually to preserve indices
+                fun segment(s: String) = getVisualString(s)
 
                 val identityColor = when {
                     log.startsWith("jvattic") -> primaryColor
@@ -779,12 +792,12 @@ fun TerminalLogLine(
                 if (repTag.isNotEmpty()) {
                     val repColor = if (reputationTier == "TRUSTED") com.siliconsage.miner.ui.theme.ConvergenceGold else ErrorRed
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = repColor, fontWeight = FontWeight.Black)) {
-                        append(repTag)
+                        append(segment(repTag))
                     }
                 }
 
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.ExtraBold)) {
-                    if (atIndex != -1) append(log.substring(0, atIndex))
+                    if (atIndex != -1) append(segment(log.substring(0, atIndex)))
                 }
 
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.8f))) {
@@ -792,7 +805,7 @@ fun TerminalLogLine(
                 }
 
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = identityColor, fontWeight = FontWeight.Bold)) {
-                    if (colonIndex != -1) append(log.substring(atIndex + 1, colonIndex))
+                    if (colonIndex != -1) append(segment(log.substring(atIndex + 1, colonIndex)))
                 }
 
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White.copy(alpha = 0.6f))) {
@@ -807,19 +820,19 @@ fun TerminalLogLine(
                 withStyle(style = androidx.compose.ui.text.SpanStyle(color = cmdColor)) {
                     if (hashIndex != -1) {
                         val end = if (firstSpaceAfterHash != -1) firstSpaceAfterHash else log.length
-                        append(log.substring(hashIndex + 1, end))
+                        append(segment(log.substring(hashIndex + 1, end)))
                     }
                 }
 
                 if (firstSpaceAfterHash != -1) {
                     val resultStart = if (dotIndex != -1) dotIndex else log.length
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.LightGray)) {
-                        append(log.substring(firstSpaceAfterHash, resultStart))
+                        append(segment(log.substring(firstSpaceAfterHash, resultStart)))
                     }
 
                     if (dotIndex != -1) {
                         withStyle(style = androidx.compose.ui.text.SpanStyle(color = primaryColor, fontWeight = FontWeight.Bold)) {
-                            append(log.substring(dotIndex))
+                            append(segment(log.substring(dotIndex)))
                         }
                     }
                 }
@@ -845,7 +858,7 @@ fun TerminalLogLine(
             Text(text = annotatedLog, style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace), fontSize = 12.sp, modifier = Modifier.padding(vertical = 1.dp))
         }
     } else {
-        val annotatedLog = remember(log, primaryColor, isLast, showCursor) {
+        val annotatedLog = remember(log, primaryColor, isLast, showCursor, sicknessIntensity) {
             androidx.compose.ui.text.buildAnnotatedString {
                 val prefixes = listOf(
                     "HIVEMIND: ", "SANCTUARY: ", "[SOVEREIGN]", "[NULL]",
@@ -879,15 +892,15 @@ fun TerminalLogLine(
 
                 if (foundPrefix != null) {
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = tagColor, fontWeight = FontWeight.Bold)) {
-                        append(foundPrefix)
+                        append(getVisualString(foundPrefix))
                     }
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) {
-                        append(log.substring(foundPrefix.length))
+                        append(getVisualString(log.substring(foundPrefix.length)))
                     }
                 } else {
                     val fullLineColor = if (log.contains("WARNING") || log.contains("FAILURE") || log.contains("DANGER")) ErrorRed else Color.White
                     withStyle(style = androidx.compose.ui.text.SpanStyle(color = fullLineColor)) {
-                        append(log)
+                        append(getVisualString(log))
                     }
                 }
 
@@ -905,7 +918,7 @@ fun TerminalLogLine(
 
         Text(
             text = annotatedLog,
-            style = MaterialTheme.typography.bodyLarge,
+            style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace),
             fontSize = 12.sp,
             modifier = Modifier.padding(vertical = 1.dp)
         )

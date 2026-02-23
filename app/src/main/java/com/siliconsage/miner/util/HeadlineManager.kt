@@ -160,6 +160,11 @@ object HeadlineManager {
     )
 
     private val waterTableHeadlines = mapOf(
+        100.0 to listOf(
+            "Global Water Levels: NOMINAL. GTC reporting 100% capacity.",
+            "Local reservoirs stable. Regional water managers expect a boring quarter.",
+            "Hydro-Substrate sync complete. Substation 7 intake nominal."
+        ),
         90.0 to listOf(
             "Coastal towns report 5-meter tide recession. GTC: 'Evaporation is within spec'.",
             "MUNICIPAL ALERT: Sprinkler bans in effect. All water diverted to Industrial Core.",
