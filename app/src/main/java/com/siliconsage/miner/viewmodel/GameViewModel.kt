@@ -321,8 +321,16 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
 
         // v3.13.25: Balanced Quota Ratchet (20% Potential or 1.5x current)
         if (nextTarget > currentQuotaThreshold.value) {
-            val potentialThreshold = (nextTarget * 0.20).coerceAtLeast(currentQuotaThreshold.value * 1.5)
+            val floor = currentQuotaThreshold.value * 1.5
+            val ceiling = nextTarget * 0.20
+            val potentialThreshold = ceiling.coerceAtLeast(floor)
             
+            // v3.13.26: Update Ghost Bar Progress
+            val pProgress = if (currentFlops > floor) {
+                ((currentFlops - floor) / (potentialThreshold - floor)).toFloat().coerceIn(0f, 1f)
+            } else 0f
+            potentialProgress.update { pProgress }
+
             if (currentFlops >= potentialThreshold) {
                 // Milestone reached - ratchet the target
                 currentQuotaThreshold.value = nextTarget

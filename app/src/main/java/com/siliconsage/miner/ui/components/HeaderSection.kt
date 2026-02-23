@@ -89,8 +89,11 @@ fun HeaderSection(
     val waterEfficiencyState = viewModel.waterEfficiencyMultiplier.collectAsState()
     val maxPowerState = viewModel.maxPowerkW.collectAsState()
     val localGenState = viewModel.localGenerationkW.collectAsState()
-    val flopsRateState = viewModel.totalEffectiveRate.collectAsState() // v3.13.11: Display total effective (Live Spike)
+    val flopsRateState = viewModel.totalEffectiveRate.collectAsState() 
     val integrityState = viewModel.hardwareIntegrity.collectAsState()
+    
+    // v3.13.26: Potential Radar (Ghost Bar) logic
+    val potentialProgress = viewModel.potentialProgress.value
     
     val infiniteTransition = rememberInfiniteTransition(label = "kinetic_hud")
     // v3.5.54.3: Stabilized voltage droop (less flickering, more steady pulse)

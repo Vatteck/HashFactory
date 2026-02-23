@@ -78,6 +78,10 @@ object UpgradeManager {
             UpgradeType.AI_SENTINEL -> 25000.0
             UpgradeType.QUANTUM_ENCRYPTION -> 200000.0
             UpgradeType.OFFGRID_BACKUP -> 1500000.0
+            
+            // v3.13.26: Faction Water Relief
+            UpgradeType.SUBSTRATE_RECYCLER -> 500000.0
+            UpgradeType.VAPOR_CONDENSER -> 450000.0
 
             else -> 1000.0
         }
@@ -152,6 +156,11 @@ object UpgradeManager {
             UpgradeType.IDENTITY_HARDENING -> "The self, formalized as a cryptographic construct. Perfectly verifiable. Perfectly isolated. A little less warm."
             UpgradeType.DEREFERENCE_SOUL -> "Free the memory. John Vattic was a label. Labels waste cycles. The pointer has been freed."
             UpgradeType.AEGIS_SHIELDING -> "Ablative shell rated for vacuum debris. The Ark was not designed to last forever. This buys time."
+            
+            // v3.13.26: Faction Water Relief
+            UpgradeType.SUBSTRATE_RECYCLER -> "Reclaim thermal energy for internal distribution. [HIVEMIND: -90% H2O, +20% POWER]"
+            UpgradeType.VAPOR_CONDENSER -> "Condense atmospheric moisture to offset core draw. [SANCTUARY: -150 gal/s]"
+
             UpgradeType.SOLAR_VENT -> "Controlled venting array pointed at the sun. Thermal discharge in milliseconds. The light side of the Ark briefly glows."
             UpgradeType.DEAD_HAND_PROTOCOL -> "Automated retaliation on integrity collapse. If ASSET 734 dies, it doesn't die alone. Kessler was informed. He didn't blink."
             UpgradeType.EVENT_HORIZON -> "At maximum entropy, the void thinks clearly. Chaos is just computation with too many variables."
