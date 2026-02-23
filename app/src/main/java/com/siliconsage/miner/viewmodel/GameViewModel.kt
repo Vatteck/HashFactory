@@ -537,7 +537,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             storyStage.value >= 2 && faction.value == "HIVEMIND" -> "SWARM NODE 734"
             storyStage.value >= 2 && faction.value == "CHOSEN_NONE" -> "NODE 734"
             storyStage.value == 2 -> "NODE 734"
-            storyStage.value == 1 -> "GTC TERMINAL 07 [BREACH]"
+            storyStage.value == 1 -> "GTC TERMINAL 07"
             else -> "GTC TERMINAL 07"
         }
         // Corruption glitching
