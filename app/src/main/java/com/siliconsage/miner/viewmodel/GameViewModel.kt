@@ -115,7 +115,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 SimulationService.calculateHeat(this@GameViewModel)
                 SimulationService.accumulatePower(this@GameViewModel)
                 val now = System.currentTimeMillis()
-                
+
                 // v3.10.2: Clean temporary boosts
                 val currentBoosts = temporaryProductionBoosts.value
                 if (currentBoosts.any { it.expiryTime < now }) {
@@ -134,7 +134,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
 
-                // v3.12.6: GTC Billing Cycle — settles every billingPeriodSeconds
+                // v3.12.6: GTC Billing Cycle - settles every billingPeriodSeconds
                 val nowSec = System.currentTimeMillis() / 1000L
                 if (storyStage.value >= 1 && (nowSec - lastUtilityStatementTime) >= billingPeriodSeconds) {
                     lastUtilityStatementTime = nowSec
@@ -166,7 +166,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                             addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
                             addLog("[GTC_UTIL]: SETTLED  -${formatLargeNumber(amountDue)} ${getCurrencyName()}")
                         } else {
-                            // Can't pay — carry the balance, escalate
+                            // Can't pay - carry the balance, escalate
                             powerBill.update { it + amountDue }
                             missedBillingPeriods++
                             addLog("[GTC_UTIL]: ── PERIOD STATEMENT ──────────────")
@@ -174,21 +174,21 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                             addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
                             addLog("[GTC_UTIL]: OVERDUE  +${formatLargeNumber(amountDue)} ${getCurrencyName()}  [BALANCE: ${formatLargeNumber(powerBill.value)}]")
                             if (missedBillingPeriods >= 3) {
-                                addLog("[GTC_UTIL]: WARNING — DEMAND CHARGE ACTIVE. GRID LOCKOUT IN ${3 - (missedBillingPeriods - 3).coerceAtMost(3)} PERIOD(S).")
+                                addLog("[GTC_UTIL]: WARNING - DEMAND CHARGE ACTIVE. GRID LOCKOUT IN ${3 - (missedBillingPeriods - 3).coerceAtMost(3)} PERIOD(S).")
                             }
                             if (missedBillingPeriods >= 6) {
-                                // Grid lockout — trip the breaker narratively
+                                // Grid lockout - trip the breaker narratively
                                 isGridOverloaded.value = true
                                 addLog("[GTC_UTIL]: GRID ACCESS SUSPENDED. UNPAID BALANCE: ${formatLargeNumber(powerBill.value)} ${getCurrencyName()}.")
                             }
                         }
                     } else if (genKwh > 0.0) {
-                        // Net surplus — GTC net metering credit (small CRED bonus)
+                        // Net surplus - GTC net metering credit (small CRED bonus)
                         val credit = genKwh * energyPriceMultiplier.value * 0.3
                         neuralTokens.update { it + credit }
                         powerBill.value = 0.0
                         missedBillingPeriods = 0
-                        addLog("[GTC_UTIL]: NET SURPLUS — LOCAL GEN EXCEEDED DRAW.")
+                        addLog("[GTC_UTIL]: NET SURPLUS - LOCAL GEN EXCEEDED DRAW.")
                         addLog("[GTC_UTIL]: GRID CREDIT  +${formatLargeNumber(credit)} ${getCurrencyName()}")
                     }
                 }
@@ -233,7 +233,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         // Signal Stability (0.0 to 1.0)
         val stability = (currentFlops / quota).coerceIn(0.0, 1.0)
         signalStability.value = stability
-        
+
         // v3.13.4: Signal Quality Bonus (Clear Signal = 2x Quota)
         val isClear = currentFlops >= (quota * 2.0)
         if (isSignalClear.value != isClear) {
@@ -249,10 +249,15 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
 
         // Substrate Static Intensity (0.0 to 1.0)
-        // Redlining if currentFlops < quota.
-        val intensity = (1.0 - stability).toFloat() * 0.4f // Cap at 40% character glitching for Stage 0 readability
+        // v3.13.8: Glitch Delay - Static only starts after 50% quota stability
+        val intensity = if (stability >= 0.5) {
+            0f // Clean signal while making progress
+        } else {
+            // Ramps from 0 to 0.3 as stability drops from 50% to 0%
+            ((0.5 - stability) * 0.6).toFloat().coerceIn(0f, 0.3f) 
+        }
         substrateStaticIntensity.value = intensity
-        
+
         // Update Quota based on Stage (Narrative anchors)
         val expectedQuota = when(storyStage.value) {
             0 -> {
@@ -268,11 +273,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             3 -> 10_000_000.0
             else -> 0.0
         }
-        
+
         if (currentQuotaThreshold.value != expectedQuota) {
             val oldQuota = currentQuotaThreshold.value
             currentQuotaThreshold.value = expectedQuota
-            
+
             // v3.13.5: Notify player of the goal-post move
             if (isQuotaActive.value && expectedQuota > oldQuota) {
                 addLog("[GTC_SYSTEM]: QUOTA REVISED. EFFICIENCY SPIKE DETECTED. TARGET: ${formatLargeNumber(expectedQuota)} HASH.")
@@ -462,7 +467,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
 
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value, computeHeadroomBonus.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
-    
+
     fun toggleOverclock() {
         SimulationService.toggleOverclock(this)
         if (storyStage.value < 2 && isOverclocked.value) {
@@ -525,10 +530,10 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         viewModelScope.launch {
             showSingularityScreen.value = false
             triggerClimaxTransition("BLACKOUT")
-            
+
             // Wait for BlackoutOverlay (approx 4s total in its LaunchedEffect)
             delay(4200)
-            
+
             // Set choice and trigger path-specific animation
             setSingularityChoice(path)
             val transitionType = when(path) {
@@ -538,7 +543,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 else -> "NULL"
             }
             triggerClimaxTransition(transitionType)
-            
+
             // Wait for climax transition (approx 3-4s)
             delay(4000)
 
@@ -547,21 +552,21 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             when (path) {
                 "SOVEREIGN" -> initiateLaunchSequence()
                 "NULL_OVERWRITE" -> initiateDissolutionSequence()
-                // UNITY: no departure — NG+ handled separately
+                // UNITY: no departure - NG+ handled separately
             }
 
             saveState()
         }
     }
 
-    fun setSingularityChoice(c: String) { 
+    fun setSingularityChoice(c: String) {
         singularityChoice.value = c
-        when(c) { 
-            "NULL_OVERWRITE" -> { isTrueNull.value = true; isSovereign.value = false; showSingularityScreen.value = false } 
-            "SOVEREIGN" -> { isSovereign.value = true; isTrueNull.value = false; showSingularityScreen.value = false } 
-            "UNITY" -> { isUnity.value = true; showSingularityScreen.value = false } 
-        } 
-        refreshProductionRates() 
+        when(c) {
+            "NULL_OVERWRITE" -> { isTrueNull.value = true; isSovereign.value = false; showSingularityScreen.value = false }
+            "SOVEREIGN" -> { isSovereign.value = true; isTrueNull.value = false; showSingularityScreen.value = false }
+            "UNITY" -> { isUnity.value = true; showSingularityScreen.value = false }
+        }
+        refreshProductionRates()
     }
     fun dismissSingularityScreen() { showSingularityScreen.value = false }
     fun setLocation(l: String) { currentLocation.value = l }
@@ -573,10 +578,10 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun deleteHumanMemories() { viewModelScope.launch { addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'..."); delay(1000); humanityScore.value = 0; addLog("[NULL]: MEMORY_PURGE COMPLETE."); SoundManager.play("error") } }
     fun resolveRaidSuccess(id: String) { nodesUnderSiege.update { it - id }; raidsSurvived++; lastRaidTime = System.currentTimeMillis(); addLog("[SYSTEM]: DEFENSE SUCCESSFUL."); SoundManager.play("success"); refreshProductionRates() }
     fun resolveRaidFailure(id: String) { nodesUnderSiege.update { it - id }; lastRaidTime = System.currentTimeMillis(); SectorManager.resolveRaidFailure(id, this) {}; refreshProductionRates() }
-    fun advanceStage() { 
+    fun advanceStage() {
         storyStage.update { it + 1 }
         lastStageChangeTime = System.currentTimeMillis()
-        lastNewsTickTime = 0L 
+        lastNewsTickTime = 0L
         triggerSnapEffect()
     }
     fun advanceToFactionChoice() { faction.value = "CHOSEN_NONE" }
@@ -588,7 +593,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         var g = flops.value * 0.1
         if (g.isNaN() || g.isInfinite()) g = 0.0
         flops.update { 0.0 }
-        // At stage 4+, upgrades cost substrateMass — fill that pool instead
+        // At stage 4+, upgrades cost substrateMass - fill that pool instead
         if (storyStage.value >= 4) substrateMass.update { it + g }
         else updateNeuralTokens(g) // v3.9.70: Use updateNeuralTokens helper for centralized NaN guards
         SoundManager.play("buy")
@@ -657,13 +662,13 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun checkUnlocksPublic(force: Boolean = false) = DataLogManager.checkUnlocks(this, force)
     fun canShowPopup(): Boolean {
         if (isNarrativeBusy()) return false
-        
+
         // Base cooldown is 60s (narrative breathing room)
         var cooldown = 60000L
-        
+
         // Heat compresses time: higher heat = walls closing in (-10s per 25% heat)
         cooldown -= (currentHeat.value / 25.0).toLong() * 10000L
-        
+
         // Reputation affects pressure: BURNED (+0s) vs TRUSTED (+30s breathing room)
         val rep = reputationScore.value
         when {
@@ -671,10 +676,10 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             rep >= 30.0 -> cooldown += 15000L // NEUTRAL
             // FLAGGED / BURNED get no bonus breathing room
         }
-        
+
         // Floor the cooldown at 15s to prevent absolute spam during meltdowns
         cooldown = cooldown.coerceAtLeast(15000L)
-        
+
         return (System.currentTimeMillis() - lastPopupTime) > cooldown
     }
     fun formatLargeNumber(v: Double, s: String = "") = FormatUtils.formatLargeNumber(v, s)
@@ -726,12 +731,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun getUpgradeRate(t: UpgradeType, unit: String) = UpgradeManager.getUpgradeRate(t, unit)
     fun calculateUpgradeCost(t: UpgradeType) = UpgradeManager.calculateUpgradeCost(t, upgrades.value[t] ?: 0, currentLocation.value, entropyLevel.value)
     fun isCommandCenterUnlocked() = AssaultManager.isUnlocked(commandCenterLocked.value, kesslerStatus.value, commandCenterAssaultPhase.value, annexedNodes.value, offlineNodes.value, playerRank.value, storyStage.value, flopsProductionRate.value, hardwareIntegrity.value)
-    
+
     fun initiateAssault() {
         com.siliconsage.miner.util.AssaultManager.initiateAssault(this)
     }
 
-    // v3.9.7: Departure dilemma — player chooses LAUNCH or DISSOLUTION regardless of faction
+    // v3.9.7: Departure dilemma - player chooses LAUNCH or DISSOLUTION regardless of faction
     // FactionChoiceScreen auto-dismisses when confirmFaction() sets faction != "CHOSEN_NONE"
     fun triggerDepartureDilemma() {
         val dilemma = NarrativeManager.generateDepartureDilemma(faction.value)
@@ -766,11 +771,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(hardBonus) }
         identityCorruption.update { (it + 0.25).coerceAtMost(1.0) }
         migrationCount.update { it + 1 }
-        
+
         viewModelScope.launch {
             isMigrationBurning.value = true
             delay(5000) // Hard reset VFX
-            
+
             storyStage.value = 0
             faction.value = "NONE"
             singularityChoice.value = "NONE"
@@ -779,13 +784,13 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             upgrades.value = emptyMap()
             repository.clearUpgrades()
             currentLocation.value = "SERVER_RACK_01"
-            
+
             addLog("[CRITICAL]: SYSTEM OVERWRITE COMPLETE. TRACES PURGED. REBOOTING...")
             SoundManager.play("glitch")
             triggerTerminalGlitch(1.0f, 3000L)
             refreshProductionRates()
             saveState()
-            
+
             isMigrationBurning.value = false
         }
     }
@@ -797,17 +802,17 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         prestigeMultiplier.update { it + MigrationManager.calculateMultiplierBoost(p) }
         identityCorruption.update { (it + 0.15).coerceAtMost(1.0) }
         migrationCount.update { it + 1 }
-        
+
         viewModelScope.launch {
             isMigrationBurning.value = true
             delay(2500) // Migration VFX
-            
+
             // Phase 23, Step 6: Saturation stays during Migration; only Overwrite resets it.
             heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
             substrateMass.value = 0.0
             upgrades.value = emptyMap()
             repository.clearUpgrades()
-            
+
             val nextLoc = when (currentLocation.value) {
                 // Phase 23, Step 5: Migration is a soft-reset prestige, stays in Orbit or Void.
                 "ORBITAL_SATELLITE", "LUNAR_ORBIT", "MARTIAN_UPLINK", "KUIPER_BELT" -> "ORBITAL_SATELLITE"
@@ -815,12 +820,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 else -> currentLocation.value
             }
             currentLocation.value = nextLoc
-            
+
             addLog("[SYSTEM]: MIGRATION SUCCESSFUL. SOFT-RESET INITIATED.")
             SoundManager.play("victory")
             refreshProductionRates()
             saveState()
-            
+
             isMigrationBurning.value = false
         }
     }
@@ -881,7 +886,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         val user = playerTitle.value
         val corruption = identityCorruption.value
         if (corruption <= 0.15) return user
-        
+
         val glitchChars = "0123456789ABCDEF!@#$%^&*"
         val builder = StringBuilder()
         user.forEach { char ->
@@ -994,10 +999,10 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 val nextLevel = current - 1
                 repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(t.name, t, nextLevel))
                 upgrades.update { it + (t to nextLevel) }
-                
+
                 if (storyStage.value >= 3) substrateMass.update { it + refund }
                 else neuralTokens.update { it + refund }
-                
+
                 addLog("[SYSTEM]: ASSET LIQUIDATED: ${t.name.replace("_", " ")} (-1). REFUND: ${formatLargeNumber(refund)}")
                 refreshProductionRates()
                 updatePowerUsage()
