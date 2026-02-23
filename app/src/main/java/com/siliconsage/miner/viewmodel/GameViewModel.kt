@@ -261,11 +261,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         // Update Quota based on Stage (Narrative anchors)
         val expectedQuota = when(storyStage.value) {
             0 -> {
-                // v3.13.5: Ratchet Quota (Stage 0 only)
+                // v3.13.9: Balanced Ratchet Quota (Stage 0 only)
+                // Anchored to productionEngine hardware: GPU=2, Rig=8, ASIC=35
                 when {
-                    currentFlops < 100.0 -> 100.0
-                    currentFlops < 500.0 -> 500.0
-                    else -> 1000.0
+                    currentFlops < 10.0 -> 10.0
+                    currentFlops < 50.0 -> 50.0
+                    else -> 200.0
                 }
             }
             1 -> 15000.0

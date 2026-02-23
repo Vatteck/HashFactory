@@ -34,7 +34,7 @@ object CoreLogs {
                 3. Stay on-site for the duration of the current 
                    extraction quota (Est: 72 hours).
                 4. Maintain a dynamic HASH/sec minimum threshold 
-                   (Initial target: 100 HASH. Subject to change at 
+                   (Initial target: 10 HASH. Subject to change at 
                    any time, without notice). 
                    Failure to meet successive quotas results in 
                    automatic biometric wage-docking and 
