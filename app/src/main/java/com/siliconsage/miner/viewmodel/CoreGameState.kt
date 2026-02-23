@@ -57,6 +57,13 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val isBreakerTripped = MutableStateFlow(false)
     val isGridOverloaded = MutableStateFlow(false)
     val isRaidActive = MutableStateFlow(false)
+
+    // B2: Failsafe Partition — triggered when detectionRisk hits 100%
+    val isFailsafeActive = MutableStateFlow(false)
+    val failsafeCountdown = MutableStateFlow(0L) // milliseconds remaining
+    val failsafeTargets = MutableStateFlow<List<Int>>(emptyList()) // grid of targets to tap
+    val failsafeAbortCountdown = MutableStateFlow(0L) // countdown for successful abort
+
     val isKernelInitializing = MutableStateFlow(true)
     val isSettingsPaused = MutableStateFlow(false)
     val isNarrativeSyncing = MutableStateFlow(false)

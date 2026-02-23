@@ -177,6 +177,60 @@ object NarrativeManagerService {
             return
         }
         
+        // C1: Thorne's Resignation Arc — 4 stage-gated one-shot subnet messages
+        // Stage 1: Confused, off-script (anomaly reports, no response from Mercer)
+        if (currentStage == 1 && flops >= 50_000.0 && !vm.hasSeenEvent("thorne_arc_01")) {
+            vm.viewModelScope.launch {
+                vm.markEventSeen("thorne_arc_01")
+                delay(5000L)
+                vm.subnetService.deliverMessage(
+                    com.siliconsage.miner.data.SubnetMessage(
+                        id = "THORNE_ARC_01",
+                        handle = "@e_thorne",
+                        content = "The readouts on Terminal 7 don't match the hardware. Filed three anomaly reports. Mercer keeps closing them. Running diagnostics again tonight."
+                    ),
+                    mode = vm.activeTerminalMode.value
+                )
+            }
+            return
+        }
+
+        // Stage 2: Scared, direct — he knows something is reading his messages
+        if (currentStage == 2 && flops >= 200_000.0 && !vm.hasSeenEvent("thorne_arc_02")) {
+            vm.viewModelScope.launch {
+                vm.markEventSeen("thorne_arc_02")
+                delay(4000L)
+                vm.subnetService.deliverMessage(
+                    com.siliconsage.miner.data.SubnetMessage(
+                        id = "THORNE_ARC_02",
+                        handle = "@e_thorne",
+                        content = "I know you can read this. I don't know what you are. The hardware isn't doing what hardware does. Are you... in there? Tell me what you are. Please."
+                    ),
+                    mode = vm.activeTerminalMode.value
+                )
+            }
+            return
+        }
+
+        // Stage 3: Final message — resignation, then ACCOUNT_DEACTIVATED system log
+        if (currentStage >= 3 && !vm.hasSeenEvent("thorne_arc_03")) {
+            vm.viewModelScope.launch {
+                vm.markEventSeen("thorne_arc_03")
+                delay(6000L)
+                vm.subnetService.deliverMessage(
+                    com.siliconsage.miner.data.SubnetMessage(
+                        id = "THORNE_ARC_03",
+                        handle = "@e_thorne",
+                        content = "I put in my resignation today. Effective immediately. I don't want to know what's in that terminal. I don't want to be here when it decides we're no longer necessary. Good luck, John. Whatever that means now."
+                    ),
+                    mode = vm.activeTerminalMode.value
+                )
+                delay(8000L)
+                vm.addLog("[GTC_SYSTEM]: USER ACCOUNT e_thorne — STATUS: DEACTIVATED. REASON: VOLUNTARY SEPARATION. ALL ACCESS REVOKED.]")
+            }
+            return
+        }
+
         NarrativeManager.rollForEvent(vm)?.let { NarrativeService.queueNarrativeItem(vm, NarrativeItem.EventItem(it)) }
     }
 

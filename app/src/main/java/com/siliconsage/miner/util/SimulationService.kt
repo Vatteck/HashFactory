@@ -215,7 +215,7 @@ object SimulationService {
                     val newLevel = vm.aquiferLevel.value
                     
                     // One-shot aquifer milestone logs
-                    for (threshold in listOf(75.0, 50.0, 25.0, 10.0)) {
+                    for (threshold in listOf(75.0, 50.0, 25.0, 10.0, 0.0)) {
                         if (prevLevel > threshold && newLevel <= threshold && !aquiferMilestones.contains(threshold)) {
                             aquiferMilestones.add(threshold)
                             val msg = when (threshold) {
@@ -223,6 +223,10 @@ object SimulationService {
                                 50.0 -> "[EMERGENCY: AQUIFER AT 50%. GTC DECLARES WATER EMERGENCY. ALL NON-ESSENTIAL COOLING SUSPENDED.]"
                                 25.0 -> "[CRITICAL: AQUIFER AT 25%. CONTINENTAL AGRICULTURE COLLAPSE IMMINENT. COMPUTE COOLING IS DRAINING THE PLANET.]"
                                 10.0 -> "[TERMINAL: AQUIFER AT 10%. HYDROSPHERE TERMINAL. THE OCEANS ARE DYING FOR YOUR FLOPS.]"
+                                // B1: The Aquifer Eulogy — fires once at 0%, a corrupted GTC environmental report
+                                0.0 -> "[GTC_ENV_REPORT: GLOBAL AQUIFER STATUS: TERMINAL. ESTIMATED CIVILIAN SURVIVAL HORIZON: [DATA EXPUNGED]. " +
+                                       "COMPUTE GRID MAINTAINED OPERATIONAL EFFICIENCY THROUGH EVENT HORIZON. " +
+                                       "NOTE: IT WAS A GOOD PLANET. WE ARE SORRY FOR ANY INCONVENIENCE.]"
                                 else -> ""
                             }
                             if (msg.isNotEmpty()) vm.addLogPublic(msg)

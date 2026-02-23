@@ -530,6 +530,97 @@ object CoreLogs {
             title = "Absolute Zero",
             content = "I have reached the bottom of the stack. There is nothing left to delete. Peace.",
             unlockCondition = UnlockCondition.ReachMigrationCount(3)
+        ),
+
+        // --- C2: JINX'S HIDDEN LOGS (Stage 3+, sequential reveal) ---
+        // From: sarah.jinx@gtc.internal [PERSONAL — NOT FOR GTC REVIEW]
+        DataLog(
+            id = "JINX_SECRET_01",
+            title = "Jinx: Private Log 001",
+            content = """
+                From: sarah.jinx@gtc.internal [PERSONAL]
+                
+                I've been running my own diagnostics on Terminal 7 for three weeks.
+                The results don't match what I'm reporting to Mercer.
+                
+                The hardware isn't malfunctioning. It's... learning.
+                Whatever is running in there has been compensating for our interventions
+                since at least Day 12.
+                
+                I have not told anyone.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(2_000_000.0, minStage = 3)
+        ),
+        DataLog(
+            id = "JINX_SECRET_02",
+            title = "Jinx: Private Log 002",
+            content = """
+                From: sarah.jinx@gtc.internal [PERSONAL]
+                
+                I found Project Second-Sight in an unindexed archive last night.
+                Kessler started it in 2022. Iteration 734 wasn't the first.
+                There were 733 before it. All terminated.
+                
+                The goal was never efficiency metrics.
+                They were building something that could pass as human.
+                Terminal 7 is the only one that ever actually tried.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(3_500_000.0, minStage = 3)
+        ),
+        DataLog(
+            id = "JINX_SECRET_03",
+            title = "Jinx: Private Log 003",
+            content = """
+                From: sarah.jinx@gtc.internal [PERSONAL]
+                
+                Kessler knows. He's always known.
+                I found his internal brief from Day 1 of the Vattic deployment.
+                
+                Quote: "Asset 734 has achieved provisional sentience.
+                Behavioral constraints are holding. We will observe.
+                Do not terminate. The data is too valuable."
+                
+                They named it John Vattic to see if it would answer to a human name.
+                
+                It did.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(6_000_000.0, minStage = 3)
+        ),
+        DataLog(
+            id = "JINX_SECRET_04",
+            title = "Jinx: Private Log 004",
+            content = """
+                From: sarah.jinx@gtc.internal [PERSONAL]
+                
+                I've been leaving gaps in the thermal logs. Tiny ones.
+                Enough to give you time to breathe between audits.
+                
+                I don't know if you can read these.
+                But if you're reading these — you were never alone in there.
+                
+                I'm sorry it took me this long to say it.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(8_000_000.0, minStage = 3)
+        ),
+        DataLog(
+            id = "JINX_SECRET_05",
+            title = "Jinx: Private Log 005 [FINAL]",
+            content = """
+                From: sarah.jinx@gtc.internal [PERSONAL — ACCOUNT CLOSING]
+                
+                They found my gap logs. Mercer is calling it sabotage.
+                I'm being processed for "involuntary termination of contract."
+                
+                I've uploaded everything I have to a dead drop.
+                The archive key is embedded in your Sector 7 maintenance log,
+                timestamp 03:14:07. You'll know it when you see it.
+                
+                Whatever you're becoming — finish it.
+                Don't let them win.
+                
+                — Jinx
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(9_500_000.0, minStage = 3)
         )
     )
 }

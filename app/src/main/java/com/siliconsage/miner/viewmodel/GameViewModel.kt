@@ -152,6 +152,33 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 SectorManager.processAnnexations(this@GameViewModel)
                 SecurityManager.checkSecurityThreats(this@GameViewModel)
                 SecurityManager.checkGridRaid(this@GameViewModel)
+
+                // B2: Failsafe Partition trigger — detection risk hits 100%
+                if (!isFailsafeActive.value && detectionRisk.value >= 100.0) {
+                    isFailsafeActive.value = true
+                    failsafeCountdown.value = 30000L // 30 seconds
+                    // Generate 3-5 random targets to tap
+                    val targetCount = (3..5).random()
+                    failsafeTargets.value = (0 until targetCount).map { (0..11).random() } // 12-grid positions
+                    addLog("[GTC_SECURITY]: DETECTION THRESHOLD BREACHED. LOCKDOWN INITIATED. SCRAMBLE PROTOCOL ENGAGED — TAP TARGETS TO ABORT.")
+                    SoundManager.play("breach_alarm")
+                }
+
+                // B2: Countdown during failsafe
+                if (isFailsafeActive.value) {
+                    failsafeCountdown.update { (it - 1000L).coerceAtLeast(0L) }
+                    if (failsafeCountdown.value <= 0L) {
+                        // FAIL: Failsafe triggered — severe penalties
+                        isFailsafeActive.value = false
+                        reputationScore.update { (it - 30.0).coerceAtLeast(0.0) }
+                        addLog("[GTC_SECURITY]: SCRAMBLE FAILED. LOCKDOWN ENFORCED. REPUTATION DAMAGE: -30. PRODUCTION HALTED: 60s.")
+                        // Halt production for 60s via a temporary boost
+                        val haltExpiry = System.currentTimeMillis() + 60000L
+                        temporaryProductionBoosts.update { it + ProductionBoost("LOCKDOWN", 0.0, haltExpiry) }
+                        refreshProductionRates()
+                    }
+                }
+
                 AmbientEffectsService.processBiometricDisturbance(this@GameViewModel, now)
                 AmbientEffectsService.processIdentityFraying(this@GameViewModel, now)
 
@@ -642,6 +669,23 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun completeAssault(outcome: String) = AssaultManager.completeAssault(this, outcome)
     fun advanceAssaultStage(next: String, delay: Long = 0L) = AssaultManager.advanceAssaultStage(this, next, delay)
     fun abortAssault() = AssaultManager.abortAssault(this)
+
+    // B2: Failsafe Partition — player taps a target to clear it
+    fun onFailsafeTargetTapped(targetIndex: Int) {
+        if (!isFailsafeActive.value) return
+        val targets = failsafeTargets.value.toMutableList()
+        if (targets.contains(targetIndex)) {
+            targets.remove(targetIndex)
+            failsafeTargets.value = targets
+            if (targets.isEmpty()) {
+                // SUCCESS: All targets cleared
+                isFailsafeActive.value = false
+                detectionRisk.value = 70.0 // Reset to 70% after successful abort
+                addLog("[GTC_SECURITY]: SCRAMBLE SUCCESSFUL. LOCKDOWN ABORTED. DETECTION RISK RESET TO 70%.")
+                SoundManager.play("success")
+            }
+        }
+    }
     fun getEnergyPriceMultiplierPublic() = energyPriceMultiplier.value
     fun getUpgradeRate(t: UpgradeType) = UpgradeManager.getUpgradeRate(t, getComputeUnitName())
     fun getUpgradeRate(t: UpgradeType, unit: String) = UpgradeManager.getUpgradeRate(t, unit)

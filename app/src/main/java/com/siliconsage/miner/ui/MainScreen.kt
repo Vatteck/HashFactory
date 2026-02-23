@@ -47,6 +47,96 @@ sealed class Screen(val title: String, val icon: ImageVector) {
     object SETTINGS : Screen("SYSTEM", Icons.Default.Settings)
 }
 
+// B2: Failsafe Partition Overlay — 3x4 grid of targets, countdown, scramble to abort
+@Composable
+fun FailsafeOverlay(
+    countdownMs: Long,
+    targetIndices: List<Int>,
+    onTargetTap: (Int) -> Unit
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.85f))) {
+        val cols = 4
+        val rows = 3
+        val totalCells = cols * rows
+
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Header
+            Text(
+                text = "⚠️ GTC LOCKDOWN ⚠️",
+                color = com.siliconsage.miner.ui.theme.ErrorRed,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                fontFamily = FontFamily.Monospace
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "SCRAMBLE TO ABORT",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Countdown
+            val secondsLeft = (countdownMs / 1000).coerceAtLeast(0)
+            val pulseColor = if (secondsLeft <= 10) com.siliconsage.miner.ui.theme.ErrorRed else com.siliconsage.miner.ui.theme.ElectricBlue
+            Text(
+                text = "${secondsLeft}s",
+                color = pulseColor,
+                fontSize = 48.sp,
+                fontWeight = FontWeight.ExtraBold,
+                fontFamily = FontFamily.Monospace
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Grid of targets
+            for (row in 0 until rows) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (col in 0 until cols) {
+                        val cellIndex = row * cols + col
+                        val isTarget = targetIndices.contains(cellIndex)
+                        Box(
+                            modifier = Modifier
+                                .size(70.dp)
+                                .background(
+                                    if (isTarget) com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.9f)
+                                    else Color.DarkGray.copy(alpha = 0.3f),
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .border(
+                                    2.dp,
+                                    if (isTarget) com.siliconsage.miner.ui.theme.ErrorRed else Color.Gray.copy(alpha = 0.5f),
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .clickable(enabled = isTarget) { onTargetTap(cellIndex) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (isTarget) "⬡" else "",
+                                color = Color.White,
+                                fontSize = 24.sp
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "TAP ALL RED TARGETS TO SCRAMBLE",
+                color = Color.Gray,
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace
+            )
+        }
+    }
+}
+
 @Composable
 fun DigitalWashOverlay(choice: String, faction: String) {
     val infiniteTransition = rememberInfiniteTransition(label = "digital_wash")
@@ -227,6 +317,11 @@ fun MainScreen(viewModel: GameViewModel) {
     val diagnosticGrid by viewModel.diagnosticGrid.collectAsState()
     val isGovernanceFork by viewModel.isGovernanceForkActive.collectAsState()
     val isAscensionUploading by viewModel.isAscensionUploading.collectAsState()
+
+    // B2: Failsafe Partition state
+    val isFailsafeActive by viewModel.isFailsafeActive.collectAsState()
+    val failsafeCountdown by viewModel.failsafeCountdown.collectAsState()
+    val failsafeTargets by viewModel.failsafeTargets.collectAsState()
     val uploadProgress by viewModel.uploadProgress.collectAsState()
     val breachClicks by viewModel.breachClicksRemaining.collectAsState()
     val isBreach by viewModel.isBreachActive.collectAsState()
@@ -483,6 +578,16 @@ fun MainScreen(viewModel: GameViewModel) {
                     KernelHijackOverlay(isKernelHijackActive, attackTaps) { viewModel.onDefendKernelHijack() }
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.DiagnosticsOverlay(isDiagnostics, diagnosticGrid) { viewModel.onDiagnosticTap(it) } }
                     com.siliconsage.miner.ui.components.GovernanceForkOverlay(isGovernanceFork) { viewModel.resolveFork(0) }
+
+                    // B2: Failsafe Partition Overlay — 12-tap grid, countdown, tap targets to abort
+                    if (isFailsafeActive) {
+                        FailsafeOverlay(
+                            countdownMs = failsafeCountdown,
+                            targetIndices = failsafeTargets,
+                            onTargetTap = { viewModel.onFailsafeTargetTapped(it) }
+                        )
+                    }
+
                     val currentDilemma by viewModel.currentDilemma.collectAsState()
                     DilemmaOverlay(currentDilemma, viewModel) { viewModel.selectChoice(it) }
                     val pendingRivalMessage by viewModel.pendingRivalMessage.collectAsState()

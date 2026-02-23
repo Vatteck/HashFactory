@@ -22,12 +22,12 @@
 - [ ] **[A2] Pellet Ghost Trail** — 3 fading afterimages on compute pellet sweep.
 - [ ] **[A3] Signal Noise in Buffer** — Glitch chars in empty buffer, driven by globalGlitchIntensity.
 - [ ] **[A4] I/O Log Timestamps** — `[HH:MM:SS]` prefix on system logs in dim gray.
-- [ ] **[B1] Aquifer Eulogy** — One-time GTC eulogy log when aquifer hits 0%. One flag, one log.
+- [x] **[B1] Aquifer Eulogy (v3.17.2)** — 0% milestone added to aquifer tracker. GTC "sorry for any inconvenience" eulogy fires once at global aquifer death.
 - [ ] **[B2] Failsafe Partition** — Detection risk 100% = 30s lockdown. Scramble minigame to abort.
 - [ ] **[B3] Kessler's Last Bargain** — Stage 4 deal: all Reputation for ×2.5 multiplier. 5min timer.
 - [ ] **[B4] Black Market** — `@null_vendor` subnet event at BURNED rep. Stolen upgrades, dirty goods.
-- [ ] **[C1] Thorne's Resignation Arc** — 4-stage chatter chain ending in `[ACCOUNT_DEACTIVATED]`.
-- [ ] **[C2] Jinx's Hidden Data Logs** — Stage 3+ secret logs revealing GTC knew everything from Day 1.
+- [x] **[C1] Thorne's Resignation Arc (v3.17.2)** — 3 stage-gated one-shot subnet messages (S1 confused → S2 scared → S3 final). ACCOUNT_DEACTIVATED system log fires after last message.
+- [x] **[C2] Jinx's Hidden Data Logs (v3.17.2)** — 5 secret logs (JINX_SECRET_01–05), Stage 3+, 2M–9.5M FLOPS stagger. Reveals Kessler knew from Day 1. Jinx fired for covering for Vattic.
 - [ ] **[D1] TerminalScreen.kt Split** — 1084 lines → 6 files (<500 lines each).
 - [ ] **[D2] SubnetAlertState Abstraction** — Sealed class for nav badge logic cleanup.
 - [ ] **[A5] Oscilloscope Bar** *(stretch)* — Canvas waveform replaces flat compute bar.
