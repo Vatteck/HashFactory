@@ -191,21 +191,21 @@ object UpgradeManager {
 
     fun getUpgradeRate(type: UpgradeType, unit: String): String {
         val baseRate = when (type) {
-            UpgradeType.REFURBISHED_GPU -> 1.5
-            UpgradeType.DUAL_GPU_RIG -> 7.5
+            UpgradeType.REFURBISHED_GPU -> 2.0
+            UpgradeType.DUAL_GPU_RIG -> 8.0
             UpgradeType.MINING_ASIC -> 35.0
-            UpgradeType.TENSOR_UNIT -> 150.0
+            UpgradeType.TENSOR_UNIT -> 200.0
             UpgradeType.NPU_CLUSTER -> 1000.0
-            UpgradeType.AI_WORKSTATION -> 6000.0
-            UpgradeType.SERVER_RACK -> 40000.0
-            UpgradeType.CLUSTER_NODE -> 250000.0
-            UpgradeType.SUPERCOMPUTER -> 1500000.0
+            UpgradeType.AI_WORKSTATION -> 4000.0
+            UpgradeType.SERVER_RACK -> 25000.0
+            UpgradeType.CLUSTER_NODE -> 150000.0
+            UpgradeType.SUPERCOMPUTER -> 1000000.0
             UpgradeType.QUANTUM_CORE -> 10000000.0
             UpgradeType.OPTICAL_PROCESSOR -> 75000000.0
-            UpgradeType.BIO_NEURAL_NET -> 500000000.0
-            UpgradeType.PLANETARY_COMPUTER -> 4000000000.0
-            UpgradeType.DYSON_NANO_SWARM -> 30000000000.0
-            UpgradeType.MATRIOSHKA_BRAIN -> 250000000000.0
+            UpgradeType.BIO_NEURAL_NET -> 800000000.0
+            UpgradeType.PLANETARY_COMPUTER -> 15000000000.0
+            UpgradeType.DYSON_NANO_SWARM -> 250000000000.0
+            UpgradeType.MATRIOSHKA_BRAIN -> 15000000000000.0
             else -> 0.0
         }
         
