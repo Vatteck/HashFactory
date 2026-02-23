@@ -740,14 +740,14 @@ fun HeaderSection(
             }
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermText = buildAnnotatedString {
-                    withStyle(SpanStyle(color = HudTheme.heatColor(currentHeatState.value, hudTheme).copy(alpha = 0.7f))) { append("THERM: ") }
-                    withStyle(SpanStyle(color = Color.White)) { append("${String.format("%.1f", currentHeatState.value)}°C ") }
+                    withStyle(SpanStyle(color = Color.Gray.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) { append("THERM: ") }
+                    withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Black)) { append("${String.format("%.1f", currentHeatState.value)}°C ") }
                     val deltaColor = when {
                         currentHeatRate > 2.0  -> hudTheme.critical
                         currentHeatRate > 0.0  -> hudTheme.warning
                         else                   -> hudTheme.positiveDelta
                     }
-                    withStyle(SpanStyle(color = deltaColor.copy(alpha = 0.9f), fontWeight = FontWeight.Normal)) {
+                    withStyle(SpanStyle(color = deltaColor.copy(alpha = 0.9f), fontWeight = FontWeight.Bold)) {
                         append(if (currentHeatRate >= 0) "[+${String.format("%.1f", currentHeatRate)}]" else "[${String.format("%.1f", currentHeatRate)}]")
                     }
                 }
@@ -770,8 +770,8 @@ fun HeaderSection(
                 }
 
                 val integText = buildAnnotatedString {
-                    withStyle(SpanStyle(color = hudTheme.primary.copy(alpha = 0.7f))) { append("INTEG: ") }
-                    withStyle(SpanStyle(color = HudTheme.integrityColor(currentIntegrity, hudTheme))) { append("${currentIntegrity.toInt()}%") }
+                    withStyle(SpanStyle(color = Color.Gray.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) { append("INTEG: ") }
+                    withStyle(SpanStyle(color = HudTheme.integrityColor(currentIntegrity, hudTheme), fontWeight = FontWeight.Black)) { append("${currentIntegrity.toInt()}%") }
                 }
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                     Text(text = integText, fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
@@ -789,8 +789,8 @@ fun HeaderSection(
                             storyStage == 3 -> "GLOBAL: "
                             else -> "RECYCLE: "
                         }
-                        withStyle(SpanStyle(color = ElectricBlue.copy(alpha = 0.7f))) { append(reservoirLabel) }
-                        withStyle(SpanStyle(color = Color.White)) { 
+                        withStyle(SpanStyle(color = Color.Gray.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)) { append(reservoirLabel) }
+                        withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Black)) { 
                            val usage = waterUsageState.value
                            val formatted = when {
                                usage >= 1_000_000 -> "${String.format("%.1f", usage / 1_000_000.0)} mGal/s"
