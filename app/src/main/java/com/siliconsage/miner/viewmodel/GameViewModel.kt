@@ -215,9 +215,17 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
 
     private fun processComputeFever(now: Long) {
-        val currentFlops = flopsProductionRate.value
+        val passiveFlops = flopsProductionRate.value
+        // v3.13.10: totalEffectiveRate (Passive + Click Effort)
+        // clickSpeedLevel scales from 0 to 2 based on recent click intervals
+        val clickEffort = when(clickSpeedLevel.value) {
+            1 -> calculateClickPower() * 2.0 // Moderate clicking
+            2 -> calculateClickPower() * 5.0 // Rapid clicking
+            else -> 0.0
+        }
+        val currentFlops = passiveFlops + clickEffort
         val quota = currentQuotaThreshold.value
-
+        
         // v3.13.4: Quota Activation (Grace Period ends at first production)
         if (!isQuotaActive.value && currentFlops > 0.0) {
             isQuotaActive.value = true
@@ -254,7 +262,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             0f // Clean signal while making progress
         } else {
             // Ramps from 0 to 0.3 as stability drops from 50% to 0%
-            ((0.5 - stability) * 0.6).toFloat().coerceIn(0f, 0.3f) 
+            ((0.5 - stability) * 0.6).toFloat().coerceIn(0f, 0.3f)
         }
         substrateStaticIntensity.value = intensity
 
