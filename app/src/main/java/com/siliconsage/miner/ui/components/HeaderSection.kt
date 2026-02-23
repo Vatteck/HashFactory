@@ -336,21 +336,23 @@ fun HeaderSection(
                 val shiftSecs = shiftSeconds % 60
                 val shiftStr = if (isBreachActive) "XX:XX:XX" else String.format("%02d:%02d:%02d", shiftHours, shiftMinutes, shiftSecs)
                 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text(
                         text = if (isBreachActive) "TIME_REDACTED" else "SHIFT REMAINING",
                         color = (if (isBreachActive) ErrorRed else color).copy(alpha = 0.3f * droopAlpha),
                         fontSize = 7.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace,
-                        letterSpacing = 0.5.sp
+                        letterSpacing = 0.5.sp,
+                        lineHeight = 7.sp
                     )
                     Text(
                         text = shiftStr,
-                        color = color.copy(alpha = 0.6f * droopAlpha),
+                        color = (if (isBreachActive) ErrorRed else color).copy(alpha = 0.6f * droopAlpha),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = FontFamily.Monospace,
+                        lineHeight = 11.sp
                     )
                 }
 
