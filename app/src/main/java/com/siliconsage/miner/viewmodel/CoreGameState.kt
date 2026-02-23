@@ -25,6 +25,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val maxPowerkW = MutableStateFlow(100.0)
     val localGenerationkW = MutableStateFlow(0.0)
     val flopsProductionRate = MutableStateFlow(0.0)
+    val totalEffectiveRate = MutableStateFlow(0.0) // v3.13.11: Live Passive + Click spike
     val heatGenerationRate = MutableStateFlow(0.0)
     // Phase 23: Water-Migration Hook
     val waterUsage = MutableStateFlow(0.0) // gal/s

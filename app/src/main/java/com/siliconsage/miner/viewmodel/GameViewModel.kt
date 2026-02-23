@@ -224,6 +224,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             else -> 0.0
         }
         val currentFlops = passiveFlops + clickEffort
+        totalEffectiveRate.value = currentFlops
         val quota = currentQuotaThreshold.value
         
         // v3.13.4: Quota Activation (Grace Period ends at first production)

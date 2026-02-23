@@ -88,7 +88,7 @@ fun HeaderSection(
     val waterEfficiencyState = viewModel.waterEfficiencyMultiplier.collectAsState()
     val maxPowerState = viewModel.maxPowerkW.collectAsState()
     val localGenState = viewModel.localGenerationkW.collectAsState()
-    val flopsRateState = viewModel.flopsProductionRate.collectAsState()
+    val flopsRateState = viewModel.totalEffectiveRate.collectAsState() // v3.13.11: Display total effective (Live Spike)
     val integrityState = viewModel.hardwareIntegrity.collectAsState()
     
     val infiniteTransition = rememberInfiniteTransition(label = "kinetic_hud")
