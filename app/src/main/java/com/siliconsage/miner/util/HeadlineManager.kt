@@ -10,9 +10,9 @@ object HeadlineManager {
     // --- 1. THE DATABASE (Refactored for Phase 11) ---
     
     private val bullHeadlines = listOf(
+        "GTC Stock Surges on News of Ocean-Bed Substrate Expansion. [BULL]",
         "Wall St. panics as automated trading bot achieves record yields. [BULL]",
         "Unknown wallet moves 50% of global GDP. Analysts baffled. [BULL]",
-        "Crypto regulations repealed in offshore data haven. [BULL]",
         "Credits exchange listed on inter-planetary exchange. [BULL]",
         "New hashing algorithms improve miner efficiency by 5%. [BULL]",
         "Quantum computing breakthrough makes mining 2x faster! [BULL]",
@@ -23,6 +23,7 @@ object HeadlineManager {
     )
 
     private val bearHeadlines = listOf(
+        "COASTAL COLLAPSE: 40KM LITTORAL ZONES NOW SALT-CRUSTED WASTES. [BEAR]",
         "Silicon shortage reported after cargo ship 'accidentally' sinks. [BEAR]",
         "Global Tech Council bans 'unregulated compute' in Sector 4. [BEAR]",
         "Major exchange hacked by 'The Void'. Liquidity frozen. [BEAR]",
@@ -31,11 +32,11 @@ object HeadlineManager {
         "Energy prices rising in Sector 7 due to 'unexplained overhead'. [BEAR]",
         "Global GPU shortage reported! [BEAR]",
         "Silicon Futures Dip as Rare Earth Mining Protests Continue. [BEAR]",
-        "Minor Outage Reported in Industrial Zone 4 (Resolved). [BEAR]",
-        "Logistics delay: Chip shortage affects Q4 rollout. [BEAR]"
+        "Minor Outage Reported in Industrial Zone 4 (Resolved). [BEAR]"
     )
 
     private val energySpikeHeadlines = listOf( 
+        "MUNICIPAL RESERVOIR DIVERSION: GTC REROUTES 40% FLOW TO SUBSTATION COOLING. [ENERGY_SPIKE]",
         "GTC announces surprise grid audit. Fines imminent. [ENERGY_SPIKE]",
         "Solar flare hits Northern Hemisphere. Grids overloaded. [ENERGY_SPIKE]",
         "Heatwave causes rolling blackouts. AC units struggling. [ENERGY_SPIKE]",
@@ -46,9 +47,9 @@ object HeadlineManager {
     )
 
     private val energyDropHeadlines = listOf(
+        "HYDROSPHERE TERMINAL: GLOBAL MASS DOWN 43% — EXTRACTION EXCEEDS REPLENISHMENT. [ENERGY_DROP]",
         "Fusion breakthrough at CERN creates surplus power. Prices plummet. [ENERGY_DROP]",
         "Global cooling event reduces server farm overhead. [ENERGY_DROP]",
-        "New superconductor alloy discovered in deep mines. [ENERGY_DROP]",
         "Energy Surplus: GTC releases emergency reserves. [ENERGY_DROP]"
     )
 
