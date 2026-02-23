@@ -666,13 +666,13 @@ fun TerminalTab(
                 TechnicalCornerShape(topStart = 16f, topEnd = 16f)
             )
             .clickable { onClick() }
-            .padding(vertical = 10.dp),
+            .padding(vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
         CyberHeader(
             text = label,
             color = if (active) tabColor else tabColor.copy(alpha = if (hasFlash) flashAlpha else 0.4f),
-            fontSize = 12.sp,
+            fontSize = 10.sp,
             isGlitched = active && corruption > 0.4
         )
     }
