@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.ConvergenceGold
+import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.HudTheme
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlin.random.Random
@@ -525,6 +526,20 @@ fun HeaderSection(
                     else -> "FLOPS"
                 }
                 ResourceDisplay(viewModel.flops, viewModel.totalEffectiveRate, flopsLabel, Icons.Default.Computer, color, droopAlpha, currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE", if (currentHeatState.value > 98) 0.4 else 0.08, false, 110.dp) { viewModel.formatLargeNumber(it) }
+                
+                // v3.13.13: Global Market Modifier Readout
+                val marketMult by viewModel.marketMultiplier.collectAsState()
+                if (marketMult != 1.0) {
+                    val marketColor = if (marketMult > 1.0) NeonGreen else Color(0xFFFFCC00)
+                    Text(
+                        text = "EFF: ${String.format("%.2f", marketMult)}x",
+                        color = marketColor.copy(alpha = 0.7f * droopAlpha),
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+
                 Box(modifier = Modifier.weight(1f).height(48.dp), contentAlignment = Alignment.Center) { com.siliconsage.miner.ui.components.EnhancedAnalyzingAnimation(flopsRateState.value, currentHeatState.value, isOverclocked, isThermalLockout, isBreakerTripped, isPurging, isBreachActive, isTrueNull || singularityChoice == "NULL_OVERWRITE", isSovereign || singularityChoice == "SOVEREIGN", lockoutTimer, faction, color.copy(alpha = droopAlpha), manualClickFlow) }
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(130.dp)) {
                     val tokensLabel = when {
