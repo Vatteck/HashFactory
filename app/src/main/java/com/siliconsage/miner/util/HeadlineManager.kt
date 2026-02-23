@@ -168,22 +168,26 @@ object HeadlineManager {
         90.0 to listOf(
             "Coastal towns report 5-meter tide recession. GTC: 'Evaporation is within spec'.",
             "MUNICIPAL ALERT: Sprinkler bans in effect. All water diverted to Industrial Core.",
-            "GTC Stock up as Substrate Expansion hits record cooling efficiency."
+            "GTC Stock up as Substrate Expansion hits record cooling efficiency.",
+            "Visual: Pacific Tideline retreats 200m in 24 hours. Fish markets report 'dry hauls'."
         ),
         70.0 to listOf(
             "COASTAL COLLAPSE: 40KM LITTORAL ZONES NOW SALT-CRUSTED WASTES.",
             "Desalination plants hitting 400% capacity. GTC: 'Atmospheric moisture is a luxury'.",
-            "MUNICIPAL RESERVOIR DIVERSION: GTC REROUTES 40% FLOW TO SUBSTATION COOLING."
+            "MUNICIPAL RESERVOIR DIVERSION: GTC REROUTES 40% FLOW TO SUBSTATION COOLING.",
+            "The Salt Crawl: Former beachfront properties landlocked by crystalline plains."
         ),
         40.0 to listOf(
             "HYDROSPHERE TERMINAL: GLOBAL MASS DOWN 43% — EXTRACTION EXCEEDS REPLENISHMENT.",
             "GEOLOGICAL RIGOR MORTIS: DESICCATED CONTINENTAL SHELVES COLLAPSE UNDER OWN DRY WEIGHT.",
-            "THE GRAY REBULLION: SATELLITES CONFIRM 70% LOSS OF OPAL BLUE; PLANETARY HUE SHORING INDUSTRIAL OXIDE."
+            "THE GRAY REBULLION: SATELLITES CONFIRM 70% LOSS OF OPAL BLUE; EARTH SHORING INDUSTRIAL OXIDE.",
+            "Marine Life Status: DEPRECATED. Oceans reclassified as 'Inert Coolant Volume'."
         ),
         15.0 to listOf(
             "THE LAST BRINE: GTC enforces 'Dry-Only' humanitarian zones. Core-coolant is priority.",
             "OCEANIC EXTINCTION: Final 10% of Hydrosphere designated as 'Industrial Variable'.",
-            "≪ WARNING: PLANETARY FLUID BUFFER EXHAUSTED. THERMAL RUNAWAY IMMINENT. ≫"
+            "≪ WARNING: PLANETARY FLUID BUFFER EXHAUSTED. THERMAL RUNAWAY IMMINENT. ≫",
+            "GTC Memo: Terrestrial Biology is inefficient. Priority remains [AUTHORIZED_USER_734]."
         )
     )
 
