@@ -746,39 +746,11 @@ fun TerminalLogLine(
         else -> ""
     }
 
-    // v3.13.39: Deep Syntax Colorizer (White Base + Tokenized Logic)
+    // v3.13.43: Terminal Body Restoration (Reverted Tokenization)
     fun androidx.compose.ui.text.AnnotatedString.Builder.colorizeContent(text: String, defaultColor: Color) {
-        val tokens = text.split(" ")
-        for ((i, token) in tokens.withIndex()) {
-            val visualToken = getVisualString(token)
-            
-            // Syntax Color Logic: White base, specific tokens highlighted
-            val color = when {
-                // Numbers and Percentages -> Neon Green
-                token.any { it.isDigit() } || token.contains("%") -> com.siliconsage.miner.ui.theme.NeonGreen
-                
-                // Brackets and Operators -> Gray
-                token.startsWith("[") || token.endsWith("]") || token.contains("=") -> Color.Gray
-                
-                // Units and Protocols -> Electric Blue
-                token.contains("HASH") || token.contains("FLOPS") || token.contains("NEUR") || 
-                token.contains("CRED") || token.contains("TCP/IP") || token.contains("SSH") -> com.siliconsage.miner.ui.theme.ElectricBlue
-                
-                // Entities and Handles -> Convergence Gold
-                token.contains("@") || token.contains("Vattic") || token.contains("Kessler") || 
-                token.contains("GTC") || token.contains("Asset") -> com.siliconsage.miner.ui.theme.ConvergenceGold
-                
-                // Default back to White
-                else -> Color.White
-            }
-            
-            withStyle(style = androidx.compose.ui.text.SpanStyle(
-                color = color, 
-                fontWeight = if (color != Color.White) FontWeight.Bold else FontWeight.Normal
-            )) {
-                append(visualToken)
-            }
-            if (i < tokens.size - 1) append(" ")
+        val visualText = getVisualString(text)
+        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White, fontWeight = FontWeight.Normal)) {
+            append(visualText)
         }
     }
 
