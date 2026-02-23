@@ -176,6 +176,11 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val currentQuotaThreshold = MutableStateFlow(10.0) // Stage 0 HASH quota
     val pendingQuotaThreshold = MutableStateFlow(10.0)
     var lastQuotaRatchetTime = 0L
+    
+    // v3.13.19: GTC Labor & Compliance
+    val shiftTimeRemaining = MutableStateFlow(43200L) // 12 Hours initial
+    val isWageDocking = MutableStateFlow(false)
+    var lastLowSignalTime = 0L
 
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
     val customUiScaleFactor = MutableStateFlow(1.0f)

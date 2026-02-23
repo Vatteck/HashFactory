@@ -280,36 +280,53 @@ fun HeaderSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                var glitchedTitle by remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
+                val glitchedState = remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
                 LaunchedEffect(corruption) {
                     if (corruption > 0.3) {
                         while (true) {
                             delay(kotlin.random.Random.nextLong(2000, 10000))
                             if (kotlin.random.Random.nextDouble() < corruption * 0.4) {
                                 val original = systemTitle
-                                glitchedTitle = when {
+                                glitchedState.value = when {
                                     corruption > 0.9 -> "KERNEL_734"
                                     corruption > 0.7 -> "VATTECK_UNIT_734"
                                     else -> "ASSET_734_LEAK"
                                 }
                                 delay(200)
-                                glitchedTitle = original
+                                glitchedState.value = original
                             }
                         }
                     }
                 }
 
-                Text(
-                    text = glitchedTitle.uppercase(),
-                    color = color.copy(alpha = 1.0f * droopAlpha),
-                    fontSize = 15.sp,
-                    style = glowStyle,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.5.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Clip,
-                    modifier = Modifier.weight(1f, fill = false) // Don't force fill, just take what's needed
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = glitchedState.value.uppercase(),
+                        color = color.copy(alpha = 1.0f * droopAlpha),
+                        fontSize = 15.sp,
+                        style = glowStyle,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.5.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip
+                    )
+                    
+                    // v3.13.19: Shift Timer HUD
+                    val shiftSeconds by viewModel.shiftTimeRemaining.collectAsState()
+                    val shiftHours = shiftSeconds / 3600
+                    val shiftMinutes = (shiftSeconds % 3600) / 60
+                    val shiftSecs = shiftSeconds % 60
+                    val shiftStr = String.format("%02d:%02d:%02d", shiftHours, shiftMinutes, shiftSecs)
+                    
+                    Text(
+                        text = "SHIFT ENDS IN: $shiftStr",
+                        color = color.copy(alpha = 0.5f * droopAlpha), // Use passed 'color'
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        letterSpacing = 1.sp
+                    )
+                }
 
                 // v3.13.7: Signal Intensity Indicator (Relocated to Top Right)
                 val signalStability by viewModel.signalStability.collectAsState()
