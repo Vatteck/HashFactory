@@ -173,7 +173,9 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val isQuotaActive = MutableStateFlow(false)
     val signalStability = MutableStateFlow(1.0)
     val substrateStaticIntensity = MutableStateFlow(0f)
-    val currentQuotaThreshold = MutableStateFlow(1000.0) // Stage 0 HASH quota
+    val currentQuotaThreshold = MutableStateFlow(10.0) // Stage 0 HASH quota
+    val pendingQuotaThreshold = MutableStateFlow(10.0)
+    var lastQuotaRatchetTime = 0L
 
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
     val customUiScaleFactor = MutableStateFlow(1.0f)

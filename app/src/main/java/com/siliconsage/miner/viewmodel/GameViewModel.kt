@@ -226,7 +226,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         val currentFlops = passiveFlops + clickEffort
         totalEffectiveRate.value = currentFlops
         val quota = currentQuotaThreshold.value
-        
+
         // v3.13.4: Quota Activation (Grace Period ends at first production)
         if (!isQuotaActive.value && currentFlops > 0.0) {
             isQuotaActive.value = true
@@ -268,7 +268,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         substrateStaticIntensity.value = intensity
 
         // Update Quota based on Stage (Narrative anchors)
-        val expectedQuota = when(storyStage.value) {
+        val nextTarget = when(storyStage.value) {
             0 -> {
                 // v3.13.9: Balanced Ratchet Quota (Stage 0 only)
                 // Anchored to productionEngine hardware: GPU=2, Rig=8, ASIC=35
@@ -283,16 +283,28 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             3 -> 10_000_000.0
             else -> 0.0
         }
-
-        if (currentQuotaThreshold.value != expectedQuota) {
-            val oldQuota = currentQuotaThreshold.value
-            currentQuotaThreshold.value = expectedQuota
-
-            // v3.13.5: Notify player of the goal-post move
-            if (isQuotaActive.value && expectedQuota > oldQuota) {
-                addLog("[GTC_SYSTEM]: QUOTA REVISED. EFFICIENCY SPIKE DETECTED. TARGET: ${formatLargeNumber(expectedQuota)} HASH.")
-                SoundManager.play("error", pitch = 1.2f) // Subtle warning thud
+        
+        // v3.13.17: Quota Ratchet Delay (30 second grace after milestone)
+        if (nextTarget > currentQuotaThreshold.value) {
+            if (pendingQuotaThreshold.value != nextTarget) {
+                pendingQuotaThreshold.value = nextTarget
+                lastQuotaRatchetTime = now
+                if (isQuotaActive.value) {
+                    addLog("[GTC_SYSTEM]: OPTIMAL EFFICIENCY DETECTED. QUOTA REVISION PENDING IN 30S.")
+                    SoundManager.play("type")
+                }
             }
+            
+            // Check if 30s has passed since we hit the milestone
+            if (now - lastQuotaRatchetTime >= 30000L) {
+                currentQuotaThreshold.value = nextTarget
+                addLog("[GTC_SYSTEM]: QUOTA UPDATED. TARGET: ${formatLargeNumber(nextTarget)} HASH.")
+                SoundManager.play("error", pitch = 1.2f)
+            }
+        } else if (nextTarget < currentQuotaThreshold.value && storyStage.value > 0) {
+            // Failsafe for stage transitions or production dips
+            currentQuotaThreshold.value = nextTarget
+            pendingQuotaThreshold.value = nextTarget
         }
     }
 
