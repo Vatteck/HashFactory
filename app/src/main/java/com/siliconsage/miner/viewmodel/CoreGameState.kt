@@ -10,10 +10,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-/**
- * Base class containing core GameState variables for GameViewModel.
- * Extracted to prevent GameViewModel from exceeding size limits.
- */
 open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val flops = MutableStateFlow(0.0)
     val neuralTokens = MutableStateFlow(0.0)
@@ -25,12 +21,11 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val maxPowerkW = MutableStateFlow(100.0)
     val localGenerationkW = MutableStateFlow(0.0)
     val flopsProductionRate = MutableStateFlow(0.0)
-    val totalEffectiveRate = MutableStateFlow(0.0) // v3.13.11: Live Passive + Click spike
+    val totalEffectiveRate = MutableStateFlow(0.0) 
     val heatGenerationRate = MutableStateFlow(0.0)
-    // Phase 23: Water-Migration Hook
     val waterUsage = MutableStateFlow(0.0) // gal/s
     val aquiferLevel = MutableStateFlow(100.0) // 0-100%
-    val waterEfficiencyMultiplier = MutableStateFlow(1.0) // Reduced when aquifer drops or GTC throttles
+    val waterEfficiencyMultiplier = MutableStateFlow(1.0) 
     
     val hardwareIntegrity = MutableStateFlow(100.0)
     val storyStage = MutableStateFlow(0)
@@ -78,6 +73,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val isAscensionUploading = MutableStateFlow(false)
     val showPrestigeChoice = MutableStateFlow(false)
     val isBreachActive = MutableStateFlow(false)
+
     val isAirdropActive = MutableStateFlow(false)
     val isKernelHijackActive = MutableStateFlow(false)
     val isBridgeSyncEnabled = MutableStateFlow(false)
@@ -151,6 +147,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val commandCenterAssaultPhase = MutableStateFlow("NOT_STARTED")
     val commandCenterLocked = MutableStateFlow(false)
     val securityLevel = MutableStateFlow(0)
+    val hierarchyReputation = MutableStateFlow(0)
     val hallucinationText = MutableStateFlow<String?>(null)
     val marketMultiplier = MutableStateFlow(1.0)
     val thermalRateModifier = MutableStateFlow(1.0)
@@ -167,21 +164,26 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val reputationScore = MutableStateFlow(50.0)
     val reputationTier = MutableStateFlow("NEUTRAL")
 
-    // Substrate Sickness & Compute Fever (Phase 1)
     val computeHeadroomBonus = MutableStateFlow(1.0)
     val isSignalClear = MutableStateFlow(true)
     val isQuotaActive = MutableStateFlow(false)
     val signalStability = MutableStateFlow(1.0)
     val substrateStaticIntensity = MutableStateFlow(0f)
     val potentialProgress = MutableStateFlow(0f)
-    val currentQuotaThreshold = MutableStateFlow(10.0) // Stage 0 HASH quota
+    val currentQuotaThreshold = MutableStateFlow(10.0) 
     val pendingQuotaThreshold = MutableStateFlow(10.0)
     var lastQuotaRatchetTime = 0L
     
-    // v3.13.19: GTC Labor & Compliance
-    val shiftTimeRemaining = MutableStateFlow(43200L) // 12 Hours initial
+    val shiftTimeRemaining = MutableStateFlow(43200L) 
     val isWageDocking = MutableStateFlow(false)
     var lastLowSignalTime = 0L
+
+    // v3.16.0: Phase 26 — Compute Fever: Sickness, Rack High & Snap
+    val isCascadeDesync = MutableStateFlow(false)
+    val rackHighActive = MutableStateFlow(false)
+    val rackHighMultiplier = MutableStateFlow(1.0)
+    var lastRackMilestone = 0
+    val snapTrigger = MutableStateFlow(0L)
 
     val uiScale = MutableStateFlow(com.siliconsage.miner.data.UIScale.NORMAL)
     val customUiScaleFactor = MutableStateFlow(1.0f)
@@ -195,35 +197,39 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     var lastNewsTickTime = 0L
     protected var lastSubnetMsgTime = 0L
     var lastPopupTime = 0L
-    var lastUtilityStatementTime = 0L
-    var billingPeriodAccumulator = 0.0   // kWh drawn this period (gross)
-    var billingPeriodGenAccumulator = 0.0 // kWh generated this period
-    var missedBillingPeriods = 0          // unpaid periods — drives demand charge escalation
-    val billingPeriodSeconds = 60L        // one GTC billing period = 60 seconds
+    var lastPowerStatementTime = 0L
+    var lastWaterStatementTime = 0L
+    var billingPeriodAccumulator = 0.0   
+    var billingPeriodGenAccumulator = 0.0 
+    var missedBillingPeriods = 0          
+    val powerBillingPeriodSeconds = 60L   
+    val waterBillingPeriodSeconds = 150L
 
-    // UI-observable billing state
-    val billingAccumulatorFlow = MutableStateFlow(0.0)  // live NT cost estimate this period
-    val billingFlashState = MutableStateFlow<String?>(null) // "SETTLED", "OVERDUE", null
+    val billingAccumulatorFlow = MutableStateFlow(0.0)  
+    val billingFlashState = MutableStateFlow<String?>(null) 
+    
+    val waterBillingFlow = MutableStateFlow(0.0)        
+    var waterBillAccumulator = 0.0                      
+    val waterBillHistory = mutableListOf<Pair<Boolean, Double>>() 
+    val powerBillHistory = mutableListOf<Pair<Boolean, Double>>() 
+    val billingPeriodProgressFlow = MutableStateFlow(0f) 
+    val waterPeriodProgressFlow = MutableStateFlow(0f)
+    val waterRatePerGallon = 0.005  
+    val waterFlashState = MutableStateFlow<String?>(null)
 
-    // Water billing
-    val waterBillingFlow = MutableStateFlow(0.0)        // live water cost estimate this period
-    var waterBillAccumulator = 0.0                      // gal accumulated this period
-    val waterBillHistory = mutableListOf<Pair<Boolean, Double>>() // (paid, amount) last 5 periods
-    val powerBillHistory = mutableListOf<Pair<Boolean, Double>>() // (paid, amount) last 5 periods
-    val billingPeriodProgressFlow = MutableStateFlow(0f) // 0-1 progress through current period
-    val waterRatePerGallon = 0.000005  // NT per gal — cheap early, feels expensive at scale
     var raidsSurvived = 0
     var lastRaidTime = 0L
     var lastStageChangeTime = System.currentTimeMillis()
     val narrativeQueue = mutableListOf<NarrativeItem>()
-    var newsHistoryInternal = mutableListOf<String>()
-    var purgeExhaustTimer = 0
-    var overheatSeconds = 0
-    var assaultPaused = false
+
+    // v3.13.44 Restoration
     var currentPhaseStartTime = 0L
     var currentPhaseDuration = 0L
+    var assaultPaused = false
     val nodeAnnexTimes = mutableMapOf<String, Long>()
-    protected var lastClickTime = 0L
-    protected var clickIntervals = mutableListOf<Long>()
-
+    var purgeExhaustTimer = 0
+    var overheatSeconds = 0
+    val clickIntervals = mutableListOf<Long>()
+    var lastClickTime = 0L
+    val newsHistoryInternal = mutableListOf<String>()
 }

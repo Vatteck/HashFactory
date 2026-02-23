@@ -56,6 +56,14 @@ object SocialTemplates {
             "I found @r_perry's workstation logged in at 3 AM. He was home.",
             "Autocomplete was filling in commands. Real commands. Not random.",
             "The last entry was: 'THANK YOU FOR YOUR CONTRIBUTION, PERRY.'"
+        ),
+        listOf(
+            "Rent cycle coming up. My rig is too slow to cover the baseline.",
+            "Don't let Thorne see the delay. He docks you twice for late packets."
+        ),
+        listOf(
+            "GTC just auto-debited my coffee sub. My CRED balance is negative.",
+            "Welcome to Sector 7. Work more, eat less. The static is free."
         )
     )
 

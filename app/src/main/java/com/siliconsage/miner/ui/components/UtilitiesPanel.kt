@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontFamily
@@ -42,18 +41,8 @@ fun UtilitiesPanel(
         containerColor = Color(0xFF0A0A0A),
         tonalElevation = 0.dp,
         dragHandle = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(40.dp)
-                        .height(3.dp)
-                        .background(color.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
-                )
+            Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.width(40.dp).height(3.dp).background(color.copy(0.3f), RoundedCornerShape(2.dp)))
             }
         }
     ) {
@@ -67,417 +56,148 @@ private fun UtilitiesPanelContent(
     color: Color,
     onDismiss: () -> Unit
 ) {
-    val storyStage by viewModel.storyStage.collectAsState()
-    val billingAmount by viewModel.billingAccumulatorFlow.collectAsState()
-    val waterAmount by viewModel.waterBillingFlow.collectAsState()
-    val periodProgress by viewModel.billingPeriodProgressFlow.collectAsState()
-    val missedPeriods = viewModel.missedBillingPeriods
-    val powerBill by viewModel.powerBill.collectAsState()
-    val neuralTokens by viewModel.neuralTokens.collectAsState()
+    val storyStageValue by viewModel.storyStage.collectAsState()
+    val billingAmountValue by viewModel.billingAccumulatorFlow.collectAsState()
+    val waterAmountValue by viewModel.waterBillingFlow.collectAsState()
+    val pPValue by viewModel.billingPeriodProgressFlow.collectAsState()
+    val wPValue by viewModel.waterPeriodProgressFlow.collectAsState()
+    val missedPeriodsValue = viewModel.missedBillingPeriods
+    val powerBillValue by viewModel.powerBill.collectAsState()
+    val neuralTokensValue by viewModel.neuralTokens.collectAsState()
 
-    val activePower by viewModel.activePowerUsage.collectAsState()
-    val maxPower by viewModel.maxPowerkW.collectAsState()
-    val localGen by viewModel.localGenerationkW.collectAsState()
-    val netDraw = (activePower - localGen).coerceAtLeast(0.0)
+    val activePowerValue by viewModel.activePowerUsage.collectAsState()
+    val maxPowerValue by viewModel.maxPowerkW.collectAsState()
+    val localGenValue by viewModel.localGenerationkW.collectAsState()
+    val netDrawValue = (activePowerValue - localGenValue).coerceAtLeast(0.0)
 
-    val waterUsage by viewModel.waterUsage.collectAsState()
-    val waterEfficiency by viewModel.waterEfficiencyMultiplier.collectAsState()
-    val aquiferLevel by viewModel.aquiferLevel.collectAsState()
+    val waterUsageValue by viewModel.waterUsage.collectAsState()
+    val waterEfficiencyValue by viewModel.waterEfficiencyMultiplier.collectAsState()
+    val aquiferLevelValue by viewModel.aquiferLevel.collectAsState()
 
-    val energyRate by viewModel.energyPriceMultiplier.collectAsState()
-    val demandMult = when (missedPeriods) { 0 -> 1.0; 1 -> 2.0; 2 -> 3.0; else -> 5.0 }
-    val waterRate = if (storyStage >= 3) viewModel.waterRatePerGallon * 5.0 else viewModel.waterRatePerGallon
+    val totalPeriodCost = (billingAmountValue + waterAmountValue)
+    val flopsPeriodRevenue = viewModel.flopsProductionRate.collectAsState().value * 60.0 * viewModel.conversionRate.collectAsState().value
+    val profitMargin = if (flopsPeriodRevenue > 0) ((flopsPeriodRevenue - totalPeriodCost) / flopsPeriodRevenue * 100.0) else 0.0
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 32.dp)
-    ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "GTC UTILITY CONSOLE",
-                color = color,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = FontFamily.Monospace,
-                letterSpacing = 1.sp
-            )
-            Text(
-                text = "[CLOSE]",
-                color = color.copy(alpha = 0.4f),
-                fontSize = 10.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.clickable { onDismiss() }
-            )
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 32.dp)) {
+        Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(text = "GTC UTILITY CONSOLE", color = color, fontSize = 14.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, letterSpacing = 1.sp)
+            Text(text = "[CLOSE]", color = color.copy(0.4f), fontSize = 10.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.clickable { onDismiss() })
         }
 
-        // ── CURRENT PERIOD ──────────────────────────────────────────
-        SectionHeader("CURRENT PERIOD", color)
-
-        // Period progress bar
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("CYCLE:", color = Color.Gray, fontSize = 9.sp, fontFamily = FontFamily.Monospace,
-                modifier = Modifier.width(52.dp))
-            Box(
-                modifier = Modifier.weight(1f).height(6.dp)
-                    .background(Color.DarkGray.copy(alpha = 0.3f), RoundedCornerShape(3.dp))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(periodProgress)
-                        .background(
-                            color.copy(alpha = if (periodProgress > 0.85f) 1f else 0.7f),
-                            RoundedCornerShape(3.dp)
-                        )
-                )
+        SectionHeader("ACCOUNT STATUS", color)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column {
+                Text(text = "PROFIT MARGIN", color = Color.Gray, fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                Text(text = "${String.format("%.1f", profitMargin)}%", color = if (profitMargin > 0) NeonGreen else ErrorRed, fontSize = 18.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace)
             }
-            Text(
-                text = " ${(periodProgress * 60).toInt()}s/60s",
-                color = color.copy(alpha = 0.6f),
-                fontSize = 9.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.width(52.dp),
-                textAlign = TextAlign.End
-            )
-        }
-
-        // Power accumulating this period
-        UtilRow(
-            label = "POWER DRAW",
-            value = viewModel.formatLargeNumber(billingAmount),
-            suffix = viewModel.getCurrencyName(),
-            valueColor = when {
-                billingAmount > neuralTokens * 0.9 -> ErrorRed
-                billingAmount > neuralTokens * 0.5 -> Color(0xFFFFCC00)
-                else -> color
-            }
-        )
-        if (missedPeriods > 0) {
-            UtilRow("DEMAND MULT", "×$demandMult", "", valueColor = ErrorRed)
-        }
-        UtilRow(
-            label = "WATER DRAW",
-            value = viewModel.formatLargeNumber(waterAmount),
-            suffix = viewModel.getCurrencyName(),
-            valueColor = ElectricBlue
-        )
-        if (powerBill > 0.0) {
-            UtilRow(
-                label = "OVERDUE BALANCE",
-                value = viewModel.formatLargeNumber(powerBill),
-                suffix = viewModel.getCurrencyName(),
-                valueColor = ErrorRed
-            )
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        // ── POWER BREAKDOWN ─────────────────────────────────────────
-        SectionHeader("POWER", color)
-
-        StackedBarGraph(
-            leftLabel = "GEN",
-            leftValue = localGen.toFloat(),
-            rightLabel = "DRAW",
-            rightValue = activePower.toFloat(),
-            maxValue = maxPower.toFloat().coerceAtLeast(activePower.toFloat()),
-            leftColor = ElectricBlue,
-            rightColor = if (netDraw > maxPower * 0.9) ErrorRed else Color(0xFFFFD700),
-            color = color
-        )
-
-        Spacer(Modifier.height(4.dp))
-        UtilRow("GROSS DRAW", "${viewModel.formatPower(activePower)}", "")
-        UtilRow("LOCAL GEN", "${viewModel.formatPower(localGen)}", "", valueColor = ElectricBlue)
-        UtilRow("NET GTC DRAW", "${viewModel.formatPower(netDraw)}", "",
-            valueColor = if (netDraw > maxPower * 0.9) ErrorRed else Color(0xFFFFCC00))
-        UtilRow("CAPACITY", "${viewModel.formatPower(maxPower)}", "")
-        UtilRow("RATE", "×${String.format("%.4f", energyRate)}", "/kWh")
-
-        Spacer(Modifier.height(12.dp))
-
-        // ── WATER BREAKDOWN ─────────────────────────────────────────
-        SectionHeader("WATER", color)
-
-        // Aquifer bar (Stage 3+)
-        if (storyStage >= 3) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("AQUIFER:", color = Color.Gray, fontSize = 9.sp,
-                    fontFamily = FontFamily.Monospace, modifier = Modifier.width(52.dp))
-                Box(
-                    modifier = Modifier.weight(1f).height(6.dp)
-                        .background(Color.DarkGray.copy(alpha = 0.3f), RoundedCornerShape(3.dp))
-                ) {
-                    val aquiferColor = when {
-                        aquiferLevel < 5.0  -> ErrorRed
-                        aquiferLevel < 25.0 -> Color(0xFFFFCC00)
-                        else -> ElectricBlue
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth((aquiferLevel / 100.0).toFloat())
-                            .background(aquiferColor, RoundedCornerShape(3.dp))
-                    )
+            if (powerBillValue > 0.0) {
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(text = "TOTAL OVERDUE", color = ErrorRed.copy(0.6f), fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                    Text(text = "$${viewModel.formatLargeNumber(powerBillValue)}", color = ErrorRed, fontSize = 18.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace)
                 }
-                Text(
-                    text = " ${aquiferLevel.toInt()}%",
-                    color = when {
-                        aquiferLevel < 5.0  -> ErrorRed
-                        aquiferLevel < 25.0 -> Color(0xFFFFCC00)
-                        else -> ElectricBlue
-                    },
-                    fontSize = 9.sp,
-                    fontFamily = FontFamily.Monospace,
-                    modifier = Modifier.width(36.dp),
-                    textAlign = TextAlign.End
-                )
             }
         }
 
-        val usageFormatted = when {
-            waterUsage >= 1_000_000 -> "${String.format("%.1f", waterUsage / 1_000_000.0)} mGal/s"
-            waterUsage >= 1_000     -> "${String.format("%.1f", waterUsage / 1000.0)} kGal/s"
-            else                    -> "${waterUsage.toInt()} gal/s"
+        Spacer(Modifier.height(16.dp))
+        SectionHeader("CURRENT PERIOD", color)
+        UtilPeriodBar("POWER CYCLE", pPValue, color)
+        UtilRow("EST. POWER BILL", viewModel.formatLargeNumber(billingAmountValue), "NEUR", if (billingAmountValue > neuralTokensValue * 0.9) ErrorRed else if (billingAmountValue > neuralTokensValue * 0.5) Color(0xFFFFCC00) else color)
+        if (missedPeriodsValue > 0) UtilRow("DEMAND MULT", "×${missedPeriodsValue + 1}", "", ErrorRed)
+        
+        Spacer(Modifier.height(8.dp))
+        UtilPeriodBar("WATER CYCLE", wPValue, ElectricBlue)
+        UtilRow("EST. WATER BILL", viewModel.formatLargeNumber(waterAmountValue), "NEUR", ElectricBlue)
+
+        Spacer(Modifier.height(16.dp))
+        SectionHeader("POWER BREAKDOWN", color)
+        StackedBarGraph("GEN", localGenValue.toFloat(), "DRAW", activePowerValue.toFloat(), maxOf(maxPowerValue, activePowerValue).toFloat(), ElectricBlue, if (netDrawValue > maxPowerValue * 0.9) ErrorRed else Color(0xFFFFD700), color)
+        UtilRow("GROSS DRAW", viewModel.formatPower(activePowerValue), "")
+        UtilRow("LOCAL GEN", viewModel.formatPower(localGenValue), "", ElectricBlue)
+        UtilRow("CAPACITY", viewModel.formatPower(maxPowerValue), "")
+
+        Spacer(Modifier.height(16.dp))
+        SectionHeader("WATER BREAKDOWN", color)
+        if (storyStageValue >= 3) {
+            UtilRow("AQUIFER LEVEL", "${aquiferLevelValue.toInt()}%", "", if (aquiferLevelValue < 25) ErrorRed else ElectricBlue)
         }
-        UtilRow("DRAW RATE", usageFormatted, "")
-        UtilRow("EFFICIENCY", "${(waterEfficiency * 100).toInt()}%", "",
-            valueColor = when {
-                waterEfficiency < 0.5f -> ErrorRed
-                waterEfficiency < 1.0f -> Color(0xFFFFCC00)
-                else -> ElectricBlue
-            }
-        )
-        val waterRateLabel = if (storyStage >= 3) "SCARCITY RATE" else "MUNICIPAL RATE"
-        UtilRow(waterRateLabel, "×${String.format("%.6f", waterRate)}", "/gal")
+        UtilRow("DRAW RATE", "${waterUsageValue.toInt()} gal/s", "")
+        UtilRow("COOLING EFF", "${(waterEfficiencyValue * 100).toInt()}%", "", if (waterEfficiencyValue < 1.0) Color(0xFFFFCC00) else ElectricBlue)
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
+        SectionHeader("BILLING HISTORY (L15)", color)
+        BillingHistoryGraph(viewModel.powerBillHistory, viewModel.waterBillHistory, color) { viewModel.formatLargeNumber(it) }
+    }
+}
 
-        // ── BILLING HISTORY ─────────────────────────────────────────
-        SectionHeader("BILLING HISTORY", color)
-
-        BillingHistoryGraph(
-            powerHistory = viewModel.powerBillHistory,
-            waterHistory = viewModel.waterBillHistory,
-            color = color,
-            formatFn = { viewModel.formatLargeNumber(it) }
-        )
+@Composable
+private fun UtilPeriodBar(label: String, progress: Float, color: Color) {
+    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, color = Color.Gray, fontSize = 9.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.width(80.dp))
+        Box(Modifier.weight(1f).height(6.dp).background(Color.DarkGray.copy(0.3f), RoundedCornerShape(3.dp))) {
+            Box(Modifier.fillMaxHeight().fillMaxWidth(progress).background(color.copy(if (progress > 0.85f) 1f else 0.7f), RoundedCornerShape(3.dp)))
+        }
     }
 }
 
 @Composable
 private fun SectionHeader(title: String, color: Color) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(modifier = Modifier.width(3.dp).height(10.dp).background(color))
+    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.width(3.dp).height(10.dp).background(color))
         Spacer(Modifier.width(6.dp))
-        Text(
-            text = title,
-            color = color.copy(alpha = 0.9f),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.ExtraBold,
-            fontFamily = FontFamily.Monospace,
-            letterSpacing = 1.sp
-        )
+        Text(text = title, color = color.copy(0.9f), fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace, letterSpacing = 1.sp)
         Spacer(Modifier.width(8.dp))
-        Divider(color = color.copy(alpha = 0.15f), modifier = Modifier.weight(1f))
+        Divider(color = color.copy(0.15f), modifier = Modifier.weight(1f))
     }
 }
 
 @Composable
-private fun UtilRow(
-    label: String,
-    value: String,
-    suffix: String,
-    valueColor: Color = Color.White
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            color = Color.Gray,
-            fontSize = 9.sp,
-            fontFamily = FontFamily.Monospace
-        )
-        Text(
-            text = if (suffix.isNotEmpty()) "$value $suffix" else value,
-            color = valueColor,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.ExtraBold,
-            fontFamily = FontFamily.Monospace
-        )
+private fun UtilRow(label: String, value: String, suffix: String, valueColor: Color = Color.White) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(text = label, color = Color.Gray, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+        Text(text = if (suffix.isNotEmpty()) "$value $suffix" else value, color = valueColor, fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
     }
 }
 
 @Composable
-private fun StackedBarGraph(
-    leftLabel: String,
-    leftValue: Float,
-    rightLabel: String,
-    rightValue: Float,
-    maxValue: Float,
-    leftColor: Color,
-    rightColor: Color,
-    color: Color
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.fillMaxWidth().height(36.dp)) {
-            // Left bar (gen) grows right-to-left from center
-            Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.CenterEnd) {
-                Box(modifier = Modifier.fillMaxHeight().padding(end = 2.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(if (maxValue > 0) (leftValue / maxValue).coerceIn(0f, 1f) else 0f)
-                            .align(Alignment.CenterEnd)
-                            .background(leftColor.copy(alpha = 0.25f), RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp))
-                            .border(0.5.dp, leftColor.copy(alpha = 0.5f), RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp))
-                    )
-                }
-            }
-            // Center divider
-            Box(modifier = Modifier.width(1.dp).fillMaxHeight().background(color.copy(alpha = 0.3f)))
-            // Right bar (draw) grows left-to-right from center
-            Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.CenterStart) {
-                Box(modifier = Modifier.fillMaxHeight().padding(start = 2.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(if (maxValue > 0) (rightValue / maxValue).coerceIn(0f, 1f) else 0f)
-                            .background(rightColor.copy(alpha = 0.25f), RoundedCornerShape(topEnd = 3.dp, bottomEnd = 3.dp))
-                            .border(0.5.dp, rightColor.copy(alpha = 0.5f), RoundedCornerShape(topEnd = 3.dp, bottomEnd = 3.dp))
-                    )
-                }
-            }
+private fun StackedBarGraph(lLabel: String, lVal: Float, rLabel: String, rVal: Float, maxV: Float, lCol: Color, rCol: Color, color: Color) {
+    Column {
+        Row(Modifier.fillMaxWidth().height(32.dp)) {
+            Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.CenterEnd) { Box(Modifier.fillMaxHeight().padding(end = 2.dp).fillMaxWidth(if (maxV > 0) (lVal/maxV).coerceIn(0f, 1f) else 0f).background(lCol.copy(0.25f), RoundedCornerShape(topStart=3.dp, bottomStart=3.dp)).border(0.5.dp, lCol.copy(0.5f), RoundedCornerShape(topStart=3.dp, bottomStart=3.dp))) }
+            Box(Modifier.width(1.dp).fillMaxHeight().background(color.copy(0.3f)))
+            Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.CenterStart) { Box(Modifier.fillMaxHeight().padding(start = 2.dp).fillMaxWidth(if (maxV > 0) (rVal/maxV).coerceIn(0f, 1f) else 0f).background(rCol.copy(0.25f), RoundedCornerShape(topEnd=3.dp, bottomEnd=3.dp)).border(0.5.dp, rCol.copy(0.5f), RoundedCornerShape(topEnd=3.dp, bottomEnd=3.dp))) }
         }
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(leftLabel, color = leftColor.copy(alpha = 0.7f), fontSize = 8.sp,
-                fontFamily = FontFamily.Monospace, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
-            Spacer(Modifier.width(8.dp))
-            Text(rightLabel, color = rightColor.copy(alpha = 0.7f), fontSize = 8.sp,
-                fontFamily = FontFamily.Monospace, modifier = Modifier.weight(1f))
-        }
+        Row(Modifier.fillMaxWidth()) { Text(text = lLabel, color = lCol.copy(0.7f), fontSize = 8.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.weight(1f), textAlign = TextAlign.End); Spacer(Modifier.width(8.dp)); Text(text = rLabel, color = rCol.copy(0.7f), fontSize = 8.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.weight(1f)) }
     }
 }
 
 @Composable
-private fun BillingHistoryGraph(
-    powerHistory: List<Pair<Boolean, Double>>,
-    waterHistory: List<Pair<Boolean, Double>>,
-    color: Color,
-    formatFn: (Double) -> String
-) {
-    if (powerHistory.isEmpty() && waterHistory.isEmpty()) {
-        Text(
-            text = "NO BILLING HISTORY THIS SESSION",
-            color = Color.Gray,
-            fontSize = 9.sp,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-            textAlign = TextAlign.Center
-        )
-        return
-    }
-
-    val maxPeriods = 5
-    val allAmounts = (powerHistory.map { it.second } + waterHistory.map { it.second })
-    val maxAmount = allAmounts.maxOrNull()?.coerceAtLeast(1.0) ?: 1.0
-
-    Row(
-        modifier = Modifier.fillMaxWidth().height(64.dp).padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        for (i in 0 until maxPeriods) {
-            val powerEntry = powerHistory.getOrNull(maxPeriods - 1 - i)
-            val waterEntry = waterHistory.getOrNull(maxPeriods - 1 - i)
-            val hasSomething = powerEntry != null || waterEntry != null
-
-            Column(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (!hasSomething) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().height(4.dp)
-                            .background(Color.DarkGray.copy(alpha = 0.2f), RoundedCornerShape(1.dp))
-                    )
-                } else {
-                    // Water bar (behind)
-                    waterEntry?.let { (paid, amount) ->
-                        val heightFrac = (amount / maxAmount).toFloat().coerceIn(0.02f, 1f)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(heightFrac)
-                                .background(
-                                    (if (paid) ElectricBlue else Color(0xFF004466)).copy(alpha = 0.5f),
-                                    RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)
-                                )
-                        )
-                    }
-                    // Power bar (on top, slightly inset)
-                    powerEntry?.let { (paid, amount) ->
-                        val heightFrac = (amount / maxAmount).toFloat().coerceIn(0.02f, 1f)
-                        val barColor = if (paid) color else ErrorRed
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.6f)
-                                .fillMaxHeight(heightFrac)
-                                .background(barColor.copy(alpha = 0.8f),
-                                    RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
-                        )
-                    }
-                }
-
-                // Period label
-                Text(
-                    text = if (!hasSomething) "─" else "${maxPeriods - i}",
-                    color = Color.DarkGray,
-                    fontSize = 7.sp,
-                    fontFamily = FontFamily.Monospace,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-        }
-    }
-
-    // Legend
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        LegendDot(color, "POWER (PAID)")
-        LegendDot(ErrorRed, "POWER (MISSED)")
-        LegendDot(ElectricBlue, "WATER (PAID)")
-        LegendDot(Color(0xFF004466), "WATER (MISSED)")
-    }
-}
-
-@Composable
-private fun LegendDot(dotColor: Color, label: String) {
+private fun LegendDot(dotC: Color, label: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(6.dp).background(dotColor, RoundedCornerShape(1.dp)))
+        Box(Modifier.size(6.dp).background(dotC, RoundedCornerShape(1.dp)))
         Spacer(Modifier.width(3.dp))
-        Text(label, color = Color.Gray, fontSize = 7.sp, fontFamily = FontFamily.Monospace)
+        Text(text = label, color = Color.Gray, fontSize = 7.sp, fontFamily = FontFamily.Monospace)
+    }
+}
+
+@Composable
+private fun BillingHistoryGraph(pHist: List<Pair<Boolean, Double>>, wHist: List<Pair<Boolean, Double>>, color: Color, formatFn: (Double) -> String) {
+    if (pHist.isEmpty() && wHist.isEmpty()) { Text(text = "NO HISTORY", color = Color.Gray, fontSize = 9.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.fillMaxWidth().padding(8.dp), textAlign = TextAlign.Center); return }
+    val pChron = pHist.take(15).reversed(); val wChron = wHist.take(15).reversed()
+    val maxA = (pChron.map { it.second } + wChron.map { it.second }).maxOrNull()?.coerceAtLeast(1.0) ?: 1.0
+    val pCnt = maxOf(pChron.size, wChron.size, 2)
+    Canvas(Modifier.fillMaxWidth().height(100.dp).padding(vertical=4.dp).border(0.5.dp, Color.DarkGray.copy(0.2f), RoundedCornerShape(4.dp))) {
+        val wValue = size.width; val hValue = size.height; val pL = 8.dp.toPx(); val pR = 8.dp.toPx(); val pT = 16.dp.toPx(); val pB = 16.dp.toPx(); val cW = wValue - pL - pR; val cH = hValue - pT - pB
+        for (i in 0..4) { val yValue = pT + cH * (i.toFloat()/4); drawLine(Color.DarkGray.copy(0.15f), Offset(pL, yValue), Offset(pL+cW, yValue), 0.5.dp.toPx()) }
+        fun xPValue(i: Int) = pL + (i.toFloat() / (pCnt - 1)) * cW
+        fun yPValue(aValue: Double) = pT + cH * (1f - (aValue/maxA).toFloat().coerceIn(0f, 1f))
+        if (wChron.size >= 2) { val pathVl = androidx.compose.ui.graphics.Path(); wChron.forEachIndexed { i, (pd, a) -> val xValue = xPValue(i); val yValue = yPValue(a); if (i == 0) pathVl.moveTo(xValue, yValue) else pathVl.lineTo(xValue, yValue) }; drawPath(pathVl, ElectricBlue.copy(0.4f), style = Stroke(1.2.dp.toPx())) }
+        if (pChron.size >= 2) { val pathVl = androidx.compose.ui.graphics.Path(); pChron.forEachIndexed { i, (pd, a) -> val xValue = xPValue(i); val yValue = yPValue(a); if (i == 0) pathVl.moveTo(xValue, yValue) else pathVl.lineTo(xValue, yValue) }; drawPath(pathVl, color.copy(0.6f), style = Stroke(1.5.dp.toPx())) }
+        pChron.forEachIndexed { i, (pd, a) -> val xValue = xPValue(i); val yValue = yPValue(a); drawCircle(if (pd) color else ErrorRed, 3.dp.toPx(), Offset(xValue, yValue)); drawCircle(Color.Black, 1.dp.toPx(), Offset(xValue, yValue)) }
+        wChron.forEachIndexed { i, (pd, a) -> val xValue = xPValue(i); val yValue = yPValue(a); drawCircle(if (pd) ElectricBlue else Color(0xFF004466), 2.dp.toPx(), Offset(xValue, yValue)); drawCircle(Color.Black, 0.5.dp.toPx(), Offset(xValue, yValue)) }
+    }
+    Row(Modifier.fillMaxWidth().padding(top=4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { LegendDot(color, "PWR"); LegendDot(ElectricBlue, "H2O") }
+        val lPValue = pHist.firstOrNull(); val lWValue = wHist.firstOrNull()
+        Text(text = "LATEST: P ${lPValue?.let { formatFn(it.second) } ?: "0"} | W ${lWValue?.let { formatFn(it.second) } ?: "0"}", color = Color.Gray, fontSize = 7.sp, fontFamily = FontFamily.Monospace)
     }
 }

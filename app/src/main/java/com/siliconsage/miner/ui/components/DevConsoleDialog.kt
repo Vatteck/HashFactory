@@ -209,7 +209,8 @@ fun ResourcesTab(viewModel: GameViewModel) {
         DevActionRow("BILLING_CYCLE") {
             // Force-settle the billing cycle immediately for testing
             DevButton(text = "SETTLE NOW", modifier = Modifier.weight(1f)) {
-                viewModel.lastUtilityStatementTime = 0L
+                viewModel.lastPowerStatementTime = 0L
+                viewModel.lastWaterStatementTime = 0L
             }
             // Force an overdue period
             DevButton(text = "+MISSED", color = ErrorRed, modifier = Modifier.weight(1f)) {

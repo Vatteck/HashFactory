@@ -27,6 +27,7 @@ import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import kotlin.random.Random
+import kotlinx.coroutines.delay
 
 /**
  * Rival Message Dialog - persistent interrupt popup
@@ -115,13 +116,27 @@ private fun ConsensusMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
 /**
  * GTC (Director Kessler) message style:
  * - Red border, warning icon, official/threatening tone
+ * - v3.15.x: Screen-shake on open
  */
 @Composable
 private fun KesslerMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
+    // v3.15.x: Brief screen-shake on open
+    var shakeOffset by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(message.id) {
+        com.siliconsage.miner.util.SoundManager.play("error")
+        val startTime = System.currentTimeMillis()
+        while (System.currentTimeMillis() - startTime < 500) {
+            shakeOffset = (Random.nextFloat() - 0.5f) * 20f
+            delay(30)
+        }
+        shakeOffset = 0f
+    }
+    
     Card(
         modifier = Modifier
             .fillMaxWidth(0.9f)
-            .border(2.dp, ErrorRed, RoundedCornerShape(8.dp)),
+            .border(2.dp, ErrorRed, RoundedCornerShape(8.dp))
+            .graphicsLayer { translationX = shakeOffset },
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Black.copy(alpha = 0.95f)
@@ -208,16 +223,17 @@ private fun KesslerMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
 /**
  * Kernel Overflow style:
  * - Technical horror, high glitching, self-referential
+ * - v3.15.x: Faster scramble rate
  */
 @Composable
 private fun KernelMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
-    // Glitch animation
+    // Glitch animation — v3.15.x: Faster tween for more aggressive scramble
     val infiniteTransition = rememberInfiniteTransition(label = "kernel_glitch")
     val glitchAlpha by infiniteTransition.animateFloat(
         initialValue = 0.5f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 150, easing = LinearEasing),
+            animation = tween(durationMillis = 80, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "glitchAlpha"
@@ -263,13 +279,14 @@ private fun KernelMessageCard(message: RivalMessage, onDismiss: () -> Unit) {
             HorizontalDivider(color = ElectricBlue.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(12.dp))
             
-            // Message content with glitch effect
+            // Message content with glitch effect — v3.15.x: Higher frequency
             SystemGlitchText(
                 text = message.message,
                 color = Color.White,
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
-                glitchFrequency = 0.15,
+                glitchFrequency = 0.35,
+                glitchDurationMs = 120,
                 modifier = Modifier
                     .background(Color.Black)
                     .padding(8.dp)

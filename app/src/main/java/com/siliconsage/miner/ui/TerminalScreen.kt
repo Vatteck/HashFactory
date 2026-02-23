@@ -4,6 +4,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.border
@@ -117,8 +119,8 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
 
         Box(
             modifier = Modifier.weight(1f).fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.75f), TechnicalCornerShape(bottomStart = 16f, bottomEnd = 16f))
-                .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.5f)), TechnicalCornerShape(bottomStart = 16f, bottomEnd = 16f))
+                .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp, topStart = 0.dp, topEnd = 0.dp))
+                .border(BorderStroke(1.5.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.85f)), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp, topStart = 0.dp, topEnd = 0.dp))
         ) {
             TerminalLogs(viewModel, primaryColor, showCursor)
         }
@@ -197,7 +199,11 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     
     val glitchOffset by viewModel.terminalGlitchOffset.collectAsState()
     val glitchAlpha by viewModel.terminalGlitchAlpha.collectAsState()
-    val sicknessIntensity by viewModel.substrateStaticIntensity.collectAsState()
+    val rawSicknessIntensity by viewModel.substrateStaticIntensity.collectAsState()
+    val isCascadeDesync by viewModel.isCascadeDesync.collectAsState()
+
+    // v3.16.0: Double sickness corruption rate during active Cascade Desync
+    val sicknessIntensity = if (isCascadeDesync) (rawSicknessIntensity * 2f).coerceAtMost(0.5f) else rawSicknessIntensity
 
     val corruption by viewModel.identityCorruption.collectAsState()
     val flopsRate by viewModel.flopsProductionRate.collectAsState()
@@ -219,6 +225,11 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 alpha = glitchAlpha
             }
             .drawBehind {
+                // v3.16.0: Red wash during Cascade Desync
+                if (isCascadeDesync) {
+                    drawRect(Color.Red.copy(alpha = 0.03f))
+                }
+
                 // v3.5.54.3: High-Frequency Data Rain (GPU Rendered)
                 if (flopsRate > 1e6) {
                     val rainStep = 32.dp.toPx()
@@ -239,6 +250,18 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                         )
                         xPos += rainStep
                     }
+                }
+
+                // v3.16.0: CRT shimmer during Cascade Desync (horizontal scan-line jitter)
+                if (isCascadeDesync) {
+                    val shimmerColor = Color.White.copy(alpha = 0.04f)
+                    val time = (System.currentTimeMillis() % 2000L).toFloat()
+                    val jitterBand = (time / 2000f * this.size.height) % this.size.height
+                    drawRect(
+                        shimmerColor,
+                        topLeft = Offset(0f, jitterBand),
+                        size = androidx.compose.ui.geometry.Size(this.size.width, 4.dp.toPx())
+                    )
                 }
             }
     ) {
@@ -327,8 +350,13 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 }
             }
 
-            ActiveCommandBuffer(viewModel, primaryColor)
-            HorizontalDivider(color = primaryColor.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 4.dp))
+            val cmdShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
+            Box(modifier = Modifier.fillMaxWidth()
+                .background(Color.Black.copy(alpha = 0.5f), cmdShape)
+                .border(BorderStroke(1.dp, primaryColor.copy(alpha = 0.55f)), cmdShape)
+            ) {
+                ActiveCommandBuffer(viewModel, primaryColor)
+            }
             ManualComputeButton(viewModel, primaryColor)
         }
     }
@@ -564,8 +592,14 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
         label = "panic"
     )
 
+    val isCriticalEarly = currentHeat > 90.0 || isThermalLockout || isBreakerTripped || isGridOverloaded || isTrueNull
+    val buttonColor = if (isCriticalEarly) ErrorRed else if (isSovereign) com.siliconsage.miner.ui.theme.SanctuaryPurple else color
+    val buttonShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp, topStart = 0.dp, topEnd = 0.dp)
     Box(
-        modifier = Modifier.fillMaxWidth().height(44.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+        modifier = Modifier.fillMaxWidth().height(44.dp)
+            .background(Color.Black.copy(alpha = 0.6f), buttonShape)
+            .border(BorderStroke(2.dp, buttonColor.copy(alpha = 0.85f)), buttonShape)
+            .clip(buttonShape)
             .pointerInput(isThermalLockout, isBreakerTripped, isGridOverloaded) {
                 val width = size.width
                 detectTapGestures(
@@ -617,7 +651,107 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
         val isPanic = currentHeat > 95.0
         val buttonColor = if (isCritical) ErrorRed else if (isSovereign) com.siliconsage.miner.ui.theme.SanctuaryPurple else color
 
-        val finalModifier = if (isPanic) Modifier.graphicsLayer { alpha = panicAlpha } else Modifier
+        val finalModifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale; if (isPanic) alpha = panicAlpha }
+
+        // Bar equalizer — hash-rate driven, spikes on click
+        val flopsRate by viewModel.totalEffectiveRate.collectAsState()
+        var clickPulse by remember { mutableStateOf(0f) }
+        val clickPulseAnim by animateFloatAsState(
+            targetValue = clickPulse,
+            animationSpec = tween(400, easing = FastOutSlowInEasing),
+            label = "eqPulse",
+            finishedListener = { if (clickPulse > 0f) clickPulse = 0f }
+        )
+        LaunchedEffect(viewModel.manualClickEvent) {
+            viewModel.manualClickEvent.collect { clickPulse = 1f }
+        }
+        val eqTime by rememberInfiniteTransition(label = "eq").animateFloat(
+            initialValue = 0f, targetValue = (2 * Math.PI).toFloat(),
+            animationSpec = infiniteRepeatable(tween(
+                durationMillis = when {
+                    flopsRate <= 0.0 -> 3000
+                    flopsRate < 1000.0 -> 1800
+                    flopsRate < 1_000_000.0 -> 900
+                    else -> 400
+                }, easing = LinearEasing), RepeatMode.Restart), label = "eqPhase"
+        )
+        // Peak hold state per bar — falls with gravity over time
+        val peakHeights = remember { FloatArray(28) { 0f } }
+        val peakVelocities = remember { FloatArray(28) { 0f } }
+
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val barCount = 28
+            val gap = 1.5.dp.toPx()
+            val barW = (size.width - gap * (barCount - 1)) / barCount
+            val maxH = size.height
+            val baseActivity = when {
+                flopsRate <= 0.0 -> 0.06f
+                flopsRate < 1000.0 -> 0.18f
+                flopsRate < 1_000_000.0 -> 0.42f
+                else -> 0.68f
+            }
+            repeat(barCount) { i ->
+                val phase = i * 0.38f
+                val wave = (kotlin.math.sin(eqTime + phase) * 0.4f +
+                            kotlin.math.sin(eqTime * 1.618f + phase * 0.9f) * 0.35f +
+                            kotlin.math.sin(eqTime * 2.718f + phase * 1.2f) * 0.25f)
+                val normalizedWave = (wave + 1f) / 2f
+                val barFrac = (baseActivity + normalizedWave * (1f - baseActivity) * 0.75f + clickPulseAnim * 0.55f)
+                    .coerceIn(0.03f, 1f)
+                val barHeight = barFrac * maxH
+                val x = i * (barW + gap)
+                val y = maxH - barHeight
+
+                // Update peak hold
+                if (barHeight > peakHeights[i]) {
+                    peakHeights[i] = barHeight
+                    peakVelocities[i] = 0f
+                } else {
+                    peakVelocities[i] += 0.8f  // gravity
+                    peakHeights[i] = (peakHeights[i] - peakVelocities[i]).coerceAtLeast(barHeight)
+                }
+                val peakY = maxH - peakHeights[i]
+
+                // Floor glow — subtle ambient at bottom
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, buttonColor.copy(alpha = 0.08f)),
+                        startY = maxH * 0.6f, endY = maxH
+                    ),
+                    topLeft = androidx.compose.ui.geometry.Offset(x, maxH * 0.6f),
+                    size = androidx.compose.ui.geometry.Size(barW, maxH * 0.4f)
+                )
+                // Main bar — bright top, dim bottom
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            buttonColor.copy(alpha = (0.9f + clickPulseAnim * 0.1f).coerceAtMost(1f)),
+                            buttonColor.copy(alpha = 0.12f)
+                        ),
+                        startY = y, endY = maxH
+                    ),
+                    topLeft = androidx.compose.ui.geometry.Offset(x, y),
+                    size = androidx.compose.ui.geometry.Size(barW, barHeight)
+                )
+                // Bright top cap
+                drawRect(
+                    color = buttonColor.copy(alpha = (0.95f + clickPulseAnim * 0.05f).coerceAtMost(1f)),
+                    topLeft = androidx.compose.ui.geometry.Offset(x, y),
+                    size = androidx.compose.ui.geometry.Size(barW, 1.5.dp.toPx())
+                )
+                // Peak dot — bright tick that hangs then falls
+                if (peakHeights[i] > barHeight + 2.dp.toPx()) {
+                    drawRect(
+                        color = buttonColor.copy(alpha = 0.9f),
+                        topLeft = androidx.compose.ui.geometry.Offset(x, peakY),
+                        size = androidx.compose.ui.geometry.Size(barW, 1.5.dp.toPx())
+                    )
+                }
+            }
+        }
+
+        // Dark scrim so text reads over EQ bars
+        Box(modifier = Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.0f), Color.Black.copy(alpha = 0.6f), Color.Black.copy(alpha = 0.0f)))))
 
         Box(modifier = finalModifier) {
             if (isCritical) {
@@ -659,11 +793,11 @@ fun TerminalTab(
         modifier = modifier
             .background(
                 if (active) color.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.1f),
-                TechnicalCornerShape(topStart = 16f, topEnd = 16f) 
+                RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 0.dp, bottomEnd = 0.dp) 
             )
             .border(
-                BorderStroke(1.dp, if (active) tabColor else Color.DarkGray.copy(alpha = 0.3f)),
-                TechnicalCornerShape(topStart = 16f, topEnd = 16f)
+                BorderStroke(1.5.dp, if (active) tabColor else Color.DarkGray.copy(alpha = 0.65f)),
+                RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
             )
             .clickable { onClick() }
             .padding(vertical = 4.dp),

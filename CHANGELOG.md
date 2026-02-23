@@ -1,6 +1,24 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.16.1] - 2026-02-23
+### Added
+- **Stage 0 Quota Survival**: Phase 27 implementation. Stage 0 quotas now frame performance as personal "Rent / Credit" survival. New "static" logs pulse when headroom is critical.
+- **Signal Quality Bonus**: Over-performing (Current HASH >= 2x Quota) grants a **+10% Neural Token ($N)** bonus upon exchange.
+- **Survival Chatter**: Added 2 new debt/rent themed chatter chains to the Stage 0 subnet pool.
+
+## [3.16.0] - 2026-02-23
+### Added
+- **Compute Fever Core**: Phase 26 implementation. Added three interlocking feedback systems:
+  - **Cascade Desync**: Visual/auditory "sickness" (CRT shimmer, red wash, log spam) when stability < 0.5 for 30s.
+  - **Rack High**: Temporary +15% production boost + euphoria for crossing hardware milestones (10/25/50/100/250/500 units).
+  - **Snap Effect**: 300ms CRT reboot animation on stage transitions, rack highs, and quota ratification.
+- **Content Expansion**: +3 fever data logs (Thorne/Barnaby/Jinx) and +6 quota crisis headlines (market-driven).
+### Technical
+- Unified snap effect system into `snapTrigger` StateFlow in `CoreGameState.kt`.
+- Integrated `rackHighMultiplier` into `refreshProductionRates` calculation.
+
+
 ## [3.11.2] - 2026-02-21
 ### ⚠️ IMPORTANT: Signed Build - Manual Reinstall Required
 This release switches from **debug** to **signed** APK. Android will NOT recognize this as an update - you must:

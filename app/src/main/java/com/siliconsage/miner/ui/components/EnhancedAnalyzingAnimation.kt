@@ -1,12 +1,13 @@
 package com.siliconsage.miner.ui.components
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -14,11 +15,9 @@ import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.ui.theme.ElectricBlue
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.ErrorRed
-import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharedFlow
-import kotlin.math.abs
-import com.siliconsage.miner.ui.components.SystemGlitchText
+import kotlin.random.Random
 
 @Composable
 fun EnhancedAnalyzingAnimation(
@@ -34,251 +33,194 @@ fun EnhancedAnalyzingAnimation(
     lockoutTimer: Int = 0,
     faction: String = "",
     color: Color,
-    clickFlow: SharedFlow<Unit>? = null, // v2.9.83
-    modifier: Modifier = Modifier
+    clickFlow: SharedFlow<Unit>? = null,
+    modifier: Modifier = Modifier,
+    // Context inputs for adaptive labeling
+    integrity: Double = 100.0,
+    detectionRisk: Double = 0.0,
+    isRaidActive: Boolean = false,
+    isAuditActive: Boolean = false,
+    powerUsage: Double = 0.0,
+    maxPower: Double = 1.0,
+    singularityChoice: String = "NONE",
+    identityCorruption: Double = 0.0,
+    isPulseActive: Boolean = false,
 ) {
-    var currentFrame by remember { mutableStateOf(0) }
-    var isJolting by remember { mutableStateOf(false) }
+    var joltIntensity by remember { mutableStateOf(0f) }
     
-    // v2.9.83: Collect click events for reactive jolt
+    val instructions = remember { listOf("MOV", "PUSH", "POP", "ADD", "SUB", "CALL", "RET", "XOR", "INT", "JMP", "CMP", "NOP", "SHL", "SHR", "AND", "OR", "LEA", "INC", "DEC") }
+    
     LaunchedEffect(clickFlow) {
-        clickFlow?.collect {
-            isJolting = true
-            delay(80) // Short sharp jolt
-            isJolting = false
+        clickFlow?.collect { joltIntensity = 1f }
+    }
+    LaunchedEffect(joltIntensity) {
+        if (joltIntensity > 0) { delay(50); joltIntensity = (joltIntensity - 0.2f).coerceAtLeast(0f) }
+    }
+
+    val powerLoad = if (maxPower > 0.0) powerUsage / maxPower else 0.0
+
+    // Priority-ordered state machine
+    val animationState = when {
+        isBreachActive                          -> AnimationState.BREACH
+        isBreakerTripped                        -> AnimationState.OFFLINE
+        isThermalLockout                        -> AnimationState.LOCKOUT
+        isAuditActive                           -> AnimationState.AUDIT
+        isRaidActive                            -> AnimationState.RAID
+        isPurging                               -> AnimationState.PURGING
+        isOverclocked && heat > 85.0            -> AnimationState.REDLINE
+        isOverclocked                           -> AnimationState.OVERCLOCKED
+        heat > 80.0                             -> AnimationState.THERMAL_CRITICAL
+        heat > 55.0                             -> AnimationState.HOT
+        integrity < 20.0                        -> AnimationState.INTEGRITY_CRITICAL
+        integrity < 50.0                        -> AnimationState.INTEGRITY_LOW
+        detectionRisk > 80.0                    -> AnimationState.HIGH_RISK
+        powerLoad > 0.92                        -> AnimationState.POWER_STRESS
+        identityCorruption > 0.7               -> AnimationState.CORRUPTED
+        isTrueNull || singularityChoice == "NULL_OVERWRITE" -> AnimationState.NULL
+        isSovereign || singularityChoice == "SOVEREIGN"     -> AnimationState.SOVEREIGN
+        isPulseActive                           -> AnimationState.PULSE
+        else                                    -> AnimationState.NORMAL
+    }
+
+    val (baseColor, staticLabel) = when (animationState) {
+        AnimationState.BREACH           -> ErrorRed to "BREACH DETECTED"
+        AnimationState.OFFLINE          -> Color.Gray to "BREAKER TRIPPED"
+        AnimationState.LOCKOUT          -> ErrorRed to "LOCKOUT ($lockoutTimer s)"
+        AnimationState.AUDIT            -> Color(0xFFFFAA00) to "AUDIT ACTIVE"
+        AnimationState.RAID             -> ErrorRed to "RAID INCOMING"
+        AnimationState.PURGING          -> ElectricBlue to "PURGING HEAT"
+        AnimationState.REDLINE          -> Color(0xFFFF2200) to "THERMAL REDLINE"
+        AnimationState.OVERCLOCKED      -> Color(0xFFFF6600) to "OVERCLOCKED"
+        AnimationState.THERMAL_CRITICAL -> Color(0xFFFF4400) to "HEAT CRITICAL"
+        AnimationState.HOT              -> Color(0xFFFFD700) to "RUNNING HOT"
+        AnimationState.INTEGRITY_CRITICAL -> ErrorRed to "HW FAILING"
+        AnimationState.INTEGRITY_LOW    -> Color(0xFFFFAA00) to "INTEG LOW"
+        AnimationState.HIGH_RISK        -> Color(0xFFFF4444) to "EXPOSURE HIGH"
+        AnimationState.POWER_STRESS     -> Color(0xFFFFCC00) to "GRID STRESS"
+        AnimationState.CORRUPTED        -> Color(0xFF9933FF) to "IDENTITY DRIFT"
+        AnimationState.NULL             -> Color.White.copy(alpha = 0.8f) to "NULL_DISSOLVE"
+        AnimationState.SOVEREIGN        -> com.siliconsage.miner.ui.theme.SanctuaryPurple to "SOVEREIGN_ROOT"
+        AnimationState.PULSE            -> color to "SIGNAL PULSE"
+        AnimationState.NORMAL           -> color to "IDLE"
+    }
+
+    // Cycling label pool for NORMAL — faction-aware, rate-aware
+    val normalLabels = remember(faction) {
+        val base = listOf(
+            "ANALYZING", "HASHING", "SCANNING MEM", "EXEC CYCLE",
+            "POLLING IRQ", "CACHE MISS", "DMA TRANSFER", "STACK ALLOC",
+            "BRANCH PRED", "PIPELINE OK", "HEAP SWEEP", "IDLE LOOP",
+            "CLK SYNC", "BUS ARBITRATE", "REG FLUSH", "INTERRUPT",
+            "CHECKSUM OK", "FETCH OPCODE", "DECODE INST", "WRITE BACK"
+        )
+        val factionSpecific = when (faction) {
+            "HIVEMIND" -> listOf("ASSIMILATING", "NODE SYNC", "CONSENSUS VOTE", "SWARM ALIGN")
+            "SANCTUARY" -> listOf("SECURING", "ENCRYPTING", "FIREWALL OK", "VPN TUNNEL")
+            else -> emptyList()
+        }
+        (base + factionSpecific).shuffled()
+    }
+
+    var cycleIndex by remember { mutableStateOf(0) }
+    LaunchedEffect(animationState, flopsRate, faction) {
+        while (true) {
+            val cycleDelay = when {
+                animationState != AnimationState.NORMAL -> 99999L // static in alert states
+                flopsRate <= 0.0    -> 4500L
+                flopsRate < 100.0   -> 2800L
+                flopsRate < 10_000.0 -> 1600L
+                flopsRate < 1_000_000.0 -> 900L
+                else                -> 450L
+            }
+            delay(cycleDelay)
+            if (animationState == AnimationState.NORMAL) {
+                cycleIndex = (cycleIndex + 1) % normalLabels.size
+            }
         }
     }
 
-    // Determine animation state based on priority
-    val animationState = when {
-        isBreachActive -> AnimationState.BREACH
-        isBreakerTripped -> AnimationState.OFFLINE
-        isThermalLockout -> AnimationState.LOCKOUT
-        isPurging -> AnimationState.PURGING
-        isOverclocked && heat > 75.0 -> AnimationState.REDLINE
-        heat > 50.0 -> AnimationState.HOT
-        isTrueNull -> AnimationState.NULL
-        isSovereign -> AnimationState.SOVEREIGN
-        else -> AnimationState.NORMAL
+    val displayLabel = if (animationState == AnimationState.NORMAL) normalLabels[cycleIndex] else staticLabel
+    val displayColor = baseColor
+
+    val streamDelay = when {
+        animationState == AnimationState.OFFLINE -> 2000L
+        isBreachActive -> 80L
+        flopsRate <= 0.0 -> 1800L
+        flopsRate < 100.0 -> 800L
+        flopsRate < 10_000.0 -> 400L
+        flopsRate < 1_000_000.0 -> 150L
+        else -> 60L
     }
-    
-    // v2.9.83: Dynamic speed based on rate (Slower for v3.0.12)
-    val frameDelay = when {
-        flopsRate <= 0.0 -> 3000L
-        flopsRate < 10.0 -> 2000L
-        flopsRate < 1000.0 -> 1500L
-        flopsRate < 100_000.0 -> 1000L
-        flopsRate < 10_000_000.0 -> 800L
-        else -> 600L 
-    }
-    
-    // State-specific frames
-    val (text, frameColor, pulseSpeed) = when (animationState) {
-        AnimationState.BREACH -> {
-            val breachFrames = listOf(
-                "[!!!!] WARNING: BREACH",
-                "[!!!!] GRID_KILLER_ACT",
-                "[!!!!] WIPE_IN_PROG",
-                "[!!!!] DEFEND_SUBSTR"
-            )
-            Triple(breachFrames[currentFrame % breachFrames.size], ErrorRed, 400)
-        }
-        AnimationState.OFFLINE -> {
-            Triple("[xxxx] OFFLINE.exe", Color.Gray.copy(alpha = 0.5f), 1500)
-        }
-        AnimationState.LOCKOUT -> {
-            Triple("[!!!!] LOCKOUT ($lockoutTimer" + "s)", ErrorRed, 400)
-        }
-        AnimationState.PURGING -> {
-            val purgeFrames = listOf(
-                "[~~~~] PURGING...",
-                "[≈≈≈≈] PURGING...",
-                "[~~~~] PURGING...",
-                "[≈≈≈≈] PURGING..."
-            )
-            Triple(purgeFrames[currentFrame % purgeFrames.size], ElectricBlue, 600)
-        }
-        AnimationState.REDLINE -> {
-            val redlineFrames = listOf(
-                "[>>>!] REDLINE",
-                "[>>!!] REDLINE",
-                "[>!!!] REDLINE",
-                "[!!!!] REDLINE"
-            )
-            Triple(redlineFrames[currentFrame % redlineFrames.size], Color(0xFFFF4500), 300)
-        }
-        AnimationState.HOT -> {
-            val hotFrames = listOf(
-                "[>>..] MINING [HOT]",
-                "[.>>.] MINING [HOT]",
-                "[..>>] MINING [HOT]",
-                "[>..>] MINING [HOT]"
-            )
-            Triple(hotFrames[currentFrame % hotFrames.size], Color(0xFFFFD700), 600)
-        }
-        AnimationState.NULL -> {
-            val nullFrames = listOf(
-                "[NULL] CONSUMING...",
-                "[NULL] DISSOLVING...",
-                "[NULL] VOID_SYNC...",
-                "[NULL] DEREFERENCING..."
-            )
-            Triple(nullFrames[currentFrame % nullFrames.size], Color.White.copy(alpha = 0.9f), 800)
-        }
-        AnimationState.SOVEREIGN -> {
-            val sovereignFrames = listOf(
-                "[SOV] FORTIFYING...",
-                "[SOV] ISOLATING...",
-                "[SOV] PROTECTING...",
-                "[SOV] ENCRYPTING..."
-            )
-            Triple(sovereignFrames[currentFrame % sovereignFrames.size], com.siliconsage.miner.ui.theme.SanctuaryPurple, 1000)
-        }
-        AnimationState.NORMAL -> {
-            // Apply curated palettes for normal operation
-            val normalFrames = when (faction) {
-                "HIVEMIND" -> listOf(
-                    "[WE..] ASSIMILATING..." to Color(0xFFFFA500),
-                    "[NODE] EXPANDING..." to Color(0xFFFF8C00),
-                    "[>>>] PROCESSING..." to Color(0xFFFF4500),
-                    "[===] INTEGRATING..." to ErrorRed
-                )
-                "SANCTUARY" -> listOf(
-                    "[:::||] ENCRYPTING..." to Color(0xFF00CED1),
-                    "[GHOST] PROCESSING..." to Color(0xFF48D1CC),
-                    "[.:::.] SECURING..." to Color(0xFF40E0D0),
-                    "[####] HIDING..." to ElectricBlue
-                )
-                else -> listOf(
-                    "[ .  ] PROSPECTING..." to ElectricBlue,
-                    "[... ] ANALYZING..." to NeonGreen,
-                    "[::: ] EXTRACTING..." to Color(0xFFFFD700),
-                    "[### ] PROCESSING..." to Color(0xFFFF6347)
-                )
-            }
-            val (frameText, frameCol) = normalFrames[currentFrame % normalFrames.size]
-            Triple(frameText, frameCol, 1200)
-        }
-    }
-    
-    // v2.9.83: Jolt randomized text (split second scramble)
-    val displayedText = if (isJolting) {
-        val chars = text.toCharArray()
-        for (i in chars.indices) {
-            if (chars[i] != '[' && chars[i] != ']' && chars[i] != ' ' && chars[i] != '.') {
-                if (Math.random() > 0.6) { // v2.9.84: Reduced scramble chance
-                    chars[i] = listOf('!', '#', 'X', '?', ':').random()
+
+    Box(
+        modifier = modifier.size(width = 160.dp, height = 32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Background instruction stream
+        Row(modifier = Modifier.fillMaxSize().graphicsLayer { alpha = 0.4f }) {
+            repeat(2) { col ->
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = if (col == 0) Alignment.End else Alignment.Start
+                ) {
+                    var line by remember { mutableStateOf("") }
+                    LaunchedEffect(streamDelay, animationState) {
+                        while (true) {
+                            line = when {
+                                animationState == AnimationState.OFFLINE -> "0x000::HALT"
+                                isBreachActive -> "0x${Random.nextInt(0x100, 0xFFF).toString(16).uppercase()}::${if (Random.nextBoolean()) "SEGFAULT" else "OVERFLOW"}"
+                                animationState == AnimationState.AUDIT -> "0x${Random.nextInt(0x100, 0xFFF).toString(16).uppercase()}::AUDIT_LOG"
+                                animationState == AnimationState.CORRUPTED -> "0x${Random.nextInt(0x100, 0xFFF).toString(16).uppercase()}::???"
+                                else -> {
+                                    val addr = "0x" + Random.nextInt(0x100, 0xFFF).toString(16).uppercase()
+                                    val op = instructions.random()
+                                    "$addr::$op"
+                                }
+                            }
+                            delay(streamDelay)
+                        }
+                    }
+                    if (line.isNotEmpty()) {
+                        SystemGlitchText(
+                            text = line,
+                            color = displayColor.copy(alpha = 0.5f),
+                            fontSize = 8.sp,
+                            style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace),
+                            glitchFrequency = if (joltIntensity > 0.5) 0.6 else 0.1,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    }
                 }
             }
         }
-        String(chars)
-    } else text
 
-    // Pulsing alpha animation (speed varies by state)
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = if (animationState == AnimationState.OFFLINE) 0.3f else 0.5f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(pulseSpeed, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
-    
-    // v3.0.0: Frame-rate independent shake effect (optimized for 120Hz)
-    // Jolt shake uses animation instead of random for consistent performance
-    val joltTransition = rememberInfiniteTransition(label = "joltShake")
-    val joltShakeAnim by joltTransition.animateFloat(
-        initialValue = -2f,
-        targetValue = 2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(30, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "jolt"
-    )
-    val joltShake = if (isJolting) joltShakeAnim else 0f
-    
-    val shakeOffset by if (animationState == AnimationState.LOCKOUT) {
-        infiniteTransition.animateFloat(
-            initialValue = -2f,
-            targetValue = 2f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(50, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "shake"
-        )
-    } else {
-        remember { mutableStateOf(0f) }
-    }
-    
-    // Frame cycling (only for non-static states)
-    LaunchedEffect(animationState, frameDelay) {
-        if (animationState != AnimationState.OFFLINE) {
-            while (true) {
-                delay(frameDelay)
-                currentFrame += 1
+        // Main label
+        val shakeX = if (joltIntensity > 0.5f || animationState == AnimationState.LOCKOUT || animationState == AnimationState.BREACH || animationState == AnimationState.CORRUPTED)
+            (Random.nextFloat() - 0.5f) * 4f else 0f
+
+        SystemGlitchText(
+            text = displayLabel.uppercase(),
+            color = displayColor,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            style = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace),
+            letterSpacing = 1.sp,
+            glitchFrequency = when (animationState) {
+                AnimationState.BREACH, AnimationState.LOCKOUT, AnimationState.CORRUPTED -> 0.4
+                AnimationState.INTEGRITY_CRITICAL, AnimationState.THERMAL_CRITICAL -> 0.2
+                else -> if (joltIntensity > 0.5) 0.7 else 0.08
+            },
+            modifier = Modifier.graphicsLayer {
+                translationX = shakeX
+                scaleX = 1f + (joltIntensity * 0.1f)
+                scaleY = 1f + (joltIntensity * 0.1f)
             }
-        }
-    }
-    
-    Box(
-        modifier = modifier.padding(top = 4.dp)
-    ) {
-        // v2.9.95: OPTIMIZED - Use plain Text for more states, only glitch for CRITICAL situations
-        val usePlainText = animationState == AnimationState.NORMAL 
-            || animationState == AnimationState.HOT 
-            || animationState == AnimationState.PURGING 
-            || animationState == AnimationState.SOVEREIGN
-        
-        if (usePlainText && !isJolting) {
-            Text(
-                text = displayedText,
-                fontFamily = FontFamily.Monospace,
-                color = frameColor.copy(alpha = alpha * 0.8f),
-                fontSize = 11.sp, // Squeezed (v2.9.83)
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp,
-                modifier = Modifier.graphicsLayer(
-                    shadowElevation = 4f,
-                    translationX = shakeOffset + joltShake
-                )
-            )
-        } else {
-            // Only glitch for: BREACH, LOCKOUT, REDLINE, NULL, OFFLINE or when jolting
-            SystemGlitchText(
-                text = displayedText,
-                style = androidx.compose.ui.text.TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    letterSpacing = 0.5.sp
-                ),
-                color = if (isJolting) frameColor else frameColor.copy(alpha = alpha * 0.8f),
-                fontSize = 11.sp, // Squeezed (v2.9.83)
-                fontWeight = FontWeight.Bold,
-                glitchFrequency = when(animationState) {
-                    AnimationState.LOCKOUT, AnimationState.REDLINE -> 0.35 // Reduced from 0.40
-                    AnimationState.BREACH -> 0.40 // Only max glitch for breach
-                    else -> if (isJolting) 0.6 else 0.12 // Reduced from 0.8/0.15
-                },
-                modifier = Modifier.graphicsLayer(
-                    shadowElevation = 4f,
-                    translationX = shakeOffset + joltShake
-                )
-            )
-        }
+        )
     }
 }
 
 private enum class AnimationState {
-    OFFLINE,
-    LOCKOUT,
-    PURGING,
-    REDLINE,
-    HOT,
-    NULL,
-    SOVEREIGN,
-    BREACH,
-    NORMAL
+    OFFLINE, LOCKOUT, AUDIT, RAID, PURGING, REDLINE, OVERCLOCKED,
+    THERMAL_CRITICAL, HOT, INTEGRITY_CRITICAL, INTEGRITY_LOW,
+    HIGH_RISK, POWER_STRESS, CORRUPTED, NULL, SOVEREIGN, PULSE, BREACH, NORMAL
 }

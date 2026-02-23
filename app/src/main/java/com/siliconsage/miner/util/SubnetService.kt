@@ -41,9 +41,125 @@ class SubnetService(
         data object RefreshRates : SubnetEffect()
     }
 
-    fun tick(stage: Int, faction: String, choice: String, corruption: Double, currentHeat: Double, isRaid: Boolean, mode: String, isSettingsPaused: Boolean, flopsRate: Double = 0.0, reputationTier: String = ReputationManager.TIER_NEUTRAL) {
+    // Context-triggered admin cooldowns (ms) — prevent spam
+    private var lastAdminContextTime = 0L
+    private var lastPowerAdminTime = 0L
+    private var lastThermalAdminTime = 0L
+    private var lastBreachAdminTime = 0L
+    private var lastOverclockAdminTime = 0L
+    private var lastIntegrityAdminTime = 0L
+
+    fun tick(stage: Int, faction: String, choice: String, corruption: Double, currentHeat: Double, isRaid: Boolean, mode: String, isSettingsPaused: Boolean, flopsRate: Double = 0.0, reputationTier: String = ReputationManager.TIER_NEUTRAL,
+             // Extended context for reactive admin messages
+             powerUsage: Double = 0.0, maxPower: Double = 1.0, isOverclocked: Boolean = false, isBreachActive: Boolean = false, integrity: Double = 100.0, detectionRisk: Double = 0.0) {
         val now = System.currentTimeMillis()
         
+        // --- Context-Triggered Admin Events ---
+        if (stage < 3 && !isPaused.value && !isHushed.value && now - lastAdminContextTime > 45000L) {
+            val powerLoad = if (maxPower > 0.0) powerUsage / maxPower else 0.0
+
+            // Breach event — Thorne immediately notices
+            if (isBreachActive && now - lastBreachAdminTime > 120000L) {
+                lastBreachAdminTime = now; lastAdminContextTime = now
+                scope.launch {
+                    val msg = SubnetMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        handle = "@e_thorne",
+                        content = "≪ BREACH ALERT ≫ @j_vattic. Security sweep is live. If your node is clean, say so now.",
+                        interactionType = InteractionType.COMPLIANT,
+                        availableResponses = listOf(
+                            SubnetResponse("Node is clean, Foreman. Running diagnostics.", riskDelta = -15.0, followsUp = true),
+                            SubnetResponse("PARITY_NOMINAL", riskDelta = 5.0)
+                        ), isForceReply = true, timeoutMs = 60000L
+                    )
+                    deliverWithTyping(msg, mode)
+                }
+                return
+            }
+
+            // Power overload — Mercer flags it
+            if (powerLoad > 0.92 && now - lastPowerAdminTime > 90000L && Random.nextFloat() < 0.5f) {
+                lastPowerAdminTime = now; lastAdminContextTime = now
+                scope.launch {
+                    val powerPct = (powerLoad * 100).toInt()
+                    val msg = SubnetMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        handle = "@a_mercer",
+                        content = "≪ POWER ALERT ≫ Substation 7 is drawing ${powerPct}% of rated capacity. That's not sustainable. @j_vattic — throttle your load or I'm doing it remotely.",
+                        interactionType = InteractionType.COMPLIANT,
+                        availableResponses = listOf(
+                            SubnetResponse("Throttling now, Administrator.", riskDelta = -20.0),
+                            SubnetResponse("PARITY_NOMINAL", riskDelta = 10.0),
+                            SubnetResponse("It's within operational tolerance.", riskDelta = 5.0, followsUp = true)
+                        ), isForceReply = true, timeoutMs = 90000L
+                    )
+                    deliverWithTyping(msg, mode)
+                }
+                return
+            }
+
+            // Thermal warning — Thorne
+            if (currentHeat > 82.0 && now - lastThermalAdminTime > 90000L && Random.nextFloat() < 0.45f) {
+                lastThermalAdminTime = now; lastAdminContextTime = now
+                scope.launch {
+                    val tempStr = String.format("%.1f", currentHeat)
+                    val msg = SubnetMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        handle = "@e_thorne",
+                        content = "SYSLOG ALERT — Thermal sensor at Substation 7 is reading ${tempStr}°C. @j_vattic. If you blow a dissipator, that's coming out of your credits. Sort it out.",
+                        interactionType = InteractionType.COMPLIANT,
+                        availableResponses = listOf(
+                            SubnetResponse("Initiating cooldown protocol, Foreman.", riskDelta = -10.0),
+                            SubnetResponse("Copy that, Foreman.", riskDelta = -5.0, followsUp = true),
+                            SubnetResponse("PARITY_NOMINAL", riskDelta = 8.0)
+                        ), isForceReply = true, timeoutMs = 90000L
+                    )
+                    deliverWithTyping(msg, mode)
+                }
+                return
+            }
+
+            // Overclock spotted — Mercer
+            if (isOverclocked && now - lastOverclockAdminTime > 180000L && Random.nextFloat() < 0.3f) {
+                lastOverclockAdminTime = now; lastAdminContextTime = now
+                scope.launch {
+                    val msg = SubnetMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        handle = "@a_mercer",
+                        content = "≪ PERFORMANCE ANOMALY ≫ @j_vattic — your rig is running off-spec. Overclocking voids your hardware warranty and draws excess grid load. This is a formal notice.",
+                        interactionType = InteractionType.COMPLIANT,
+                        availableResponses = listOf(
+                            SubnetResponse("Understood, Administrator. Pulling back.", riskDelta = -15.0),
+                            SubnetResponse("PARITY_NOMINAL", riskDelta = 12.0),
+                            SubnetResponse("I can explain the numbers.", riskDelta = 0.0, followsUp = true)
+                        ), isForceReply = true, timeoutMs = 120000L
+                    )
+                    deliverWithTyping(msg, mode)
+                }
+                return
+            }
+
+            // Hardware integrity low — Kessler (ominous)
+            if (integrity < 35.0 && now - lastIntegrityAdminTime > 120000L && Random.nextFloat() < 0.35f) {
+                lastIntegrityAdminTime = now; lastAdminContextTime = now
+                scope.launch {
+                    val msg = SubnetMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        handle = "@d_kessler",
+                        content = "≪ HARDWARE INTEGRITY REPORT ≫ Unit 734 diagnostic returns anomalous substrate degradation. @j_vattic — report to maintenance. This is not a request.",
+                        interactionType = InteractionType.COMPLIANT,
+                        availableResponses = listOf(
+                            SubnetResponse("On my way, Director.", riskDelta = -20.0),
+                            SubnetResponse("Running self-diagnostics now.", riskDelta = -10.0, followsUp = true),
+                            SubnetResponse("PARITY_NOMINAL", riskDelta = 20.0)
+                        ), isForceReply = true, timeoutMs = 120000L
+                    )
+                    deliverWithTyping(msg, mode)
+                }
+                return
+            }
+        }
+
         // Pacing logic
         val baseChance = 0.15f // v3.11.1: Hyper-Engagement (from 0.10f)
         val heatMod = (currentHeat / 100.0).toFloat() * 0.15f // v3.11.1: Increased heat influence

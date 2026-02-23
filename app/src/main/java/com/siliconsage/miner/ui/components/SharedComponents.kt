@@ -119,16 +119,17 @@ fun UpgradeItem(
         }
     }
 
+    val cardShape = RoundedCornerShape(12.dp)
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale; alpha = degradationAlpha }
-            .background(cardGradient, TechnicalCornerShape(16f))
+            .background(cardGradient, cardShape)
             .border(
                 width = if (isGhost) 1.5.dp else 1.dp,
                 brush = Brush.horizontalGradient(listOf(primaryColor.copy(alpha=0.6f), primaryColor.copy(alpha=0.1f), primaryColor.copy(alpha=0.6f))),
-                shape = TechnicalCornerShape(16f)
+                shape = cardShape
             )
             .clickable(interactionSource = interactionSource, indication = null) { onBuy(type) }
             .padding(14.dp)
@@ -169,14 +170,21 @@ fun UpgradeItem(
                 if (type.isHardware && rateText.isNotEmpty()) {
                     StatPill(text = rateText, icon = Icons.Default.Computer, color = NeonGreen)
                 }
-                if (type.isCooling) {
+                if (type.isCooling && !type.isWaterRecycler) {
                     StatPill(text = "${String.format("%.1f", type.baseHeat)}/S", icon = Icons.Default.AcUnit, color = ElectricBlue)
+                }
+                if (type.isWaterRecycler) {
+                    // v3.13.38: Display -WATER BILL for recyclers
+                    val offset = type.waterRecycleOffset
+                    val text = if (offset > 0) "-${offset.toInt()} GAL/S" else "-90% H2O"
+                    StatPill(text = "-WATER BILL", icon = Icons.Default.Opacity, color = Color.Cyan)
                 }
                 if (type.isPowerRelated && type.gridContribution > 0) {
                     StatPill(text = "+${FormatUtils.formatLargeNumber(type.gridContribution)}KW", icon = Icons.Default.Bolt, color = Color(0xFFFFD700))
                 }
-                if (type.basePower > 0 && !type.isGenerator) {
-                    StatPill(text = "-${FormatUtils.formatLargeNumber(type.basePower)}W", icon = Icons.Default.Power, color = Color(0xFFFFD700))
+                if ((type.basePower > 0 || type.recyclerPowerDraw > 0) && !type.isGenerator) {
+                    val pwr = if (type.isWaterRecycler) type.recyclerPowerDraw else type.basePower
+                    StatPill(text = "-${FormatUtils.formatLargeNumber(pwr)}W", icon = Icons.Default.Power, color = Color(0xFFFFD700))
                 }
                 if (type.isSecurity && type.gridContribution > 0) {
                     StatPill(text = "+${FormatUtils.formatLargeNumber(type.gridContribution)} SEC", icon = Icons.Default.Lock, color = ElectricBlue)

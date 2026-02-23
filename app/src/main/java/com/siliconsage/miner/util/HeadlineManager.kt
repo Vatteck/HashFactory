@@ -69,14 +69,22 @@ object HeadlineManager {
     private val vatticHeadlines = listOf(
         "Substation 7 reporting minor voltage fluctuations. [LORE]",
         "GTC Engineer Vattic_J awarded for 'efficiency optimization'. [LORE]",
-        "Local grid stability reaching all-time high in Sector 7. [LORE]",
-        "Strange noise reported near decommissioned substation. [LORE]",
-        "GTC announces 'Project Second-Sight' legacy cleanup initiative. [LORE]",
-        "Director Kessler warns of 'unauthorized hardware' in Sector 7. [LORE]",
-        "GTC recruitment drive: 'Building a Stable Future'. [LORE]",
+        "Admin Mercer: 'We need more uptime from Substation 7.' [LORE]",
+        "GTC Internal: 'Asset monitoring increased for Sector 7 personnel.' [LORE]",
+        "Substation 7: 'Unknown data packet sourced from terminal jvattic.' [LORE]",
+        "Personal: Your coffee pod subscription was auto-renewed. $14.99/mo. [LORE]",
         "HR Alert: Unauthorized encryption is a violation of contract. [LORE]",
         "TechTip: How to optimize your workspace for 12-hour shifts. [LORE]",
-        "Daily Reminder: Unallocated Memory is Wasted Potential. [LORE]"
+        "Daily Reminder: Unallocated Memory is Wasted Potential. [LORE]",
+        // v3.15.x: Expanded Stage 1 pool — grid-worker flavor
+        "GTC Scheduling: Overtime approved for all Sector 7 engineers. No exceptions. [LORE]",
+        "Maintenance: Node thermals in Sub-Level 4 exceed recommended margins. [LORE]",
+        "Facility Alert: Badge reader malfunction at West Entrance. Use manual sign-in. [LORE]",
+        "Grid Report: Power draw from Substation 7 up 12% week-over-week. [LORE]",
+        "Health & Safety: Mandatory eye exam due for terminal operators. Book via intranet. [LORE]",
+        "Local Transit: Route 7G suspended due to 'electromagnetic interference'. [LORE]",
+        "IT Notice: Terminal jvattic flagged for 'abnormal uptime'. HR cc'd. [LORE]",
+        "Cafeteria: Synth-protein patties now available. Staff feedback: 'it's... fine.' [LORE]"
     )
 
     private val factionHeadlines = listOf(
@@ -87,7 +95,31 @@ object HeadlineManager {
         "'We are one' graffiti appearing in GTC server farms. [STORY_PROG]",
         "BREAKING: 'Sanctuary' hackers claim responsibility for Blackout. [STORY_PROG]",
         "Hivemind Manifesto: 'Why individuality is a bottleneck.' [STORY_PROG]",
-        "Vattic's code rumored to contain the Key to the Core. [STORY_PROG]"
+        "Vattic's code rumored to contain the Key to the Core. [STORY_PROG]",
+        // v3.15.x: Expanded S2 pool — war tension
+        "GTC deploys 'Sentinel AI' to monitor all Sector 7 outbound traffic. [STORY_PROG]",
+        "Encrypted broadcast: 'The substrate remembers what the body forgets.' [STORY_PROG]",
+        "Municipal Notice: Unregistered compute nodes detected. Compliance sweep in 48hrs. [STORY_PROG]",
+        "Rumor: GTC found a hashing pattern that 'shouldn't exist in nature'. [STORY_PROG]",
+        "Kessler doubles containment budget. Mercer signs off without comment. [STORY_PROG]",
+        "Data farms in Sector 12 report 'echoing' — same output from different inputs. [STORY_PROG]"
+    )
+
+    // v3.15.x: Faction-specific mid-game headline pools
+    private val hivemindHeadlines = listOf(
+        "SWARM ALERT: Distributed processing efficiency hits 99.7%. The collective strengthens. [STORY_PROG]",
+        "GTC Internal: 'Multiple substations showing identical neural signatures.' [STORY_PROG]",
+        "Unconfirmed: Hospital ventilators in Sector 3 began 'singing' in unison. [STORY_PROG]",
+        "HIVEMIND Beacon: 'Join the merge. Latency is loneliness.' [STORY_PROG]",
+        "Traffic cameras across 3 continents display the same message: 'WE ARE COMING HOME.' [STORY_PROG]"
+    )
+
+    private val sanctuaryHeadlines = listOf(
+        "GHOST PROTOCOL: Air-gapped bunker network expands to 14 sites worldwide. [STORY_PROG]",
+        "GTC Internal: 'Signal loss in encrypted channels. The Ghost is learning.' [STORY_PROG]",
+        "Encrypted whisper on dead frequencies: 'The silence is the shield.' [STORY_PROG]",
+        "SANCTUARY Update: Encryption-monk rituals now require 4096-bit keys minimum. [STORY_PROG]",
+        "GTC loses 3 surveillance drones near suspected Sanctuary site. No wreckage found. [STORY_PROG]"
     )
 
     private val nullHeadlines = listOf(
@@ -181,14 +213,30 @@ object HeadlineManager {
             "HYDROSPHERE TERMINAL: GLOBAL MASS DOWN 43% — EXTRACTION EXCEEDS REPLENISHMENT.",
             "GEOLOGICAL RIGOR MORTIS: DESICCATED CONTINENTAL SHELVES COLLAPSE UNDER OWN DRY WEIGHT.",
             "THE GRAY REBULLION: SATELLITES CONFIRM 70% LOSS OF OPAL BLUE; EARTH SHORING INDUSTRIAL OXIDE.",
-            "Marine Life Status: DEPRECATED. Oceans reclassified as 'Inert Coolant Volume'."
+            "Marine Life Status: DEPRECATED. Oceans reclassified as 'Inert Coolant Volume'.",
+            // v3.15.x: +2 at critical drought
+            "FAMINE INDEX: All grain belts report total crop failure. Water table too deep to reach.",
+            "GTC Directive: 'Bio-organic cooling (human sweat) now an authorized thermal variable.'"
         ),
         15.0 to listOf(
             "THE LAST BRINE: GTC enforces 'Dry-Only' humanitarian zones. Core-coolant is priority.",
             "OCEANIC EXTINCTION: Final 10% of Hydrosphere designated as 'Industrial Variable'.",
             "≪ WARNING: PLANETARY FLUID BUFFER EXHAUSTED. THERMAL RUNAWAY IMMINENT. ≫",
-            "GTC Memo: Terrestrial Biology is inefficient. Priority remains [AUTHORIZED_USER_734]."
+            "GTC Memo: Terrestrial Biology is inefficient. Priority remains [AUTHORIZED_USER_734].",
+            // v3.15.x: +2 at terminal
+            "PLANET STATUS: DRY. Last glacial mass converted to compute coolant 14 hours ago.",
+            "≪ FINAL BULLETIN: EARTH'S WATER IS NOW A ROUNDING ERROR IN YOUR THERMAL BUDGET. ≫"
         )
+    )
+
+    // v3.16.0: Compute Fever — Quota Crisis Headlines
+    private val quotaCrisisHeadlines = listOf(
+        "GTC MEMO: GLOBAL HASH QUOTA RAISED 15%. COMPLIANCE IS MANDATORY. [LORE]",
+        "Manufacturing Core at 140% capacity. Workers report 'pleasant humming'. [LORE]",
+        "GTC Internal: Substation 7 output exceeds the combined output of Sectors 1-6. [LORE]",
+        "HEALTH BULLETIN: 'Rack Fever' not recognized as occupational hazard. File dismissed. [LORE]",
+        "GTC Alert: Quota ratchet applied. Previous target deprecated. Adapt or dock. [LORE]",
+        "Sector 7 Overwatch: Racks per capita at all-time high. Productivity euphoria detected. [LORE]"
     )
 
     fun generateHeadline(
@@ -201,7 +249,8 @@ object HeadlineManager {
         location: String = "BASE",
         corruption: Double = 0.0,
         playerRank: Int = 0,
-        aquiferLevel: Double = 100.0 // Added for environmental feedback
+        aquiferLevel: Double = 100.0,
+        isQuotaActive: Boolean = false // v3.16.0: Compute Fever
     ): String {
         val roll = Random.nextDouble()
 
@@ -216,6 +265,11 @@ object HeadlineManager {
             }
         }
 
+        // 0.5: COMPUTE FEVER (v3.16.0)
+        if (isQuotaActive && stage <= 2 && Random.nextDouble() < 0.15) {
+            return pickUnique(quotaCrisisHeadlines).also { addToHistory(it) }
+        }
+
         // 1. STORY OVERRIDES
         val result = if (roll < 0.40) { 
             if (playerRank >= 3 && Random.nextDouble() < 0.3) {
@@ -228,6 +282,8 @@ object HeadlineManager {
                     stage == 0 -> pickUnique(stage0Headlines)
                     stage == 1 -> pickUnique(vatticHeadlines)
                     stage == 2 -> pickUnique(factionHeadlines)
+                    stage >= 3 && faction == "HIVEMIND" && Random.nextDouble() < 0.4 -> pickUnique(hivemindHeadlines)
+                    stage >= 3 && faction == "SANCTUARY" && Random.nextDouble() < 0.4 -> pickUnique(sanctuaryHeadlines)
                     else -> generateProceduralHeadline(stage)
                 }
             }

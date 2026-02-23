@@ -78,6 +78,14 @@ fun OfflineEarningsDialog(
         return if (h > 0) "${h}h ${m}m ${s}s" else "${m}m ${s}s"
     }
 
+    // Theme color based on faction
+    val themeColor = when (faction) {
+        "HIVEMIND" -> Color(0xFFFF8C00)
+        "SANCTUARY" -> Color(0xFF00CCFF)
+        "SOVEREIGN" -> Color(0xFFFFB000)
+        else -> NeonGreen
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -88,16 +96,22 @@ fun OfflineEarningsDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(BorderStroke(2.dp, NeonGreen), RoundedCornerShape(8.dp))
+                .border(BorderStroke(2.dp, themeColor), RoundedCornerShape(8.dp))
                 .background(Color.Black)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "DATA CONSOLIDATED",
-                color = NeonGreen,
+                text = headerText,
+                color = themeColor,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subText,
+                color = Color.Gray,
+                fontSize = 12.sp
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -128,7 +142,7 @@ fun OfflineEarningsDialog(
 
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = NeonGreen),
+                colors = ButtonDefaults.buttonColors(containerColor = themeColor),
                 shape = RectangleShape,
                 modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {

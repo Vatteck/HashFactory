@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-// v3.5.46: Removed Close icon imports (X button removed)
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -79,34 +82,43 @@ fun DataLogDialog(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                // Header — v3.5.46: Removed X button (ARCHIVE is sole dismiss target)
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "[DATA FRAGMENT RECOVERED]",
-                        color = NeonGreen,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = log.id,
-                        color = ElectricBlue,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = log.title,
-                        color = NeonGreen,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                // v3.15.x: Context-derived stamp based on log id prefix
+                val headerStamp = when {
+                    log.id.startsWith("gtc_") || log.id.startsWith("kessler_") -> "[CLASSIFIED / DECRYPTED]"
+                    log.id.startsWith("kernel_") || log.id.startsWith("null_") -> "[MEMORY FRAGMENT EXTRACTED]"
+                    else -> "[DATA FRAGMENT RECOVERED]"
+                }
+                
+                // Header
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Column {
+                        Text(
+                            text = headerStamp,
+                            color = NeonGreen,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = log.id,
+                            color = ElectricBlue,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = log.title,
+                            color = NeonGreen,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(color = ElectricBlue.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                // Scrollable content
+                // Scrollable content with scan-line overlay and scroll fade
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -116,6 +128,24 @@ fun DataLogDialog(
                             RoundedCornerShape(4.dp)
                         )
                         .border(1.dp, ElectricBlue.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                        .drawWithContent {
+                            drawContent()
+                            // Scan-line overlay: faint horizontal lines every 3px
+                            val scanLineColor = Color.White.copy(alpha = 0.03f)
+                            var y = 0f
+                            while (y < size.height) {
+                                drawRect(scanLineColor, topLeft = Offset(0f, y), size = Size(size.width, 1f))
+                                y += 3f
+                            }
+                            // Bottom scroll-fade gradient
+                            drawRect(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)),
+                                    startY = size.height - 60f,
+                                    endY = size.height
+                                )
+                            )
+                        }
                         .padding(12.dp)
                 ) {
                     Column(

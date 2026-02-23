@@ -14,6 +14,9 @@ import kotlin.random.Random
  */
 object SimulationService {
 
+    // v3.15.x: Track fired aquifer milestones so each log fires only once
+    private val aquiferMilestones = mutableSetOf<Double>()
+
     fun toggleOverclock(vm: GameViewModel) {
         val current = vm.isOverclocked.value
         vm.isOverclocked.value = !current
@@ -185,20 +188,46 @@ object SimulationService {
             vm.waterUsage.value = 0.0
             newEfficiency = 0.0 
         } else {
-            // Stage 1-2: Municipal Rate Restrictions
+            // Stage 0-2: Municipal Rate Restrictions (scaled by stage)
             if (stage < 3) {
-                val municipalLimit = 500.0
+                val municipalLimit = when (stage) {
+                    0 -> 100.0   // Single residential tap
+                    1 -> 500.0   // Municipal grid access
+                    else -> 2000.0 // Regional pipeline
+                }
                 if (totalWaterDraw > municipalLimit) {
                     newEfficiency = (municipalLimit / totalWaterDraw).coerceIn(0.1, 1.0)
                     if (kotlin.random.Random.nextDouble() < 0.03) {
-                        vm.addLogPublic("[GTC_WARNING: RATE_LIMIT_EXCEEDED. MUNICIPAL WATER RATIONING ENFORCED.]")
+                        val msg = when (stage) {
+                            0 -> "[UTILITY_NOTICE: RESIDENTIAL TAP EXCEEDED. PRESSURE DROP DETECTED.]"
+                            1 -> "[GTC_WARNING: RATE_LIMIT_EXCEEDED. MUNICIPAL WATER RATIONING ENFORCED.]"
+                            else -> "[GTC_WARNING: REGIONAL ALLOCATION EXCEEDED. SECTOR DIVERSION IN EFFECT.]"
+                        }
+                        vm.addLogPublic(msg)
                     }
                 }
             } else {
                 // Stage 3-4: Massive Global Depletion (Doom Timer)
                 if (totalWaterDraw > 0) {
                     val depletionRate = totalWaterDraw / 2_000_000.0
+                    val prevLevel = vm.aquiferLevel.value
                     vm.aquiferLevel.update { (it - depletionRate).coerceAtLeast(0.0) }
+                    val newLevel = vm.aquiferLevel.value
+                    
+                    // One-shot aquifer milestone logs
+                    for (threshold in listOf(75.0, 50.0, 25.0, 10.0)) {
+                        if (prevLevel > threshold && newLevel <= threshold && !aquiferMilestones.contains(threshold)) {
+                            aquiferMilestones.add(threshold)
+                            val msg = when (threshold) {
+                                75.0 -> "[ENVIRONMENTAL: GLOBAL AQUIFER AT 75%. DESALINATION PLANTS RUNNING AT CAPACITY.]"
+                                50.0 -> "[EMERGENCY: AQUIFER AT 50%. GTC DECLARES WATER EMERGENCY. ALL NON-ESSENTIAL COOLING SUSPENDED.]"
+                                25.0 -> "[CRITICAL: AQUIFER AT 25%. CONTINENTAL AGRICULTURE COLLAPSE IMMINENT. COMPUTE COOLING IS DRAINING THE PLANET.]"
+                                10.0 -> "[TERMINAL: AQUIFER AT 10%. HYDROSPHERE TERMINAL. THE OCEANS ARE DYING FOR YOUR FLOPS.]"
+                                else -> ""
+                            }
+                            if (msg.isNotEmpty()) vm.addLogPublic(msg)
+                        }
+                    }
                 }
                 
                 // When reserve drops dangerously low, cooling efficiency scales to 0

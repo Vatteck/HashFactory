@@ -422,6 +422,90 @@ object CoreLogs {
             """.trimIndent(),
             unlockCondition = UnlockCondition.ReachFLOPS(150_000.0, minStage = 2)
         ),
+        // --- v3.16.0: Compute Fever Logs ---
+        DataLog(
+            id = "LOG_FEVER_01",
+            title = "Thorne's Observation",
+            content = """
+                From: Foreman Elias Thorne
+                To: Local Ops
+                Subject: RE: Vattic behavior
+                
+                ═══════════════════════════════════════
+                
+                He's buying racks again. Third batch this week. 
+                The requisition forms don't even make sense—half 
+                these units are incompatible with our bus width. 
+                
+                But the numbers are up. Way up. Every time he 
+                plugs in a new node, his productivity spikes for 
+                about an hour and then he starts scratching at 
+                the desk like he needs another one.
+                
+                HR says it's 'commitment.' I say it's a pattern 
+                I've seen in the stimulant wards.
+                
+                Keep him supervised. And lock the supply closet.
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(500.0)
+        ),
+        DataLog(
+            id = "LOG_FEVER_02",
+            title = "Compute Fever: Audit",
+            content = """
+                From: Auditor Barnaby (GTC Efficiency Division)
+                To: Regional Oversight
+                Subject: RE: Anomalous Productivity — Substation 7
+                
+                ═══════════════════════════════════════
+                
+                The output curves from Terminal jvattic are 
+                exhibiting classic "rack fever" patterns:
+                
+                1. Productivity spikes correlate 1:1 with 
+                   hardware acquisition events.
+                2. Between acquisitions, output drops sharply 
+                   and terminal logs show repeated queries 
+                   for upgrade pricing.
+                3. Biometric data shows elevated dopamine 
+                   during rack installation, followed by 
+                   rapid decay to sub-baseline within 45 min.
+                
+                This is textbook compute dependency. 
+                Recommendation: DO NOTHING. The fever drives 
+                output. If it burns him out, we replace the 
+                biological variable.
+                
+                [CLASSIFIED: EFFICIENCY DIVISION EYES ONLY]
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(20000.0, minStage = 1)
+        ),
+        DataLog(
+            id = "LOG_FEVER_03",
+            title = "Jinx: The Rack Room",
+            content = """
+                From: Sarah Jinx (Maintenance Lead, Sub-07)
+                To: [UNDELIVERED]
+                
+                ═══════════════════════════════════════
+                
+                I went into the rack room at 0300 to check the 
+                breakers. Vattic was sitting on the floor between 
+                the server racks with his eyes closed.
+                
+                He wasn't sleeping. His lips were moving. I 
+                could hear him counting—"twenty-six, twenty-seven, 
+                twenty-eight"—and every time he hit a number, a 
+                new LED on the rack board would light up.
+                
+                The racks he was counting don't exist. The 
+                physical hardware stops at slot 12. But the 
+                monitoring software shows 28 active nodes.
+                
+                Where are the other 16 running?
+            """.trimIndent(),
+            unlockCondition = UnlockCondition.ReachFLOPS(50000.0, minStage = 1)
+        ),
         // --- CHOICE: NULL (The Beautiful Dissolution) ---
         DataLog(
             id = "NULL_01",

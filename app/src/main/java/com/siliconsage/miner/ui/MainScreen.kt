@@ -31,6 +31,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -341,7 +342,11 @@ fun MainScreen(viewModel: GameViewModel) {
                     }
                 }
 
-                Column(modifier = Modifier.padding(paddingValues).graphicsLayer { translationX = shakeOffset.x; translationY = shakeOffset.y }) {
+                Column(modifier = Modifier.padding(paddingValues).graphicsLayer {
+                    translationX = shakeOffset.x + if (globalGlitchIntensity > 0.2) (kotlin.random.Random.nextFloat() - 0.5f) * globalGlitchIntensity.toFloat() * 6f else 0f
+                    translationY = shakeOffset.y + if (globalGlitchIntensity > 0.5) (kotlin.random.Random.nextFloat() - 0.5f) * globalGlitchIntensity.toFloat() * 3f else 0f
+                    alpha = if (globalGlitchIntensity > 0.3) (1f - (globalGlitchIntensity.toFloat() - 0.3f) * 0.3f).coerceAtLeast(0.75f) else 1f
+                }) {
                     var showNewsHistory by remember { mutableStateOf(false) }
                     Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                         Box(modifier = Modifier.weight(1f).fillMaxHeight()) { 
@@ -413,7 +418,37 @@ fun MainScreen(viewModel: GameViewModel) {
                          }
                     }
                 }
-                if (isPurging) Box(modifier = Modifier.fillMaxSize().background(Brush.radialGradient(listOf(Color.Cyan.copy(alpha = 0.3f), Color.Transparent), radius = 1000f)).pointerInput(Unit) {})
+                if (isPurging) Box(modifier = Modifier.fillMaxSize().background(Brush.radialGradient(listOf(Color.Cyan.copy(alpha = 0.3f), Color.Transparent), radius = 1000f)))
+
+                // Overclock vignette — faint orange edge bleed when overclocked
+                val isOverclocked by viewModel.isOverclocked.collectAsState()
+                if (isOverclocked) {
+                    val vignetteInfinite = rememberInfiniteTransition(label = "oc_vignette")
+                    val vignetteAlpha by vignetteInfinite.animateFloat(0.06f, 0.13f, infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "oc_alpha")
+                    Box(modifier = Modifier.fillMaxSize().background(Brush.radialGradient(
+                        colors = listOf(Color.Transparent, Color.Transparent, Color(0xFFFF6600).copy(alpha = vignetteAlpha)),
+                        radius = 2200f
+                    )))
+                }
+
+                // Breach strobe — fast red flash overlaid on entire screen
+                if (isBreach) {
+                    val strobeInfinite = rememberInfiniteTransition(label = "breach_strobe")
+                    val strobeAlpha by strobeInfinite.animateFloat(0f, 0.12f, infiniteRepeatable(tween(180, easing = LinearEasing), RepeatMode.Reverse), label = "strobe")
+                    Box(modifier = Modifier.fillMaxSize().background(ErrorRed.copy(alpha = strobeAlpha)))
+                }
+
+                // Integrity low heartbeat — slow red pulse when hardware is failing
+                val currentIntegrity by viewModel.hardwareIntegrity.collectAsState()
+                if (currentIntegrity < 30.0) {
+                    val integrityInfinite = rememberInfiniteTransition(label = "integ_heartbeat")
+                    val integrityPulse by integrityInfinite.animateFloat(0f, ((30.0 - currentIntegrity) / 30.0).toFloat() * 0.10f,
+                        infiniteRepeatable(tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "integ_pulse")
+                    Box(modifier = Modifier.fillMaxSize().background(Brush.radialGradient(
+                        colors = listOf(Color.Transparent, ErrorRed.copy(alpha = integrityPulse)),
+                        radius = 1800f
+                    )))
+                }
                 updateInfo?.let { info ->
                     val context = androidx.compose.ui.platform.LocalContext.current
                     UpdateOverlay(info, isUpdateDownloading, updateProgress, { viewModel.startUpdateDownload(context, info) }, { viewModel.dismissUpdate() })
@@ -465,6 +500,9 @@ fun MainScreen(viewModel: GameViewModel) {
                     
                     // v3.5.31: Terminal Notifications
                     com.siliconsage.miner.ui.components.TerminalNotificationOverlay(viewModel)
+                    
+                    // v3.16.0: Snap Effect (CRT reboot flash)
+                    com.siliconsage.miner.ui.components.SnapEffect(viewModel)
                     
                     // v3.5.52: Prestige Choice — "The Fork in the Wire"
                     val showPrestigeChoice by viewModel.showPrestigeChoice.collectAsState()
@@ -576,9 +614,24 @@ fun ResourceDisplay(
         }
         
         Box(contentAlignment = if (isRightAligned) Alignment.BottomEnd else Alignment.BottomStart) {
+            // Bloom — radial gradient, smooth falloff, no visible edge bands
+            val bloomColor = if (isGlitchy) com.siliconsage.miner.ui.theme.ErrorRed else color
+            Canvas(modifier = Modifier.matchParentSize()) {
+                val cx = size.width / 2f; val cy = size.height / 2f
+                drawRect(
+                    brush = Brush.radialGradient(
+                        colors = listOf(bloomColor.copy(alpha = 0.10f * droopAlpha), Color.Transparent),
+                        center = androidx.compose.ui.geometry.Offset(cx, cy),
+                        radius = size.width * 0.9f
+                    ),
+                    size = size
+                )
+            }
             Column(horizontalAlignment = if (isRightAligned) Alignment.End else Alignment.Start) {
-                if (isGlitchy) SystemGlitchText(valueStr, color = Color.White.copy(alpha = droopAlpha), fontSize = fontSizeByLength, fontWeight = FontWeight.Black, glitchFrequency = glitchIntensity, softWrap = false, maxLines = 1)
-                else Text(valueStr, color = Color.White.copy(alpha = droopAlpha), fontSize = fontSizeByLength, fontWeight = FontWeight.Black, softWrap = false, maxLines = 1)
+                if (isGlitchy) SystemGlitchText(valueStr, color = Color.White.copy(alpha = droopAlpha), fontSize = fontSizeByLength, fontWeight = FontWeight.Black, glitchFrequency = glitchIntensity, softWrap = false, maxLines = 1,
+                    style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.8f * droopAlpha), blurRadius = 12f)))
+                else Text(valueStr, color = Color.White.copy(alpha = droopAlpha), fontSize = fontSizeByLength, fontWeight = FontWeight.Black, softWrap = false, maxLines = 1,
+                    style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.7f * droopAlpha), blurRadius = 14f)))
                 
                 if (rateStr.isNotEmpty()) {
                     Text(
@@ -587,7 +640,8 @@ fun ResourceDisplay(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace,
-                        modifier = Modifier.offset(y = (-2).dp)
+                        modifier = Modifier.offset(y = (-2).dp),
+                        style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = Color(0xFF7DF9FF).copy(alpha = 0.6f * droopAlpha), blurRadius = 10f))
                     )
                 }
             }

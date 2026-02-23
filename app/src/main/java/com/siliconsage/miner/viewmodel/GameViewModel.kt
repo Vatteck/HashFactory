@@ -219,6 +219,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
 
     fun triggerSnapEffect() {
         isSnapEffectActive.value = true
+        snapTrigger.value = System.currentTimeMillis() // v3.16.0: Also fire new SnapEffect overlay
         SoundManager.play("buy", pitch = 0.5f)
         viewModelScope.launch {
             delay(150)
@@ -308,6 +309,10 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (singularityChoice.value != "NONE") {
             val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
             flopsProductionRate.update { it * singMult }
+        }
+        // v3.16.0: Rack High production boost
+        if (rackHighMultiplier.value > 1.0) {
+            flopsProductionRate.update { it * rackHighMultiplier.value }
         }
         val ids = IdentityService.calculateIdentities(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value, upgrades.value)
         playerRank.value = IdentityService.calculatePlayerRank(prestigeMultiplier.value, storyStage.value, faction.value, singularityChoice.value)
@@ -492,8 +497,21 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (g.isNaN() || g.isInfinite()) g = 0.0
         flops.update { 0.0 }
         // At stage 4+, upgrades cost substrateMass - fill that pool instead
-        if (storyStage.value >= 4) substrateMass.update { it + g }
-        else updateNeuralTokens(g) // v3.9.70: Use updateNeuralTokens helper for centralized NaN guards
+        if (storyStage.value >= 4) {
+            substrateMass.update { it + g }
+        } else {
+            // v3.16.x: Signal Quality Bonus (+10% NT if signal is clear/headroom high)
+            var finalG = g
+            val hasSignalBonus = isSignalClear.value
+            if (hasSignalBonus) {
+                finalG *= 1.1
+            }
+            
+            updateNeuralTokens(finalG)
+            
+            val bonusMsg = if (hasSignalBonus) " (Signal Quality Bonus: +10%)" else ""
+            addLogPublic("[CREDIT]: Transferred ${formatLargeNumber(finalG)} NT.$bonusMsg")
+        }
         SoundManager.play("buy")
     }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
@@ -776,7 +794,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
 
     fun addSubnetChatter() {
-        subnetService.tick(storyStage.value, faction.value, singularityChoice.value, identityCorruption.value, currentHeat.value, isRaidActive.value, activeTerminalMode.value, isSettingsPaused.value, flopsProductionRate.value, reputationTier.value)
+        subnetService.tick(storyStage.value, faction.value, singularityChoice.value, identityCorruption.value, currentHeat.value, isRaidActive.value, activeTerminalMode.value, isSettingsPaused.value, flopsProductionRate.value, reputationTier.value,
+            powerUsage = activePowerUsage.value, maxPower = maxPowerkW.value, isOverclocked = isOverclocked.value, isBreachActive = isBreachActive.value, integrity = hardwareIntegrity.value, detectionRisk = detectionRisk.value)
     }
 
     // v3.12.0: Centralized Prompt Logic
