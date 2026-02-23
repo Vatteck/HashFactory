@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.*
 import com.siliconsage.miner.util.*
+import com.siliconsage.miner.util.BillingService
+import com.siliconsage.miner.util.ComputeFeverService
 import com.siliconsage.miner.domain.engine.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,11 +23,6 @@ sealed class NarrativeItem {
 }
 
 class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
-    // v3.13.32: Signal Momentum & Adaptive Decay
-    private var signalDecayStartTime = 0L
-    private var lastStabilityBase = 1.0
-    
-    private val signalDecayDurationMs = 300000L // 5 Minute Window
     private var lastNotificationTime = 0L
     private var lastNotificationContent = ""
     
@@ -99,6 +96,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             refreshProductionRates()
             isKernelInitializing.value = false
         }
+        BillingService.setScope(viewModelScope)
         startLoops()
         AmbientEffectsService.startAmbientLoop(this)
     }
@@ -160,70 +158,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 // v3.13.19: Shift Timer Decay
                 if (shiftTimeRemaining.value > 0) shiftTimeRemaining.update { it - 1 }
 
-                // v3.12.6: GTC Billing Cycle - settles every billingPeriodSeconds
-                val nowSec = System.currentTimeMillis() / 1000L
-                if (storyStage.value >= 1 && (nowSec - lastUtilityStatementTime) >= billingPeriodSeconds) {
-                    lastUtilityStatementTime = nowSec
-                    val grossKwh = billingPeriodAccumulator
-                    val genKwh = billingPeriodGenAccumulator
-                    val netKwh = (grossKwh - genKwh).coerceAtLeast(0.0)
-                    billingPeriodAccumulator = 0.0
-                    billingPeriodGenAccumulator = 0.0
-
-                    if (netKwh > 0.0) {
-                        // Demand charge escalation: 1 missed period = 2x, 2 = 3x, 3+ = 5x + lockout warning
-                        val demandMultiplier = when (missedBillingPeriods) {
-                            0 -> 1.0
-                            1 -> 2.0
-                            2 -> 3.0
-                            else -> 5.0
-                        }
-                        val baseRate = energyPriceMultiplier.value
-                        val heatSurcharge = if (currentHeat.value > 95.0) 1.5 else 1.0
-                        val amountDue = netKwh * baseRate * demandMultiplier * heatSurcharge
-
-                        // Auto-pay if solvent
-                        if (neuralTokens.value >= amountDue) {
-                            neuralTokens.update { it - amountDue }
-                            powerBill.value = 0.0
-                            missedBillingPeriods = 0
-                            addLog("[GTC_UTIL]: ── PERIOD STATEMENT ──────────────")
-                            addLog("[GTC_UTIL]: DRAW  ${formatPower(grossKwh)}  GEN  ${formatPower(genKwh)}")
-                            addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
-
-                            // v3.13.19: High-Fidelity Utility Notification
-                            dispatchNotification("GTC ALERT: PERIOD SETTLED (-${formatLargeNumber(amountDue)})")
-                        } else {
-                            // Can't pay - carry the balance, escalate
-                            val overdue = (powerBill.value + amountDue)
-                            powerBill.value = overdue
-                            missedBillingPeriods++
-                            addLog("[GTC_UTIL]: ── PERIOD STATEMENT ──────────────")
-                            addLog("[GTC_UTIL]: DRAW  ${formatPower(grossKwh)}  GEN  ${formatPower(genKwh)}")
-                            addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
-
-                            // v3.13.19: High-Fidelity Overdue Notification
-                            val lockoutIn = (6 - missedBillingPeriods).coerceAtLeast(0)
-                            dispatchNotification("GTC CRITICAL: OVERDUE BALANCE ($${formatLargeNumber(overdue)}) - LOCKOUT IN $lockoutIn")
-
-                            if (missedBillingPeriods >= 3) {
-                                addLog("[GTC_UTIL]: WARNING - DEMAND CHARGE ACTIVE. GRID LOCKOUT IN ${3 - (missedBillingPeriods - 3).coerceAtMost(3)} PERIOD(S).")
-                            }
-                            if (missedBillingPeriods >= 6) {
-                                // Grid lockout - trip the breaker narratively
-                                isGridOverloaded.value = true
-                                addLog("[GTC_UTIL]: GRID ACCESS SUSPENDED. UNPAID BALANCE: ${formatLargeNumber(powerBill.value)} ${getCurrencyName()}.")
-                            }
-                        }
-                    } else if (genKwh > 0.0) {
-                        // Net surplus - GTC net metering credit (small CRED bonus)
-                        val credit = genKwh * energyPriceMultiplier.value * 0.3
-                        neuralTokens.update { it + credit }
-                        powerBill.value = 0.0
-                        missedBillingPeriods = 0
-                        dispatchNotification("GTC ALERT: SURPLUS CREDIT (+${formatLargeNumber(credit)})")
-                    }
-                }
+                // v3.12.6: GTC Billing Cycle
+                BillingService.processUtilityBilling(this@GameViewModel)
 
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
                 addSubnetChatter()
@@ -246,156 +182,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
     }
 
-    private fun processComputeFever(now: Long) {
-        val passiveFlops = flopsProductionRate.value
-        // v3.13.10: totalEffectiveRate (Passive + Click Effort)
-        // clickSpeedLevel scales from 0 to 2 based on recent click intervals
-        val clickEffort = when(clickSpeedLevel.value) {
-            1 -> calculateClickPower() * 2.0 // Moderate clicking
-            2 -> calculateClickPower() * 5.0 // Rapid clicking
-            else -> 0.0
-        }
-        val currentFlops = passiveFlops + clickEffort
-        totalEffectiveRate.value = currentFlops
-        val quota = currentQuotaThreshold.value
-
-        // v3.13.4: Quota Activation (Grace Period ends at first production)
-        if (!isQuotaActive.value && currentFlops > 0.0) {
-            isQuotaActive.value = true
-            addLog("[GTC_SYSTEM]: BIOMETRIC QUOTA LINK ESTABLISHED. MAINTAIN SIGNAL.")
-        }
-
-        if (!isQuotaActive.value) {
-            signalStability.value = 1.0
-            substrateStaticIntensity.value = 0f
-            return
-        }
-
-        // v3.13.32: Signal Stability with 5-Minute Adaptive Decay
-        val rawStability = (currentFlops / quota).coerceIn(0.0, 1.0)
-        
-        if (rawStability < lastStabilityBase && signalDecayStartTime == 0L) {
-            // Potential drop detected (likely quota jump) - Start the 5-minute bleed
-            signalDecayStartTime = now
-        } else if (rawStability >= lastStabilityBase) {
-            // Recovery or stable - reset the decay window
-            signalDecayStartTime = 0L
-        }
-
-        val stability = if (signalDecayStartTime > 0L) {
-            val elapsed = now - signalDecayStartTime
-            val progress = (elapsed.toDouble() / signalDecayDurationMs).coerceIn(0.0, 1.0)
-            
-            // For the first 60 seconds, hold a 70% floor if raw is lower
-            val floor = if (elapsed < 60000L) 0.7 else 0.0
-            
-            // Lerp from last stability toward raw reality
-            val lerped = lastStabilityBase + (rawStability - lastStabilityBase) * progress
-            lerped.coerceAtLeast(floor).coerceIn(0.0, 1.0)
-        } else {
-            rawStability
-        }
-
-        lastStabilityBase = stability
-        signalStability.value = stability
-
-        // v3.13.4: Signal Quality Bonus (Clear Signal = 2x Quota)
-        val isClear = currentFlops >= (quota * 2.0)
-        if (isSignalClear.value != isClear) {
-            isSignalClear.value = isClear
-            computeHeadroomBonus.value = if (isClear) 1.1 else 1.0 // +10% CRED bonus
-            if (isClear) {
-                if (storyStage.value <= 1) addLog("[SYSTEM]: SIGNAL STABILIZED. RACK OVER-PROVISION DETECTED.")
-                // v3.13.4: Pulse sound on clear signal
-                SoundManager.play("message_received", pitch = 0.8f)
-            } else {
-                if (storyStage.value <= 1) addLog("[VATTIC]: The static is back. I need to stack more nodes.")
-            }
-        }
-
-        // v3.13.19: Wage-Docking Logic (Neural Sync Failure)
-        if (stability < 0.2 && isQuotaActive.value) {
-            if (lastLowSignalTime == 0L) lastLowSignalTime = now
-            if (now - lastLowSignalTime > 30000L && !isWageDocking.value) {
-                isWageDocking.value = true
-                dispatchNotification("GTC CRITICAL: NEURAL SYNC FAILURE - WAGE DOCKING ACTIVE")
-            }
-        } else {
-            lastLowSignalTime = 0L
-            if (isWageDocking.value) {
-                isWageDocking.value = false
-                dispatchNotification("GTC ALERT: NEURAL SYNC RESTORED - DOCKING TERMINATED")
-            }
-        }
-
-        // Substrate Static Intensity (0.0 to 1.0)
-        // v3.13.8: Glitch Delay - Static only starts after 50% quota stability
-        val intensity = if (stability >= 0.5) {
-            0f // Clean signal while making progress
-        } else {
-            // Ramps from 0 to 0.3 as stability drops from 50% to 0%
-            ((0.5 - stability) * 0.6).toFloat().coerceIn(0f, 0.3f)
-        }
-        substrateStaticIntensity.value = intensity
-
-        // Update Quota based on Stage (Narrative anchors)
-        val nextTarget = when(storyStage.value) {
-            0 -> {
-                // v3.13.9: Balanced Ratchet Quota (Stage 0 only)
-                // Anchored to productionEngine hardware: GPU=2, Rig=8, ASIC=35
-                when {
-                    currentFlops < 10.0 -> 10.0
-                    currentFlops < 50.0 -> 50.0
-                    else -> 200.0
-                }
-            }
-            1 -> 15000.0
-            2 -> 500000.0
-            3 -> 10_000_000.0
-            else -> 0.0
-        }
-
-        // v3.13.25: Balanced Quota Ratchet (20% Potential or 1.5x current)
-        if (nextTarget > currentQuotaThreshold.value) {
-            val floor = currentQuotaThreshold.value * 1.5
-            val ceiling = nextTarget * 0.20
-            val potentialThreshold = ceiling.coerceAtLeast(floor)
-            
-            // v3.13.26: Update Ghost Bar Progress
-            val pProgress = if (currentFlops > floor) {
-                ((currentFlops - floor) / (potentialThreshold - floor)).toFloat().coerceIn(0f, 1f)
-            } else 0f
-            potentialProgress.update { pProgress }
-
-            if (currentFlops >= potentialThreshold) {
-                // Milestone reached - ratchet the target
-                currentQuotaThreshold.value = nextTarget
-                pendingQuotaThreshold.value = nextTarget
-                
-                addLog("[GTC_SYSTEM]: POTENTIAL DETECTED. QUOTA RATIFIED: ${formatLargeNumber(nextTarget)} HASH.")
-                dispatchNotification("GTC ALERT: QUOTA RATIFIED. TARGET: ${formatLargeNumber(nextTarget)} HASH")
-                
-                // v3.13.19: Shift Extension Penalty (+12 Hours)
-                shiftTimeRemaining.update { it + 43200L } 
-                dispatchNotification("GTC ALERT: OVERTIME ENFORCED (+12.0H)")
-                
-                SoundManager.play("error", pitch = 1.2f)
-            } else {
-                // Not yet at potential, but GTC is watching (Seed the warning if close)
-                val warningThreshold = potentialThreshold * 0.8
-                if (currentFlops >= warningThreshold && pendingQuotaThreshold.value != nextTarget) {
-                    pendingQuotaThreshold.value = nextTarget
-                    addLog("[GTC_SYSTEM]: EFFICIENCY TRENDING. TARGET REVISION IMMINENT.")
-                    dispatchNotification("GTC ALERT: QUOTA REVISION AT 20% POTENTIAL")
-                    SoundManager.play("type")
-                }
-            }
-        } else if (nextTarget < currentQuotaThreshold.value && storyStage.value > 0) {
-            // Failsafe for stage transitions or production dips
-            currentQuotaThreshold.value = nextTarget
-            pendingQuotaThreshold.value = nextTarget
-        }
-    }
+    private fun processComputeFever(now: Long) = ComputeFeverService.process(this, now)
 
     private fun processSlowBurnNarrative(now: Long) {
         if (storyStage.value <= 1) {

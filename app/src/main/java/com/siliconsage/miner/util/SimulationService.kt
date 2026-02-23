@@ -117,10 +117,18 @@ object SimulationService {
         vm.localGenerationkW.value = selfGeneratedKw
         vm.powerConsumptionkW.value = gridUsage
 
-        // v3.12.6: Billing period accumulators (replaces infinite bill)
-        if (vm.storyStage.value >= 1) {
-            vm.billingPeriodAccumulator += gridUsage
-            vm.billingPeriodGenAccumulator += vm.localGenerationkW.value
+        // v3.12.6: Billing period accumulators — accumulate GROSS draw and gen separately
+        // Gated on quota active: GTC notices your power draw when they assign the first quota.
+        if (vm.isQuotaActive.value) {
+            vm.billingPeriodAccumulator += totalKw          // gross hardware draw
+            vm.billingPeriodGenAccumulator += selfGeneratedKw // local generation offset
+
+            // Update live UI estimate: net cost so far this period
+            val demandMult = when (vm.missedBillingPeriods) {
+                0 -> 1.0; 1 -> 2.0; 2 -> 3.0; else -> 5.0
+            }
+            val netSoFar = (vm.billingPeriodAccumulator - vm.billingPeriodGenAccumulator).coerceAtLeast(0.0)
+            vm.billingAccumulatorFlow.value = netSoFar * vm.energyPriceMultiplier.value * demandMult
         }
         
         // v3.3.17: Only trip overload if it's a power issue. Don't clear active raids.
@@ -142,10 +150,31 @@ object SimulationService {
             }
         }
         
+        // Water recycler offsets — power-for-water trade-off
+        var totalRecycleOffset = 0.0
+        currentUpgrades.forEach { (type, count) ->
+            if (count > 0 && type.waterRecycleOffset > 0) {
+                totalRecycleOffset += type.waterRecycleOffset * count
+            }
+        }
+        // HIVEMIND SUBSTRATE_RECYCLER: 90% of gross draw offset
+        if ((currentUpgrades[UpgradeType.SUBSTRATE_RECYCLER] ?: 0) > 0 && vm.faction.value == "HIVEMIND") {
+            totalRecycleOffset += totalWaterDraw * 0.9
+        }
+        totalWaterDraw = (totalWaterDraw - totalRecycleOffset).coerceAtLeast(0.0)
+
         // Faction Relief Tech
         if (vm.unlockedTechNodes.value.contains("coolant_recycling")) totalWaterDraw *= 0.1
         if (vm.unlockedTechNodes.value.contains("atmospheric_condensers")) totalWaterDraw -= 250.0
         totalWaterDraw = totalWaterDraw.coerceAtLeast(0.0)
+
+        // Water billing accumulator (gated on quota active, same as power billing)
+        if (vm.isQuotaActive.value && location != "ORBITAL_SATELLITE" && location != "VOID_INTERFACE") {
+            vm.waterBillAccumulator += totalWaterDraw
+            // Municipal rate escalates at Stage 3 (Density Debt kicks in)
+            val waterRate = if (stage >= 3) vm.waterRatePerGallon * 5.0 else vm.waterRatePerGallon
+            vm.waterBillingFlow.value = vm.waterBillAccumulator * waterRate
+        }
         
         vm.waterUsage.value = totalWaterDraw
         var newEfficiency = 1.0

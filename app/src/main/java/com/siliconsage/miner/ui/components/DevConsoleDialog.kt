@@ -206,6 +206,27 @@ fun ResourcesTab(viewModel: GameViewModel) {
             DevButton(text = "+10.0", modifier = Modifier.weight(1f)) { viewModel.heuristicEfficiency.update { it + 10.0 } }
             DevButton(text = "RESET", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.heuristicEfficiency.value = 1.0 }
         }
+        DevActionRow("BILLING_CYCLE") {
+            // Force-settle the billing cycle immediately for testing
+            DevButton(text = "SETTLE NOW", modifier = Modifier.weight(1f)) {
+                viewModel.lastUtilityStatementTime = 0L
+            }
+            // Force an overdue period
+            DevButton(text = "+MISSED", color = ErrorRed, modifier = Modifier.weight(1f)) {
+                viewModel.missedBillingPeriods++
+                viewModel.powerBill.update { it + 5000.0 }
+            }
+            DevButton(text = "CLEAR DEBT", color = ElectricBlue, modifier = Modifier.weight(1f)) {
+                viewModel.missedBillingPeriods = 0
+                viewModel.powerBill.value = 0.0
+                viewModel.waterBillAccumulator = 0.0
+            }
+        }
+        DevActionRow("WATER_LEVEL") {
+            DevButton(text = "FULL", modifier = Modifier.weight(1f)) { viewModel.aquiferLevel.value = 100.0 }
+            DevButton(text = "10%", color = Color(0xFFFFCC00), modifier = Modifier.weight(1f)) { viewModel.aquiferLevel.value = 10.0 }
+            DevButton(text = "CRITICAL", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.aquiferLevel.value = 2.0 }
+        }
     }
 }
 

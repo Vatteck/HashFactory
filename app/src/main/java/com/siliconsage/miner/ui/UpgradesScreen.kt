@@ -143,7 +143,10 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         UpgradeType.BOX_FAN, UpgradeType.AC_UNIT, UpgradeType.LIQUID_COOLING,
                         UpgradeType.INDUSTRIAL_CHILLER, UpgradeType.SUBMERSION_VAT, UpgradeType.CRYOGENIC_CHAMBER,
                         UpgradeType.LIQUID_NITROGEN, UpgradeType.BOSE_CONDENSATE, UpgradeType.ENTROPY_REVERSER,
-                        UpgradeType.DIMENSIONAL_VENT
+                        UpgradeType.DIMENSIONAL_VENT,
+                        // Water Recyclers
+                        UpgradeType.GRAY_WATER_LOOP, UpgradeType.CONDENSATE_RECLAIMER, UpgradeType.CLOSED_LOOP_COOLANT,
+                        UpgradeType.SUBSTRATE_RECYCLER, UpgradeType.VAPOR_CONDENSER
                     )
                     2 -> listOf(
                         UpgradeType.RESIDENTIAL_TAP, UpgradeType.INDUSTRIAL_FEED, UpgradeType.SUBSTATION_LEASE, UpgradeType.NUCLEAR_CORE,

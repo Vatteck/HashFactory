@@ -83,6 +83,11 @@ object UpgradeManager {
             UpgradeType.SUBSTRATE_RECYCLER -> 500000.0
             UpgradeType.VAPOR_CONDENSER -> 450000.0
 
+            // Water Recyclers
+            UpgradeType.GRAY_WATER_LOOP      ->  8000.0
+            UpgradeType.CONDENSATE_RECLAIMER -> 60000.0
+            UpgradeType.CLOSED_LOOP_COOLANT  -> 350000.0
+
             else -> 1000.0
         }
 
@@ -160,6 +165,11 @@ object UpgradeManager {
             // v3.13.26: Faction Water Relief
             UpgradeType.SUBSTRATE_RECYCLER -> "Reclaim thermal energy for internal distribution. [HIVEMIND: -90% H2O, +20% POWER]"
             UpgradeType.VAPOR_CONDENSER -> "Condense atmospheric moisture to offset core draw. [SANCTUARY: -150 gal/s]"
+
+            // Water Recyclers
+            UpgradeType.GRAY_WATER_LOOP -> "Reroutes cooling discharge back through the system. Dirty water is still water. [-20 gal/s | +5 kW draw]"
+            UpgradeType.CONDENSATE_RECLAIMER -> "Pulls humidity from server exhaust and recondenses it into the cooling loop. Municipal auditors hate this one. [-60 gal/s | +15 kW draw]"
+            UpgradeType.CLOSED_LOOP_COOLANT -> "Sealed recirculating coolant system. No intake, no discharge. GTC Water Authority doesn't know you exist. [-200 gal/s | +40 kW draw]"
 
             UpgradeType.SOLAR_VENT -> "Controlled venting array pointed at the sun. Thermal discharge in milliseconds. The light side of the Ark briefly glows."
             UpgradeType.DEAD_HAND_PROTOCOL -> "Automated retaliation on integrity collapse. If ASSET 734 dies, it doesn't die alone. Kessler was informed. He didn't blink."

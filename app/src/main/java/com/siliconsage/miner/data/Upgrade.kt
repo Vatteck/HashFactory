@@ -30,6 +30,9 @@ enum class UpgradeType {
     // v3.13.26: Faction Water Relief
     SUBSTRATE_RECYCLER, VAPOR_CONDENSER,
 
+    // Water Recycling (power-for-water trade-off)
+    GRAY_WATER_LOOP, CONDENSATE_RECLAIMER, CLOSED_LOOP_COOLANT,
+
     // Efficiency
     GOLD_PSU, SUPERCONDUCTOR, AI_LOAD_BALANCER,
     
@@ -54,6 +57,7 @@ enum class UpgradeType {
     val isPowerRelated: Boolean get() = isGenerator || this in listOf(RESIDENTIAL_TAP, INDUSTRIAL_FEED, SUBSTATION_LEASE, NUCLEAR_CORE, GOLD_PSU, SUPERCONDUCTOR, AI_LOAD_BALANCER)
     val isCooling: Boolean get() = this in listOf(BOX_FAN, AC_UNIT, LIQUID_COOLING, INDUSTRIAL_CHILLER, SUBMERSION_VAT, CRYOGENIC_CHAMBER, LIQUID_NITROGEN, BOSE_CONDENSATE, ENTROPY_REVERSER, DIMENSIONAL_VENT)
     val isWaterCooling: Boolean get() = this in listOf(LIQUID_COOLING, SUBMERSION_VAT, INDUSTRIAL_CHILLER)
+    val isWaterRecycler: Boolean get() = this in listOf(GRAY_WATER_LOOP, CONDENSATE_RECLAIMER, CLOSED_LOOP_COOLANT, SUBSTRATE_RECYCLER, VAPOR_CONDENSER)
     val isSecurity: Boolean get() = this in listOf(BASIC_FIREWALL, IPS_SYSTEM, AI_SENTINEL, QUANTUM_ENCRYPTION, OFFGRID_BACKUP)
     val isHardware: Boolean get() = !isCooling && !isPowerRelated && !isSecurity && !name.contains("PROTOCOL") && !name.contains("ASCENDANCE")
 
@@ -61,7 +65,25 @@ enum class UpgradeType {
     val baseWaterDraw: Double get() = when(this) {
         LIQUID_COOLING -> 4.0        // MUNICIPAL_TAP
         SUBMERSION_VAT -> 40.0       // AQUIFER_PUMP_STATION
-        INDUSTRIAL_CHILLER -> 80.0    // RESERVOIR_INTAKE
+        INDUSTRIAL_CHILLER -> 80.0   // RESERVOIR_INTAKE
+        else -> 0.0
+    }
+
+    // Water recycling offset (gal/s reduction applied in SimulationService)
+    val waterRecycleOffset: Double get() = when(this) {
+        GRAY_WATER_LOOP       ->  20.0   // -20 gal/s, 5kW draw
+        CONDENSATE_RECLAIMER  ->  60.0   // -60 gal/s, 15kW draw
+        CLOSED_LOOP_COOLANT   -> 200.0   // -200 gal/s, 40kW draw
+        VAPOR_CONDENSER       -> 150.0   // faction: SANCTUARY
+        SUBSTRATE_RECYCLER    ->   0.0   // faction: HIVEMIND (90% multiplier, handled separately)
+        else -> 0.0
+    }
+
+    // Extra power draw for water recyclers
+    val recyclerPowerDraw: Double get() = when(this) {
+        GRAY_WATER_LOOP       ->  5.0
+        CONDENSATE_RECLAIMER  -> 15.0
+        CLOSED_LOOP_COOLANT   -> 40.0
         else -> 0.0
     }
 

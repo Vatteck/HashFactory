@@ -248,6 +248,7 @@ fun MainScreen(viewModel: GameViewModel) {
     val faction by viewModel.faction.collectAsState()
     val migrationCount by viewModel.migrationCount.collectAsState()
     val identityCorruption by viewModel.identityCorruption.collectAsState()
+    val globalGlitchIntensity by viewModel.globalGlitchIntensity.collectAsState()
     val showSingularityScreen by viewModel.showSingularityScreen.collectAsState()
     val isMigrationBurning by viewModel.isMigrationBurning.collectAsState()
     
@@ -482,10 +483,11 @@ fun MainScreen(viewModel: GameViewModel) {
                     )
                 }
                 com.siliconsage.miner.ui.components.CrtOverlay(
-                    scanlineAlpha = 0.08f, 
-                    vignetteAlpha = 0.45f, 
+                    scanlineAlpha = 0.08f,
+                    vignetteAlpha = 0.45f,
                     color = themeColor,
-                    corruption = identityCorruption
+                    corruption = identityCorruption,
+                    glitchIntensity = globalGlitchIntensity
                 )
                 val victoryAchieved by viewModel.victoryAchieved.collectAsState()
                 if (victoryAchieved) {

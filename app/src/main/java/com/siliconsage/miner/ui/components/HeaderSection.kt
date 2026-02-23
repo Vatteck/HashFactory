@@ -75,6 +75,7 @@ fun HeaderSection(
     val singularityChoice by viewModel.singularityChoice.collectAsState()
     val corruption by viewModel.identityCorruption.collectAsState() // v3.5.53: Corruption-reactive identity
     val reputationTier by viewModel.reputationTier.collectAsState()
+    var showUtilitiesPanel by remember { mutableStateOf(false) }
 
     // v3.12.7: Resolve semantic HUD theme once — composable stays dumb
     val hudTheme = remember(faction, singularityChoice, storyStage, corruption) {
@@ -741,6 +742,7 @@ fun HeaderSection(
                 }
             }
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                // Left: THERM
                 val thermText = buildAnnotatedString {
                     withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) { append("THERM: ") }
                     withStyle(SpanStyle(color = HudTheme.heatColor(currentHeatState.value, hudTheme), fontWeight = FontWeight.Black)) { append("${String.format("%.1f", currentHeatState.value)}°C ") }
@@ -757,23 +759,116 @@ fun HeaderSection(
                     Text(text = thermText, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                 }
 
-                val isSyncing by viewModel.isNarrativeSyncing.collectAsState()
-                if (isSyncing) {
-                    val frame = ((System.currentTimeMillis() / 400) % 4).toInt()
-                    val dots = ".".repeat(frame)
-                    Text(
-                        text = "[ ${dots.padStart(3)} SYNCING FRAGMENTS ${dots.padEnd(3)} ]", 
-                        color = color.copy(alpha = 0.9f), 
-                        style = glowStyle, 
-                        fontSize = 8.sp, 
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 4.dp)
-                    )
+                // Center: Live Billing Meter (quota active = GTC watching your draw)
+                val isQuotaActive by viewModel.isQuotaActive.collectAsState()
+                if (isQuotaActive) {
+                    val billingAmount by viewModel.billingAccumulatorFlow.collectAsState()
+                    val flashState by viewModel.billingFlashState.collectAsState()
+                    val ntBalance = viewModel.neuralTokens.collectAsState().value
+                    val missedPeriods = viewModel.missedBillingPeriods
+
+                    val (meterText, meterColor) = when (flashState) {
+                        "SETTLED" -> "SETTLED ✓" to Color(0xFF00FF88)
+                        "OVERDUE" -> "+OVERDUE" to Color(0xFFFF2244)
+                        "CREDIT"  -> "CREDIT ✓" to Color(0xFF00CCFF)
+                        else -> {
+                            val label = viewModel.formatLargeNumber(billingAmount)
+                            val demandTag = if (missedPeriods > 0) " [x${missedPeriods + 1}]" else ""
+                            val col = when {
+                                ntBalance <= 0 || billingAmount > ntBalance -> Color(0xFFFF2244)
+                                billingAmount > ntBalance * 0.9  -> Color(0xFFFF4444)
+                                billingAmount > ntBalance * 0.5  -> Color(0xFFFFCC00)
+                                else -> color.copy(alpha = 0.8f)
+                            }
+                            "$$label$demandTag" to col
+                        }
+                    }
+
+                    // Flash pulse on settlement/overdue
+                    val flashAlpha = if (flashState != null) {
+                        infiniteTransition.animateFloat(0.4f, 1.0f, infiniteRepeatable(tween(200), RepeatMode.Reverse), label = "billingFlash").value
+                    } else 1.0f
+
+                    val periodProgress by viewModel.billingPeriodProgressFlow.collectAsState()
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .clickable { showUtilitiesPanel = true }
+                    ) {
+                        // Clockwise arc filling as period progresses
+                        Canvas(modifier = Modifier.size(36.dp)) {
+                            val stroke = 2.dp.toPx()
+                            val inset = stroke / 2f
+                            val arcColor = when {
+                                flashState == "OVERDUE" -> Color(0xFFFF2244)
+                                flashState == "SETTLED" -> Color(0xFF00FF88)
+                                flashState == "CREDIT"  -> Color(0xFF00CCFF)
+                                billingAmount > ntBalance * 0.9 -> Color(0xFFFF4444)
+                                billingAmount > ntBalance * 0.5 -> Color(0xFFFFCC00)
+                                else -> meterColor
+                            }
+                            // Background track
+                            drawArc(
+                                color = arcColor.copy(alpha = 0.15f),
+                                startAngle = -90f,
+                                sweepAngle = 360f,
+                                useCenter = false,
+                                topLeft = Offset(inset, inset),
+                                size = Size(size.width - stroke, size.height - stroke),
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
+                            )
+                            // Filled sweep
+                            if (flashState != null) {
+                                // On settlement flash: full ring
+                                drawArc(
+                                    color = arcColor.copy(alpha = flashAlpha),
+                                    startAngle = -90f,
+                                    sweepAngle = 360f,
+                                    useCenter = false,
+                                    topLeft = Offset(inset, inset),
+                                    size = Size(size.width - stroke, size.height - stroke),
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke * 1.5f)
+                                )
+                            } else {
+                                drawArc(
+                                    color = arcColor.copy(alpha = 0.85f),
+                                    startAngle = -90f,
+                                    sweepAngle = 360f * periodProgress,
+                                    useCenter = false,
+                                    topLeft = Offset(inset, inset),
+                                    size = Size(size.width - stroke, size.height - stroke),
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
+                                )
+                            }
+                        }
+                        // Number on top of arc
+                        Text(
+                            text = meterText,
+                            color = meterColor.copy(alpha = flashAlpha),
+                            fontSize = 7.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 7.sp,
+                            maxLines = 2,
+                            modifier = Modifier.width(30.dp)
+                        )
+                    }
                 }
 
+                // Right: INTEG + narrative sync spinner
+                val isSyncing by viewModel.isNarrativeSyncing.collectAsState()
                 val integText = buildAnnotatedString {
                     withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) { append("INTEG: ") }
                     withStyle(SpanStyle(color = HudTheme.integrityColor(currentIntegrity, hudTheme), fontWeight = FontWeight.Black)) { append("${currentIntegrity.toInt()}%") }
+                    // Tiny spinner dot appended when syncing — no extra space needed
+                    if (isSyncing) {
+                        val spinFrame = ((System.currentTimeMillis() / 300) % 4).toInt()
+                        val spinChar = listOf("◐", "◓", "◑", "◒")[spinFrame]
+                        withStyle(SpanStyle(color = color.copy(alpha = 0.6f), fontWeight = FontWeight.Bold)) { append(" $spinChar") }
+                    }
                 }
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                     Text(text = integText, fontSize = 9.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, maxLines = 1, softWrap = false)
@@ -835,5 +930,14 @@ fun HeaderSection(
                 }
             }
         }
+    }
+
+    // Utilities Panel bottom sheet
+    if (showUtilitiesPanel) {
+        UtilitiesPanel(
+            viewModel = viewModel,
+            color = color,
+            onDismiss = { showUtilitiesPanel = false }
+        )
     }
 }

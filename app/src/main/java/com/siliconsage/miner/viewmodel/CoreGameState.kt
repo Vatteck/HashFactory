@@ -196,10 +196,22 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     protected var lastSubnetMsgTime = 0L
     var lastPopupTime = 0L
     var lastUtilityStatementTime = 0L
-    var billingPeriodAccumulator = 0.0   // kWh drawn this period
+    var billingPeriodAccumulator = 0.0   // kWh drawn this period (gross)
     var billingPeriodGenAccumulator = 0.0 // kWh generated this period
     var missedBillingPeriods = 0          // unpaid periods — drives demand charge escalation
     val billingPeriodSeconds = 60L        // one GTC billing period = 60 seconds
+
+    // UI-observable billing state
+    val billingAccumulatorFlow = MutableStateFlow(0.0)  // live NT cost estimate this period
+    val billingFlashState = MutableStateFlow<String?>(null) // "SETTLED", "OVERDUE", null
+
+    // Water billing
+    val waterBillingFlow = MutableStateFlow(0.0)        // live water cost estimate this period
+    var waterBillAccumulator = 0.0                      // gal accumulated this period
+    val waterBillHistory = mutableListOf<Pair<Boolean, Double>>() // (paid, amount) last 5 periods
+    val powerBillHistory = mutableListOf<Pair<Boolean, Double>>() // (paid, amount) last 5 periods
+    val billingPeriodProgressFlow = MutableStateFlow(0f) // 0-1 progress through current period
+    val waterRatePerGallon = 0.000005  // NT per gal — cheap early, feels expensive at scale
     var raidsSurvived = 0
     var lastRaidTime = 0L
     var lastStageChangeTime = System.currentTimeMillis()
