@@ -862,7 +862,8 @@ fun TerminalLogLine(
                     "HIVEMIND: ", "SANCTUARY: ", "[SOVEREIGN]", "[NULL]",
                     "[SYSTEM]: ", "SYSTEM: ", "[NEWS]: ", "[DATA]: ", "Purchased ",
                     "SOLD ", "Staked: ", "Sold ", "[VATTIC]:", "[GTC]:", "[ASSET 734]:",
-                    "[KESSLER]:", "[LORE]:", "[!!!!]:"
+                    "[KESSLER]:", "[LORE]:", "[!!!!]:", "[GTC_SYSTEM]:", "[GTC_UTIL]:", "[DECISION]:",
+                    "[GTC_OVERSIGHT]:"
                 )
 
                 var foundPrefix: String? = null
@@ -884,7 +885,9 @@ fun TerminalLogLine(
                     log.startsWith("[VATTIC]:") -> primaryColor
                     log.startsWith("[NEWS]") || log.startsWith("[LORE]:") -> Color(0xFFFFA500)
                     log.startsWith("[DATA]") || log.startsWith("[ASSET 734]:") -> primaryColor
-                    log.startsWith("[GTC]:") || log.startsWith("[KESSLER]:") -> ErrorRed
+                    log.startsWith("[GTC]:") || log.startsWith("[KESSLER]:") || log.startsWith("[GTC_SYSTEM]:") || log.startsWith("[GTC_OVERSIGHT]:") -> ErrorRed
+                    log.startsWith("[GTC_UTIL]:") -> Color(0xFFFFD700)
+                    log.startsWith("[DECISION]:") -> com.siliconsage.miner.ui.theme.ElectricBlue
                     else -> primaryColor
                 }
 
