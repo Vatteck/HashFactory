@@ -299,19 +299,20 @@ fun HeaderSection(
                     }
                 }
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = glitchedState.value.uppercase(),
-                        color = color.copy(alpha = 1.0f * droopAlpha),
-                        fontSize = 15.sp,
-                        style = glowStyle,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.5.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Clip
-                    )
-                    
-                    // v3.13.19: Shift Timer HUD
+                Text(
+                    text = glitchedState.value.uppercase(),
+                    color = color.copy(alpha = 1.0f * droopAlpha),
+                    fontSize = 15.sp,
+                    style = glowStyle,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.5.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                // v3.13.21: Compressed Compliance Hub (Shift + Sig)
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     val shiftSeconds by viewModel.shiftTimeRemaining.collectAsState()
                     val shiftHours = shiftSeconds / 3600
                     val shiftMinutes = (shiftSeconds % 3600) / 60
@@ -319,40 +320,32 @@ fun HeaderSection(
                     val shiftStr = String.format("%02d:%02d:%02d", shiftHours, shiftMinutes, shiftSecs)
                     
                     Text(
-                        text = "SHIFT ENDS IN: $shiftStr",
-                        color = color.copy(alpha = 0.5f * droopAlpha), // Use passed 'color'
-                        fontSize = 8.sp,
+                        text = "[$shiftStr]",
+                        color = color.copy(alpha = 0.4f * droopAlpha),
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.sp
+                        modifier = Modifier.padding(end = 8.dp)
                     )
-                }
 
-                // v3.13.20: Signal Intensity Indicator (Relocated to dedicated top-right box)
-                val signalStability by viewModel.signalStability.collectAsState()
-                val isQuotaActive by viewModel.isQuotaActive.collectAsState()
-                
-                if (isQuotaActive) {
-                    val signalColor = when {
-                        signalStability >= 1.0 -> color // Solid Green
-                        signalStability >= 0.5 -> Color(0xFFFFCC00) // Warning Yellow
-                        else -> ErrorRed
-                    }
-                    val signalLabel = if (storyStage >= 2) "SYNC" else "SIG"
+                    val signalStability by viewModel.signalStability.collectAsState()
+                    val isQuotaActive by viewModel.isQuotaActive.collectAsState()
                     
-                    Surface(
-                        color = signalColor.copy(alpha = 0.1f),
-                        border = BorderStroke(1.dp, signalColor.copy(alpha = 0.4f)),
-                        shape = TechnicalCornerShape(4f),
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
+                    if (isQuotaActive) {
+                        val signalColor = when {
+                            signalStability >= 1.0 -> color
+                            signalStability >= 0.5 -> Color(0xFFFFCC00)
+                            else -> ErrorRed
+                        }
+                        val signalLabel = if (storyStage >= 2) "SYNC" else "SIG"
+                        
                         Text(
                             text = "$signalLabel: ${(signalStability * 100).toInt()}%",
                             color = signalColor,
                             fontSize = 10.sp,
-                            fontWeight = FontWeight.ExtraBold,
+                            fontWeight = FontWeight.Black,
                             fontFamily = FontFamily.Monospace,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            textAlign = TextAlign.End
                         )
                     }
                 }
