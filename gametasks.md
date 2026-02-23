@@ -1,10 +1,10 @@
 # gametasks.md — SUBSTRATE:Miner Development Backlog
 
 ## 🔴 Critical (blocking)
-- [ ] **Pixel Fold ADB** — `192.168.50.116:42077` refused. Scan ports.
+- [x] **Pixel Fold ADB** — Reconnected at `192.168.50.116:34663`. Fixed.
 
 ## 🟡 High (next session)
-- [x] **Subnet Threading Order** — (Deemed adequate, crossed off).
+- [x] **Phase 23 Water System Fixes** — Fixed `isWaterCooling` logic (removed cryogenic/nitrogen, added chiller), added faction renames for large coolers, fixed `[RATE_LIMITED]` header status.
 - [ ] **Hugging Face Papers RSS** — Fix 401 Auth error.
 
 ## 🟢 Medium
