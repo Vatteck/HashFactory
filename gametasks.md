@@ -14,8 +14,23 @@
 - [x] **ExpansionLogs.kt Refactor** — Split into CharacterDossierLogs (241L), MemoryHallucinationLogs (377L), EndgameLogs (476L), CoreLogs (535L). ExpansionLogs.kt is now a 11-line aggregator. .bak cleaned up.
 - [x] **Admin Subnet Handle Fix (v3.16.2)** — Handle: ElectricBlue + Shadow glow (blurRadius=8). Body text: plain white, FontWeight.Normal. No more blue body text.
 - [x] **Notification Bubble Fix (v3.16.2)** — Badge suppressed when user is already viewing SUBNET. Dead `hasNewSubnetMessage` flag now cleared on SUBNET mode entry.
-- [ ] **Progress Bar/Terminal UI Enhancement Pass** — Improve visual design of progress bars and command line UI elements.
+- [ ] **Progress Bar/Terminal UI Enhancement Pass** — See `ROADMAP_v3.17.md` Phase A (A1–A5). Build order: v3.17.0 = A1+A2+A3, v3.17.1 = A4, v3.18.0 = A5 (oscilloscope stretch).
 - [x] **WAL Protocol Adoption** — `scripts/wal.sh` helper created. Protocol documented in AGENTS.md. Decisions dir at `memory/decisions/`.
+
+## 🟢 Planned (v3.17.x) — See ROADMAP_v3.17.md
+- [ ] **[A1] Buffer Heat Color** — Progress bar lerps NeonGreen→Amber→Orange→ErrorRed with currentHeat.
+- [ ] **[A2] Pellet Ghost Trail** — 3 fading afterimages on compute pellet sweep.
+- [ ] **[A3] Signal Noise in Buffer** — Glitch chars in empty buffer, driven by globalGlitchIntensity.
+- [ ] **[A4] I/O Log Timestamps** — `[HH:MM:SS]` prefix on system logs in dim gray.
+- [ ] **[B1] Aquifer Eulogy** — One-time GTC eulogy log when aquifer hits 0%. One flag, one log.
+- [ ] **[B2] Failsafe Partition** — Detection risk 100% = 30s lockdown. Scramble minigame to abort.
+- [ ] **[B3] Kessler's Last Bargain** — Stage 4 deal: all Reputation for ×2.5 multiplier. 5min timer.
+- [ ] **[B4] Black Market** — `@null_vendor` subnet event at BURNED rep. Stolen upgrades, dirty goods.
+- [ ] **[C1] Thorne's Resignation Arc** — 4-stage chatter chain ending in `[ACCOUNT_DEACTIVATED]`.
+- [ ] **[C2] Jinx's Hidden Data Logs** — Stage 3+ secret logs revealing GTC knew everything from Day 1.
+- [ ] **[D1] TerminalScreen.kt Split** — 1084 lines → 6 files (<500 lines each).
+- [ ] **[D2] SubnetAlertState Abstraction** — Sealed class for nav badge logic cleanup.
+- [ ] **[A5] Oscilloscope Bar** *(stretch)* — Canvas waveform replaces flat compute bar.
 
 ## ✅ Completed (v3.12.x - v3.15.x)
 - [x] **Water-Migration Hook (v3.15.x)** — Aquifer depletion, staged municipal caps (S0=100, S1=500, S2=2000), production stall (saturation penalty), soft/hard prestige split.
