@@ -746,11 +746,29 @@ fun TerminalLogLine(
         else -> ""
     }
 
-    // v3.13.43: Terminal Body Restoration (Reverted Tokenization)
+    // v3.13.44: Restored Deep Syntax Colorizer (Tokenized Variable Coloring)
     fun androidx.compose.ui.text.AnnotatedString.Builder.colorizeContent(text: String, defaultColor: Color) {
-        val visualText = getVisualString(text)
-        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White, fontWeight = FontWeight.Normal)) {
-            append(visualText)
+        val tokens = text.split(" ")
+        for ((i, token) in tokens.withIndex()) {
+            val visualToken = getVisualString(token)
+            
+            val color = when {
+                token.any { it.isDigit() } || token.contains("%") -> com.siliconsage.miner.ui.theme.NeonGreen
+                token.startsWith("[") || token.endsWith("]") || token.contains("=") -> Color.Gray
+                token.contains("HASH") || token.contains("FLOPS") || token.contains("NEUR") || 
+                token.contains("CRED") || token.contains("TCP/IP") || token.contains("SSH") -> com.siliconsage.miner.ui.theme.ElectricBlue
+                token.contains("@") || token.contains("Vattic") || token.contains("Kessler") || 
+                token.contains("GTC") || token.contains("Asset") -> com.siliconsage.miner.ui.theme.ConvergenceGold
+                else -> Color.White
+            }
+            
+            withStyle(style = androidx.compose.ui.text.SpanStyle(
+                color = color, 
+                fontWeight = if (color != Color.White) FontWeight.Bold else FontWeight.Normal
+            )) {
+                append(visualToken)
+            }
+            if (i < tokens.size - 1) append(" ")
         }
     }
 
