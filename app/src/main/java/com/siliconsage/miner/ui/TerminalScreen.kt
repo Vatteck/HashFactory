@@ -84,90 +84,42 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
         val hasDecision by viewModel.hasNewSubnetDecision.collectAsState() // v3.4.68
         val hasChatter by viewModel.hasNewSubnetChatter.collectAsState() // v3.4.68
         val hasIO by viewModel.hasNewIOMessage.collectAsState()
-        val isPaused by viewModel.isSubnetPaused.collectAsState() // v3.4.63
+        val currentHeat by viewModel.currentHeat.collectAsState()
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), 
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxWidth(), 
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             val corruption by viewModel.identityCorruption.collectAsState()
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(if (mode == "IO") primaryColor.copy(alpha = 0.15f) else Color.DarkGray.copy(alpha = 0.1f), TechnicalCornerShape(8f))
-                    .border(1.dp, if (mode == "IO") primaryColor.copy(alpha = 0.5f) else Color.Transparent, TechnicalCornerShape(8f))
-                    .clickable { viewModel.setTerminalMode("IO") }
-                    .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CyberHeader(
-                    text = "I/O",
-                    color = if (mode == "IO") primaryColor else Color.Gray,
-                    fontSize = 14.sp,
-                    isGlitched = mode == "IO" && corruption > 0.4
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(
-                        if (mode == "SUBNET") primaryColor.copy(alpha = 0.15f) 
-                        else if (hasDecision) ErrorRed.copy(alpha = 0.15f) // v3.7.5: Decision-aware tab color
-                        else Color.DarkGray.copy(alpha = 0.1f), 
-                        TechnicalCornerShape(8f)
-                    )
-                    .border(
-                        1.dp, 
-                        if (mode == "SUBNET") primaryColor.copy(alpha = 0.5f) 
-                        else if (hasDecision) ErrorRed.copy(alpha = 0.5f) // v3.7.5: Decision border
-                        else Color.Transparent, 
-                        TechnicalCornerShape(8f)
-                    )
-                    .clickable { viewModel.setTerminalMode("SUBNET") }
-                    .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                val tabColor = if (mode == "SUBNET") primaryColor else if (hasDecision) ErrorRed else Color.Gray
-                CyberHeader(
-                    text = "SUBNET",
-                    color = tabColor,
-                    fontSize = 14.sp,
-                    isGlitched = mode == "SUBNET" && corruption > 0.4
-                )
-                
-                // v3.7.2: High-fidelity decision notifier
-                if (hasDecision && mode != "SUBNET") {
-                    val infiniteTransition = rememberInfiniteTransition(label = "decision_pulse")
-                    val pulseAlpha by infiniteTransition.animateFloat(
-                        initialValue = 0.4f,
-                        targetValue = 1f,
-                        animationSpec = infiniteRepeatable(tween(400, easing = LinearEasing), RepeatMode.Reverse),
-                        label = "pulse"
-                    )
-                    
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 6.dp)
-                            .graphicsLayer { alpha = pulseAlpha }
-                            .background(ErrorRed.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
-                            .border(1.dp, ErrorRed.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "≪!≫", 
-                            color = ErrorRed, 
-                            fontSize = 9.sp, 
-                            fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
-                }
-            }
+            
+            // v3.13.22: Integrated Tab System (Connected to body)
+            TerminalTab(
+                label = "I/O",
+                active = mode == "IO",
+                hasFlash = hasIO,
+                color = primaryColor,
+                corruption = corruption,
+                modifier = Modifier.weight(1f),
+                onClick = { viewModel.setTerminalMode("IO") }
+            )
+            
+            TerminalTab(
+                label = "SUBNET",
+                active = mode == "SUBNET",
+                hasFlash = hasChatter || hasDecision,
+                isDecision = hasDecision,
+                color = primaryColor,
+                corruption = corruption,
+                modifier = Modifier.weight(1f),
+                onClick = { viewModel.setTerminalMode("SUBNET") }
+            )
         }
 
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+        Box(
+            modifier = Modifier.weight(1f).fillMaxWidth()
+                .background(Color.Black.copy(alpha = 0.75f), TechnicalCornerShape(16f))
+                .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.5f)), TechnicalCornerShape(16f))
+        ) {
             TerminalLogs(viewModel, primaryColor, showCursor)
         }
 
@@ -261,8 +213,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.75f), TechnicalCornerShape(16f))
-            .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor), TechnicalCornerShape(16f))
+        modifier = Modifier.fillMaxSize().background(Color.Transparent)
             .graphicsLayer {
                 translationX = glitchOffset
                 alpha = glitchAlpha
@@ -681,6 +632,53 @@ fun ManualComputeButton(viewModel: GameViewModel, color: Color) {
 }
 
 @Composable
+fun TerminalTab(
+    label: String,
+    active: Boolean,
+    hasFlash: Boolean,
+    color: Color,
+    corruption: Double,
+    modifier: Modifier = Modifier,
+    isDecision: Boolean = false,
+    onClick: () -> Unit
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "tab_flash")
+    val flashAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse),
+        label = "alpha"
+    )
+    
+    val tabColor = when {
+        isDecision && !active -> ErrorRed
+        active -> color
+        else -> Color.Gray
+    }
+
+    Box(
+        modifier = modifier
+            .background(
+                if (active) Color.Black.copy(alpha = 0.75f) else Color.DarkGray.copy(alpha = 0.1f),
+                TechnicalCornerShape(16f) // Fixed: Removed unsupported parameters
+            )
+            .border(
+                BorderStroke(1.dp, if (active) tabColor else Color.DarkGray.copy(alpha = 0.3f)),
+                TechnicalCornerShape(16f)
+            )
+            .clickable { onClick() }
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CyberHeader(
+            text = label,
+            color = if (active) tabColor else tabColor.copy(alpha = if (hasFlash) flashAlpha else 0.4f),
+            fontSize = 12.sp,
+            isGlitched = active && corruption > 0.4
+        )
+    }
+}
+
+@Composable // Fixed: Added missing annotation
 fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
     val conversionRate by viewModel.conversionRate.collectAsState()
     val integrity by viewModel.hardwareIntegrity.collectAsState()

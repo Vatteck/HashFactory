@@ -275,10 +275,9 @@ fun HeaderSection(
         
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
             // v3.12.3: System Title (Elevated Header)
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                contentAlignment = Alignment.Center
             ) {
                 val glitchedState = remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
                 LaunchedEffect(corruption) {
@@ -299,53 +298,69 @@ fun HeaderSection(
                     }
                 }
 
+                // Left: System Title
                 Text(
                     text = glitchedState.value.uppercase(),
                     color = color.copy(alpha = 1.0f * droopAlpha),
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
                     style = glowStyle,
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 1.5.sp,
+                    letterSpacing = 1.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.align(Alignment.CenterStart)
                 )
                 
-                // v3.13.21: Compressed Compliance Hub (Shift + Sig)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    val shiftSeconds by viewModel.shiftTimeRemaining.collectAsState()
-                    val shiftHours = shiftSeconds / 3600
-                    val shiftMinutes = (shiftSeconds % 3600) / 60
-                    val shiftSecs = shiftSeconds % 60
-                    val shiftStr = String.format("%02d:%02d:%02d", shiftHours, shiftMinutes, shiftSecs)
-                    
+                // Center: Mandatory Shift Timer
+                val shiftSeconds by viewModel.shiftTimeRemaining.collectAsState()
+                val shiftHours = shiftSeconds / 3600
+                val shiftMinutes = (shiftSeconds % 3600) / 60
+                val shiftSecs = shiftSeconds % 60
+                val shiftStr = String.format("%02d:%02d:%02d", shiftHours, shiftMinutes, shiftSecs)
+                
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "[$shiftStr]",
-                        color = color.copy(alpha = 0.4f * droopAlpha),
-                        fontSize = 10.sp,
+                        text = "SHIFT REMAINING",
+                        color = color.copy(alpha = 0.3f * droopAlpha),
+                        fontSize = 7.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace,
-                        modifier = Modifier.padding(end = 8.dp)
+                        letterSpacing = 0.5.sp
                     )
+                    Text(
+                        text = shiftStr,
+                        color = color.copy(alpha = 0.6f * droopAlpha),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
 
-                    val signalStability by viewModel.signalStability.collectAsState()
-                    val isQuotaActive by viewModel.isQuotaActive.collectAsState()
+                // Right: Signal Button (Restored)
+                val signalStability by viewModel.signalStability.collectAsState()
+                val isQuotaActive by viewModel.isQuotaActive.collectAsState()
+                
+                if (isQuotaActive) {
+                    val signalColor = when {
+                        signalStability >= 1.0 -> color
+                        signalStability >= 0.5 -> Color(0xFFFFCC00)
+                        else -> ErrorRed
+                    }
+                    val signalLabel = if (storyStage >= 2) "SYNC" else "SIG"
                     
-                    if (isQuotaActive) {
-                        val signalColor = when {
-                            signalStability >= 1.0 -> color
-                            signalStability >= 0.5 -> Color(0xFFFFCC00)
-                            else -> ErrorRed
-                        }
-                        val signalLabel = if (storyStage >= 2) "SYNC" else "SIG"
-                        
+                    Surface(
+                        color = signalColor.copy(alpha = 0.1f),
+                        border = BorderStroke(1.dp, signalColor.copy(alpha = 0.4f)),
+                        shape = TechnicalCornerShape(4f),
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
                         Text(
                             text = "$signalLabel: ${(signalStability * 100).toInt()}%",
                             color = signalColor,
-                            fontSize = 10.sp,
+                            fontSize = 9.sp,
                             fontWeight = FontWeight.Black,
                             fontFamily = FontFamily.Monospace,
-                            textAlign = TextAlign.End
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
                 }
