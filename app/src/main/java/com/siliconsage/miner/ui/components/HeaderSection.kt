@@ -302,7 +302,7 @@ fun HeaderSection(
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.5.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Clip,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -324,7 +324,8 @@ fun HeaderSection(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = FontFamily.Monospace,
-                        textAlign = TextAlign.End
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.padding(start = 8.dp)
                     )
                 }
             }
