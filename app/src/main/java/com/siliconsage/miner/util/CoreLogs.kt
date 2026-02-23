@@ -33,8 +33,9 @@ object CoreLogs {
                    performance tracking.
                 3. Stay on-site for the duration of the current 
                    extraction quota (Est: 72 hours).
-                4. Maintain a 1,000 HASH/sec minimum threshold 
-                   (Subject to change at any time, without notice). 
+                4. Maintain a dynamic HASH/sec minimum threshold 
+                   (Initial target: 100 HASH. Subject to change at 
+                   any time, without notice). 
                    Failure to meet successive quotas results in 
                    automatic biometric wage-docking and 
                    GTC Neural-Link desync.

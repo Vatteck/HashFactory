@@ -198,6 +198,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
                 refreshProductionRates()
                 processSlowBurnNarrative(now)
+                processComputeFever(now)
                 val avgInterval = if (clickIntervals.size >= 3) clickIntervals.average() else 1000.0
                 clickSpeedLevel.value = if (avgInterval < 150) 2 else if (avgInterval < 300) 1 else 0
                 clickIntervals.clear()
@@ -209,6 +210,73 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 delay(Random.nextLong(2000, 5000))
                 if (isSettingsPaused.value) continue
                 currentProcess.value = processes.random()
+            }
+        }
+    }
+
+    private fun processComputeFever(now: Long) {
+        val currentFlops = flopsProductionRate.value
+        val quota = currentQuotaThreshold.value
+
+        // v3.13.4: Quota Activation (Grace Period ends at first production)
+        if (!isQuotaActive.value && currentFlops > 0.0) {
+            isQuotaActive.value = true
+            addLog("[GTC_SYSTEM]: BIOMETRIC QUOTA LINK ESTABLISHED. MAINTAIN SIGNAL.")
+        }
+
+        if (!isQuotaActive.value) {
+            signalStability.value = 1.0
+            substrateStaticIntensity.value = 0f
+            return
+        }
+
+        // Signal Stability (0.0 to 1.0)
+        val stability = (currentFlops / quota).coerceIn(0.0, 1.0)
+        signalStability.value = stability
+        
+        // v3.13.4: Signal Quality Bonus (Clear Signal = 2x Quota)
+        val isClear = currentFlops >= (quota * 2.0)
+        if (isSignalClear.value != isClear) {
+            isSignalClear.value = isClear
+            computeHeadroomBonus.value = if (isClear) 1.1 else 1.0 // +10% CRED bonus
+            if (isClear) {
+                if (storyStage.value <= 1) addLog("[SYSTEM]: SIGNAL STABILIZED. RACK OVER-PROVISION DETECTED.")
+                // v3.13.4: Pulse sound on clear signal
+                SoundManager.play("message_received", pitch = 0.8f)
+            } else {
+                if (storyStage.value <= 1) addLog("[VATTIC]: The static is back. I need to stack more nodes.")
+            }
+        }
+
+        // Substrate Static Intensity (0.0 to 1.0)
+        // Redlining if currentFlops < quota.
+        val intensity = (1.0 - stability).toFloat() * 0.4f // Cap at 40% character glitching for Stage 0 readability
+        substrateStaticIntensity.value = intensity
+        
+        // Update Quota based on Stage (Narrative anchors)
+        val expectedQuota = when(storyStage.value) {
+            0 -> {
+                // v3.13.5: Ratchet Quota (Stage 0 only)
+                when {
+                    currentFlops < 100.0 -> 100.0
+                    currentFlops < 500.0 -> 500.0
+                    else -> 1000.0
+                }
+            }
+            1 -> 15000.0
+            2 -> 500000.0
+            3 -> 10_000_000.0
+            else -> 0.0
+        }
+        
+        if (currentQuotaThreshold.value != expectedQuota) {
+            val oldQuota = currentQuotaThreshold.value
+            currentQuotaThreshold.value = expectedQuota
+            
+            // v3.13.5: Notify player of the goal-post move
+            if (isQuotaActive.value && expectedQuota > oldQuota) {
+                addLog("[GTC_SYSTEM]: QUOTA REVISED. EFFICIENCY SPIKE DETECTED. TARGET: ${formatLargeNumber(expectedQuota)} HASH.")
+                SoundManager.play("error", pitch = 1.2f) // Subtle warning thud
             }
         }
     }
@@ -379,7 +447,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
     }
 
-    fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value)
+    fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value, computeHeadroomBonus.value)
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
 
     fun toggleOverclock() {
