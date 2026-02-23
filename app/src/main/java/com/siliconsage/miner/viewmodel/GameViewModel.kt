@@ -176,7 +176,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                             addLog("[GTC_UTIL]: NET ${formatPower(netKwh)}  RATE x${demandMultiplier.toInt()}")
 
                             // v3.13.19: High-Fidelity Utility Notification
-                            viewModelScope.launch { terminalNotification.emit("GTC ALERT: PERIOD SETTLED (-$${formatLargeNumber(amountDue)})") }
+                            viewModelScope.launch { terminalNotification.emit("GTC ALERT: PERIOD SETTLED (-${formatLargeNumber(amountDue)})") }
                         } else {
                             // Can't pay - carry the balance, escalate
                             val overdue = (powerBill.value + amountDue)
@@ -205,8 +205,6 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                         neuralTokens.update { it + credit }
                         powerBill.value = 0.0
                         missedBillingPeriods = 0
-                        addLog("[GTC_UTIL]: NET SURPLUS - LOCAL GEN EXCEEDED DRAW.")
-                        addLog("[GTC_UTIL]: GRID CREDIT  +${formatLargeNumber(credit)} ${getCurrencyName()}")
                         viewModelScope.launch { terminalNotification.emit("GTC ALERT: SURPLUS CREDIT (+${formatLargeNumber(credit)})") }
                     }
                 }
