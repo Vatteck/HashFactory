@@ -200,9 +200,12 @@ fun MainScreen(viewModel: GameViewModel) {
     var notificationMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
         viewModel.terminalNotification.collect {
-            notificationMessage = it
-            delay(4000)
-            notificationMessage = null
+            // v3.13.28: Filter out corporate alerts to prevent double-toast collision with Overlay
+            if (!it.startsWith("GTC CRITICAL")) {
+                notificationMessage = it
+                delay(4000)
+                notificationMessage = null
+            }
         }
     }
 
