@@ -1,10 +1,11 @@
 {
-  "version": "3.26.0",
-  "build": 428,
+  "version": "3.26.1",
+  "build": 429,
   "date": "2026-02-24",
   "changelog": [
-    "f98c0c9 3.26.0 - Subnet Expansion"
+    "9c8512e UI Polish Hotfix",
+    "356c178 3.26.1"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.26.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.26.0/MINER_3.26.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.26.1",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.26.1/MINER_3.26.1.apk"
 }
