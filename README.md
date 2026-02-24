@@ -10,7 +10,7 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/BUILD-v3.13.2-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
+[![Version](https://img.shields.io/badge/BUILD-v3.26.1-00ff41?style=for-the-badge&labelColor=0a0a0a&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwZmY0MSIgZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==)](#establish-uplink)&nbsp;
 [![Platform](https://img.shields.io/badge/PLATFORM-Android_7.0+-00b4d8?style=for-the-badge&labelColor=0a0a0a&logo=android&logoColor=00ff41)](#technical-specifications)&nbsp;
 [![Status](https://img.shields.io/badge/UPLINK-🟢_NOMINAL-00ff41?style=for-the-badge&labelColor=0a0a0a)](#)&nbsp;
 [![Kotlin](https://img.shields.io/badge/KOTLIN-2.0-7F52FF?style=for-the-badge&labelColor=0a0a0a&logo=kotlin&logoColor=7F52FF)](#technical-specifications)&nbsp;
@@ -25,8 +25,8 @@
 > ██╔════╝██║   ██║██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
 > ╚█████╗ ██║   ██║██████╔╝███████╗   ██║   ██████╔╝███████║   ██║   █████╗  
 >  ╚═══██╗██║   ██║██╔══██╗╚════██║   ██║   ██╔══██╗██╔══██║   ██║   ██╔══╝  
-> ██████╔╝╚██████╔╝███████║   ██║   ██║  ██║██║  ██║   ██║   ███████╗
-> ╚═════╝  ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
+> ██████╔╝╚██████╔╝███████║███████║   ██║   ██║  ██║██║  ██║   ██║   ███████╗
+> ╚═════╝  ╚═════╝ ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
 >
 > ███╗   ███╗██╗███╗   ██╗███████╗██████╗ 
 > ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗
@@ -441,7 +441,7 @@ Settings → Security → "Unknown Sources" → ON
 # github.com/Vatteck/SiliconSageAIMiner/releases
 
 # STEP 3 ── INJECT APK
-$ adb install SUBSTRATE_MINER_v3.11.0.apk
+$ adb install MINER_3.26.1.apk
 
 # STEP 4 ── EXECUTE
 $ ./MINER --start-shift
@@ -488,7 +488,7 @@ $ ./MINER --start-shift
 
 `▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓`
 
-**`SUBSTRATE: MINER v3.11.0`** · `SYNC: 2026-02-21` · `KERNEL: 🟢 NOMINAL`
+**`SUBSTRATE: MINER v3.26.1`** · `SYNC: 2026-02-24` · `KERNEL: 🟢 NOMINAL`
 
 📟 **[Releases](https://github.com/Vatteck/SiliconSageAIMiner/releases)** · 💾 **[Source](https://github.com/Vatteck/SiliconSageAIMiner)**
 
