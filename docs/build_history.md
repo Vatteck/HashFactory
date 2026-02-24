@@ -73,3 +73,6 @@
 ## 2026-02-23 23:04 — v3.21.0 (Build 425)
 - Summary: Security Defense, Narrative/UI polish, DevTools + Terminal refactor
 
+## 2026-02-23 23:39 — v3.22.0 (Build 426)
+- Summary: Header & UI Refinement — LED polish, holographic rails, layout fix, zero hash display
+

@@ -134,62 +134,102 @@ object SoundManager {
     private fun loadSounds() {
         val ctx = appCtx ?: return
         CoroutineScope(Dispatchers.IO).launch {
-            // 1. Click (V2.9.45: High-frequency percussive "tick")
-            // Exponential decay makes this sound like a real button click, not a beep.
-            val clickPcm = AudioGenerator.generateTone(2500.0, 10, AudioGenerator.WaveType.SINE, 0.1)
-            loadPcm(ctx, "click", clickPcm)
-
-            // 2. Buy (Pleasant harmonic chord)
-            val note1 = AudioGenerator.generateTone(1000.0, 50, AudioGenerator.WaveType.SINE, 0.1)
-            val note2 = AudioGenerator.generateTone(1500.0, 50, AudioGenerator.WaveType.SINE, 0.1)
-            loadPcm(ctx, "buy", note1 + note2)
-
-            // 3. Error (Dull thud)
-            val errorPcm = AudioGenerator.generateTone(180.0, 200, AudioGenerator.WaveType.SINE, 0.2)
-            loadPcm(ctx, "error", errorPcm)
+            // === CORE UI ===
             
-            // 4. Glitch
-            val glitchPcm = AudioGenerator.generateTone(0.0, 100, AudioGenerator.WaveType.NOISE, 0.05)
-            loadPcm(ctx, "glitch", glitchPcm)
-            
-            // 5. Market UP
-            val marketUpPcm = AudioGenerator.generateSlide(800.0, 1600.0, 300, 0.08)
-            loadPcm(ctx, "market_up", marketUpPcm)
-            
-            // 6. Market DOWN
-            val marketDownPcm = AudioGenerator.generateSlide(600.0, 300.0, 400, 0.08)
-            loadPcm(ctx, "market_down", marketDownPcm)
+            // 1. Click — Crisp tick with subtle overtone
+            val clickBase = AudioGenerator.generateTone(2500.0, 10, AudioGenerator.WaveType.SINE, 0.08)
+            val clickOvertone = AudioGenerator.generateTone(5000.0, 8, AudioGenerator.WaveType.SINE, 0.03)
+            loadPcm(ctx, "click", clickBase + clickOvertone)
 
-            // 7. Alarm (Softer warble)
-            val alarm1 = AudioGenerator.generateTone(2000.0, 100, AudioGenerator.WaveType.SINE, 0.08)
-            val alarm2 = AudioGenerator.generateTone(1800.0, 100, AudioGenerator.WaveType.SINE, 0.08)
-            loadPcm(ctx, "alarm", alarm1 + alarm2)
+            // 2. Buy — Layered harmonic chord (C5+E5+G5)
+            val buyPcm = AudioGenerator.generateChord(listOf(523.25, 659.25, 783.99), 80, 0.12)
+            loadPcm(ctx, "buy", buyPcm)
 
-            // 8. Hum
+            // 3. Error — Low buzz with square-wave menace
+            val errSine = AudioGenerator.generateTone(180.0, 150, AudioGenerator.WaveType.SINE, 0.15)
+            val errBuzz = AudioGenerator.generateTone(90.0, 150, AudioGenerator.WaveType.SQUARE, 0.06)
+            loadPcm(ctx, "error", errSine + errBuzz)
+            
+            // 4. Glitch — Bit-crushed noise + random sine stab
+            val glitchNoise = AudioGenerator.generateTone(0.0, 60, AudioGenerator.WaveType.NOISE, 0.06)
+            val glitchStab = AudioGenerator.generateTone(1800.0, 30, AudioGenerator.WaveType.SQUARE, 0.04)
+            loadPcm(ctx, "glitch", glitchNoise + glitchStab)
+            
+            // === MARKET ===
+            
+            // 5. Market UP — Rising slide with harmonic tail
+            val marketUpSlide = AudioGenerator.generateSlide(600.0, 1400.0, 200, 0.08)
+            val marketUpChime = AudioGenerator.generateChord(listOf(1400.0, 1750.0), 60, 0.05)
+            loadPcm(ctx, "market_up", marketUpSlide + marketUpChime)
+            
+            // 6. Market DOWN — Descending slide with low thud
+            val marketDownSlide = AudioGenerator.generateSlide(600.0, 250.0, 300, 0.08)
+            val marketDownThud = AudioGenerator.generateTone(120.0, 80, AudioGenerator.WaveType.SINE, 0.06)
+            loadPcm(ctx, "market_down", marketDownSlide + marketDownThud)
+
+            // === ALERTS & AMBIENT ===
+
+            // 7. Alarm — Fast alternating warble (urgent siren)
+            val alarmHigh = AudioGenerator.generateTone(2200.0, 60, AudioGenerator.WaveType.SINE, 0.09)
+            val alarmLow = AudioGenerator.generateTone(1600.0, 60, AudioGenerator.WaveType.SINE, 0.09)
+            loadPcm(ctx, "alarm", alarmHigh + alarmLow + alarmHigh + alarmLow)
+
+            // 8. Hum — Steady low drone
             val humPcm = AudioGenerator.generateTone(150.0, 500, AudioGenerator.WaveType.SINE, 0.01) 
             loadPcm(ctx, "hum", humPcm)
             
-            // 9. Type (V2.9.45: Tiny "glass" ping for news ticker)
+            // 9. Type — Tiny glass ping for news ticker
             val typePcm = AudioGenerator.generateTone(3500.0, 8, AudioGenerator.WaveType.SINE, 0.02)
             loadPcm(ctx, "type", typePcm)
             
-            // 10. Thrum (V2.9.49: Steady Dark "Hum" @ 85Hz - Increased volume)
+            // 10. Thrum — Steady dark hum @ 85Hz with triangle warmth
             val thrumPcm = AudioGenerator.generateTone(85.0, 1000, AudioGenerator.WaveType.TRIANGLE, 0.1, isLoop = true)
             loadPcm(ctx, "thrum", thrumPcm)
             
-            // 11. Steam
+            // 11. Steam — Filtered noise burst (cooling purge)
             val steamPcm = AudioGenerator.generateTone(0.0, 600, AudioGenerator.WaveType.NOISE, 0.1)
             loadPcm(ctx, "steam", steamPcm)
             
-            // 12. Scream Synth (V3.2.58: Bit-crushed descending noise for Void)
-            val screamPcm = AudioGenerator.generateSlide(3000.0, 100.0, 800, 0.5) // Noise slide
+            // 12. Scream Synth — Bit-crushed descending noise for Void
+            val screamPcm = AudioGenerator.generateSlide(3000.0, 100.0, 800, 0.5)
             loadPcm(ctx, "scream_synth", screamPcm)
             
-            // 13. Message Received (Crystal-clear chirp)
+            // 13. Message Received — Crystal-clear ascending chirp
             val msg1 = AudioGenerator.generateTone(1200.0, 40, AudioGenerator.WaveType.SINE, 0.1)
             val msg2 = AudioGenerator.generateTone(1800.0, 40, AudioGenerator.WaveType.SINE, 0.1)
             val msg3 = AudioGenerator.generateTone(2400.0, 80, AudioGenerator.WaveType.SINE, 0.08)
             loadPcm(ctx, "message_received", msg1 + msg2 + msg3)
+            
+            // === PREVIOUSLY MISSING (Ghost Sounds) ===
+            
+            // 14. Startup — Warm rising chord (C4→G4→C5), system boot
+            val startupPcm = AudioGenerator.generateChord(listOf(261.63, 392.00, 523.25), 250, 0.12)
+            loadPcm(ctx, "startup", startupPcm)
+            
+            // 15. Success — Bright ascending triad (E5→G#5→B5), tech tree unlock
+            val successPcm = AudioGenerator.generateChord(listOf(659.25, 830.61, 987.77), 180, 0.10)
+            loadPcm(ctx, "success", successPcm)
+            
+            // 16. Victory — Triumphant 4-note arpeggio (C4→E4→G4→C5), sector capture
+            val vic1 = AudioGenerator.generateTone(261.63, 80, AudioGenerator.WaveType.SINE, 0.10)
+            val vic2 = AudioGenerator.generateTone(329.63, 80, AudioGenerator.WaveType.SINE, 0.10)
+            val vic3 = AudioGenerator.generateTone(392.00, 80, AudioGenerator.WaveType.SINE, 0.10)
+            val vic4 = AudioGenerator.generateChord(listOf(523.25, 659.25, 783.99), 200, 0.12)
+            loadPcm(ctx, "victory", vic1 + vic2 + vic3 + vic4)
+            
+            // 17. Alert — Urgent double-pulse square wave (narrative warning)
+            val alertPulse = AudioGenerator.generateTone(1200.0, 60, AudioGenerator.WaveType.SQUARE, 0.08)
+            val alertGap = ByteArray((0.04 * AudioGenerator.SAMPLE_RATE * 2).toInt()) // 40ms silence
+            loadPcm(ctx, "alert", alertPulse + alertGap + alertPulse)
+            
+            // 18. Data Recovered — FM chirp: descending slide + rising tail
+            val dataDown = AudioGenerator.generateSlide(3000.0, 1500.0, 120, 0.08)
+            val dataUp = AudioGenerator.generateSlide(1500.0, 2500.0, 100, 0.06)
+            loadPcm(ctx, "data_recovered", dataDown + dataUp)
+            
+            // 19. Climax Impact — Heavy: noise burst + deep rumble (narrative climax)
+            val climaxPcm = AudioGenerator.generateImpact(noiseMs = 50, tailFreq = 60.0, tailMs = 400, volume = 0.5)
+            loadPcm(ctx, "climax_impact", climaxPcm)
         }
     }
     

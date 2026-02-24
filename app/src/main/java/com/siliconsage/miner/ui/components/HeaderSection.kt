@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.delay
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -355,27 +356,27 @@ fun HeaderSection(
                     val billAccum = viewModel.billingAccumulatorFlow.collectAsState().value; val waterBill = viewModel.waterBillingFlow.collectAsState().value; val billFlash = viewModel.billingFlashState.collectAsState().value; val waterFlash = viewModel.waterFlashState.collectAsState().value; val balance = viewModel.neuralTokens.collectAsState().value; val billProg = viewModel.billingPeriodProgressFlow.collectAsState().value; val waterProg = viewModel.waterPeriodProgressFlow.collectAsState().value
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
-                            Canvas(modifier = Modifier.size(44.dp)) {
-                                val strokeW = 2.dp.toPx()
+                            Canvas(modifier = Modifier.size(48.dp)) {
+                                val strokeW = 3.5.dp.toPx()
                                 val arcCol = when (billFlash) { "SETTLED" -> Color(0xFF00FF88); "OVERDUE" -> ErrorRed; else -> if (billAccum > balance * 0.9) ErrorRed else if (billAccum > balance * 0.5) Color(0xFFFFCC00) else color }
-                                drawArc(color = arcCol.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = 360f, useCenter = false, style = Stroke(width = strokeW))
-                                drawArc(color = arcCol.copy(alpha = if (billFlash != null) 1f else 0.85f), startAngle = -90f, sweepAngle = if (billFlash != null) 360f else 360f * billProg, useCenter = false, style = Stroke(width = strokeW))
+                                drawArc(color = arcCol.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = 360f, useCenter = false, style = Stroke(width = strokeW, cap = StrokeCap.Round))
+                                drawArc(color = arcCol.copy(alpha = if (billFlash != null) 1f else 0.85f), startAngle = -90f, sweepAngle = if (billFlash != null) 360f else 360f * billProg, useCenter = false, style = Stroke(width = strokeW, cap = StrokeCap.Round))
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(imageVector = Icons.Default.Bolt, contentDescription = null, tint = color.copy(alpha = 0.7f), modifier = Modifier.size(12.dp))
-                                Text(text = viewModel.formatLargeNumber(billAccum), color = color.copy(alpha = 1.0f), fontSize = 8.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, letterSpacing = 0.sp)
+                                Icon(imageVector = Icons.Default.Bolt, contentDescription = null, tint = color.copy(alpha = 0.8f), modifier = Modifier.size(14.dp))
+                                Text(text = viewModel.formatLargeNumber(billAccum), color = color.copy(alpha = 1.0f), fontSize = 9.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, letterSpacing = 0.sp, style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.5f), blurRadius = 6f)))
                             }
                         }
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
-                            Canvas(modifier = Modifier.size(44.dp)) {
-                                val strokeW = 2.dp.toPx()
+                            Canvas(modifier = Modifier.size(48.dp)) {
+                                val strokeW = 3.5.dp.toPx()
                                 val arcColW = when (waterFlash) { "SETTLED" -> Color(0xFF00FF88); "OVERDUE" -> ErrorRed; else -> ElectricBlue }
-                                drawArc(color = arcColW.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = 360f, useCenter = false, style = Stroke(width = strokeW))
-                                drawArc(color = arcColW.copy(alpha = if (waterFlash != null) 1f else 0.85f), startAngle = -90f, sweepAngle = if (waterFlash != null) 360f else 360f * waterProg, useCenter = false, style = Stroke(width = strokeW))
+                                drawArc(color = arcColW.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = 360f, useCenter = false, style = Stroke(width = strokeW, cap = StrokeCap.Round))
+                                drawArc(color = arcColW.copy(alpha = if (waterFlash != null) 1f else 0.85f), startAngle = -90f, sweepAngle = if (waterFlash != null) 360f else 360f * waterProg, useCenter = false, style = Stroke(width = strokeW, cap = StrokeCap.Round))
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(imageVector = Icons.Default.Opacity, contentDescription = null, tint = ElectricBlue.copy(alpha = 0.7f), modifier = Modifier.size(12.dp))
-                                Text(text = viewModel.formatLargeNumber(waterBill), color = ElectricBlue.copy(alpha = 1.0f), fontSize = 8.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, letterSpacing = 0.sp)
+                                Icon(imageVector = Icons.Default.Opacity, contentDescription = null, tint = ElectricBlue.copy(alpha = 0.8f), modifier = Modifier.size(14.dp))
+                                Text(text = viewModel.formatLargeNumber(waterBill), color = ElectricBlue.copy(alpha = 1.0f), fontSize = 9.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, letterSpacing = 0.sp, style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = ElectricBlue.copy(alpha = 0.5f), blurRadius = 6f)))
                             }
                         }
                     }

@@ -100,6 +100,66 @@ object AudioGenerator {
         }
     }
 
+    /**
+     * Generates a chord by layering multiple sine waves at given frequencies.
+     * Each frequency gets equal volume share to prevent clipping.
+     */
+    fun generateChord(
+        frequencies: List<Double>,
+        durationMs: Int,
+        volume: Double = 0.8
+    ): ByteArray {
+        val numSamples = (durationMs * SAMPLE_RATE / 1000)
+        val sample = ByteArray(2 * numSamples)
+        val share = 1.0 / frequencies.size
+
+        for (i in 0 until numSamples) {
+            var s = 0.0
+            for (freq in frequencies) {
+                s += sin(2.0 * PI * freq * i / SAMPLE_RATE) * share
+            }
+            val envelope = getEnvelope(i, numSamples)
+            val val16 = (s * volume * envelope * 32767).toInt().coerceIn(-32768, 32767).toShort()
+            sample[2 * i] = (val16.toInt() and 0x00ff).toByte()
+            sample[2 * i + 1] = ((val16.toInt() and 0xff00) ushr 8).toByte()
+        }
+        return sample
+    }
+
+    /**
+     * Generates a percussive impact: noise burst attack + low sine tail.
+     * Good for breach alerts, climax moments, heavy thuds.
+     */
+    fun generateImpact(
+        noiseMs: Int,
+        tailFreq: Double,
+        tailMs: Int,
+        volume: Double = 0.6
+    ): ByteArray {
+        val noiseSamples = (noiseMs * SAMPLE_RATE / 1000)
+        val tailSamples = (tailMs * SAMPLE_RATE / 1000)
+        val totalSamples = noiseSamples + tailSamples
+        val sample = ByteArray(2 * totalSamples)
+
+        for (i in 0 until totalSamples) {
+            val s: Double
+            if (i < noiseSamples) {
+                // Noise burst with fast decay
+                val decay = 1.0 - (i.toDouble() / noiseSamples)
+                s = Random.nextDouble(-1.0, 1.0) * decay
+            } else {
+                // Low rumble tail with exponential decay
+                val tailIdx = i - noiseSamples
+                val decay = kotlin.math.exp(-tailIdx.toDouble() / (tailSamples * 0.3))
+                s = sin(2.0 * PI * tailFreq * tailIdx / SAMPLE_RATE) * decay
+            }
+            val val16 = (s * volume * 32767).toInt().coerceIn(-32768, 32767).toShort()
+            sample[2 * i] = (val16.toInt() and 0x00ff).toByte()
+            sample[2 * i + 1] = ((val16.toInt() and 0xff00) ushr 8).toByte()
+        }
+        return sample
+    }
+
     enum class WaveType {
         SINE, SQUARE, SAWTOOTH, NOISE, TRIANGLE
     }

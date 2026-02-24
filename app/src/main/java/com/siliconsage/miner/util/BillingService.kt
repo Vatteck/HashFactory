@@ -14,10 +14,11 @@ object BillingService {
         val nowSec = System.currentTimeMillis() / 1000L
         if (!vm.isQuotaActive.value) return
 
-        // Power cycle: 60s
+        // Power cycle: 60s (v3.24.0: gated on first grid/gen upgrade)
+        val hasPowerInfra = vm.localGenerationkW.value > 0 || vm.maxPowerkW.value > 100.0
         val pElapsed = (nowSec - vm.lastPowerStatementTime).coerceAtLeast(0L)
-        vm.billingPeriodProgressFlow.value = (pElapsed.toFloat() / vm.powerBillingPeriodSeconds).coerceIn(0f, 1f)
-        if (pElapsed >= vm.powerBillingPeriodSeconds) {
+        vm.billingPeriodProgressFlow.value = if (hasPowerInfra) (pElapsed.toFloat() / vm.powerBillingPeriodSeconds).coerceIn(0f, 1f) else 0f
+        if (hasPowerInfra && pElapsed >= vm.powerBillingPeriodSeconds) {
             vm.lastPowerStatementTime = nowSec
             val gross = vm.billingPeriodAccumulator
             val gen = vm.billingPeriodGenAccumulator

@@ -123,9 +123,10 @@ object SimulationService {
         vm.localGenerationkW.value = selfGeneratedKw
         vm.powerConsumptionkW.value = gridUsage
 
-        // v3.12.6: Billing period accumulators — accumulate GROSS draw and gen separately
-        // Gated on quota active: GTC notices your power draw when they assign the first quota.
-        if (vm.isQuotaActive.value) {
+        // v3.24.0: Billing gated on first grid capacity or generator purchase.
+        // Player needs tools to manage costs before costs start.
+        val hasPowerInfrastructure = selfGeneratedKw > 0 || maxCap > 100.0 // base grid is 100kW
+        if (vm.isQuotaActive.value && hasPowerInfrastructure) {
             vm.billingPeriodAccumulator += totalKw          // gross hardware draw
             vm.billingPeriodGenAccumulator += selfGeneratedKw // local generation offset
 

@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.24.0] - 2026-02-24
+### Billing Balance & Meter Polish (v3.24.0)
+- **Balance**: Billing is now deferred until the player purchases their first Grid Capacity (`RESIDENTIAL_TAP`) or Power Generator (`SOLAR_PANEL`). This prevents early-game bankruptcy.
+- **UI**: Polished billing meter arcs in the header. Thicker strokes (3.5dp), larger circles (48dp), bigger icons (14dp), and bolder text with a subtle glow for better readability.
+
+## [3.23.0] - 2026-02-24
+### SFX Overhaul & DevConsole Coverage (v3.23.0)
+- **Audio Synthesis**: Added `generateChord()` and `generateImpact()` to `AudioGenerator` for richer, more complex sounds.
+- **SFX Coverage**: Generated 6 previously missing sounds (`startup`, `success`, `victory`, `alert`, `data_recovered`, `climax_impact`).
+- **Audio Quality**: Improved 5 existing sounds (`click`, `buy`, `error`, `alarm`, `glitch`) with better layering and frequency control.
+- **DevTools**: Expanded DevConsole SFX override list to cover all 19 game sounds, categorized for easy testing.
+
 ## [3.22.0] - 2026-02-23
 ### Header & UI Refinement (v3.22.0)
 - **LED Aesthetics**: Reduced glow radius (2.2x/1.5x) and softened alpha (0.12f). Added 8dp side margins to the LED matrix to prevent border overlap.

@@ -521,12 +521,21 @@ fun AudioTab(viewModel: GameViewModel, onPick: (String) -> Unit) {
         Text("SFX OVERRIDES", color = Color.Cyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         
-        val sfxList = listOf("click", "buy", "error", "glitch", "message_received", "market_up", "market_down")
-        sfxList.forEach { sfx ->
-            DevActionRow(sfx.uppercase()) {
-                DevButton(text = "OVERRIDE", modifier = Modifier.weight(1f)) { onPick(sfx) }
-                DevButton(text = "TEST", color = NeonGreen, modifier = Modifier.weight(1f)) { com.siliconsage.miner.util.SoundManager.play(sfx) }
-                DevButton(text = "RESET", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.setCustomSfx(sfx, null) }
+        val sfxCategories = listOf(
+            "CORE" to listOf("click", "buy", "error", "glitch", "type"),
+            "MARKET" to listOf("market_up", "market_down"),
+            "ALERTS" to listOf("alarm", "alert", "message_received"),
+            "AMBIENT" to listOf("hum", "thrum", "steam", "scream_synth"),
+            "NARRATIVE" to listOf("startup", "success", "victory", "data_recovered", "climax_impact")
+        )
+        sfxCategories.forEach { (category, sounds) ->
+            Text(category, color = Color.Cyan.copy(alpha = 0.7f), fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
+            sounds.forEach { sfx ->
+                DevActionRow(sfx.uppercase()) {
+                    DevButton(text = "OVERRIDE", modifier = Modifier.weight(1f)) { onPick(sfx) }
+                    DevButton(text = "TEST", color = NeonGreen, modifier = Modifier.weight(1f)) { com.siliconsage.miner.util.SoundManager.play(sfx) }
+                    DevButton(text = "RESET", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.setCustomSfx(sfx, null) }
+                }
             }
         }
 
