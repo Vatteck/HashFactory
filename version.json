@@ -1,10 +1,10 @@
 {
-  "version": "3.22.0",
-  "build": 426,
-  "date": "2026-02-23",
+  "version": "3.24.0",
+  "build": 427,
+  "date": "2026-02-24",
   "changelog": [
-    "2a61915 feat: v3.22.0 — Header & UI Refinement Pass"
+    "bd03348 v3.24.0 - Billing & HUD Polish"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.22.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.22.0/MINER_3.22.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.24.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.24.0/MINER_3.24.0.apk"
 }
