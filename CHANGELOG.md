@@ -1,6 +1,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.21.0] - 2026-02-23
+### UI & DevTools Polish (v3.21.0)
+- **Header Aesthetics**: Reduced LED matrix glow radius from 5x to 3x. Tightened visual footprint for better title clarity.
+- **Ghost Reversal**: Realigned Pac-Man ghost logic. Ghosts now "chase" from the left (trailing the head) instead of blocking from the right.
+- **DevConsole Audio**: Broadened audio picker mimetype from `audio/*` to `*/*`. Ensured `.wav` and `.ogg` files are selectable across all system explorers.
+
+## [3.20.0] - 2026-02-23
+### Narrative & UI Polish (v3.20.0)
+- **Identity-Aware Logs (P6)**: Security nomenclature now gated by `storyStage`. Stage 0-2 uses corporate terminology ("Compliance Override", "Administrative Lockout"); Stage 3+ shifts to "Breach" and "Hijack" as the machine recognizes the rogue AI.
+- **Pac-Man UI Polish (P7)**: Added persistent chomp animation (`C` ↔ `c`) to the compute bar. High detection risk (>75%) now triggers risk-reactive ghosts on the track.
+
+## [3.19.0] - 2026-02-23
+### Security & Defense (v3.19.0)
+- **Breach Scaling (P1)**: All breach minigames (Hijack, Audit, Diagnostics, Failsafe) now scale with `securityLevel`. Higher investment = fewer taps, longer timers, and simpler grids. Tangible reward for security tax.
+- **Integrity Thresholds (P2)**: Added official-style RivalMessage popups at 50% and 25% hardware integrity. Dropping below 25% incurs a **10% production penalty** until repaired.
+- **Compliance Rating (P3)**: Added passive reputation recovery. Maintaining low heat (<50°C) and low risk (<30%) for 60s grants **+0.5 Rep** (GTC compliance audit).
+- **Admin Reactivity (P4)**: Tuned Subnet admin events. Thorne/Mercer/Kessler now trigger frequency increases when `detectionRisk > 60%`, providing more organic risk-management choices.
+- **Early-Game Onboarding (P5)**: Advancing to Stage 2 now grants a **free level of BASIC_FIREWALL** to introduce security mechanics without initial cost friction.
+
 ## [3.18.1] - 2026-02-23
 ### UI/Polish (A4)
 - **Timestamp Refinement**: Moved terminal log timestamps to the right side of the log line and restored the `[HH:MM]` bracketed format (α=0.40). Improved legibility and reduced visual noise in the log feed.

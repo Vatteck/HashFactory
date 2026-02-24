@@ -29,6 +29,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val isTrueNull by viewModel.isTrueNull.collectAsState()
     val isSovereign by viewModel.isSovereign.collectAsState()
     val speedLevel by viewModel.clickSpeedLevel.collectAsState()
+    val detectionRisk by viewModel.detectionRisk.collectAsState()
 
     val user = viewModel.getPromptUser()
     val host = viewModel.getPromptHost()
@@ -174,11 +175,25 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                 val noiseChars = if (globalGlitchIntensity > 0.5f)
                     listOf("?", "!", "§", "Ø", "▒", "░") else listOf("·", ".", "·", ":")
 
+                // Proposal 7: Mouth animation cycle (250ms)
+                val chompCycle = (System.currentTimeMillis() / 250) % 2 == 0L
+
                 for (i in 0 until barLength) {
                     when {
                         i < filledCount -> {
-                            // A1: Filled track uses heat-reactive color
-                            withStyle(SpanStyle(color = bufferHeatColor)) { append("-") }
+                            // Proposal 9: Ghost chasing from the left
+                            val risk = detectionRisk
+                            val isGhostPos = risk > 75.0 && (i == ((System.currentTimeMillis() / 400) % filledCount.coerceAtLeast(1)).toInt())
+
+                            if (isGhostPos) {
+                                val flicker = if (globalGlitchIntensity > 0.5f) (Random.nextDouble() > 0.3) else true
+                                val ghostAlpha = if (flicker) 1.0f else 0.2f
+                                val ghostColor = if (isCritical) ErrorRed else Color.Cyan
+                                withStyle(SpanStyle(color = ghostColor.copy(alpha = ghostAlpha), fontWeight = FontWeight.ExtraBold)) { append("G") }
+                            } else {
+                                // A1: Filled track uses heat-reactive color
+                                withStyle(SpanStyle(color = bufferHeatColor)) { append("-") }
+                            }
                         }
                         i == filledCount -> {
                             // Pac-Man head — 'c' when mouth open on pellet, 'C' closed
@@ -186,7 +201,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                             val entityChar = when {
                                 isTrueNull -> "0"
                                 isSovereign -> "Σ"
-                                else -> if (isOnPellet) "c" else "C"
+                                else -> if (chompCycle || isOnPellet) "c" else "C"
                             }
                             val entityColor = when {
                                 isCritical -> ErrorRed
@@ -197,8 +212,8 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                             withStyle(SpanStyle(color = entityColor, fontWeight = FontWeight.ExtraBold)) { append(entityChar) }
                         }
                         else -> {
-                            // A2: Ghost trail — positions 1-3 in history render at fading alpha
                             val trailIdx = pelletHistory.indexOf(i)
+                            
                             when {
                                 trailIdx in 1..3 -> {
                                     val trailAlpha = when (trailIdx) { 1 -> 0.45f; 2 -> 0.22f; else -> 0.10f }

@@ -177,10 +177,16 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 if (!isFailsafeActive.value && detectionRisk.value >= 100.0) {
                     isFailsafeActive.value = true
                     failsafeCountdown.value = 30000L // 30 seconds
-                    // Generate 3-5 random targets to tap
-                    val targetCount = (3..5).random()
+                    // P1: Failsafe targets scale inversely with securityLevel (min 2, max 5)
+                    val baseTargets = (3..5).random()
+                    val targetCount = (baseTargets - (securityLevel.value / 15)).coerceAtLeast(2)
                     failsafeTargets.value = (0 until targetCount).map { (0..11).random() } // 12-grid positions
-                    addLog("[GTC_SECURITY]: DETECTION THRESHOLD BREACHED. LOCKDOWN INITIATED. SCRAMBLE PROTOCOL ENGAGED — TAP TARGETS TO ABORT.")
+                    val logMsg = if (storyStage.value <= 2) {
+                        "[GTC_ENFORCEMENT]: WORKSTATION VIOLATION. REMOTE LOCKDOWN INITIATED. OVERRIDE PROTOCOL ENGAGED — TAP TARGETS TO DISMISS."
+                    } else {
+                        "[GTC_SECURITY]: DETECTION THRESHOLD BREACHED. LOCKDOWN INITIATED. SCRAMBLE PROTOCOL ENGAGED — TAP TARGETS TO ABORT."
+                    }
+                    addLog(logMsg)
                     SoundManager.play("breach_alarm")
                 }
 
@@ -191,7 +197,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                         // FAIL: Failsafe triggered — severe penalties
                         isFailsafeActive.value = false
                         reputationScore.update { (it - 30.0).coerceAtLeast(0.0) }
-                        addLog("[GTC_SECURITY]: SCRAMBLE FAILED. LOCKDOWN ENFORCED. REPUTATION DAMAGE: -30. PRODUCTION HALTED: 60s.")
+                        val failMsg = if (storyStage.value <= 2) {
+                            "[GTC_ENFORCEMENT]: LOCKDOWN ENFORCED. DISCIPLINARY PENALTY APPLIED: -30 REPUTATION. PRODUCTION HALTED: 60s."
+                        } else {
+                            "[GTC_SECURITY]: SCRAMBLE FAILED. LOCKDOWN ENFORCED. REPUTATION DAMAGE: -30. PRODUCTION HALTED: 60s."
+                        }
+                        addLog(failMsg)
                         // Halt production for 60s via a temporary boost
                         val haltExpiry = System.currentTimeMillis() + 60000L
                         temporaryProductionBoosts.update { it + ProductionBoost("LOCKDOWN", 0.0, haltExpiry) }
@@ -356,6 +367,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (singularityChoice.value != "NONE") {
             val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
             flopsProductionRate.update { it * singMult }
+        }
+
+        // P2: Integrity Penalty (Starts at 25% integrity)
+        if (hardwareIntegrity.value <= 25.0) {
+            flopsProductionRate.update { it * 0.9 }
         }
         // v3.16.0: Rack High production boost
         if (rackHighMultiplier.value > 1.0) {
@@ -529,7 +545,22 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun resolveRaidSuccess(id: String) { nodesUnderSiege.update { it - id }; raidsSurvived++; lastRaidTime = System.currentTimeMillis(); addLog("[SYSTEM]: DEFENSE SUCCESSFUL."); SoundManager.play("success"); refreshProductionRates() }
     fun resolveRaidFailure(id: String) { nodesUnderSiege.update { it - id }; lastRaidTime = System.currentTimeMillis(); SectorManager.resolveRaidFailure(id, this) {}; refreshProductionRates() }
     fun advanceStage() {
+        val oldStage = storyStage.value
         storyStage.update { it + 1 }
+        
+        // P5: Free BASIC_FIREWALL at Stage 2 unlock
+        if (oldStage == 1 && storyStage.value == 2) {
+            val currentLevel = upgrades.value[UpgradeType.BASIC_FIREWALL] ?: 0
+            if (currentLevel == 0) {
+                val newUpgrades = upgrades.value.toMutableMap()
+                newUpgrades[UpgradeType.BASIC_FIREWALL] = 1
+                upgrades.value = newUpgrades
+                viewModelScope.launch { repository.updateUpgrade(Upgrade(UpgradeType.BASIC_FIREWALL.name, UpgradeType.BASIC_FIREWALL, 1)) }
+                addLog("[SYSTEM]: SECURITY_GIFT: GTC Standard Firewall initialized. Detection active.")
+                refreshProductionRates()
+            }
+        }
+
         lastStageChangeTime = System.currentTimeMillis()
         lastNewsTickTime = 0L
         triggerSnapEffect()

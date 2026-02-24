@@ -219,8 +219,8 @@ fun HeaderSection(
                     val dotCyT = dotR + 1.dp.toPx()
                     val dotCyB = h - dotR - 1.dp.toPx()
                     // Outer soft halo
-                    if (alphaT > 0.25f) drawCircle(color = colT.copy(alpha = alphaT * 0.18f), radius = dotR * 5f, center = Offset(dotCx, dotCyT))
-                    if (alphaB > 0.25f) drawCircle(color = colB.copy(alpha = alphaB * 0.18f), radius = dotR * 5f, center = Offset(dotCx, dotCyB))
+                    if (alphaT > 0.25f) drawCircle(color = colT.copy(alpha = alphaT * 0.18f), radius = dotR * 3f, center = Offset(dotCx, dotCyT))
+                    if (alphaB > 0.25f) drawCircle(color = colB.copy(alpha = alphaB * 0.18f), radius = dotR * 3f, center = Offset(dotCx, dotCyB))
                     // Inner tight glow
                     if (alphaT > 0.25f) drawCircle(color = colT.copy(alpha = alphaT * 0.45f), radius = dotR * 2.2f, center = Offset(dotCx, dotCyT))
                     if (alphaB > 0.25f) drawCircle(color = colB.copy(alpha = alphaB * 0.45f), radius = dotR * 2.2f, center = Offset(dotCx, dotCyB))

@@ -55,7 +55,12 @@ class SubnetService(
         val now = System.currentTimeMillis()
         
         // --- Context-Triggered Admin Events ---
-        if (stage < 3 && !isPaused.value && !isHushed.value && now - lastAdminContextTime > 45000L) {
+        // P4: Admin events fire more reliably when risk is high
+        val riskScale = if (detectionRisk > 60.0) 2.2 else 1.0
+        val baseAdminCooldown = 45000L
+        val adminCooldown = (baseAdminCooldown / riskScale).toLong()
+        
+        if (stage < 3 && !isPaused.value && !isHushed.value && now - lastAdminContextTime > adminCooldown) {
             val powerLoad = if (maxPower > 0.0) powerUsage / maxPower else 0.0
 
             // Breach event — Thorne immediately notices

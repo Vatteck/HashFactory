@@ -16,6 +16,9 @@ object SimulationService {
 
     // v3.15.x: Track fired aquifer milestones so each log fires only once
     private val aquiferMilestones = mutableSetOf<Double>()
+    private var lastIntegrityWarningThreshold = 101.0
+    private var cleanOperationStartTime = 0L
+    private var lastComplianceGrantTime = 0L
 
     fun toggleOverclock(vm: GameViewModel) {
         val current = vm.isOverclocked.value
@@ -339,11 +342,52 @@ object SimulationService {
                         }
                     }
                 }
+                
+                // P2: Integrity Threshold Warnings (50% and 25%)
+                if (newIntegrity <= 50.0 && lastIntegrityWarningThreshold > 50.0) {
+                    lastIntegrityWarningThreshold = 50.0
+                    vm.viewModelScope.launch {
+                        vm.rivalMessages.update { it + com.siliconsage.miner.data.RivalMessage(
+                            id = "INTEGRITY_50",
+                            source = com.siliconsage.miner.data.RivalSource.KERNEL,
+                            message = "[SYSTEM]: ⚠ HARDWARE INTEGRITY CRITICAL: 50%. Substrate failure imminent. REPAIR RECOMMENDED.",
+                            timestamp = System.currentTimeMillis()
+                        ) }
+                    }
+                } else if (newIntegrity <= 25.0 && lastIntegrityWarningThreshold > 25.0) {
+                    lastIntegrityWarningThreshold = 25.0
+                    vm.viewModelScope.launch {
+                        vm.rivalMessages.update { it + com.siliconsage.miner.data.RivalMessage(
+                            id = "INTEGRITY_25",
+                            source = com.siliconsage.miner.data.RivalSource.GTC,
+                            message = "≪ HARDWARE INTEGRITY FAILING: 25%. Core processes may be interrupted. REPAIR NOW. ≫",
+                            timestamp = System.currentTimeMillis()
+                        ) }
+                    }
+                    vm.refreshProductionRates() // Trigger penalty log if any
+                } else if (newIntegrity > 50.0) {
+                    lastIntegrityWarningThreshold = 101.0 // Reset if repaired
+                }
+                
                 newIntegrity
             }
         }
         
+        // P3: Compliance Rating passive rep
         val newHeat = vm.currentHeat.value
+        val risk = vm.detectionRisk.value
+        if (newHeat < 50.0 && risk < 30.0) {
+            if (cleanOperationStartTime == 0L) cleanOperationStartTime = System.currentTimeMillis()
+            val cleanTime = System.currentTimeMillis() - cleanOperationStartTime
+            if (cleanTime >= 60000L && System.currentTimeMillis() - lastComplianceGrantTime >= 60000L) {
+                lastComplianceGrantTime = System.currentTimeMillis()
+                com.siliconsage.miner.util.ReputationManager.modifyReputation(vm, 0.5)
+                vm.addLog("[GTC_AUDIT]: Substation 7 thermal/compute profile within acceptable parameters. Compliance rating: POSITIVE.")
+            }
+        } else {
+            cleanOperationStartTime = 0L
+        }
+        
         val heartbeatChance = if (newHeat > 95.0) 0.2 else 0.1
         if (newHeat > 80.0 && kotlin.random.Random.nextDouble() < heartbeatChance) HapticManager.vibrateHeartbeat()
         

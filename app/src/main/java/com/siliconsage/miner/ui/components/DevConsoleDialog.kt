@@ -125,7 +125,8 @@ fun DevConsoleDialog(viewModel: GameViewModel, onDismiss: () -> Unit) {
                         "STORY" -> StoryTab(viewModel)
                         "AUDIO" -> AudioTab(viewModel) { target ->
                             sfxTarget = target
-                            audioPickerLauncher.launch("audio/*")
+                            // Proposal 10: Broaden picker to support .wav (some systems exclude it from audio/*)
+                            audioPickerLauncher.launch("*/*")
                         }
                         "KERNEL" -> KernelTab(viewModel)
                         "PHASE14" -> Phase14Tab(viewModel)

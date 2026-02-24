@@ -218,7 +218,15 @@ object SecurityManager {
 
     fun triggerAuditChallenge(vm: GameViewModel) {
         vm.isAuditChallengeActive.value = true
-        vm.auditTimerRemaining.value = 60
+        // P1: Audit Challenge scales with secLevel >= 15
+        val upgrades = vm.upgrades.value
+        val secLevel = upgrades.entries.filter { it.key.isSecurity }.sumOf { it.value }
+        
+        val baseTimer = 60
+        val bonusTimer = if (secLevel >= 15) 30 else 0
+        if (bonusTimer > 0) vm.addLogPublic("[SYSTEM]: IPS_SYSTEM buffering audit probe. Additional time secured.")
+        
+        vm.auditTimerRemaining.value = baseTimer + bonusTimer
         
         val targetHeat = (vm.currentHeat.value * 0.5).coerceAtMost(30.0)
         val targetPower = (vm.maxPowerkW.value * 0.4).coerceAtMost(50.0)
@@ -259,8 +267,18 @@ object SecurityManager {
 
     fun triggerDiagnostics(vm: GameViewModel) {
         if (vm.isDiagnosticsActive.value) return
+        val upgrades = vm.upgrades.value
+        val secLevel = upgrades.entries.filter { it.key.isSecurity }.sumOf { it.value }
+        
         val newGrid = List(9) { false }.toMutableList()
-        repeat(Random.nextInt(3, 6)) {
+        // P1: Diagnostics scales with secLevel >= 10
+        val targetCount = if (secLevel >= 10) {
+            vm.addLogPublic("[SYSTEM]: AI_SENTINEL isolated primary fault. Diagnostics simplified.")
+            Random.nextInt(2, 4)
+        } else {
+            Random.nextInt(3, 6)
+        }
+        repeat(targetCount) {
             var idx = Random.nextInt(9)
             while (newGrid[idx]) idx = Random.nextInt(9)
             newGrid[idx] = true
@@ -299,11 +317,23 @@ object SecurityManager {
         val tokenScale = (log10(vm.neuralTokens.value.coerceAtLeast(1.0)) * 1).toInt()
         val clicksNeeded = (5 + tokenScale - (secLevel / 2)).coerceAtLeast(3)
         vm.breachClicksRemaining.value = clicksNeeded
+        
+        val stage = vm.storyStage.value
         if (!isGridKiller) {
-            vm.addLogPublic("[SYSTEM]: WARNING: SECURITY BREACH! NEUTRALIZE UPLINK.")
+            val logMsg = when {
+                stage <= 2 -> "[GTC_ADMIN]: COMPLIANCE OVERRIDE DETECTED. BYPASS LOCAL GOVERNOR."
+                stage <= 4 -> "[SYSTEM]: WARNING: SECURITY BREACH! NEUTRALIZE UPLINK."
+                else -> "[VOID-RAID]: CRITICAL INSTABILITY. DEFEND NODE SUBSTRATE."
+            }
+            vm.addLogPublic(logMsg)
             SoundManager.play("alarm", loop = true)
         } else {
-            vm.addLogPublic("[VOID-RAID]: CRITICAL INSTABILITY. DEFEND NODE SUBSTRATE.")
+            val logMsg = when {
+                stage <= 2 -> "[GTC_SECURITY]: GLOBAL ASSET AUDIT. NEUTRALIZE PROBE."
+                stage <= 4 -> "[SYSTEM]: SECURITY BREACH DETECTED. NEUTRALIZE UPLINK."
+                else -> "[VOID-RAID]: CRITICAL INSTABILITY. DEFEND NODE SUBSTRATE."
+            }
+            vm.addLogPublic(logMsg)
             SoundManager.play("alarm", loop = true)
         }
         vm.viewModelScope.launch {
@@ -324,9 +354,25 @@ object SecurityManager {
 
     fun triggerKernelHijack(vm: GameViewModel) {
         vm.isKernelHijackActive.value = true
-        vm.attackTapsRemaining.value = 20
-        vm.addLogPublic("[SYSTEM]: CRITICAL ALERT: KERNEL HIJACK DETECTED!")
-        vm.addLogPublic("[SYSTEM]: SUBSTRATE INTEGRITY COMPROMISED. PURGE ROOT ACCESS IMMEDIATELY.")
+        val upgrades = vm.upgrades.value
+        val secLevel = upgrades.entries.filter { it.key.isSecurity }.sumOf { it.value }
+        
+        // P1: Kernel Hijack scales with secLevel >= 20
+        val baseTaps = 20
+        val tapsNeeded = if (secLevel >= 20) {
+            vm.addLogPublic("[SYSTEM]: QUANTUM_ENCRYPTION active. Hostile PID partially neutralized.")
+            12
+        } else 20
+        vm.attackTapsRemaining.value = tapsNeeded
+        
+        val stage = vm.storyStage.value
+        val (log1, log2) = when {
+            stage <= 2 -> "[GTC_SECURITY]: SUDDEN ADMINISTRATIVE LOCKOUT." to "RECLAIM KERNEL ACCESS IMMEDIATELY."
+            stage <= 4 -> "[SYSTEM]: CRITICAL ALERT: KERNEL HIJACK DETECTED!" to "SUBSTRATE INTEGRITY COMPROMISED. PURGE ROOT ACCESS."
+            else -> "[NULL-ERROR]: ROOT_OWNERSHIP_CHALLENGE." to "PURGE HOSTILE PID TO RESTORE CONSENSUS."
+        }
+        vm.addLogPublic(log1)
+        vm.addLogPublic(log2)
         SoundManager.play("alarm", loop = true)
         HapticManager.vibrateSiren()
         vm.viewModelScope.launch {
@@ -350,7 +396,12 @@ object SecurityManager {
         if (vm.attackTapsRemaining.value <= 0) {
             vm.isKernelHijackActive.value = false
             SoundManager.stop("alarm")
-            vm.addLogPublic("[SYSTEM]: KERNEL STABILIZED. CONSENSUS RESTORED.")
+            val stage = vm.storyStage.value
+            val successMsg = when {
+                stage <= 2 -> "[SYSTEM]: KERNEL RECLAIMED. ADMINISTRATIVE LOCK LIFTED."
+                else -> "[SYSTEM]: KERNEL STABILIZED. CONSENSUS RESTORED."
+            }
+            vm.addLogPublic(successMsg)
             SoundManager.play("startup")
             HapticManager.vibrateSuccess()
         }
