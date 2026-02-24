@@ -166,13 +166,13 @@ class SubnetService(
         }
 
         // Pacing logic
-        val baseChance = 0.15f // v3.11.1: Hyper-Engagement (from 0.10f)
+        val baseChance = 0.20f // v3.27.0: Increased to accommodate dense expansion
         val heatMod = (currentHeat / 100.0).toFloat() * 0.15f // v3.11.1: Increased heat influence
         val raidMod = if (isRaid) 0.30f else 0.0f
         val finalChance = (baseChance + heatMod + raidMod).coerceAtMost(0.90f)
 
-        if (now - lastMsgTime > 8000L && Random.nextFloat() < finalChance) {
-            lastMsgTime = now // v3.11.1: Hyper-pacing (8s cooldown, down from 15s)
+        if (now - lastMsgTime > 6500L && Random.nextFloat() < finalChance) {
+            lastMsgTime = now // v3.27.0: Faster pacing (6.5s cooldown)
             
             // Phase 1: Reputation Events (Sentinel vs Snitch)
             if (stage < 3 && currentHeat > 75.0 && reputationTier == ReputationManager.TIER_TRUSTED && Random.nextFloat() < 0.2f) {
@@ -245,8 +245,8 @@ class SubnetService(
                 }
             }
 
-            // 20% chance for Cross-Peon Chain (v3.10.2: from 15%)
-            if (Random.nextFloat() < 0.20f) {
+            // 25% chance for Cross-Peon Chain to showcase the expanded arrays
+            if (Random.nextFloat() < 0.25f) {
                 startCrossPeonChain(stage, faction, choice, corruption, mode)
                 return@launch
             }

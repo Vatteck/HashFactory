@@ -264,6 +264,6 @@ object SocialRepository {
             emptyList()
         }
 
-        return baseTemplates + repTemplates
+        return baseTemplates + repTemplates + repTemplates + repTemplates
     }
 }

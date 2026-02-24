@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.27.0] - 2026-02-24
+### UI Polish & Chatter Sync Hotfix
+- **UI Colors**: Segmented the `ResourceDisplay` string format. Rates are now permanently colored `ElectricBlue`, while efficiency multipliers are dynamically colored (`Yellow` for <1.0, `ElectricBlue` for >=1.0).
+- **Pac-Man Animation**: Replaced static time-based logic with an active `rememberInfiniteTransition` in `ActiveCommandBuffer.kt`, ensuring the Pac-Man mouth reliably animates.
+- **Subnet Chatter Sync**: Resolved a disparity in `SocialRepository` to properly load the expanded ambient chatter arrays. Adjusted pacing (lowered to 6.5s) and weighted reputation templates to balance the dense expansion.
+
 ## [3.26.1] - 2026-02-24
 ### UI Polish Hotfix
 - **Header Alignment**: Mirror-aligned the top header hashes and credits sections by applying `Alignment.Top` to their respective columns.

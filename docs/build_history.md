@@ -76,3 +76,8 @@
 ## 2026-02-23 23:39 — v3.22.0 (Build 426)
 - Summary: Header & UI Refinement — LED polish, holographic rails, layout fix, zero hash display
 
+## 2026-02-23 23:24 — v3.26.0 (Build 428)
+- Summary: Dense Subnet Expansion
+
+## 2026-02-24 14:48 — v3.26.1 (Build 429)
+- Summary: UI Polish Hotfix

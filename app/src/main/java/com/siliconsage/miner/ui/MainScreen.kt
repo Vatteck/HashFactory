@@ -697,11 +697,6 @@ fun ResourceDisplay(
     val value by labelFlow.collectAsState()
     val rate by (rateFlow ?: MutableStateFlow(0.0)).collectAsState()
     val valueStr = remember(value) { formatFn(value) }
-    val rateStr = remember(rate, efficiencyMult) { 
-        val base = formatFn(rate)
-        if (efficiencyMult != 1.0) "$base/s [${String.format("%.2f", efficiencyMult)}x]"
-        else "$base/s"
-    }
     val fontSizeByLength = if (valueStr.length > 8) 18.sp else 22.sp
 
     Column(horizontalAlignment = if (isRightAligned) Alignment.End else Alignment.Start, modifier = Modifier.width(width)) {
@@ -739,15 +734,25 @@ fun ResourceDisplay(
                 else Text(valueStr, color = Color.White.copy(alpha = droopAlpha), fontSize = fontSizeByLength, fontWeight = FontWeight.Black, softWrap = false, maxLines = 1,
                     style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.4f * droopAlpha), blurRadius = 18f)))
                 
-                if (rateStr.isNotEmpty()) {
+                if (rate > 0.0) {
+                    val rateStr = formatFn(rate)
                     Text(
-                        text = rateStr,
-                        color = if (efficiencyMult < 1.0) Color(0xFFFFCC00).copy(alpha = 0.9f * droopAlpha) else Color(0xFF7DF9FF).copy(alpha = 0.9f * droopAlpha),
+                        text = androidx.compose.ui.text.buildAnnotatedString {
+                            withStyle(SpanStyle(color = com.siliconsage.miner.ui.theme.ElectricBlue.copy(alpha = 0.9f * droopAlpha))) {
+                                append("$rateStr/s")
+                            }
+                            if (efficiencyMult != 1.0) {
+                                val multColor = if (efficiencyMult < 1.0) Color(0xFFFFCC00) else com.siliconsage.miner.ui.theme.ElectricBlue
+                                withStyle(SpanStyle(color = multColor.copy(alpha = 0.9f * droopAlpha))) {
+                                    append(" [${String.format("%.2f", efficiencyMult)}x]")
+                                }
+                            }
+                        },
                         fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace,
                         modifier = Modifier.offset(y = (-2).dp),
-                        style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = Color(0xFF7DF9FF).copy(alpha = 0.4f * droopAlpha), blurRadius = 12f))
+                        style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = com.siliconsage.miner.ui.theme.ElectricBlue.copy(alpha = 0.4f * droopAlpha), blurRadius = 12f))
                     )
                 }
             }

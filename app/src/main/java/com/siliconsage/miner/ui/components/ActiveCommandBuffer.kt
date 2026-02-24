@@ -175,8 +175,14 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                 val noiseChars = if (globalGlitchIntensity > 0.5f)
                     listOf("?", "!", "§", "Ø", "▒", "░") else listOf("·", ".", "·", ":")
 
-                // Proposal 7: Mouth animation cycle (250ms)
-                val chompCycle = (System.currentTimeMillis() / 250) % 2 == 0L
+                // Proposal 7: Mouth animation cycle (250ms) via InfiniteTransition to force recomposition
+                val chompTransition = rememberInfiniteTransition(label = "chomp_cycle")
+                val isChompOpen by chompTransition.animateFloat(
+                    initialValue = 0f, targetValue = 1f,
+                    animationSpec = infiniteRepeatable(animation = tween(125, easing = LinearEasing), repeatMode = RepeatMode.Reverse),
+                    label = "chomp"
+                )
+                val chompCycle = isChompOpen > 0.5f
 
                 for (i in 0 until barLength) {
                     when {
