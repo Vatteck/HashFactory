@@ -337,20 +337,22 @@ fun HeaderSection(
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 val flopsLabelValue = when { singularityChoice == "UNITY" -> "SYN"; singularityChoice == "SOVEREIGN" || currentLocation == "ORBITAL_SATELLITE" -> "CD"; singularityChoice == "NULL_OVERWRITE" || currentLocation == "VOID_INTERFACE" -> "VF"; storyStage <= 1 -> "HASH"; else -> "FLOPS" }
                 val productionMult = viewModel.newsProductionMultiplier.collectAsState().value
-                ResourceDisplay(
-                    labelFlow = viewModel.flops, 
-                    rateFlow = viewModel.totalEffectiveRate, 
-                    label = flopsLabelValue, 
-                    icon = Icons.Default.Computer, 
-                    color = color, 
-                    droopAlpha = droopAlpha, 
-                    isGlitchy = (currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE"), 
-                    glitchIntensity = (if (currentHeatState.value > 98.0) 0.4 else 0.08), 
-                    isRightAligned = false, 
-                    width = 135.dp, 
-                    efficiencyMult = productionMult.toDouble(), 
-                    formatFn = { viewModel.formatLargeNumber(it) }
-                )
+                Column(modifier = Modifier.width(135.dp).align(Alignment.Top)) {
+                    ResourceDisplay(
+                        labelFlow = viewModel.flops, 
+                        rateFlow = viewModel.totalEffectiveRate, 
+                        label = flopsLabelValue, 
+                        icon = Icons.Default.Computer, 
+                        color = color, 
+                        droopAlpha = droopAlpha, 
+                        isGlitchy = (currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE"), 
+                        glitchIntensity = (if (currentHeatState.value > 98.0) 0.4 else 0.08), 
+                        isRightAligned = false, 
+                        width = 135.dp, 
+                        efficiencyMult = productionMult.toDouble(), 
+                        formatFn = { viewModel.formatLargeNumber(it) }
+                    )
+                }
                 
                 if (viewModel.isQuotaActive.collectAsState().value) {
                     val billAccum = viewModel.billingAccumulatorFlow.collectAsState().value; val waterBill = viewModel.waterBillingFlow.collectAsState().value; val billFlash = viewModel.billingFlashState.collectAsState().value; val waterFlash = viewModel.waterFlashState.collectAsState().value; val balance = viewModel.neuralTokens.collectAsState().value; val billProg = viewModel.billingPeriodProgressFlow.collectAsState().value; val waterProg = viewModel.waterPeriodProgressFlow.collectAsState().value
@@ -384,7 +386,7 @@ fun HeaderSection(
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
-                Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(130.dp)) {
+                Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(130.dp).align(Alignment.Top)) {
                     val tokensLabelValue = when { singularityChoice == "UNITY" -> "SYN"; faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "SYN"; faction == "HIVEMIND" && singularityChoice == "NULL_OVERWRITE" -> "ENT"; faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "CRYP"; faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "NIL"; singularityChoice == "NULL_OVERWRITE" -> "CD"; singularityChoice == "SOVEREIGN" -> "VF"; currentLocation == "ORBITAL_SATELLITE" -> "CD"; currentLocation == "VOID_INTERFACE" -> "VF"; storyStage <= 1 -> "CRED"; else -> "NEUR" }
                     val tokenSourceValue = if (storyStage >= 4) viewModel.substrateMass else viewModel.neuralTokens
                     ResourceDisplay(

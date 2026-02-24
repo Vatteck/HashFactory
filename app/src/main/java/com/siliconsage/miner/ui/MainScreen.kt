@@ -726,18 +726,18 @@ fun ResourceDisplay(
                 val cx = size.width / 2f; val cy = size.height / 2f
                 drawRect(
                     brush = Brush.radialGradient(
-                        colors = listOf(bloomColor.copy(alpha = 0.10f * droopAlpha), Color.Transparent),
+                        colors = listOf(bloomColor.copy(alpha = 0.05f * droopAlpha), Color.Transparent),
                         center = androidx.compose.ui.geometry.Offset(cx, cy),
-                        radius = size.width * 0.9f
+                        radius = size.width * 0.7f
                     ),
                     size = size
                 )
             }
             Column(horizontalAlignment = if (isRightAligned) Alignment.End else Alignment.Start) {
                 if (isGlitchy) SystemGlitchText(valueStr, color = Color.White.copy(alpha = droopAlpha), fontSize = fontSizeByLength, fontWeight = FontWeight.Black, glitchFrequency = glitchIntensity, softWrap = false, maxLines = 1,
-                    style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.8f * droopAlpha), blurRadius = 12f)))
+                    style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.6f * droopAlpha), blurRadius = 16f)))
                 else Text(valueStr, color = Color.White.copy(alpha = droopAlpha), fontSize = fontSizeByLength, fontWeight = FontWeight.Black, softWrap = false, maxLines = 1,
-                    style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.7f * droopAlpha), blurRadius = 14f)))
+                    style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.4f * droopAlpha), blurRadius = 18f)))
                 
                 if (rateStr.isNotEmpty()) {
                     Text(
@@ -747,7 +747,7 @@ fun ResourceDisplay(
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace,
                         modifier = Modifier.offset(y = (-2).dp),
-                        style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = Color(0xFF7DF9FF).copy(alpha = 0.6f * droopAlpha), blurRadius = 10f))
+                        style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = Color(0xFF7DF9FF).copy(alpha = 0.4f * droopAlpha), blurRadius = 12f))
                     )
                 }
             }
