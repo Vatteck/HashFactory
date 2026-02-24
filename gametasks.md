@@ -21,16 +21,17 @@
 - [x] **[A1] Buffer Heat Color (v3.17.0)** — Progress bar lerps NeonGreen→Amber→Orange→ErrorRed with currentHeat.
 - [x] **[A2] Pellet Ghost Trail (v3.17.0)** — 3 fading afterimages on compute pellet sweep.
 - [x] **[A3] Signal Noise in Buffer (v3.17.0)** — Glitch chars in empty buffer, driven by globalGlitchIntensity.
-- [x] **[A4] I/O Log Timestamps (v3.17.1)** — `[HH:MM:SS]` prefix on system logs in dim gray.
+- [x] **[A4] I/O Log Timestamps (v3.18.1)** — `[HH:MM]` suffix on system logs (α=0.40), right-aligned for better density and visibility.
+- [x] **[A5] Pac-Man Buffer Bar (v3.18.0)** — Restored ASCII buffet with pellets, ghost trail, and commit burst. Oscillator reverted due to visual redundancy with EQ bars.
 - [x] **[B1] Aquifer Eulogy (v3.17.2)** — 0% milestone added to aquifer tracker. GTC "sorry for any inconvenience" eulogy fires once at global aquifer death.
 - [x] **[B2] Failsafe Partition (v3.17.3)** — Detection 100% → 30s scramble grid. Fail = -30 rep + 60s halt. Success = reset to 70%.
 - [x] **[B3] Kessler's Last Bargain (v3.17.4)** — Stage 4 interactive subnet message. ACCEPT → ×2.5 multiplier + rep reset. DECLINE → close. 5min timeout.
 - [x] **[B4] Black Market (v3.17.5)** — `@null_vendor` subnet event at BURNED rep. SHOW ME → +5% detection. Stub implementation.
 - [x] **[C1] Thorne's Resignation Arc (v3.17.2)** — 3 stage-gated one-shot subnet messages (S1 confused → S2 scared → S3 final). ACCOUNT_DEACTIVATED system log fires after last message.
 - [x] **[C2] Jinx's Hidden Data Logs (v3.17.2)** — 5 secret logs (JINX_SECRET_01–05), Stage 3+, 2M–9.5M FLOPS stagger. Reveals Kessler knew from Day 1. Jinx fired for covering for Vattic.
-- [ ] **[D1] TerminalScreen.kt Split** — 1160 lines → 6 files (<500 lines each).
-- [ ] **[D2] SubnetAlertState Abstraction** — Sealed class for nav badge logic cleanup.
-- [ ] **[A5] Oscilloscope Bar** *(stretch)* — Canvas waveform replaces flat compute bar.
+- [x] **[D1] TerminalScreen.kt Split (v3.17.6)** — 1161 lines → 6 files (<81 lines in entry). New components: `TerminalHeader`, `TerminalTabs`, `TerminalLogs`, `ActiveCommandBuffer`, `ManualComputeButton`, `TerminalControls`, `TerminalLogLine` in `ui/components/`.
+- [x] **[D2] SubnetAlertState Abstraction (v3.17.7)** — Sealed class: `None / NewChatter / PendingDecision / Paused`. Computed `subnetAlertState` property on `GameViewModel. Backwards-compatible.`
+- [x] **[A5] Pac-Man Buffer Bar (v3.18.0)** — Restored ASCII buffet with pellets, ghost trail, and commit burst. Oscillator reverted due to visual redundancy with EQ bars.
 
 ## ✅ Completed (v3.12.x - v3.15.x)
 - [x] **Water-Migration Hook (v3.15.x)** — Aquifer depletion, staged municipal caps (S0=100, S1=500, S2=2000), production stall (saturation penalty), soft/hard prestige split.

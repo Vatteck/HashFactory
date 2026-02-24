@@ -16,6 +16,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
+// D2: SubnetAlertState — unified nav badge logic abstraction (v3.17.7)
+sealed class SubnetAlertState {
+    object None : SubnetAlertState()
+    object NewChatter : SubnetAlertState()
+    object PendingDecision : SubnetAlertState()
+    object Paused : SubnetAlertState()
+}
+
 sealed class NarrativeItem {
     data class LogItem(val dataLog: DataLog) : NarrativeItem()
     data class MessageItem(val rivalMessage: RivalMessage) : NarrativeItem()
@@ -69,6 +77,18 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     val isSubnetHushed = subnetService.isHushed
     val hasNewSubnetDecision = subnetService.hasNewDecision
     val hasNewSubnetChatter = subnetService.hasNewChatter
+
+    /** D2: Derived subnet alert state. Consumers observe this instead of separate boolean flags. */
+    val subnetAlertState: kotlinx.coroutines.flow.StateFlow<SubnetAlertState>
+        get() = kotlinx.coroutines.flow.MutableStateFlow(
+            when {
+                isSubnetPaused.value && hasNewSubnetDecision.value -> SubnetAlertState.PendingDecision
+                hasNewSubnetDecision.value -> SubnetAlertState.PendingDecision
+                hasNewSubnetChatter.value -> SubnetAlertState.NewChatter
+                isSubnetPaused.value -> SubnetAlertState.Paused
+                else -> SubnetAlertState.None
+            }
+        )
 
     init {
         viewModelScope.launch {

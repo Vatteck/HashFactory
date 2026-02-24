@@ -1,7 +1,24 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [3.16.1] - 2026-02-23
+## [3.18.1] - 2026-02-23
+### UI/Polish (A4)
+- **Timestamp Refinement**: Moved terminal log timestamps to the right side of the log line and restored the `[HH:MM]` bracketed format (α=0.40). Improved legibility and reduced visual noise in the log feed.
+
+## [3.18.0] - 2026-02-23
+### Visual (A5)
+- **Pac-Man Buffer Restoration**: Reverted the experimental Canvas oscilloscope back to the ASCII pellet-eating "Pac-Man" bar. Waveform was visually redundant with the EQ bars on the compute button. Maintained all A1/A2/A3 improvements: heat-reactive color, ghost trail, and signal noise.
+
+
+## [3.17.7] - 2026-02-23
+### Technical (D2)
+- **SubnetAlertState Abstraction**: New `SubnetAlertState` sealed class (`None`, `NewChatter`, `PendingDecision`, `Paused`) and a computed `subnetAlertState` StateFlow on `GameViewModel`. Backwards-compatible — raw flags intact.
+
+## [3.17.6] - 2026-02-23
+### Technical (D1)
+- **TerminalScreen.kt Split**: Refactored 1161-line file into 7 focused files. `TerminalScreen.kt` is now 81 lines (entry+layout only). Extracted: `TerminalHeader`, `TerminalTabs`, `TerminalLogs`, `ActiveCommandBuffer`, `ManualComputeButton`, `TerminalControls`, `TerminalLogLine` — all in `ui/components/`.
+
+
 ### Added
 - **Stage 0 Quota Survival**: Phase 27 implementation. Stage 0 quotas now frame performance as personal "Rent / Credit" survival. New "static" logs pulse when headroom is critical.
 - **Signal Quality Bonus**: Over-performing (Current HASH >= 2x Quota) grants a **+10% Neural Token ($N)** bonus upon exchange.
