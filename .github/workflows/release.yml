@@ -27,7 +27,7 @@ jobs:
 
       - name: Decode keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > siliconsage.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/siliconsage.jks
           echo "KEYSTORE_PATH=siliconsage.jks" >> local.properties
           echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> local.properties
