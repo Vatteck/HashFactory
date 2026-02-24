@@ -1,11 +1,10 @@
 {
-  "version": "3.13.3",
-  "build": 423,
-  "date": "2026-02-22",
+  "version": "3.21.0",
+  "build": 425,
+  "date": "2026-02-23",
   "changelog": [
-    "de5b742 feat: v3.13.3 - Industrial Water Branding for cooling tiers",
-    "c38148c Update README.md"
+    "3b2ffec feat: v3.19.0-3.21.0 — Security Defense, Narrative polish, DevTools & UI"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.13.3",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.13.3/MINER_3.13.3.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.21.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.21.0/MINER_3.21.0.apk"
 }
