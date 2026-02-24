@@ -17,6 +17,7 @@ local.properties
 !releases/*.apk
 CANON.md
 GAMETASKS.md
+ROADMAP_v3.17.md
 RECOVERY.md
 SYSTEMS.md
 .openclaw/

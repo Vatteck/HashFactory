@@ -244,12 +244,15 @@ object SocialRepository {
         val repTemplates = if (stage < 3) {
             when (reputationTier) {
                 ReputationManager.TIER_TRUSTED -> listOf(
+                    "≪ SECURITY ADVISORY ≫ Sector 7 audit deferred due to high compliance rating.",
                     "Gotta hand it to @j_vattic, the sector's been running smooth lately. No spikes.",
                     "Did anyone else get that efficiency bonus? I think Vattic actually fixed the load balancer.",
                     "I don't know what Vattic is running down there, but my terminal hasn't crashed all week.",
                     "Sec is ignoring Sector 7 entirely. Perks of playing nice, I guess."
                 )
                 ReputationManager.TIER_BURNED -> listOf(
+                    "@the_skimmer: 'Thanks for the creds, Vattic. Sub-07 is a goldmine. [⚡ SKIMMER_TRACE]'",
+                    "@snitch_0x: 'Sec is listening. Every spike, every leak. I'm reporting it all. [⚡ SNITCH_HUNT]'",
                     "Stay away from @j_vattic's terminal. I saw 3 Sec officers standing around it.",
                     "Vattic is gonna burn this whole sub-level down. Thermals are insane.",
                     "Anyone pulling from Sector 7 is risking a network ban. Vattic is flagged hardcore.",

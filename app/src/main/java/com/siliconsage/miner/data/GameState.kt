@@ -106,7 +106,10 @@ data class GameState(
     val lifetimePowerPaid: Double = 0.0,
 
     // Phase 14: Reputation
-    val reputationScore: Double = 50.0
+    val reputationScore: Double = 50.0,
+    
+    // v3.25.0: Narrative Flags
+    val narrativeFlags: Map<String, Boolean> = emptyMap()
 )
 
 @Serializable

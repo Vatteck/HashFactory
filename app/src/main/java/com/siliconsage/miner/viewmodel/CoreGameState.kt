@@ -108,6 +108,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val sniffedHandles = MutableStateFlow<Set<String>>(emptySet())
     val completedFactions = MutableStateFlow<Set<String>>(emptySet())
     val annexedNodes = MutableStateFlow<Set<String>>(setOf("D1"))
+    val narrativeFlags = MutableStateFlow<Map<String, Boolean>>(emptyMap())
     val shadowRelays = MutableStateFlow<Set<String>>(emptySet())
     val offlineNodes = MutableStateFlow<Set<String>>(emptySet())
     val nodesUnderSiege = MutableStateFlow<Set<String>>(emptySet())

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.util.SocialManager
+import com.siliconsage.miner.util.SocialTemplates
 import com.siliconsage.miner.data.*
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.delay
@@ -80,6 +81,30 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
             entropyContent = message.content
         }
     }
+
+    // v3.25.0: Antagonist Scramble/Glitch
+    val isAntagonist = message.handle == "@the_skimmer" || message.handle == "@snitch_0x"
+    var antagonistContent by remember(entropyContent) { mutableStateOf(entropyContent) }
+    LaunchedEffect(isAntagonist, entropyContent) {
+        if (isAntagonist) {
+            while (true) {
+                delay(Random.nextLong(2000, 5000))
+                val base = entropyContent
+                val glitchChars = "ØX!#?█"
+                val charArr = base.toCharArray()
+                val glitchCount = (base.length * 0.05).toInt().coerceAtLeast(1)
+                repeat(glitchCount) {
+                    val idx = Random.nextInt(base.length)
+                    charArr[idx] = glitchChars.random()
+                }
+                antagonistContent = String(charArr)
+                delay(150)
+                antagonistContent = base
+            }
+        } else {
+            antagonistContent = entropyContent
+        }
+    }
     
     // v3.5.37: Relative timestamp
     var timeLabel by remember { mutableStateOf("now") }
@@ -108,7 +133,16 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
     }
 
     // v3.11.2: Hardened Admin Handle Theme
-    val handleColor = if (isAdminMessage) com.siliconsage.miner.ui.theme.ElectricBlue else if (isPlayerReply) color.copy(alpha = 0.7f) else color
+    // v3.25.0: Handle color override from SocialTemplates
+    val rawHandle = message.handle.removePrefix("@")
+    val templateColor = SocialTemplates.handleColors[rawHandle]
+    
+    val handleColor = when {
+        templateColor != null -> templateColor
+        isAdminMessage -> com.siliconsage.miner.ui.theme.ElectricBlue
+        isPlayerReply -> color.copy(alpha = 0.7f)
+        else -> color
+    }
 
     Column(
         modifier = Modifier
@@ -326,7 +360,9 @@ fun SubnetMessageLine(message: SubnetMessage, color: Color, viewModel: GameViewM
                 }
             }
         } else {
-            annotatedContent
+            buildAnnotatedString {
+                append(antagonistContent)
+            }
         }
 
         // v3.16.2: Admin body text is plain white (regular). Only the handle gets ElectricBlue + glow.

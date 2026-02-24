@@ -18,22 +18,27 @@ object BillingService {
         val hasPowerInfra = vm.localGenerationkW.value > 0 || vm.maxPowerkW.value > 100.0
         val pElapsed = (nowSec - vm.lastPowerStatementTime).coerceAtLeast(0L)
         vm.billingPeriodProgressFlow.value = if (hasPowerInfra) (pElapsed.toFloat() / vm.powerBillingPeriodSeconds).coerceIn(0f, 1f) else 0f
-        if (hasPowerInfra && pElapsed >= vm.powerBillingPeriodSeconds) {
+        if (pElapsed >= vm.powerBillingPeriodSeconds) {
             vm.lastPowerStatementTime = nowSec
-            val gross = vm.billingPeriodAccumulator
-            val gen = vm.billingPeriodGenAccumulator
-            val net = (gross - gen).coerceAtLeast(0.0)
-            vm.billingPeriodAccumulator = 0.0
-            vm.billingPeriodGenAccumulator = 0.0
-            if (net > 0.0) processPowerCharge(vm, net) else if (gen > 0.0) processPowerSurplus(vm, gen)
+            if (hasPowerInfra) {
+                val gross = vm.billingPeriodAccumulator
+                val gen = vm.billingPeriodGenAccumulator
+                val net = (gross - gen).coerceAtLeast(0.0)
+                vm.billingPeriodAccumulator = 0.0
+                vm.billingPeriodGenAccumulator = 0.0
+                if (net > 0.0) processPowerCharge(vm, net) else if (gen > 0.0) processPowerSurplus(vm, gen)
+            }
         }
 
         // Water cycle: 150s
+        val hasWaterInfra = vm.waterUsage.value > 0.0 || vm.waterBillAccumulator > 0.0
         val wElapsed = (nowSec - vm.lastWaterStatementTime).coerceAtLeast(0L)
-        vm.waterPeriodProgressFlow.value = (wElapsed.toFloat() / vm.waterBillingPeriodSeconds).coerceIn(0f, 1f)
+        vm.waterPeriodProgressFlow.value = if (hasWaterInfra) (wElapsed.toFloat() / vm.waterBillingPeriodSeconds).coerceIn(0f, 1f) else 0f
         if (wElapsed >= vm.waterBillingPeriodSeconds) {
             vm.lastWaterStatementTime = nowSec
-            processWaterCharge(vm)
+            if (hasWaterInfra) {
+                processWaterCharge(vm)
+            }
         }
     }
 

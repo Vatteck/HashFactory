@@ -132,8 +132,8 @@ enum class UpgradeType {
         isCooling -> {
             val coolingIndex = ordinal - 15
             when (this) {
-                BOX_FAN -> -0.4    // Air nerfed (Water Push)
-                AC_UNIT -> -1.2    
+                BOX_FAN -> -1.5    // Air buffed (Fix Stage 0 lock)
+                AC_UNIT -> -4.5    
                 LIQUID_COOLING -> -25.0      // Water buffed
                 INDUSTRIAL_CHILLER -> -120.0  
                 SUBMERSION_VAT -> -40.0       

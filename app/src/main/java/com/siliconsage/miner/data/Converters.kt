@@ -109,4 +109,19 @@ class Converters {
             emptyMap()
         }
     }
+
+    // Map<String, Boolean> Converter (v3.25.0: narrativeFlags)
+    @TypeConverter
+    fun fromMapStringBoolean(value: Map<String, Boolean>): String {
+        return Json.encodeToString(value)
+    }
+
+    @TypeConverter
+    fun toMapStringBoolean(value: String): Map<String, Boolean> {
+        return try {
+            Json.decodeFromString<Map<String, Boolean>>(value)
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
 }

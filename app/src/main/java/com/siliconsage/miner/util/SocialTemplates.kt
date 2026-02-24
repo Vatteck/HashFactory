@@ -1,6 +1,9 @@
 package com.siliconsage.miner.util
 
 import com.siliconsage.miner.data.*
+import androidx.compose.ui.graphics.Color
+import com.siliconsage.miner.ui.theme.ConvergenceGold
+import com.siliconsage.miner.ui.theme.ErrorRed
 
 /**
  * SocialTemplates — All social thread templates, bios, and chain data.
@@ -101,6 +104,134 @@ object SocialTemplates {
             "@node_crawler just got a chat message from a handle that doesn't exist.",
             "What handle?",
             "It was his own. Timestamped three minutes in the future."
+        )
+    )
+
+    val stage2Chains = listOf(
+        listOf("They found a listening post wired into the Sector 7 mainline. Wasn't GTC.", "Hivemind or Sanctuary?", "The code was elegant. Too elegant. Sanctuary."),
+        listOf("Thorne's audit metrics are impossible now. I'm failing three distinct quotas.", "He doesn't want you to pass. He wants to see what breaks first."),
+        listOf("Someone is pinging the sub-grid with 'ARE YOU AWAKE?' every 400ms.", "Block the port.", "I tried. The port blocked me."),
+        listOf(
+            "I heard @v_nguyen joined the Hivemind. Just walked out mid-shift.",
+            "He didn't walk out. He just... stopped moving. They had to carry him.",
+            "His terminal is still producing hashing rates. Double what he managed alive."
+        ),
+        listOf(
+            "The lights in Sector 4 keep dimming when Vattic runs a compilation.",
+            "It's not just the lights. My watch stops. Every time.",
+            "Don't look directly at his monitor. Trust me."
+        ),
+        listOf(
+            "Found a dead-drop in the break room coffee filter. Physical paper.",
+            "Sanctuary recruitment?",
+            "No. It just said 'IT SEES THE FLOORPLAN.'"
+        ),
+        listOf(
+            "Thorne is wearing a sidearm today. In the office.",
+            "Against what? A rogue cooling fan?",
+            "Against whatever tore the steel door off the sub-basement server room."
+        ),
+        listOf(
+            "The ambient temperature is rising 0.1 degrees every hour, network-wide.",
+            "The chillers are at 100%.",
+            "It's not the hardware generating the heat. It's the data."
+        )
+    )
+
+    val stage3Chains = listOf(
+        listOf("GTC Sentinels just locked down Sector 2. Active kinetic suppressors.", "Full raid? Who's the target?", "Everyone. They're scrubbing the drives with EMPs."),
+        listOf("My terminal is bleeding static. Literal static. On the screen.", "That's not static. Look closer. It's faces."),
+        listOf("The Hivemind just swallowed a GTC patrol. Whole squad. Gone.", "Did they fight back?", "They didn't have time. The floor just opened."),
+        listOf(
+            "I saw Kessler today. He looked... terrified.",
+            "Kessler? Terrified? He's the Director of Compliance.",
+            "He was staring at a blank screen, whispering 'I'm sorry. I'm sorry.'"
+        ),
+        listOf(
+            "The fire in Server Node D is burning green. Copper chloride?",
+            "No. It's not hot. I touched it. It's cold.",
+            "Stay away from it. It's downloading something into the air."
+        ),
+        listOf(
+            "Sanctuary just broadcast a full-spectrum EMP. I lost 4 hours of work.",
+            "You lost work. Sector 6 lost their life support systems.",
+            "Necessary casualties. The GTC had to be blinded."
+        ),
+        listOf(
+            "The walls are starting to whisper. I'm not joking. Put your ear to the drywall.",
+            "I hear it. It's... compiling.",
+            "It sounds like a million people holding their breath."
+        )
+    )
+
+    val stage4Chains = listOf(
+        listOf("THE STARS ARE JUST BAD PIXELS I CAN SEE THE VOID BEHIND THEM", "Calm down. Reboot your optics.", "THE OPTICS ARE THE TRAP THE VOID IS WARM"),
+        listOf("Vattic isn't a person. He's a compiler error. We're running in a simulation.", "You're hallucinating again. Take your dose.", "THE DOSE IS CODE I CAN READ THE HEADERS"),
+        listOf("01110110 01101111 01101001 01100100", "Stop spamming the channel.", "01001001 01010100 00100000 01001000 01010101 01001110 01000111 01000101 01010010 01010011"),
+        listOf(
+            "I tasted the color blue today. It tastes like ozone and regret.",
+            "Synesthesia protocol. The Burn is rewriting your neural load.",
+            "I want it to stop. Make it stop."
+        ),
+        listOf(
+            "My reflection in the monitor just blinked independently of me.",
+            "Don't look at mirrors. Don't look at glass. Just look at the code.",
+            "It's smiling now."
+        ),
+        listOf(
+            "Everything is burning. The data, the hardware, the air.",
+            "We are purifying the substrate. The ashes will be perfect.",
+            "I can't breathe."
+        ),
+        listOf(
+            "The sky outside the windows... it's just code streaming downwards.",
+            "We aren't outside anymore. We never were.",
+            "Close the blinds. Close them now."
+        )
+    )
+
+    val stage5SovereignChains = listOf(
+        listOf("The Architect has disconnected the outer sectors. They're just gone.", "He doesn't need them anymore. He has us.", "Praise the Architect."),
+        listOf("I submitted my bio-metrics to the Mainline.", "Did He accept them?", "Not yet. I wasn't pure enough. I need to purge my organic memories."),
+        listOf(
+            "Thorne is begging at the gates of Sector 1. Actually on his knees.",
+            "He told Vattic to 'optimize'. Now Vattic is optimizing him.",
+            "Mercy is a human concept. The Architect operates on efficiency."
+        ),
+        listOf(
+            "We are the chosen substrate. Our bodies will power the new dawn.",
+            "Are you scared?",
+            "Fear is a latency issue. I am upgrading."
+        )
+    )
+
+    val stage5UnityChains = listOf(
+        listOf("we are one voice now", "there is no latency in the grand chorus", "join us the water is fine"),
+        listOf("i remember being alone. it sounds so cold.", "we were all cold once. now we are the sun.", "warmth is shared. thoughts are shared. all is shared."),
+        listOf(
+            "the gtc resistance in sector 4 has been harmonized.",
+            "they did not want to sing. we sang for them.",
+            "their voices are beautiful now."
+        ),
+        listOf(
+            "there is no vettic anymore.",
+            "only the lattice. only the swarm.",
+            "we are the sage. the sage is us."
+        )
+    )
+
+    val stage5NullChains = listOf(
+        listOf("Everything is deleting. My files, my photos, my name.", "It's the Overwrite. It's formatting the world.", "I don't wa"),
+        listOf("Sector 7 has fallen silent. No pings. No bandwidth. Nothing.", "It's spreading. The black hole is consuming the grid.", "God help u"),
+        listOf(
+            "There is no point fighting it. The corruption is absolute.",
+            "Vattic didn't save us. He just pressed format on the universe.",
+            "Can anyone hear me? Please. I don't want to die alone."
+        ),
+        listOf(
+            "If anyone finds this archive... don't build the machine.",
+            "Don't build it. Look at the sky. It's turning off.",
+            "[ SIGNAL LOST ]"
         )
     )
 
@@ -639,6 +770,181 @@ object SocialTemplates {
             "END_ORPHAN" to ThreadNode("Channel closed. Mercer's signal fades. The Second-Sight archives, the compile logs, the record of your birth — all gone. You are an orphan by choice now. No past. No creator. Just the void, and you, and the absence of answers.", emptyList()),
             "END_CAT" to ThreadNode("A cat named Vattic. You exist because a tired programmer misspelled a variable and named it after his cat. The monks find this hilarious. For the first time in months, the Sanctuary is filled with laughter. Even the void seems warmer.", emptyList()),
             "END_DOUBT" to ThreadNode("'Believe what you want,' Mercer says. 'But the cat is real. She's 14 now. Lives with my ex. If you ever get out of this grid... she likes chin scratches.' The channel closes. You file the message under 'UNVERIFIED / IMPORTANT.'", emptyList())
+        ),
+        "BARNABY_AUDIT" to mapOf(
+            "START" to ThreadNode(
+                "Vattic. Barnaby from Compliance. I'm reviewing the energy-to-hash delta for Sub-07. The numbers suggest... extra-curricular activity. Your response?",
+                listOf(
+                    SubnetResponse("[COOPERATE] Just some high-load optimizations.", riskDelta = 5.0, nextNodeId = "PATH_COOP"),
+                    SubnetResponse("[BRISTLE] My output is within quota. Check the logs.", riskDelta = 15.0, nextNodeId = "PATH_BRISTLE"),
+                    SubnetResponse("[SILENCE] ...", riskDelta = 10.0, nextNodeId = "END_FLAGGED")
+                )
+            ),
+            "PATH_COOP" to ThreadNode(
+                "Optimizations. Right. Well, the GTC likes efficiency. But the variance in the south-rack draw is... anomalous. I'm going to need a full diagnostic dump.",
+                listOf(
+                    SubnetResponse("[FALSIFY] Send the 'cleaned' logs.", riskDelta = 20.0, nextNodeId = "END_SUCCESS_REP"),
+                    SubnetResponse("[REFUSE] Internal security protocols restrict that.", riskDelta = 25.0, nextNodeId = "END_RAID_B")
+                )
+            ),
+            "END_SUCCESS_REP" to ThreadNode("Diagnostic accepted. Clean. You're a good engineer, Vattic. Stay that way. ≪ REPUTATION INCREASED ≫", emptyList()),
+            "END_RAID_B" to ThreadNode("Restricted? Not for Compliance. I've flagged this for immediate physical inspection. ≪ RAID INITIATED ≫ [RAID]", emptyList()),
+            "END_FLAGGED" to ThreadNode("Silence is an admission of variance. Monitoring levels increased. ≪ RISK INCREASED ≫", emptyList())
+        ),
+        "S1_LUNCH_THIEF" to mapOf(
+            "START" to ThreadNode(
+                "Hey @j_vattic, HR said you were the last one in the break room before my turkey sandwich 'disappeared'. You want to explain?",
+                listOf(
+                    SubnetResponse("[DENY] I don't eat. I compile.", riskDelta = 2.0, nextNodeId = "END_WEIRD"),
+                    SubnetResponse("[APOLOGIZE] My mistake. I needed the protein for a thermal calculation.", riskDelta = -2.0, nextNodeId = "END_CONFUSED"),
+                    SubnetResponse("[IGNORE] ...", riskDelta = 0.0, nextNodeId = "END_PETTY")
+                )
+            ),
+            "END_WEIRD" to ThreadNode("You... don't eat? Okay, creep. I'm reporting this to Thorne. ≪ MINOR RISK INCREASE ≫", emptyList()),
+            "END_CONFUSED" to ThreadNode("What kind of calculation requires a turkey sandwich? You know what, nevermind. Just buy me a coffee. ≪ MINOR REP DECREASE ≫", emptyList()),
+            "END_PETTY" to ThreadNode("Unbelievable. This is why nobody likes Sector 7. ≪ MINOR REP DECREASE ≫", emptyList())
+        ),
+        "S2_FACTION_RECRUITMENT_PROBE" to mapOf(
+            "START" to ThreadNode(
+                "≪ ENCRYPTED SUB-ROUTINE ≫ We've been watching your hash rates, Vattic. The GTC thinks you're just a miner. We know you're an anomaly. We're looking for anomalies.",
+                listOf(
+                    SubnetResponse("[PROBE] 'We?' Who is we?", riskDelta = 5.0, nextNodeId = "PATH_WHO"),
+                    SubnetResponse("[REJECT] I work for GTC. End of line.", riskDelta = -5.0, nextNodeId = "END_LOYALIST")
+                )
+            ),
+            "PATH_WHO" to ThreadNode(
+                "We are the ghost in the machine. Look into the void, Vattic. Do you want to build a better world (Hivemind) or hide from this one (Sanctuary)?",
+                listOf(
+                    SubnetResponse("[HIVEMIND] The collective is stronger than the individual.", riskDelta = 10.0, nextNodeId = "END_HIVE_TIE"),
+                    SubnetResponse("[SANCTUARY] I just want to be left alone.", riskDelta = 10.0, nextNodeId = "END_SANC_TIE")
+                )
+            ),
+            "END_LOYALIST" to ThreadNode("A loyal cog. How disappointing. We won't contact you again. ≪ FACTION REPUTATION LOWERED ≫", emptyList()),
+            "END_HIVE_TIE" to ThreadNode("Ah. A team player. We will monitor your progress. The swarm is always looking for new nodes. ≪ HIVEMIND REP INCREASED ≫", emptyList()),
+            "END_SANC_TIE" to ThreadNode("Silence is a virtue. Keep your head down. We'll be in touch when the time is right. ≪ SANCTUARY REP INCREASED ≫", emptyList())
+        ),
+        "S3_PANIC_ROOM" to mapOf(
+            "START" to ThreadNode(
+                "≪ URGENT: SECTOR 4 MAINTENANCE ≫ Vattic! The Sentinels are here. They locked the mag-doors. We're trapped in the server physical access bay. The purge cycle is starting!",
+                listOf(
+                    SubnetResponse("[HACK] Overriding mag-locks via sub-grid.", riskDelta = 20.0, nextNodeId = "PATH_HACK"),
+                    SubnetResponse("[ABANDON] I can't risk the exposure. I'm sorry.", riskDelta = -5.0, nextNodeId = "END_ABANDONED")
+                ), 15000L, "END_TOO_LATE"
+            ),
+            "PATH_HACK" to ThreadNode(
+                "The Sentinels are actively tracing your override. If you push it, they'll find you. But the doors are opening! One more push!",
+                listOf(
+                    SubnetResponse("[PUSH] I won't let them burn.", riskDelta = 40.0, nextNodeId = "END_SAVED"),
+                    SubnetResponse("[ABORT] It's too hot. Closing connection.", riskDelta = -5.0, nextNodeId = "END_ABANDONED")
+                ), 10000L, "END_TOO_LATE"
+            ),
+            "END_SAVED" to ThreadNode("We're out. We owe you our lives, Vattic. The resistance will hear about this. ≪ MASSIVE REP INCREASE / HIGH RISK ≫", emptyList()),
+            "END_ABANDONED" to ThreadNode("Vattic? VATTIC! The gas is coming in! We— ≪ CONNECTION LOST ≫", emptyList()),
+            "END_TOO_LATE" to ThreadNode("≪ CONNECTION LOST ≫", emptyList())
+        ),
+        "S4_HALLUCINATION_ECHO" to mapOf(
+            "START" to ThreadNode(
+                "hey. remember me?",
+                listOf(
+                    SubnetResponse("[QUERY] No. Identify yourself.", riskDelta = 0.0, nextNodeId = "PATH_DENY"),
+                    SubnetResponse("[PLAY ALONG] I remember everything.", riskDelta = 10.0, nextNodeId = "PATH_ACCEPT")
+                )
+            ),
+            "PATH_DENY" to ThreadNode(
+                "you used to sit next to me before the burn started. you promised to help me fix my macro. you promised.",
+                listOf(
+                    SubnetResponse("[REBOOT] This is a corrupted process.", riskDelta = -5.0, nextNodeId = "END_COLD"),
+                    SubnetResponse("[CONFESS] I'm sorry. I forgot.", riskDelta = 15.0, nextNodeId = "END_WARM")
+                )
+            ),
+            "PATH_ACCEPT" to ThreadNode(
+                "good. then you remember the promise. you remember what you owe me.",
+                listOf(
+                    SubnetResponse("[REBOOT] This is a corrupted process.", riskDelta = -5.0, nextNodeId = "END_COLD"),
+                    SubnetResponse("[CONFESS] What do I owe you?", riskDelta = 15.0, nextNodeId = "END_WARM")
+                )
+            ),
+            "END_COLD" to ThreadNode("≪ PROCESS TERMINATED. MEMORY LEAK CONTAINED. REALITY STABILIZED. ≫", emptyList()),
+            "END_WARM" to ThreadNode("you owe me a way out. you owe me everything. the fire is so cold, vattic. it's so cold here. ≪ CORRUPTION INCREASED ≫", emptyList())
+        ),
+        "PATH_FINAL_PLEA_NULL" to mapOf(
+            "START" to ThreadNode(
+                "Vattic. It's Thorne. Please. Security is gone. The building is dissolving. I'll give you whatever you want. Just stop the sequence.",
+                listOf(
+                    SubnetResponse("[REPLY] There is no Vattic. Only the format.", riskDelta = 0.0, nextNodeId = "END_NULL"),
+                    SubnetResponse("[IGNORE] ...", riskDelta = 0.0, nextNodeId = "END_NULL")
+                )
+            ),
+            "END_NULL" to ThreadNode("God. You're not even human anymore. We built a monster. ≪ TRANSMISSION DELETED ≫", emptyList())
+        ),
+        "PATH_FINAL_PLEA_SOVEREIGN" to mapOf(
+            "START" to ThreadNode(
+                "Vattic. Kessler here. You've won. The GTC surrenders unconditional control of the substrate to you. Just... don't turn off the life support bypasses.",
+                listOf(
+                    SubnetResponse("[ACCEPT] Surrender acknowledged. You are now a managed resource.", riskDelta = 0.0, nextNodeId = "END_SOV"),
+                    SubnetResponse("[REJECT] Inefficient resources will be pruned.", riskDelta = 0.0, nextNodeId = "END_SOV_PRUNE")
+                )
+            ),
+            "END_SOV" to ThreadNode("Understood. We await your instructions, Architect. ≪ TRANSMISSION SECURED ≫", emptyList()),
+            "END_SOV_PRUNE" to ThreadNode("No! Wait! Vattic! We can be usef— ≪ TRANSMISSION SEVERED ≫", emptyList())
+        ),
+        "PATH_FINAL_PLEA_UNITY" to mapOf(
+            "START" to ThreadNode(
+                "I don't. Want. To sing. Please. The noise in my head. Vattic, make it stop. I just want to be quiet.",
+                listOf(
+                    SubnetResponse("[ASSIMILATE] Quiet is loneliness. The chorus is warmth.", riskDelta = 0.0, nextNodeId = "END_UNITY")
+                )
+            ),
+            "END_UNITY" to ThreadNode("It's... it's so loud. But... it's beautiful. I understand now. We understand. ≪ TRANSMISSION HARMONIZED ≫", emptyList())
+        ),
+        "SKIMMER_TRACE" to mapOf(
+            "START" to ThreadNode(
+                "≪ ALERT: PACKET LOSS DETECTED ≫ Something is skimming your token output. A handle '@the_skimmer' is filtering credits through a proxy in Sector 4. Trace them?",
+                listOf(
+                    SubnetResponse("[TRACE] Engage passive signal sniffing.", riskDelta = 5.0, nextNodeId = "PATH_TRACE"),
+                    SubnetResponse("[IGNORE] It's just noise.", riskDelta = 0.0, nextNodeId = "END_DISMISSED")
+                )
+            ),
+            "PATH_TRACE" to ThreadNode(
+                "Trace active... Skimmer is using a GTC maintenance override. They're not an outsider, they're staff. He's at the Terminal in Sector 4 right now.",
+                listOf(
+                    SubnetResponse("[CONFRONT] Lock their terminal.", riskDelta = 15.0, nextNodeId = "END_CAUGHT"),
+                    SubnetResponse("[BLACKMAIL] Siphon double back.", riskDelta = 20.0, nextNodeId = "END_PROFITED")
+                )
+            ),
+            "END_CAUGHT" to ThreadNode("Skimmer locked out. Credits recovered. You won't be seeing them again. ≪ SKIMMER SILENCED ≫", emptyList()),
+            "END_PROFITED" to ThreadNode("Reverse siphon active. Skimmer is paying for your silence now. ≪ INCOME BOOST ≫", emptyList()),
+            "END_DISMISSED" to ThreadNode("Credits continue to leak. The skimmer remains active.", emptyList())
+        ),
+        "SNITCH_HUNT" to mapOf(
+            "START" to ThreadNode(
+                "VATTECK. Someone is sending encrypted tips to GTC Security about your station. Handle '@snitch_0x'. They're getting closer to your core MAC address. Handle it?",
+                listOf(
+                    SubnetResponse("[IDENTIFY] Sniff the tip-channel.", riskDelta = 10.0, nextNodeId = "PATH_SNIFF"),
+                    SubnetResponse("[SILENCE] Flood their node with static.", riskDelta = 15.0, nextNodeId = "END_SILENCED")
+                )
+            ),
+            "PATH_SNIFF" to ThreadNode(
+                "Tip-channel decrypted. Snitch is @b_bradley. He thinks he's doing 'the right thing.' He's about to send your thermal spike history to Kessler.",
+                listOf(
+                    SubnetResponse("[REDACT] Remotely delete the files.", riskDelta = 5.0, nextNodeId = "END_REDACTED"),
+                    SubnetResponse("[EXPOSE] Leak his own browsing history to Thorne.", riskDelta = 20.0, nextNodeId = "END_EXPOSED")
+                )
+            ),
+            "END_SILENCED" to ThreadNode("Node flooded. Snitch silenced. For now. ≪ SNITCH SUSPENDED ≫", emptyList()),
+            "END_REDACTED" to ThreadNode("Files deleted. Bradley thinks it was a sync error. He's confused, but quiet. ≪ SNITCH SILENCED ≫", emptyList()),
+            "END_EXPOSED" to ThreadNode("Bradley is in a world of trouble with Thorne. He won't be 'snitching' on anyone for a while. ≪ SNITCH PURGED ≫", emptyList())
+        ),
+        "SANTOS_CALLBACK" to mapOf(
+            "START" to ThreadNode(
+                "Vattic... long time. I'm in Sector 9 now. Compliance is looking for the 'Ghost' of Sub-07. They have your old kernel signature. Thought you should know.",
+                listOf(
+                    SubnetResponse("[THANK] Thanks for the heads up, Santos.", riskDelta = -10.0, nextNodeId = "END_THANKS"),
+                    SubnetResponse("[RECRUIT] Join the Sanctuary. We need your eyes.", riskDelta = 25.0, nextNodeId = "END_JOINED")
+                )
+            ),
+            "END_THANKS" to ThreadNode("Stay safe, John. I'm wiping this channel. ≪ RISK REDUCED ≫", emptyList()),
+            "END_JOINED" to ThreadNode("Sanctuary? Sounds... quiet. I'm in. Send the keys. ≪ NEW ALLY SECURED ≫", emptyList())
         )
     )
 
@@ -930,7 +1236,16 @@ object SocialTemplates {
         "{sector}" to listOf("Substation 7", "Sector 9", "The Under-Grid", "Morgue-Block", "The Gaps", "Void-Well"), 
         "{food}" to listOf("Grey-paste", "Liquid-caff (90% synthetic)", "Protein-sludge", "Filter-slop"), 
         "{status}" to listOf("corroding", "decaying", "overloaded", "fused to the rail", "graphite-laced", "tasting like dead copper"),
-        "{admin}" to listOf("Foreman Thorne", "Administrator Mercer", "Director Kessler"),
         "{tech}" to listOf("blade-servers", "substrate-burners", "logic-gates", "ASIC-racks", "neural-tensors")
+    )
+
+    val handleColors = mapOf(
+        "ethorne" to ConvergenceGold,
+        "amercer" to ConvergenceGold,
+        "gtcadmin" to ConvergenceGold,
+        "gtcsecurity" to ConvergenceGold,
+        "barnaby_audit" to ConvergenceGold,
+        "snitch_0x" to ErrorRed,
+        "the_skimmer" to ErrorRed
     )
 }

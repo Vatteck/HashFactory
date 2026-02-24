@@ -1,6 +1,27 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.26.0] - 2026-02-24
+### Dense Subnet Expansion
+- **Ambient Chatter Addition**: Injected >150 new lines of stage-specific ambient chatter into `SocialTemplates.kt` (Corpo Grind, Faction Whispers, The Burn) and unique Stage 5 arrays (Sovereign, Null, Unity) to deepen the world building.
+- **Interactive Threads**: Expanded the interactive thread pool in `SocialManager.kt`. Players can now trigger Minor Corpo Threads (Lunch Thief), Faction Recruitment Probes, GTC Raid Panic Rooms, Hallucinations, and endgame Final Pleas from Kessler, Thorne, and Mercer.
+
+## [3.25.1] - 2026-02-24
+### Power & Cooling Hotfix
+- **Cooling Buff**: Increased `BOX_FAN` (to -1.5) and `AC_UNIT` (to -4.5) to prevent immediate thermal lockouts in Stage 0.
+- **Power Labels**: Upgrade UI now correctly displays `KW DRAW` instead of `W` to align with the internal simulation and HUD logic.
+- **Water UI Arc Fix**: The utility panel's water billing gauge now only progresses when water is actively being consumed or a bill is due, fixing the empty-state progression bug.
+
+## [3.25.0] - 2026-02-24
+### Subnet Expansion & Narrative Persistence (v3.25.0)
+- **Narrative Persistence**: Implemented `narrativeFlags` in `GameState` to track long-term player choices (e.g., `santos_loyalty`, `skimmer_caught`).
+- **Reputation Antagonists**: Added `@the_skimmer` (tokens) and `@snitch_0x` (risk) logic. Antagonists now dynamically messaging when reputation is **BURNED**.
+- **Interactive Threads**: Integrated new thread trees for Barnaby audits, skimmer traces, snitch hunts, and character callbacks (Santos).
+- **UI Polish**: 
+    - **Handle Colors**: GTC staff handles now use `ConvergenceGold`.
+    - **Glitch Effects**: Antagonist messages feature a subtle character-scramble effect.
+- **Verification**: Verified build stability and updated internal narrative logic.
+
 ## [3.24.0] - 2026-02-24
 ### Billing Balance & Meter Polish (v3.24.0)
 - **Balance**: Billing is now deferred until the player purchases their first Grid Capacity (`RESIDENTIAL_TAP`) or Power Generator (`SOLAR_PANEL`). This prevents early-game bankruptcy.

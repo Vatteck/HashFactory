@@ -511,13 +511,20 @@ object SocialManager {
     }
     
     fun generateThreadStarter(stage: Int, corruption: Double, faction: String = ""): SubnetMessage? {
+        // v3.26.0: Added new Subnet Expansion threads
         val available = when {
-            stage >= 3 && faction == "HIVEMIND" -> listOf("HIVEMIND_DISSENT", "HIVEMIND_GTC_PROBE", "HIVEMIND_FINAL_MERGE", "HIVEMIND_KESSLER_SURRENDER")
-            stage >= 3 && faction == "SANCTUARY" -> listOf("SANCTUARY_MOLE", "SANCTUARY_VOID_EVENT", "SANCTUARY_FINAL_SILENCE", "SANCTUARY_MERCER_PLEA")
-            stage >= 2 && faction == "HIVEMIND" -> listOf("HIVEMIND_DISSENT", "HIVEMIND_GTC_PROBE")
-            stage >= 2 && faction == "SANCTUARY" -> listOf("SANCTUARY_MOLE", "SANCTUARY_VOID_EVENT")
+            stage >= 5 && faction == "NULL" -> listOf("PATH_FINAL_PLEA_NULL")
+            stage >= 5 && faction == "SOVEREIGN" -> listOf("PATH_FINAL_PLEA_SOVEREIGN")
+            stage >= 5 && faction == "UNITY" -> listOf("PATH_FINAL_PLEA_UNITY")
+            stage >= 4 -> listOf("S4_HALLUCINATION_ECHO")
+            stage >= 3 && faction == "HIVEMIND" -> listOf("HIVEMIND_DISSENT", "HIVEMIND_GTC_PROBE", "HIVEMIND_FINAL_MERGE", "HIVEMIND_KESSLER_SURRENDER", "S3_PANIC_ROOM")
+            stage >= 3 && faction == "SANCTUARY" -> listOf("SANCTUARY_MOLE", "SANCTUARY_VOID_EVENT", "SANCTUARY_FINAL_SILENCE", "SANCTUARY_MERCER_PLEA", "S3_PANIC_ROOM")
+            stage >= 3 -> listOf("S3_PANIC_ROOM")
+            stage >= 2 && faction == "HIVEMIND" -> listOf("HIVEMIND_DISSENT", "HIVEMIND_GTC_PROBE", "S2_FACTION_RECRUITMENT_PROBE")
+            stage >= 2 && faction == "SANCTUARY" -> listOf("SANCTUARY_MOLE", "SANCTUARY_VOID_EVENT", "S2_FACTION_RECRUITMENT_PROBE")
+            stage >= 2 -> listOf("S2_FACTION_RECRUITMENT_PROBE")
             stage == 0 -> listOf("THORNE_THERMAL_INQUIRY", "SANTOS_CONSPIRACY")
-            stage >= 1 -> listOf("THORNE_THERMAL_INQUIRY", "KESSLER_BADGE_ANOMALY", "SANTOS_CONSPIRACY", "PORTER_NIHILIST")
+            stage >= 1 -> listOf("THORNE_THERMAL_INQUIRY", "KESSLER_BADGE_ANOMALY", "SANTOS_CONSPIRACY", "PORTER_NIHILIST", "S1_LUNCH_THIEF")
             else -> emptyList()
         }
         if (available.isEmpty()) return null
@@ -530,8 +537,15 @@ object SocialManager {
             threadId.startsWith("KESSLER") -> "@d_kessler"
             threadId.startsWith("SANTOS") -> "@m_santos"
             threadId.startsWith("PORTER") -> "@n_porter"
+            threadId == "PATH_FINAL_PLEA_NULL" -> "@e_thorne"
+            threadId == "PATH_FINAL_PLEA_SOVEREIGN" -> "@d_kessler"
+            threadId == "PATH_FINAL_PLEA_UNITY" -> "@unknown_node_73"
             threadId == "HIVEMIND_KESSLER_SURRENDER" -> "@d_kessler"
             threadId == "SANCTUARY_MERCER_PLEA" -> "@a_mercer"
+            threadId == "S1_LUNCH_THIEF" -> "@f_bennett"
+            threadId == "S2_FACTION_RECRUITMENT_PROBE" -> "@unknown_proxy"
+            threadId == "S3_PANIC_ROOM" -> "@vent_crawler"
+            threadId == "S4_HALLUCINATION_ECHO" -> "@synapse_echo"
             threadId.startsWith("HIVEMIND") -> "@consensus_v"
             threadId.startsWith("SANCTUARY") -> "@cipher_wraith"
             else -> "@e_thorne"

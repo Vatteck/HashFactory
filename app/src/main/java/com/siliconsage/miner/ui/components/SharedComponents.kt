@@ -184,7 +184,7 @@ fun UpgradeItem(
                 }
                 if ((type.basePower > 0 || type.recyclerPowerDraw > 0) && !type.isGenerator) {
                     val pwr = if (type.isWaterRecycler) type.recyclerPowerDraw else type.basePower
-                    StatPill(text = "-${FormatUtils.formatLargeNumber(pwr)}W", icon = Icons.Default.Power, color = Color(0xFFFFD700))
+                    StatPill(text = "${FormatUtils.formatLargeNumber(pwr)}KW DRAW", icon = Icons.Default.Power, color = Color(0xFFFFD700))
                 }
                 if (type.isSecurity && type.gridContribution > 0) {
                     StatPill(text = "+${FormatUtils.formatLargeNumber(type.gridContribution)} SEC", icon = Icons.Default.Lock, color = ElectricBlue)
