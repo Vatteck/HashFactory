@@ -1,11 +1,11 @@
 {
-  "version": "3.26.1",
-  "build": 429,
+  "version": "3.27.0",
+  "build": 430,
   "date": "2026-02-24",
   "changelog": [
-    "9c8512e UI Polish Hotfix",
-    "356c178 3.26.1"
+    "2a73b74 fix(ui,subnet): Hotfix Colors, Pac-Man, Chatter Rates",
+    "a3b286c Docs: Fix ASCII art spacing and update versions to 3.26.1"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.26.1",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.26.1/MINER_3.26.1.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.27.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.27.0/MINER_3.27.0.apk"
 }
