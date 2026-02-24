@@ -88,20 +88,22 @@ jobs:
           # Write to file to preserve multiline
           echo "$CHANGELOG" > changelog_extract.txt
       
-      - name: Find APK
+      - name: Find and rename APK
         id: apk
         run: |
-          # Find the downloaded APK
-          APK_PATH=$(find . -name "*.apk" | head -n 1)
-          
-          if [ -n "$APK_PATH" ] && [ -f "$APK_PATH" ]; then
-            echo "path=$APK_PATH" >> $GITHUB_OUTPUT
-            echo "Found APK: $APK_PATH"
-          else
-            echo "APK not found"
+          VERSION="${{ steps.version.outputs.version }}"
+          # The download-artifact step drops the APK in the workspace root
+          RAW=$(find . -maxdepth 2 -name "app-release.apk" | head -n 1)
+          if [ -z "$RAW" ] || [ ! -f "$RAW" ]; then
+            echo "app-release.apk not found — contents:"
+            find . -name "*.apk" | head -20
             exit 1
           fi
-      
+          NAMED="MINER_${VERSION}.apk"
+          mv "$RAW" "$NAMED"
+          echo "path=$NAMED" >> $GITHUB_OUTPUT
+          echo "Renamed: $RAW → $NAMED"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
