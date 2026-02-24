@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.22.0] - 2026-02-23
+### Header & UI Refinement (v3.22.0)
+- **LED Aesthetics**: Reduced glow radius (2.2x/1.5x) and softened alpha (0.12f). Added 8dp side margins to the LED matrix to prevent border overlap.
+- **Power Rails**: Replaced blocky side-glows with `Brush.horizontalGradient` for a holographic, soft-tapered effect.
+- **Header Layout**: Increased top padding to 6dp to prevent Title/Timer/Badge from overlapping the top border.
+- **Data Clarity**: ResourceDisplay now consistently shows hash/compute rate even when at 0.0.
+
 ## [3.21.0] - 2026-02-23
 ### UI & DevTools Polish (v3.21.0)
 - **Header Aesthetics**: Reduced LED matrix glow radius from 5x to 3x. Tightened visual footprint for better title clarity.

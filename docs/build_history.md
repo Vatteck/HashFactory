@@ -70,3 +70,6 @@
 ## 2026-02-22 01:01 — v3.13.3 (Build 423)
 - Summary: Manual Release
 
+## 2026-02-23 23:04 — v3.21.0 (Build 425)
+- Summary: Security Defense, Narrative/UI polish, DevTools + Terminal refactor
+

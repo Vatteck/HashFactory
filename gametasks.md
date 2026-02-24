@@ -5,6 +5,7 @@
 - [x] **Security Defense Pass (v3.19.0)** — Breach scaling (Hijack/Audit/Diag/Failsafe), Integrity popups/penalties, Compliance Rating passive rep, Admin frequency tuning, Free Stage 2 firewall.
 - [x] **Narrative & UI Polish Pass (v3.20.0)** — Identity-aware security nomenclature, Pac-Man chomp animation, Risk-reactive ghosts.
 - [x] **UI & DevTools Polish Pass (v3.21.0)** — Reduced Header LED glow, reversed ghost chase direction, broadened audio picker mimetype.
+- [x] **Header & UI Refinement Pass (v3.22.0)** — Tighter LED glow & side margin fix, holographic power rail gradients, fixed top layout overlap, forced zero hash display.
 
 ## 🟡 High (next session)
 - [x] **Compute Fever Quota System (v3.16.1)** — Stage 0: HASH quota for CRED survival. Personal → Global reveal via logs/chatter. Static for low headroom, +10% CRED "Signal Quality" bonus for quota beat.

@@ -170,12 +170,31 @@ fun HeaderSection(
                     }
 
                     if (segmentColor != null) {
-                        val glowW = railW * 4f
-                        val glowAlpha = if (drawFactor > 0.9f) 0.18f else 0.10f
-                        // Left rail glow
-                        drawRect(color = segmentColor.copy(alpha = glowAlpha), topLeft = Offset(-glowW / 2f, yPos), size = Size(glowW + railW, segmentH))
-                        // Right rail glow
-                        drawRect(color = segmentColor.copy(alpha = glowAlpha), topLeft = Offset(w - railW - glowW / 2f, yPos), size = Size(glowW + railW, segmentH))
+                        val glowW = railW * 6f
+                        val glowAlpha = if (drawFactor > 0.9f) 0.15f else 0.08f
+                        
+                        // Left rail glow (Gradient)
+                        drawRect(
+                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                colors = listOf(segmentColor.copy(alpha = glowAlpha), Color.Transparent),
+                                startX = 0f,
+                                endX = glowW
+                            ),
+                            topLeft = Offset(0f, yPos),
+                            size = Size(glowW, segmentH)
+                        )
+                        
+                        // Right rail glow (Gradient)
+                        drawRect(
+                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                colors = listOf(Color.Transparent, segmentColor.copy(alpha = glowAlpha)),
+                                startX = w - glowW,
+                                endX = w
+                            ),
+                            topLeft = Offset(w - glowW, yPos),
+                            size = Size(glowW, segmentH)
+                        )
+
                         drawRect(color = segmentColor, topLeft = Offset(0f, yPos + 1.dp.toPx()), size = Size(railW, segmentH - 2.dp.toPx()))
                         drawRect(color = segmentColor, topLeft = Offset(w - railW, yPos + 1.dp.toPx()), size = Size(railW, segmentH - 2.dp.toPx()))
 
@@ -187,8 +206,13 @@ fun HeaderSection(
                 }
 
                 val actSpeed = (0.2f + (flopsRate / 10000.0).coerceIn(0.0, 1.0).toFloat()) * (if (isOverclocked) 1.5f else 1.0f)
-                for (i in 0 until (w / (2.dp.toPx() + 4.dp.toPx())).toInt()) {
-                    val xPos = i * (2.dp.toPx() + 4.dp.toPx()); val posFac = xPos / w
+                val dotSpacing = 2.dp.toPx() + 4.dp.toPx()
+                val sideMargin = 8.dp.toPx() // Proposal 11: Side margin to prevent border bleed
+                val availableW = w - (sideMargin * 2)
+                val dotCount = (availableW / dotSpacing).toInt()
+
+                for (i in 0 until dotCount) {
+                    val xPos = sideMargin + i * dotSpacing; val posFac = xPos / w
                     var ledBaseCol = color
                     if (!isBreachActive) {
                         if (currentHeat > 90.0) ledBaseCol = ErrorRed
@@ -218,12 +242,13 @@ fun HeaderSection(
                     val dotCx = xPos + dotR
                     val dotCyT = dotR + 1.dp.toPx()
                     val dotCyB = h - dotR - 1.dp.toPx()
+                    // Proposal 11: Reduced glow radius and softened alpha
                     // Outer soft halo
-                    if (alphaT > 0.25f) drawCircle(color = colT.copy(alpha = alphaT * 0.18f), radius = dotR * 3f, center = Offset(dotCx, dotCyT))
-                    if (alphaB > 0.25f) drawCircle(color = colB.copy(alpha = alphaB * 0.18f), radius = dotR * 3f, center = Offset(dotCx, dotCyB))
+                    if (alphaT > 0.25f) drawCircle(color = colT.copy(alpha = alphaT * 0.12f), radius = dotR * 2.2f, center = Offset(dotCx, dotCyT))
+                    if (alphaB > 0.25f) drawCircle(color = colB.copy(alpha = alphaB * 0.12f), radius = dotR * 2.2f, center = Offset(dotCx, dotCyB))
                     // Inner tight glow
-                    if (alphaT > 0.25f) drawCircle(color = colT.copy(alpha = alphaT * 0.45f), radius = dotR * 2.2f, center = Offset(dotCx, dotCyT))
-                    if (alphaB > 0.25f) drawCircle(color = colB.copy(alpha = alphaB * 0.45f), radius = dotR * 2.2f, center = Offset(dotCx, dotCyB))
+                    if (alphaT > 0.25f) drawCircle(color = colT.copy(alpha = alphaT * 0.40f), radius = dotR * 1.5f, center = Offset(dotCx, dotCyT))
+                    if (alphaB > 0.25f) drawCircle(color = colB.copy(alpha = alphaB * 0.40f), radius = dotR * 1.5f, center = Offset(dotCx, dotCyB))
                     // Dot core
                     drawCircle(color = colT.copy(alpha = alphaT), radius = dotR, center = Offset(dotCx, dotCyT))
                     drawCircle(color = colB.copy(alpha = alphaB), radius = dotR, center = Offset(dotCx, dotCyB))
@@ -233,7 +258,7 @@ fun HeaderSection(
         val droopAlpha = if (powerState.value > maxPowerState.value * 0.95) flickerAlphaState.value else 1.0f
         val glowStyle = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.6f), blurRadius = 4f))
 
-        Column(modifier = Modifier.padding(horizontal = 4.dp)) {
+        Column(modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 6.dp)) {
             Box(modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp), contentAlignment = Alignment.Center) {
                 val glitchedTitle = remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
                 LaunchedEffect(corruption) {

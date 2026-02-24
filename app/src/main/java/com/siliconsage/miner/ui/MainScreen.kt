@@ -698,11 +698,9 @@ fun ResourceDisplay(
     val rate by (rateFlow ?: MutableStateFlow(0.0)).collectAsState()
     val valueStr = remember(value) { formatFn(value) }
     val rateStr = remember(rate, efficiencyMult) { 
-        if (rate > 0) {
-            val base = formatFn(rate)
-            if (efficiencyMult != 1.0) "$base/s [${String.format("%.2f", efficiencyMult)}x]"
-            else "$base/s"
-        } else ""
+        val base = formatFn(rate)
+        if (efficiencyMult != 1.0) "$base/s [${String.format("%.2f", efficiencyMult)}x]"
+        else "$base/s"
     }
     val fontSizeByLength = if (valueStr.length > 8) 18.sp else 22.sp
 
