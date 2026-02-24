@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.26.1] - 2026-02-24
+### UI Polish Hotfix
+- **Header Alignment**: Mirror-aligned the top header hashes and credits sections by applying `Alignment.Top` to their respective columns.
+- **Resource Glow**: Softened the gradient bloom and drop shadows behind the active HUD counters to reduce the over-saturated blockiness of the glowing text.
+
 ## [3.26.0] - 2026-02-24
 ### Dense Subnet Expansion
 - **Ambient Chatter Addition**: Injected >150 new lines of stage-specific ambient chatter into `SocialTemplates.kt` (Corpo Grind, Faction Whispers, The Burn) and unique Stage 5 arrays (Sovereign, Null, Unity) to deepen the world building.
