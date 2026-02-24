@@ -1,10 +1,10 @@
 {
-  "version": "3.24.0",
-  "build": 427,
+  "version": "3.26.0",
+  "build": 428,
   "date": "2026-02-24",
   "changelog": [
-    "bd03348 v3.24.0 - Billing & HUD Polish"
+    "f98c0c9 3.26.0 - Subnet Expansion"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.24.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.24.0/MINER_3.24.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.26.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.26.0/MINER_3.26.0.apk"
 }
