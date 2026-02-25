@@ -88,7 +88,7 @@ object SimulationService {
         vm.addLogPublic(logMsg)
         
         vm.isPurgingHeat.value = true
-        SoundManager.play("alarm")
+        SoundManager.play("steam")
         vm.refreshProductionRates()
     }
 

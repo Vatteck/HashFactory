@@ -66,6 +66,26 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                     neuralTokens.update { (it - amountToSkim).coerceAtLeast(0.0) }
                     addLog("[SYSTEM]: SUBNET SKIMMER DETECTED. LOST ${formatLargeNumber(amountToSkim)} NT.")
                 }
+                SubnetService.SubnetEffect.StealUpgrade -> {
+                    val currentUpgrades = upgrades.value.filter { (type, count) ->
+                        count > 0 && (type.isHardware || type.isCooling) && 
+                        !UpgradeManager.isNullUpgrade(type) && 
+                        !UpgradeManager.isSovereignUpgrade(type) && 
+                        !UpgradeManager.isUnityUpgrade(type)
+                    }
+                    if (currentUpgrades.isNotEmpty()) {
+                        val victim = currentUpgrades.keys.toList().random()
+                        val newCount = (upgrades.value[victim] ?: 1) - 1
+                        viewModelScope.launch {
+                            repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(victim.name, victim, newCount))
+                            upgrades.update { it + (victim to newCount) }
+                            addLog("[CRITICAL]: @the_skimmer has seized 1x ${victim.name.replace("_", " ")} from Substation 7.")
+                            refreshProductionRates()
+                            updatePowerUsage()
+                            saveState()
+                        }
+                    }
+                }
                 SubnetService.SubnetEffect.RefreshRates -> refreshProductionRates()
             }
         }
@@ -318,7 +338,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 marketMultiplier = marketMultiplier.value, thermalRateModifier = thermalRateModifier.value, energyPriceMultiplier = energyPriceMultiplier.value,
                 newsProductionMultiplier = newsProductionMultiplier.value, substrateMass = substrateMass.value, substrateSaturation = substrateSaturation.value,
                 heuristicEfficiency = heuristicEfficiency.value, identityCorruption = identityCorruption.value, migrationCount = migrationCount.value,
-                lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value
+                lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value, specializedNodes = specializedNodes.value
             ))
         }
     }
@@ -367,6 +387,14 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (singularityChoice.value != "NONE") {
             val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
             flopsProductionRate.update { it * singMult }
+        }
+
+        // v3.28.0: Compute Cluster Specializations
+        var computeClusterCount = 0
+        specializedNodes.value.values.forEach { if (it == "COMPUTE_CLUSTER") computeClusterCount++ }
+        if (computeClusterCount > 0) {
+            val clusterBonus = 1.0 + (0.25 * computeClusterCount)
+            flopsProductionRate.update { it * clusterBonus }
         }
 
         // P2: Integrity Penalty (Starts at 25% integrity)
@@ -636,7 +664,16 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun setCustomUIScale(factor: Float) { customUiScaleFactor.value = factor; uiScale.value = com.siliconsage.miner.data.UIScale.fromScaleFactor(factor); saveState() }
     fun acknowledgeVictory() { victoryAchieved.value = false }
     fun onClimaxTransitionComplete() { activeClimaxTransition.value = null }
-    fun triggerGridRaid(id: String, isGridKiller: Boolean = false) = SecurityManager.triggerGridKillerBreach(this, id)
+    fun specializeNode(nodeId: String, type: String) = com.siliconsage.miner.util.SectorManager.specializeNode(this, nodeId, type)
+    fun triggerGridRaid(id: String, isGridKiller: Boolean = false) {
+        if (isGridKiller) {
+            SecurityManager.triggerGridKillerBreach(this, id)
+        } else {
+            val dilemma = com.siliconsage.miner.util.NarrativeManager.generateRaidDilemma(id, "Substation $id", raidsSurvived)
+            currentDilemma.value = dilemma
+            markPopupShown()
+        }
+    }
     fun unlockDataLog(id: String) = NarrativeService.unlockDataLog(id, this)
     fun addRivalMessage(m: RivalMessage) = NarrativeService.addRivalMessage(m, this)
     fun unlockSkillUpgrade(t: UpgradeType) { viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, 1)); upgrades.update { it + (t to 1) } } }

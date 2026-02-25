@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.28.0] - 2026-02-24
+### Added
+- **Node Specialization (Stage 3+)**: Annexed Subnet/Global nodes can now be explicitly formatted via `CityGridScreen.kt` using three new roles: COMPUTE_CLUSTER (+25% yield, +10% heat), SIGNAL_SINK (-20% risk drift), and GUARD_POST (+30% defense chance).
+- **Interactive Local Raids**: When the GTC triggers a grid-raiding event, players now face an `AssaultDialogue` dilemma with choices like VENT COOLANT, SEAL MAG-LOCKS, and POWER PULSE instead of flat passive calculations.
+- **Rival Escalation**: `@the_skimmer` subnet encounters will now actively steal and delete deployed hardware. Additionally, `BURNED` reputation tiers will dynamically double passive GTC raid probability rates.
+
+### Technical
+- Updated `GameState` schema and `PersistenceManager` to read/write custom `specializedNodes` maps across user saves.
+- Rewired `SecurityManager.kt` grid breach triggers to route directly into narrative engines instead of isolated statistical tables.
+
 ## [3.11.2] - 2026-02-21
 ### ⚠️ IMPORTANT: Signed Build - Manual Reinstall Required
 This release switches from **debug** to **signed** APK. Android will NOT recognize this as an update - you must:

@@ -114,6 +114,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val nodesUnderSiege = MutableStateFlow<Set<String>>(emptySet())
     val collapsedNodes = MutableStateFlow<Set<String>>(emptySet())
     val gridNodeLevels = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val specializedNodes = MutableStateFlow<Map<String, String>>(emptyMap()) // nodeId -> type (COMPUTE_CLUSTER, SIGNAL_SINK, GUARD_POST)
     val globalSectors = MutableStateFlow<Map<String, SectorState>>(emptyMap())
     val rivalMessages = MutableStateFlow<List<RivalMessage>>(emptyList())
     val pendingDataLog = MutableStateFlow<DataLog?>(null)

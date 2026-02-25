@@ -118,6 +118,32 @@ object SectorManager {
         }
     }
 
+    // v3.28.0: Node Specialization
+    fun specializeNode(vm: GameViewModel, nodeId: String, type: String) {
+        if (!vm.annexedNodes.value.contains(nodeId)) return
+        val validTypes = setOf("COMPUTE_CLUSTER", "SIGNAL_SINK", "GUARD_POST")
+        if (type !in validTypes) return
+
+        // Cost is 50,000 NT and 100 Entropy
+        val tokenCost = 50000.0
+        val entropyCost = 100.0
+
+        if (vm.neuralTokens.value >= tokenCost && vm.entropyLevel.value >= entropyCost) {
+            vm.neuralTokens.update { it - tokenCost }
+            vm.entropyLevel.update { it - entropyCost }
+            vm.specializedNodes.update { it + (nodeId to type) }
+            
+            val typeName = type.replace("_", " ")
+            vm.addLogPublic("[SYSTEM]: Node $nodeId reformatted to $typeName. Operations nominal.")
+            SoundManager.play("success")
+            vm.refreshProductionRates()
+            vm.saveStatePublic()
+        } else {
+            vm.addLogPublic("[SYSTEM]: ERROR: Insufficient resources. Requires 50,000 NT and 100 ENTROPY.")
+            SoundManager.play("error")
+        }
+    }
+
     fun resolveRaidFailure(
         nodeId: String,
         vm: GameViewModel,

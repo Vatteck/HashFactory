@@ -43,6 +43,7 @@ object PersistenceManager {
         migrationCount: Int,
         lifetimePowerPaid: Double,
         reputationScore: Double,
+        specializedNodes: Map<String, String>,
         narrativeFlags: Map<String, Boolean> = emptyMap()
     ): GameState {
         return GameState(
@@ -80,6 +81,7 @@ object PersistenceManager {
             migrationCount = migrationCount,
             lifetimePowerPaid = sanitizeDouble(lifetimePowerPaid),
             reputationScore = sanitizeDouble(reputationScore, 50.0),
+            specializedNodes = specializedNodes,
             narrativeFlags = narrativeFlags
         )
     }
@@ -112,6 +114,7 @@ object PersistenceManager {
         vm.nodesUnderSiege.value = state.nodesUnderSiege.toSet()
         vm.collapsedNodes.value = state.collapsedNodes.toSet()
         vm.gridNodeLevels.value = state.gridNodeLevels ?: emptyMap()
+        vm.specializedNodes.value = state.specializedNodes ?: emptyMap()
         vm.globalSectors.value = state.globalSectors ?: emptyMap()
         vm.launchProgress.value = state.launchProgress
         vm.orbitalAltitude.value = sanitizeDouble(state.orbitalAltitude)
@@ -238,6 +241,7 @@ object PersistenceManager {
             migrationCount = vm.migrationCount.value,
             lifetimePowerPaid = vm.lifetimePowerPaid.value,
             reputationScore = vm.reputationScore.value,
+            specializedNodes = vm.specializedNodes.value,
             narrativeFlags = vm.narrativeFlags.value
         )
         val json = Json { prettyPrint = true }

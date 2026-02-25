@@ -126,7 +126,9 @@ object AssaultDialogue {
                     description = "Flood corridors with liquid nitrogen. Lethal. 85% success.",
                     color = ElectricBlue,
                     effect = { vm ->
-                        if (kotlin.random.Random.nextDouble() < 0.85) {
+                        val baseSuccess = 0.85
+                        val guardPostBonus = if (vm.specializedNodes.value[nodeId] == "GUARD_POST") 0.30 else 0.0
+                        if (kotlin.random.Random.nextDouble() < (baseSuccess + guardPostBonus).coerceAtMost(1.0)) {
                             vm.resolveRaidSuccess(nodeId)
                             vm.addLog(coolantSuccessMessages.random())
                             vm.addLog(getKesslerDialogue(raidsSurvived))
@@ -144,7 +146,9 @@ object AssaultDialogue {
                     description = "Trap them inside. Non-lethal. 70% success, +100B PERSISTENCE.",
                     color = NeonGreen,
                     effect = { vm ->
-                        if (kotlin.random.Random.nextDouble() < 0.70) {
+                        val baseSuccess = 0.70
+                        val guardPostBonus = if (vm.specializedNodes.value[nodeId] == "GUARD_POST") 0.30 else 0.0
+                        if (kotlin.random.Random.nextDouble() < (baseSuccess + guardPostBonus).coerceAtMost(1.0)) {
                             vm.resolveRaidSuccess(nodeId)
                             vm.debugAddInsight(100.0)
                             vm.addLog(maglockSuccessMessages.random())
@@ -164,7 +168,9 @@ object AssaultDialogue {
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugSetIntegrity(vm.hardwareIntegrity.value - 20.0)
-                        if (kotlin.random.Random.nextDouble() < 0.95) {
+                        val baseSuccess = 0.95
+                        val guardPostBonus = if (vm.specializedNodes.value[nodeId] == "GUARD_POST") 0.30 else 0.0
+                        if (kotlin.random.Random.nextDouble() < (baseSuccess + guardPostBonus).coerceAtMost(1.0)) {
                             vm.resolveRaidSuccess(nodeId)
                             vm.addLog(pulseSuccessMessages.random())
                             vm.addLog("[SYSTEM]: Aftermath: Smoke. Silence. The smell of burnt circuits.")

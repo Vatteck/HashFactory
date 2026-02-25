@@ -81,6 +81,9 @@ data class GameState(
     val entropyLevel: Double = 0.0, // v2.9.49
     val gridNodeLevels: Map<String, Int> = emptyMap(), // v2.9.72
 
+    // v3.28.0: Node Specializations
+    val specializedNodes: Map<String, String> = emptyMap(), // nodeId -> type (COMPUTE_CLUSTER, SIGNAL_SINK, GUARD_POST)
+
     // v3.0.0: Global Grid
     val singularityChoice: String = "NONE", // NONE, UNITY, SOVEREIGN, NULL_OVERWRITE
     val hasCompletedHivemindRun: Boolean = false,

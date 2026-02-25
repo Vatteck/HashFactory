@@ -62,7 +62,23 @@ object SecurityManager {
             // v3.6.4: Tripled security payoff. secLevel 50 now fully neutralizes max drift.
             val recovery = (secLevel * 0.3).coerceIn(0.1, 15.0)
             
-            vm.detectionRisk.update { (it + drift - recovery).coerceIn(0.0, 100.0) }
+            // v3.28.0: Apply specializations to risk drift
+            var signalSinkCount = 0
+            var computeClusterCount = 0
+            vm.specializedNodes.value.values.forEach { 
+                if (it == "SIGNAL_SINK") signalSinkCount++
+                if (it == "COMPUTE_CLUSTER") computeClusterCount++ 
+            }
+            
+            var modifiedDrift = drift
+            if (signalSinkCount > 0) {
+                modifiedDrift *= (1.0 - (0.20 * signalSinkCount)).coerceAtLeast(0.1)
+            }
+            if (computeClusterCount > 0) {
+                modifiedDrift *= (1.0 + (0.10 * computeClusterCount))
+            }
+            
+            vm.detectionRisk.update { (it + modifiedDrift - recovery).coerceIn(0.0, 100.0) }
 
             // v3.6.4: Threshold warnings — give the player a narrative lead-up before breach fires
             val newRisk = vm.detectionRisk.value
@@ -196,9 +212,14 @@ object SecurityManager {
             (now - (vm.nodeAnnexTimes[nodeId] ?: 0L)) > 300_000L
         }
         if (raidableNodes.isEmpty()) return
-        
         val siegeChance = (0.03 + vm.playerRank.value * 0.02).coerceAtMost(0.15)
-        val finalChance = if (vm.unlockedPerks.value.contains("gtc_backdoor")) siegeChance * 0.75 else siegeChance
+        var finalChance = if (vm.unlockedPerks.value.contains("gtc_backdoor")) siegeChance * 0.75 else siegeChance
+        
+        // v3.28.0: Reputation-based Raid Scaling
+        if (vm.reputationTier.value == ReputationManager.TIER_BURNED) {
+            finalChance *= 2.0
+            vm.addLogPublic("[SYSTEM]: BURNED REPUTATION. RAID PROBABILITY DOUBLED.")
+        }
         
         if (Random.nextDouble() < finalChance) {
             if (vm.canShowPopup()) {

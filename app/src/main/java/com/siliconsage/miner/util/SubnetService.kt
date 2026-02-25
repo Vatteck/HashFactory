@@ -38,6 +38,7 @@ class SubnetService(
         data class TriggerRaid(val nodeId: String, val isGridKiller: Boolean) : SubnetEffect()
         data class ReputationChange(val delta: Double) : SubnetEffect()
         data class SkimTokens(val percentage: Double) : SubnetEffect()
+        data object StealUpgrade : SubnetEffect()
         data object RefreshRates : SubnetEffect()
     }
 
@@ -217,14 +218,17 @@ class SubnetService(
             
             // Phase 2: The Skimmer
             if (stage < 3 && reputationTier == ReputationManager.TIER_BURNED && Random.nextFloat() < 0.05f) {
+                // v3.28.0: Dual threat - skim tokens AND steal hardware
                 val msg = SubnetMessage(
                     id = java.util.UUID.randomUUID().toString(),
-                    handle = "gtc_sysadmin",
-                    content = "≪ ALERT: UNREGISTERED RIG_ID:734 DETECTED. SEIZING 5% OF UN-STAKED ASSETS AS PENALTY. ≫",
+                    handle = "@the_skimmer",
+                    content = "≪ UNREGISTERED RIG_ID:734 DETECTED. SEIZING ASSETS. THANK YOU FOR YOUR CONTRIBUTION. ≫",
                     interactionType = null
                 )
                 scope.launch { deliverWithTyping(msg, mode) }
                 onEffect(SubnetEffect.SkimTokens(0.05))
+                onEffect(SubnetEffect.StealUpgrade)
+                HapticManager.vibrateError()
                 return
             }
 

@@ -68,6 +68,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
     val collapsedNodes by viewModel.collapsedNodes.collectAsState()
     val annexingNodes by viewModel.annexingNodes.collectAsState()
     val gridNodeLevels by viewModel.gridNodeLevels.collectAsState()
+    val specializedNodes by viewModel.specializedNodes.collectAsState()
     val assaultProgress by viewModel.assaultProgress.collectAsState()
 
     val infiniteTransition = rememberInfiniteTransition(label = "city_grid_anims")
@@ -369,6 +370,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
                                 
                                 Spacer(modifier = Modifier.height(4.dp))
                                 
+                                
                                 Box(modifier = Modifier.background(if (isAnnexed) themeColor.copy(alpha = 0.2f) else Color.Black).padding(horizontal = 4.dp)) {
                                     Text(
                                         text = label, 
@@ -377,6 +379,12 @@ fun CityGridScreen(viewModel: GameViewModel) {
                                         fontSize = 9.sp,
                                         fontWeight = if (isAnnexed) FontWeight.Bold else FontWeight.Normal
                                     )
+                                }
+                                
+                                val spec = specializedNodes[loc.id]
+                                if (spec != null) {
+                                    val icon = when(spec) { "COMPUTE_CLUSTER" -> "◇"; "SIGNAL_SINK" -> "▼"; "GUARD_POST" -> "🛡"; else -> "◈" }
+                                    Text(icon, color = themeColor, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -423,6 +431,13 @@ fun CityGridScreen(viewModel: GameViewModel) {
                             if (isAnnexed) {
                                 val currentLvl = gridNodeLevels[loc.id] ?: 1
                                 Text("LEVEL: $currentLvl", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                
+                                // v3.28.0: Display Specialization if present
+                                val spec = specializedNodes[loc.id]
+                                if (spec != null) {
+                                    val specName = spec.replace("_", " ")
+                                    Text("ROLE: $specName", color = ConvergenceGold, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                }
                             }
                         }
                         Text("NODE: ${loc.id}", color = Color.Gray, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
@@ -492,6 +507,40 @@ fun CityGridScreen(viewModel: GameViewModel) {
                             }
                         }
                         
+                        // v3.28.0: Node Specialization Controls (Only if un-specialized)
+                        if (storyStage >= 3 && specializedNodes[loc.id] == null) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            val specCostTokens = 50000.0
+                            val specCostEntropy = 100.0
+                            val canSpecialize = viewModel.neuralTokens.collectAsState().value >= specCostTokens && viewModel.entropyLevel.collectAsState().value >= specCostEntropy
+                            
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Button(
+                                    onClick = { viewModel.specializeNode(loc.id, "COMPUTE_CLUSTER") },
+                                    modifier = Modifier.weight(1f).height(32.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue),
+                                    contentPadding = PaddingValues(0.dp),
+                                    enabled = canSpecialize
+                                ) { Text("◇ COMPUTE", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold) }
+                                
+                                Button(
+                                    onClick = { viewModel.specializeNode(loc.id, "SIGNAL_SINK") },
+                                    modifier = Modifier.weight(1f).height(32.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = NeonGreen),
+                                    contentPadding = PaddingValues(0.dp),
+                                    enabled = canSpecialize
+                                ) { Text("▼ SINK", color = Color.Black, fontSize = 8.sp, fontWeight = FontWeight.Bold) }
+
+                                Button(
+                                    onClick = { viewModel.specializeNode(loc.id, "GUARD_POST") },
+                                    modifier = Modifier.weight(1f).height(32.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
+                                    contentPadding = PaddingValues(0.dp),
+                                    enabled = canSpecialize
+                                ) { Text("🛡 GUARD", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold) }
+                            }
+                        }
+
                         if (canAfford) {
                              Text("COST: ${viewModel.formatLargeNumber(upgradeCost)} ${viewModel.getCurrencyName()}", color = Color.Gray, fontSize = 9.sp, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 2.dp))
                         }
