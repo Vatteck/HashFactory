@@ -1,10 +1,10 @@
 {
-  "version": "3.31.0",
-  "build": 436,
+  "version": "3.32.0",
+  "build": 437,
   "date": "2026-02-25",
   "changelog": [
-    "ad95d6a feat: contract verification minigame (v3.31.0)"
+    "e2b526a feat: contract narrative integration (v3.32.0)"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.31.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.31.0/MINER_3.31.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.32.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.32.0/MINER_3.32.0.apk"
 }
