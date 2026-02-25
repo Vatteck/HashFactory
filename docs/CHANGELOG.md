@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.28.1] - 2026-02-24
+### Added
+- **BGM Track Selector**: Players can now switch between `bgm.ogg`, `bgm2.ogg`, and `bgm3.ogg` in the Audio Settings. Selections are persistent across sessions.
+- **Improved Purge Sound**: Replaced the placeholder alarm sound during heat purges with a custom filtered-noise "steam" burst for better mechanical feedback.
+
 ## [3.28.0] - 2026-02-24
 ### Added
 - **Node Specialization (Stage 3+)**: Annexed Subnet/Global nodes can now be explicitly formatted via `CityGridScreen.kt` using three new roles: COMPUTE_CLUSTER (+25% yield, +10% heat), SIGNAL_SINK (-20% risk drift), and GUARD_POST (+30% defense chance).
