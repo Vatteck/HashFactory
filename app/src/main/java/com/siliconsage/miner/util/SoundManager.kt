@@ -27,6 +27,7 @@ object SoundManager {
     private const val KEY_BGM_ENABLED = "bgm_enabled"
     private const val KEY_BGM_VOLUME = "bgm_volume"
     private const val KEY_CUSTOM_URI = "custom_bgm_uri"
+    private const val KEY_SELECTED_BGM_TRACK = "selected_bgm_track"
     private const val PREFS_SFX_OVERRIDES = "sfx_overrides"
     
     // --- Independent Controls ---
@@ -34,6 +35,7 @@ object SoundManager {
     val isSfxEnabled = MutableStateFlow(true)
     val bgmVolume = MutableStateFlow(0.8f)
     val isBgmEnabled = MutableStateFlow(true)
+    val selectedBgmTrack = MutableStateFlow("bgm.ogg")
     
     private val customSfxMap = ConcurrentHashMap<String, String>() // name -> uri
     private val customSfxPlayers = ConcurrentHashMap<String, MediaPlayer>()
@@ -80,6 +82,12 @@ object SoundManager {
     // Custom Music Support
     var customMusicUri: String? = null 
 
+    fun setSelectedBgmTrack(track: String) {
+        selectedBgmTrack.value = track
+        saveSetting(KEY_SELECTED_BGM_TRACK, track)
+        startBgm()
+    }
+
     fun init(ctx: Context) {
         if (appCtx != null) return // Already initialized
 
@@ -95,6 +103,7 @@ object SoundManager {
             isBgmEnabled.value = prefs.getBoolean(KEY_BGM_ENABLED, true)
             bgmVolume.value = prefs.getFloat(KEY_BGM_VOLUME, 0.8f)
             customMusicUri = prefs.getString(KEY_CUSTOM_URI, null)
+            selectedBgmTrack.value = prefs.getString(KEY_SELECTED_BGM_TRACK, "bgm.ogg") ?: "bgm.ogg"
             
             // Load SFX Overrides
             val sfxPrefs = ctx.getSharedPreferences(PREFS_SFX_OVERRIDES, Context.MODE_PRIVATE)
@@ -390,7 +399,7 @@ object SoundManager {
         withContext(Dispatchers.Main) {
             try {
                 val player = MediaPlayer()
-                val descriptor = ctx.assets.openFd("bgm.wav")
+                val descriptor = ctx.assets.openFd(selectedBgmTrack.value)
                 player.setDataSource(descriptor.fileDescriptor, descriptor.startOffset, descriptor.length)
                 player.isLooping = true
                 player.prepare()

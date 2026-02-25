@@ -66,6 +66,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
             val sfxVolume by com.siliconsage.miner.util.SoundManager.sfxVolume.collectAsState()
             val bgmEnabled by com.siliconsage.miner.util.SoundManager.isBgmEnabled.collectAsState()
             val bgmVolume by com.siliconsage.miner.util.SoundManager.bgmVolume.collectAsState()
+            val selectedBgmTrack by com.siliconsage.miner.util.SoundManager.selectedBgmTrack.collectAsState()
 
             SettingsGroup("AUDIO") {
                 SettingsToggle("SFX ENABLED", sfxEnabled) {
@@ -90,6 +91,23 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                         onValueChange = { com.siliconsage.miner.util.SoundManager.setBgmVolume(it) },
                         colors = SliderDefaults.colors(thumbColor = themeColor, activeTrackColor = themeColor)
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("BGM TRACK", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                        listOf("bgm.ogg", "bgm2.ogg", "bgm3.ogg").forEachIndexed { index, track ->
+                            Button(
+                                onClick = { com.siliconsage.miner.util.SoundManager.setSelectedBgmTrack(track) },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (selectedBgmTrack == track) themeColor else Color.DarkGray
+                                ),
+                                modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text("TRACK ${index + 1}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (selectedBgmTrack == track) Color.Black else Color.White)
+                            }
+                        }
+                    }
                 }
             }
             
