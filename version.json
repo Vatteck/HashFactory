@@ -1,10 +1,11 @@
 {
-  "version": "3.28.0",
-  "build": 431,
+  "version": "3.28.1",
+  "build": 432,
   "date": "2026-02-24",
   "changelog": [
-    "4af392f feat: v3.28.0 Frontier Reclamation Specializations"
+    "3c2599b feat: v3.28.1 Harmonic Resonance - BGM Selector and SFX Fix",
+    "2b6a11e feat: Implement selectable OGG background music tracks, replacing the single WAV file for improved performance."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.28.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.28.0/MINER_3.28.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.28.1",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.28.1/MINER_3.28.1.apk"
 }
