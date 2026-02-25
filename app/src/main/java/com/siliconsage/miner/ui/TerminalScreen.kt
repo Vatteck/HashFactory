@@ -84,6 +84,12 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
         if (showContractPicker) {
             com.siliconsage.miner.ui.components.ContractPickerOverlay(viewModel, primaryColor)
         }
+
+        // v3.31.0: Contract Verification Overlay
+        val verificationState by viewModel.verificationState.collectAsState()
+        if (verificationState != null) {
+            com.siliconsage.miner.ui.components.VerificationOverlay(viewModel, primaryColor)
+        }
     }
 }
 

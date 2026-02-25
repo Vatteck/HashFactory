@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.31.0] - 2026-02-25
+### Added
+- **Contract Verification Minigame**: When a contract reaches 100%, a 4×4 hex grid overlay appears. Players tap blocks they identify as "valid data" while avoiding "corrupt data" blocks within a countdown timer. Accuracy determines final yield (up to 1.5× for perfect runs, down to 0.4× for bad ones).
+- **VerificationEngine**: New engine generates grids scaled to contract purity and player corruption level. High corruption adds glitched labels that blur the line between valid and corrupt blocks.
+- **VerificationOverlay**: Tappable grid with real-time countdown, color-coded feedback (green flash for correct, red for wrong), and auto-finalization when timer expires.
+
+### Changed
+- **Contract completion flow**: Contracts no longer auto-deposit yield. The verification minigame intercedes, making payout depend on player skill.
+
 ## [3.30.0] - 2026-02-25
 ### Added
 - **Compute Contracts Economy**: Replaced the manual "SELL FLOPS" exchange button with a contract-based income model. Players now browse and purchase Compute Contracts (with cost, expected yield, purity %, and processing time) and process them to earn NEUR.

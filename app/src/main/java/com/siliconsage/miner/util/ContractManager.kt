@@ -155,23 +155,29 @@ object ContractManager {
     }
 
     /**
-     * Complete a contract: roll purity, deposit yield, add logs, clear active.
+     * Complete a contract: triggers the verification minigame instead of auto-depositing.
      */
     private fun completeContract(vm: GameViewModel, contract: ComputeContract) {
-        // Purity roll: determines actual yield as a fraction of expected
-        val purityRoll = Random.nextDouble()
-        val yieldMultiplier = if (purityRoll <= contract.purity) {
-            // Success: full yield plus potential bonus for high-purity contracts
-            val bonusChance = contract.purity - purityRoll
-            1.0 + (bonusChance * 0.5) // Up to 50% bonus for very clean contracts
-        } else {
-            // Contaminated: partial yield
-            (contract.purity / 1.0).coerceIn(0.1, 0.8)
-        }
+        // v3.31.0: Trigger Verification Minigame
+        val gridState = VerificationEngine.generateVerificationGrid(contract, vm.identityCorruption.value)
+        vm.verificationState.value = gridState
+        
+        vm.addLogPublic("[SYSTEM]: AWAITING MANUAL DATA VERIFICATION...")
+        SoundManager.play("error") // Subtle alert to draw attention
+        HapticManager.vibrateError()
+        
+        // Clear active contract processing state (it's now in verification phase)
+        vm.activeContract.value = null
+        vm.contractProgress.value = 0.0
+    }
 
-        val actualYield = contract.expectedYield * yieldMultiplier
+    /**
+     * Apply the result from the Verification Minigame and deposit the yield.
+     */
+    fun applyVerificationResult(vm: GameViewModel, contract: ComputeContract, accuracyMultiplier: Double) {
+        val actualYield = contract.expectedYield * accuracyMultiplier
 
-        // Signal Quality Bonus (preserved from old exchange)
+        // Signal Quality Bonus
         var finalYield = actualYield
         if (vm.isSignalClear.value) {
             finalYield *= 1.1
@@ -180,21 +186,17 @@ object ContractManager {
         vm.updateNeuralTokens(finalYield)
 
         // Logs
-        val purityPercent = (contract.purity * 100).toInt()
-        val yieldPercent = (yieldMultiplier * 100).toInt()
+        val purityStr = "${(contract.purity * 100).toInt()}%"
+        val yieldStr = "${(accuracyMultiplier * 100).toInt()}%"
         val bonusMsg = if (vm.isSignalClear.value) " (Signal Quality Bonus: +10%)" else ""
 
-        if (yieldMultiplier >= 1.0) {
-            vm.addLogPublic("[CONTRACT]: ✓ ${contract.name} COMPLETE. Purity: ${purityPercent}%. Yield: ${vm.formatLargeNumber(finalYield)} NT (+${yieldPercent}%).${bonusMsg}")
+        if (accuracyMultiplier >= 1.0) {
+            vm.addLogPublic("[CONTRACT]: ✓ ${contract.name} VERIFIED. Source Purity: $purityStr. Yield: ${vm.formatLargeNumber(finalYield)} NT ($yieldStr).$bonusMsg")
             SoundManager.play("buy")
         } else {
-            vm.addLogPublic("[CONTRACT]: ⚠ ${contract.name} CONTAMINATED. Purity: ${purityPercent}%. Yield: ${vm.formatLargeNumber(finalYield)} NT (${yieldPercent}%).${bonusMsg}")
+            vm.addLogPublic("[CONTRACT]: ⚠ ${contract.name} COMPROMISED. Source Purity: $purityStr. Yield: ${vm.formatLargeNumber(finalYield)} NT ($yieldStr).$bonusMsg")
             SoundManager.play("error")
         }
-
-        // Clear active contract
-        vm.activeContract.value = null
-        vm.contractProgress.value = 0.0
     }
 
     /**

@@ -640,6 +640,50 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             marketMultiplier = marketMultiplier.value
         )
     }
+
+    // v3.31.0: Contract Verification Minigame
+    fun tapVerificationBlock(blockId: Int) {
+        val current = verificationState.value ?: return
+        val blockIndex = current.blocks.indexOfFirst { it.id == blockId }
+        if (blockIndex == -1 || current.blocks[blockIndex].isTapped) return
+
+        val block = current.blocks[blockIndex]
+        val scoreAdjustment = if (block.isValid) 1 else -1
+
+        val updatedBlocks = current.blocks.toMutableList()
+        updatedBlocks[blockIndex] = block.copy(isTapped = true)
+
+        verificationState.value = current.copy(
+            blocks = updatedBlocks,
+            score = current.score + scoreAdjustment
+        )
+    }
+
+    fun tickVerificationTimer(deltaMs: Long) {
+        val current = verificationState.value ?: return
+        val newTime = current.timeRemainingMs - deltaMs
+        if (newTime <= 0) {
+            finalizeContractVerification()
+        } else {
+            verificationState.value = current.copy(timeRemainingMs = newTime)
+        }
+    }
+
+    fun finalizeContractVerification() {
+        val state = verificationState.value ?: return
+        
+        // Calculate penalties for missed valid blocks (-0.5 each)
+        val missedValids = state.blocks.count { it.isValid && !it.isTapped }
+        val finalScore = state.score - (missedValids.toDouble() * 0.5)
+        
+        val finalState = state.copy(score = finalScore.toInt().coerceAtLeast(0))
+        val accuracyMultiplier = com.siliconsage.miner.util.VerificationEngine.calculateYieldMultiplier(finalState)
+        
+        ContractManager.applyVerificationResult(this, state.contract, accuracyMultiplier)
+        
+        // Clear minigame state
+        verificationState.value = null
+    }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
