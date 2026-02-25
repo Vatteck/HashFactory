@@ -45,7 +45,8 @@ object PersistenceManager {
         reputationScore: Double,
         specializedNodes: Map<String, String>,
         narrativeFlags: Map<String, Boolean> = emptyMap(),
-        activeContractJson: String = ""
+        unlockedContractSlots: Int = 1,
+        activeContractsJson: String = "[]"
     ): GameState {
         return GameState(
             id = 1, flops = sanitizeDouble(flops), neuralTokens = sanitizeDouble(neuralTokens), 
@@ -84,7 +85,8 @@ object PersistenceManager {
             reputationScore = sanitizeDouble(reputationScore, 50.0),
             specializedNodes = specializedNodes,
             narrativeFlags = narrativeFlags,
-            activeContractJson = activeContractJson
+            unlockedContractSlots = unlockedContractSlots,
+            activeContractsJson = activeContractsJson
         )
     }
 
@@ -149,11 +151,20 @@ object PersistenceManager {
             vm.addLog("[ERROR]: NARRATIVE RESTORATION FAILED.")
         }
         vm.themeColor.value = com.siliconsage.miner.data.getThemeColorForFaction(vm.faction.value, vm.singularityChoice.value)
-        // v3.30.0: Restore active contract
-        if (state.activeContractJson.isNotBlank()) {
+        vm.unlockedContractSlots.value = state.unlockedContractSlots
+        // v3.34.0: Restore active contracts
+        if (state.activeContractsJson.isNotBlank() && state.activeContractsJson != "[]") {
             try {
-                vm.activeContract.value = Json.decodeFromString<com.siliconsage.miner.data.ComputeContract>(state.activeContractJson)
-                vm.contractProgress.value = vm.activeContract.value?.progress ?: 0.0
+                val contractsList = Json.decodeFromString(
+                    kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.ComputeContract.serializer()),
+                    state.activeContractsJson
+                )
+                vm.activeContracts.value = contractsList
+                val currentProgresses = vm.contractProgresses.value.toMutableMap()
+                for (con in contractsList) {
+                    currentProgresses[con.id] = con.progress
+                }
+                vm.contractProgresses.value = currentProgresses
             } catch (e: Exception) {
                 vm.addLog("[SYSTEM]: CONTRACT STATE RESTORATION FAILED.")
             }

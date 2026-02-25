@@ -125,8 +125,15 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 sanitizeState()
                 val offline = MigrationManager.calculateOfflineEarnings(state.lastSyncTimestamp, flopsProductionRate.value, isOverclocked.value)
                 if (offline.isNotEmpty()) {
+                    val offlineSeconds = offline["timeSeconds"] ?: 0.0
                     flops.update { it + (offline["flopsEarned"] ?: 0.0) }
                     currentHeat.update { (it - (offline["heatCooled"] ?: 0.0)).coerceAtLeast(0.0) }
+                    
+                    // v3.34.0: Evolve contracts based on offline time
+                    if (offlineSeconds > 0.0 && activeContracts.value.isNotEmpty()) {
+                        ContractManager.tickActiveContracts(this@GameViewModel, flopsProductionRate.value, offlineSeconds)
+                    }
+                    
                     isNarrativeSyncing.value = true
                     offlineStats.value = offline
                     showOfflineEarnings.value = true
@@ -149,7 +156,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value, substrateSaturation.value)
                 if (!res.flopsDelta.isNaN()) flops.update { it + res.flopsDelta }
                 // v3.30.0: Tick active contract based on FLOPS rate
-                ContractManager.tickActiveContract(this@GameViewModel, flopsProductionRate.value, 0.1)
+                ContractManager.tickActiveContracts(this@GameViewModel, flopsProductionRate.value, 0.1)
 
                 // v3.13.19: Applying Wage-Docking Bleed
                 if (isWageDocking.value) {
@@ -341,7 +348,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 newsProductionMultiplier = newsProductionMultiplier.value, substrateMass = substrateMass.value, substrateSaturation = substrateSaturation.value,
                 heuristicEfficiency = heuristicEfficiency.value, identityCorruption = identityCorruption.value, migrationCount = migrationCount.value,
                 lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value, specializedNodes = specializedNodes.value,
-                activeContractJson = activeContract.value?.let { kotlinx.serialization.json.Json.encodeToString(com.siliconsage.miner.data.ComputeContract.serializer(), it) } ?: ""
+                unlockedContractSlots = unlockedContractSlots.value,
+                activeContractsJson = kotlinx.serialization.json.Json.encodeToString(
+                    kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.ComputeContract.serializer()), 
+                    activeContracts.value
+                )
             ))
         }
     }
@@ -355,9 +366,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
         val p = calculateClickPower()
-        // v3.30.0: Click power boosts active contract instead of accumulating raw flops
-        if (activeContract.value != null) {
-            ContractManager.boostActiveContract(this, p)
+        // v3.30.0: Click power boosts active contracts instead of accumulating raw flops
+        if (activeContracts.value.isNotEmpty()) {
+            ContractManager.boostActiveContracts(this, p)
         } else {
             // v3.33.0: No contract active: micro-drip conversion
             flops.update { it + p }
@@ -587,6 +598,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         val oldStage = storyStage.value
         storyStage.update { it + 1 }
         
+        // v3.34.0: Contract Slot Unlocks
+        if (storyStage.value >= 4) unlockedContractSlots.value = 3
+        else if (storyStage.value == 3) unlockedContractSlots.value = 2
+        else unlockedContractSlots.value = 1
+        
         // P5: Free BASIC_FIREWALL at Stage 2 unlock
         if (oldStage == 1 && storyStage.value == 2) {
             val currentLevel = upgrades.value[UpgradeType.BASIC_FIREWALL] ?: 0
@@ -715,6 +731,13 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (flopsProductionRate.value.isNaN() || flopsProductionRate.value.isInfinite()) flopsProductionRate.value = 0.0
         if (detectionRisk.value.isNaN() || detectionRisk.value.isInfinite()) detectionRisk.value = 0.0
         if (humanityScore.value < 0) humanityScore.value = 0
+        
+        // v3.34.0: Enforce slot scaling
+        unlockedContractSlots.value = when {
+            storyStage.value >= 4 -> 3
+            storyStage.value == 3 -> 2
+            else -> 1
+        }
     }
 
     fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { val next = (upgrades.value[t] ?: 0) + c; viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, next)) } }
@@ -948,24 +971,40 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
     }
 
-    // v3.30.0: Abandon current active contract (losing investment)
-    fun voidContract() {
-        val c = activeContract.value
+    // v3.30.0: Abandon a specific active contract (losing investment)
+    fun voidContract(contractId: String) {
+        val currentContracts = activeContracts.value.toMutableList()
+        val c = currentContracts.find { it.id == contractId }
         if (c != null) {
             addLogPublic("[SYSTEM]: CONTRACT VOIDED. DATA LOSS RECORDED.")
             SoundManager.play("error")
-            activeContract.value = null
-            contractProgress.value = 0.0
+            currentContracts.remove(c)
+            activeContracts.value = currentContracts
+            
+            val currentProgresses = contractProgresses.value.toMutableMap()
+            currentProgresses.remove(contractId)
+            contractProgresses.value = currentProgresses
         }
     }
 
     // v3.33.0: Forge custom Stage 5 contract
     fun forgeContract() {
+        if (activeContracts.value.size >= unlockedContractSlots.value) {
+            addLog("[SYSTEM]: NO AVAILABLE SLOTS FOR FORGED CONTRACT.")
+            SoundManager.play("error")
+            return
+        }
         val forged = ContractManager.forgeCustomContract(this)
         if (forged != null) {
             updateNeuralTokens(-forged.cost)
-            activeContract.value = forged
-            contractProgress.value = 0.0
+            val current = activeContracts.value.toMutableList()
+            current.add(forged)
+            activeContracts.value = current
+            
+            val currentProgresses = contractProgresses.value.toMutableMap()
+            currentProgresses[forged.id] = 0.0
+            contractProgresses.value = currentProgresses
+            
             addLog("[SYSTEM]: CUSTOM CONTRACT FORGED. INITIATING RUN.")
         } else {
             addLog("[SYSTEM]: FORGE FAILED. INSUFFICIENT SUBSTRATE LIQUIDITY.")

@@ -154,14 +154,19 @@ private fun ContractCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(contract.name, color = textColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    "P:${purityPercent}%",
-                    color = purityColor,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
+                Text("P:${purityPercent}%", color = purityColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+            // v3.34.0: Purity Visualizer Bar
+            Spacer(modifier = Modifier.height(2.dp))
+            Box(
+                modifier = Modifier.fillMaxWidth().height(2.dp)
+                    .background(Color.DarkGray.copy(alpha = 0.5f))
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(contract.purity.toFloat()).fillMaxHeight()
+                        .background(purityColor)
                 )
             }
-
             Spacer(modifier = Modifier.height(6.dp))
 
             // Cost and yield row

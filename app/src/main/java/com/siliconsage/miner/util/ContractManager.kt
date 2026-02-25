@@ -184,54 +184,95 @@ object ContractManager {
         return contracts
     }
 
-    fun tickActiveContract(vm: GameViewModel, flopsRate: Double, deltaSeconds: Double) {
-        val contract = vm.activeContract.value ?: return
-        if (!contract.isActive) return
-        val baseFlops = baseFlopsForStage(contract.tier)
-        val speedMultiplier = (flopsRate / baseFlops).coerceIn(0.01, 100.0)
-        val totalSeconds = contract.processingTime / 1000.0
+    fun tickActiveContracts(vm: GameViewModel, flopsRate: Double, deltaSeconds: Double) {
+        val currentContracts = vm.activeContracts.value.toMutableList()
+        if (currentContracts.isEmpty()) return
         
-        // v3.33.0: Contracts consume FLOPS as fuel
-        val flopsConsumed = flopsRate * deltaSeconds * 0.8 // 80% of production goes to contract
-        val availableFlops = vm.flops.value
+        val progressMap = vm.contractProgresses.value.toMutableMap()
+        val toComplete = mutableListOf<ComputeContract>()
         
-        // If we ran out of buffer, contract stalls
-        if (availableFlops < flopsConsumed * 0.1 && flopsConsumed > 0) return 
+        var availableFlops = vm.flops.value
+        val flopsPerContract = (flopsRate * deltaSeconds * 0.8) / currentContracts.size
         
-        vm.flops.update { (it - flopsConsumed).coerceAtLeast(0.0) }
+        for (i in currentContracts.indices) {
+            val contract = currentContracts[i]
+            if (!contract.isActive) continue
+            
+            // If we ran out of buffer, contract stalls
+            if (availableFlops < flopsPerContract * 0.1 && flopsPerContract > 0) continue 
+            availableFlops -= flopsPerContract
+            
+            val baseFlops = baseFlopsForStage(contract.tier)
+            val speedMultiplier = (flopsRate / baseFlops).coerceIn(0.01, 100.0)
+            val totalSeconds = contract.processingTime / 1000.0
+            val progressDelta = (deltaSeconds / totalSeconds) * speedMultiplier
+            
+            val currentProgress = progressMap[contract.id] ?: 0.0
+            val newProgress = (currentProgress + progressDelta).coerceAtMost(1.0)
+            
+            progressMap[contract.id] = newProgress
+            currentContracts[i] = contract.copy(progress = newProgress)
+            
+            if (newProgress >= 1.0) toComplete.add(contract)
+        }
         
-        val progressDelta = (deltaSeconds / totalSeconds) * speedMultiplier
-        val newProgress = (contract.progress + progressDelta).coerceAtMost(1.0)
-        vm.activeContract.value = contract.copy(progress = newProgress)
-        vm.contractProgress.value = newProgress
-        if (newProgress >= 1.0) completeContract(vm, contract)
+        vm.flops.update { availableFlops.coerceAtLeast(0.0) }
+        vm.contractProgresses.value = progressMap
+        vm.activeContracts.value = currentContracts
+        
+        toComplete.forEach { completeContract(vm, it) }
     }
 
-    fun boostActiveContract(vm: GameViewModel, clickPower: Double) {
-        val contract = vm.activeContract.value ?: return
-        if (!contract.isActive) return
-        val baseFlops = baseFlopsForStage(contract.tier)
-        val totalSeconds = contract.processingTime / 1000.0
-        val boostAmount = (clickPower / baseFlops) * (1.0 / totalSeconds)
+    fun boostActiveContracts(vm: GameViewModel, clickPower: Double) {
+        val currentContracts = vm.activeContracts.value.toMutableList()
+        if (currentContracts.isEmpty()) return
+        
+        val progressMap = vm.contractProgresses.value.toMutableMap()
+        val toComplete = mutableListOf<ComputeContract>()
+        val powerPerContract = clickPower / currentContracts.size
         
         // v3.33.0: Clicks consume FLOPS fuel
         vm.flops.update { (it - clickPower * 0.5).coerceAtLeast(0.0) }
         
-        val newProgress = (contract.progress + boostAmount).coerceAtMost(1.0)
-        vm.activeContract.value = contract.copy(progress = newProgress)
-        vm.contractProgress.value = newProgress
-        if (newProgress >= 1.0) completeContract(vm, contract)
+        for (i in currentContracts.indices) {
+            val contract = currentContracts[i]
+            if (!contract.isActive) continue
+            
+            val baseFlops = baseFlopsForStage(contract.tier)
+            val totalSeconds = contract.processingTime / 1000.0
+            val boostAmount = (powerPerContract / baseFlops) * (1.0 / totalSeconds)
+            
+            val currentProgress = progressMap[contract.id] ?: 0.0
+            val newProgress = (currentProgress + boostAmount).coerceAtMost(1.0)
+            
+            progressMap[contract.id] = newProgress
+            currentContracts[i] = contract.copy(progress = newProgress)
+            
+            if (newProgress >= 1.0) toComplete.add(contract)
+        }
+        
+        vm.contractProgresses.value = progressMap
+        vm.activeContracts.value = currentContracts
+        
+        toComplete.forEach { completeContract(vm, it) }
     }
 
     /**
      * Complete a contract: triggers verification minigame or auto-verifies.
      */
     private fun completeContract(vm: GameViewModel, contract: ComputeContract) {
+        // Remove from active list
+        val currentContracts = vm.activeContracts.value.toMutableList()
+        currentContracts.removeAll { it.id == contract.id }
+        vm.activeContracts.value = currentContracts
+        
+        val currentProgresses = vm.contractProgresses.value.toMutableMap()
+        currentProgresses.remove(contract.id)
+        vm.contractProgresses.value = currentProgresses
+
         // v3.32.0: Auto-verify if enabled (Stage 3+ upgrade)
         if (vm.isAutoVerifyEnabled.value) {
             val autoAccuracy = 0.7 // Auto-verify always gets baseline accuracy
-            vm.activeContract.value = null
-            vm.contractProgress.value = 0.0
             applyVerificationResult(vm, contract, autoAccuracy)
             vm.addLogPublic("[SYSTEM]: AUTO-VERIFY COMPLETE. Baseline accuracy applied.")
             return
@@ -244,9 +285,6 @@ object ContractManager {
         vm.addLogPublic("[SYSTEM]: AWAITING MANUAL DATA VERIFICATION...")
         SoundManager.play("success")
         HapticManager.vibrateError()
-
-        vm.activeContract.value = null
-        vm.contractProgress.value = 0.0
     }
 
     /**
@@ -282,14 +320,22 @@ object ContractManager {
             SoundManager.play("error")
             return false
         }
-        if (vm.activeContract.value != null) {
-            vm.addLogPublic("[CONTRACT]: SLOT OCCUPIED. Complete current contract first.")
+        if (vm.activeContracts.value.size >= vm.unlockedContractSlots.value) {
+            vm.addLogPublic("[CONTRACT]: NO AVAILABLE SLOTS. Complete current contracts first.")
             SoundManager.play("error")
             return false
         }
         vm.updateNeuralTokens(-contract.cost)
-        vm.activeContract.value = contract.copy(isActive = true, progress = 0.0)
-        vm.contractProgress.value = 0.0
+        
+        val newContract = contract.copy(isActive = true, progress = 0.0)
+        val current = vm.activeContracts.value.toMutableList()
+        current.add(newContract)
+        vm.activeContracts.value = current
+        
+        val currentProgresses = vm.contractProgresses.value.toMutableMap()
+        currentProgresses[newContract.id] = 0.0
+        vm.contractProgresses.value = currentProgresses
+        
         vm.addLogPublic("[CONTRACT]: ▶ ${contract.name} ACQUIRED. Processing... (Purity: ${(contract.purity * 100).toInt()}%)")
         SoundManager.play("buy")
         HapticManager.vibrateClick()

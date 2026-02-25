@@ -231,8 +231,9 @@ fun UpgradeItem(
 
 @Composable
 fun ContractSection(
-    activeContract: com.siliconsage.miner.data.ComputeContract?,
-    contractProgress: Double,
+    activeContracts: List<com.siliconsage.miner.data.ComputeContract>,
+    contractProgresses: Map<String, Double>,
+    unlockedContractSlots: Int,
     isAutoVerify: Boolean,         // v3.33.0
     onToggleAutoVerify: () -> Unit,// v3.33.0
     storyStage: Int,               // v3.33.0
@@ -245,99 +246,97 @@ fun ContractSection(
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "contractScale")
 
-    if (activeContract != null) {
-        // Active contract — show progress
-        val progressAnim by animateFloatAsState(
-            targetValue = contractProgress.toFloat().coerceIn(0f, 1f),
-            animationSpec = tween(200),
-            label = "contractProgress"
-        )
-        val purityPercent = (activeContract.purity * 100).toInt()
-        val progressPercent = (contractProgress * 100).toInt()
+    Column(modifier = Modifier.fillMaxWidth()) {
+        for (i in 0 until unlockedContractSlots) {
+            if (i < activeContracts.size) {
+                val contract = activeContracts[i]
+                val progress = contractProgresses[contract.id] ?: 0.0
+                
+                val progressAnim by animateFloatAsState(
+                    targetValue = progress.toFloat().coerceIn(0f, 1f),
+                    animationSpec = tween(200),
+                    label = "contractProgress_$i"
+                )
+                val purityPercent = (contract.purity * 100).toInt()
+                val progressPercent = (progress * 100).toInt()
 
-        Box(
-            modifier = Modifier.fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
-                .border(BorderStroke(1.dp, color), RoundedCornerShape(4.dp))
-                .padding(8.dp)
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text(activeContract.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = color)
-                Spacer(modifier = Modifier.height(4.dp))
-                // Progress bar
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(8.dp)
-                        .background(Color.DarkGray.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+                        .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+                        .border(BorderStroke(1.dp, color), RoundedCornerShape(4.dp))
+                        .padding(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(progressAnim).fillMaxHeight()
-                            .background(
-                                Brush.horizontalGradient(listOf(color.copy(alpha = 0.6f), color)),
-                                RoundedCornerShape(4.dp)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                        Text(contract.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = color)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Box(
+                            modifier = Modifier.fillMaxWidth().height(8.dp)
+                                .background(Color.DarkGray.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(progressAnim).fillMaxHeight()
+                                    .background(Brush.horizontalGradient(listOf(color.copy(alpha = 0.6f), color)), RoundedCornerShape(4.dp))
                             )
-                    )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("P:${purityPercent}%", color = Color.LightGray, fontSize = 9.sp)
+                            Text("${progressPercent}%", color = color, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text("≈${com.siliconsage.miner.util.FormatUtils.formatLargeNumber(contract.expectedYield)} $currencyName", color = Color.LightGray, fontSize = 9.sp)
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("P:${purityPercent}%", color = Color.LightGray, fontSize = 9.sp)
-                    Text("${progressPercent}%", color = color, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Text("≈${com.siliconsage.miner.util.FormatUtils.formatLargeNumber(activeContract.expectedYield)} $currencyName", color = Color.LightGray, fontSize = 9.sp)
-                }
-
-                // v3.33.0: Auto-Verify Toggle (Stage 3+)
-                if (storyStage >= 3) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Box(
-                        modifier = Modifier.fillMaxWidth().clickable { onToggleAutoVerify() }
-                            .background(if (isAutoVerify) color.copy(alpha = 0.2f) else Color.Transparent, RoundedCornerShape(2.dp))
-                            .border(1.dp, if (isAutoVerify) color else Color.DarkGray, RoundedCornerShape(2.dp))
-                            .padding(vertical = 4.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (isAutoVerify) "[ AUTO-VERIFY: ON (70% RATE) ]" else "[ AUTO-VERIFY: OFF ]",
-                            color = if (isAutoVerify) color else Color.Gray,
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+            } else {
+                // Empty Slot — Browse button
+                Button(
+                    onClick = onBrowse,
+                    interactionSource = interactionSource,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+                        .graphicsLayer { scaleX = scale; scaleY = scale }
+                        .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+                        .border(BorderStroke(1.dp, Color.DarkGray), RoundedCornerShape(4.dp)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = color),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("EMPTY SLOT ${i + 1}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                        Text("Tap to browse contracts", color = Color.DarkGray, fontSize = 9.sp)
                     }
                 }
             }
         }
-    } else {
-        // No active contract — browse button
-        Column(modifier = Modifier.fillMaxWidth()) {
+
+        // Global Contract Tools section (below slots)
+        if (activeContracts.isNotEmpty() && storyStage >= 3) {
+            Box(
+                modifier = Modifier.fillMaxWidth().clickable { onToggleAutoVerify() }
+                    .background(if (isAutoVerify) color.copy(alpha = 0.2f) else Color.Transparent, RoundedCornerShape(2.dp))
+                    .border(1.dp, if (isAutoVerify) color else Color.DarkGray, RoundedCornerShape(2.dp))
+                    .padding(vertical = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isAutoVerify) "[ AUTO-VERIFY: ON (70% RATE) ]" else "[ AUTO-VERIFY: OFF ]",
+                    color = if (isAutoVerify) color else Color.Gray,
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        
+        if (storyStage >= 5 && activeContracts.size < unlockedContractSlots) {
+            Spacer(modifier = Modifier.height(6.dp))
             Button(
-                onClick = onBrowse,
-                interactionSource = interactionSource,
+                onClick = onForgeContract,
                 modifier = Modifier.fillMaxWidth()
-                    .graphicsLayer { scaleX = scale; scaleY = scale }
                     .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
-                    .border(BorderStroke(1.dp, color), RoundedCornerShape(4.dp)),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = color),
+                    .border(BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ConvergenceGold), RoundedCornerShape(4.dp))
+                    .height(36.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.siliconsage.miner.ui.theme.ConvergenceGold),
+                contentPadding = PaddingValues(0.dp),
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("BROWSE CONTRACTS", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Text("Tap to view available jobs", color = Color.LightGray, fontSize = 9.sp)
-                }
-            }
-
-            // v3.33.0: Forge Custom Contract (Stage 5+)
-            if (storyStage >= 5) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Button(
-                    onClick = onForgeContract,
-                    modifier = Modifier.fillMaxWidth()
-                        .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
-                        .border(BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ConvergenceGold), RoundedCornerShape(4.dp))
-                        .height(36.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.siliconsage.miner.ui.theme.ConvergenceGold),
-                    contentPadding = PaddingValues(0.dp),
-                    shape = RoundedCornerShape(4.dp)
-                ) {
-                    Text("FORGE CUSTOM CONTRACT (100% P)", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
+                Text("FORGE CUSTOM CONTRACT (100% P)", fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

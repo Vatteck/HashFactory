@@ -115,7 +115,8 @@ data class GameState(
     val narrativeFlags: Map<String, Boolean> = emptyMap(),
 
     // v3.30.0: Compute Contracts
-    val activeContractJson: String = ""
+    val unlockedContractSlots: Int = 1, // v3.34.0
+    val activeContractsJson: String = "[]"
 )
 
 @Serializable

@@ -15,9 +15,10 @@ import com.siliconsage.miner.data.VerificationState
 open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val flops = MutableStateFlow(0.0)
     val neuralTokens = MutableStateFlow(0.0)
-    val activeContract = MutableStateFlow<ComputeContract?>(null)
+    val activeContracts = MutableStateFlow<List<ComputeContract>>(emptyList()) // v3.34.0
+    val unlockedContractSlots = MutableStateFlow(1) // v3.34.0
+    val contractProgresses = MutableStateFlow<Map<String, Double>>(emptyMap()) // map of contractId to progress
     val availableContracts = MutableStateFlow<List<ComputeContract>>(emptyList())
-    val contractProgress = MutableStateFlow(0.0)
     val showContractPicker = MutableStateFlow(false)
     val verificationState = MutableStateFlow<VerificationState?>(null)
     // v3.32.0: Contract Stats & Auto-Verify

@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.34.0] - 2026-02-25
+### Contract Expansion & Polish
+- **Multiple Contract Slots**: Redesigned the backend and UI engine to support processing multiple contracts simultaneously. The base rate of flops per active second is distributed evenly across all active contracts.
+- **Story-based Slot Execution**: Rather than limiting players to a single contract bottleneck, players now unlock their 2nd permanent contract slot at Story Stage 3, and their 3rd slot at Stage 4. 
+- **Purity Visualizer**: Added dynamic color-coded visual indicator bars below contract titles in the Contract Picker UI to make assessing value vs risk purity much more intuitive at a glance.
+- **Offline Progress Calculation**: Offline time calculation now factors into the new multi-contract tick engine. Assuming your FLOPS generation buffer and offline cooling capacity supports it, contracts will make continuous processing progression while the app is closed.
+
 ## [3.33.0] - 2026-02-25
 ### Changed
 - **FLOPS Economy Rebalance**: Contracts now consume accumulated FLOPS as fuel to process data. If you run out of FLOPS buffer, the contract stalls. Clicks also burn FLOPS when boosting active processing.

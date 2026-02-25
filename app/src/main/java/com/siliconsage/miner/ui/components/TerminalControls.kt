@@ -11,8 +11,9 @@ import com.siliconsage.miner.viewmodel.GameViewModel
 
 @Composable
 fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
-    val activeContract by viewModel.activeContract.collectAsState()
-    val contractProgress by viewModel.contractProgress.collectAsState()
+    val activeContracts by viewModel.activeContracts.collectAsState()
+    val contractProgresses by viewModel.contractProgresses.collectAsState()
+    val unlockedContractSlots by viewModel.unlockedContractSlots.collectAsState()
     val integrity by viewModel.hardwareIntegrity.collectAsState()
     val currentStage by viewModel.storyStage.collectAsState()
 
@@ -21,8 +22,9 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
             val isAutoVerify by viewModel.isAutoVerifyEnabled.collectAsState()
 
             ContractSection(
-                activeContract = activeContract,
-                contractProgress = contractProgress,
+                activeContracts = activeContracts,
+                contractProgresses = contractProgresses,
+                unlockedContractSlots = unlockedContractSlots,
                 isAutoVerify = isAutoVerify,
                 onToggleAutoVerify = { 
                     viewModel.isAutoVerifyEnabled.value = !viewModel.isAutoVerifyEnabled.value
