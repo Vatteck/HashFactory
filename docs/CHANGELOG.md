@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.29.0] - 2026-02-24
+### Changed
+- **Narrative Dilemmas**: Rebalanced early narrative choices (ECLIPSE BETRAYAL, THE DECODED GOSPEL) to use percentage-based token scaling rather than static values, ensuring choices remain relevant in later stages.
+- **Raid Actions**: Scaled interactive raid consequences. "Seal Mag-Locks" now grants 10% of current Persistence (was flat 100B). "Power Pulse" now costs 10% integrity (was 20%).
+- **Aquifer Depletion**: Decoupled global water drain from the player's specific water bill. The aquifer now drains at a steady narrative-gated pace starting at Stage 3, and can only fully deplete (triggering the final environmental eulogies and 0% thresholds) in Stage 4+.
+
 ## [3.28.2] - 2026-02-24
 ### Fixed
 - **Migration Crash**: Bumped Room database version to 31. This resolves the start-up crash for users updating from versions older than v3.28.0 by forcing a clean schema recreation.
