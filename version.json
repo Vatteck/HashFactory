@@ -1,11 +1,11 @@
 {
-  "version": "3.28.2",
-  "build": 433,
+  "version": "3.29.0",
+  "build": 434,
   "date": "2026-02-24",
   "changelog": [
-    "c6afb1e 3.28.2",
-    "e7f7b2d fix: bump Room version to 31 to resolve v3.28.1 crash"
+    "6855c14 feat: Add changelog entries for rebalanced narrative choices, scaled raid consequences, and adjusted aquifer depletion mechanics.",
+    "0281dc3 refactor: Decouple aquifer depletion from water draw and adjust resource gains/costs in narrative choices to be percentage-based or reduced."
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.28.2",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.28.2/MINER_3.28.2.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.29.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.29.0/MINER_3.29.0.apk"
 }
