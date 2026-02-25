@@ -1,10 +1,10 @@
 {
-  "version": "3.32.0",
-  "build": 437,
+  "version": "3.33.0",
+  "build": 438,
   "date": "2026-02-25",
   "changelog": [
-    "e2b526a feat: contract narrative integration (v3.32.0)"
+    "28608b1 feat: FLOPS economy rebalance, stage 5 forging (v3.33.0)"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.32.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.32.0/MINER_3.32.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.33.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.33.0/MINER_3.33.0.apk"
 }
