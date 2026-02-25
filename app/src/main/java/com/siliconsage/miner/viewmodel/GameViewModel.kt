@@ -359,7 +359,10 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (activeContract.value != null) {
             ContractManager.boostActiveContract(this, p)
         } else {
+            // v3.33.0: No contract active: micro-drip conversion
             flops.update { it + p }
+            val microNeur = p * conversionRate.value * 0.10 // 10% of what an exchanged rate would be
+            if (microNeur > 0) updateNeuralTokens(microNeur)
         }
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         if (storyStage.value >= 3) substrateMass.update { it + (p * 0.01) }
@@ -942,6 +945,31 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             saveState()
 
             isMigrationBurning.value = false
+        }
+    }
+
+    // v3.30.0: Abandon current active contract (losing investment)
+    fun voidContract() {
+        val c = activeContract.value
+        if (c != null) {
+            addLogPublic("[SYSTEM]: CONTRACT VOIDED. DATA LOSS RECORDED.")
+            SoundManager.play("error")
+            activeContract.value = null
+            contractProgress.value = 0.0
+        }
+    }
+
+    // v3.33.0: Forge custom Stage 5 contract
+    fun forgeContract() {
+        val forged = ContractManager.forgeCustomContract(this)
+        if (forged != null) {
+            updateNeuralTokens(-forged.cost)
+            activeContract.value = forged
+            contractProgress.value = 0.0
+            addLog("[SYSTEM]: CUSTOM CONTRACT FORGED. INITIATING RUN.")
+        } else {
+            addLog("[SYSTEM]: FORGE FAILED. INSUFFICIENT SUBSTRATE LIQUIDITY.")
+            SoundManager.play("error")
         }
     }
 

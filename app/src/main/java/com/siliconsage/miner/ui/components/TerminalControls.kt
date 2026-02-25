@@ -18,14 +18,26 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1f)) {
-            // v3.30.0: Contract Section replaces Exchange Section
+            val isAutoVerify by viewModel.isAutoVerifyEnabled.collectAsState()
+
             ContractSection(
                 activeContract = activeContract,
                 contractProgress = contractProgress,
+                isAutoVerify = isAutoVerify,
+                onToggleAutoVerify = { 
+                    viewModel.isAutoVerifyEnabled.value = !viewModel.isAutoVerifyEnabled.value
+                    SoundManager.play("click") 
+                },
+                storyStage = currentStage,
                 color = primaryColor,
                 currencyName = viewModel.getCurrencyName(),
                 onBrowse = {
                     viewModel.toggleContractPicker()
+                    SoundManager.play("buy")
+                    HapticManager.vibrateClick()
+                },
+                onForgeContract = {
+                    viewModel.forgeContract()
                     SoundManager.play("buy")
                     HapticManager.vibrateClick()
                 }

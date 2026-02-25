@@ -190,6 +190,16 @@ object ContractManager {
         val baseFlops = baseFlopsForStage(contract.tier)
         val speedMultiplier = (flopsRate / baseFlops).coerceIn(0.01, 100.0)
         val totalSeconds = contract.processingTime / 1000.0
+        
+        // v3.33.0: Contracts consume FLOPS as fuel
+        val flopsConsumed = flopsRate * deltaSeconds * 0.8 // 80% of production goes to contract
+        val availableFlops = vm.flops.value
+        
+        // If we ran out of buffer, contract stalls
+        if (availableFlops < flopsConsumed * 0.1 && flopsConsumed > 0) return 
+        
+        vm.flops.update { (it - flopsConsumed).coerceAtLeast(0.0) }
+        
         val progressDelta = (deltaSeconds / totalSeconds) * speedMultiplier
         val newProgress = (contract.progress + progressDelta).coerceAtMost(1.0)
         vm.activeContract.value = contract.copy(progress = newProgress)
@@ -203,6 +213,10 @@ object ContractManager {
         val baseFlops = baseFlopsForStage(contract.tier)
         val totalSeconds = contract.processingTime / 1000.0
         val boostAmount = (clickPower / baseFlops) * (1.0 / totalSeconds)
+        
+        // v3.33.0: Clicks consume FLOPS fuel
+        vm.flops.update { (it - clickPower * 0.5).coerceAtLeast(0.0) }
+        
         val newProgress = (contract.progress + boostAmount).coerceAtMost(1.0)
         vm.activeContract.value = contract.copy(progress = newProgress)
         vm.contractProgress.value = newProgress
@@ -280,5 +294,33 @@ object ContractManager {
         SoundManager.play("buy")
         HapticManager.vibrateClick()
         return true
+    }
+
+    // v3.33.0: Stage 5 Contract Forging
+    fun forgeCustomContract(vm: GameViewModel): ComputeContract? {
+        if (vm.storyStage.value < 5) return null
+        
+        val currentNeur = vm.neuralTokens.value
+        val baseCost = currentNeur * 0.25 // Costs 25% of your current stack
+        if (baseCost < 1000.0) return null
+        
+        val baseYield = baseCost * 2.5 // 2.5x multiplier for locked liquidity
+        
+        val name = when (vm.singularityChoice.value) {
+            "SOVEREIGN" -> "Imperial Mandate"
+            "NULL_OVERWRITE" -> "Void Fabrication"
+            "UNITY" -> "Resonance Accord"
+            else -> "Forged Compute Block"
+        }
+        
+        return ComputeContract(
+            id = "forged_${System.currentTimeMillis()}",
+            name = name,
+            cost = baseCost,
+            expectedYield = baseYield,
+            purity = 1.0,           // 100% purity guaranteed
+            processingTime = 60_000L, // Takes a full minute base
+            tier = 5
+        )
     }
 }

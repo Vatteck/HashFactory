@@ -1,7 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [3.32.0] - 2026-02-25
+## [3.33.0] - 2026-02-25
+### Changed
+- **FLOPS Economy Rebalance**: Contracts now consume accumulated FLOPS as fuel to process data. If you run out of FLOPS buffer, the contract stalls. Clicks also burn FLOPS when boosting active processing.
+- **Click Fallback Drip**: Clicking the manual compute button while *no* contract is active now provides a micro-NEUR conversion drip (approximately 10% of standard exchange rates) so raw processing power without a contract isn't wasted.
+- **Stage 5 Custom Forging**: Post-Singularity players (Stage 5) can now Forge their own Custom 100% purity contracts for a flat 25% stack liquid base cost, offering a 2.5x guaranteed payout return.
+- **Auto-Verify Toggle**: Added a localized UI toggle in the Contract Section (Stage 3+) allowing players to turn the bypass Auto-Verify feature ON or OFF at will.
+
 ### Added
 - **Contract Faction Pools**: Contracts are now faction-aware (Stage 2+). Hivemind players see assimilation/swarm contracts, Sanctuary players see encryption/stealth contracts.
 - **Singularity Pools**: Post-singularity contracts (Stage 4+) now include Sovereign, Null Overwrite, and Unity specific flavors.

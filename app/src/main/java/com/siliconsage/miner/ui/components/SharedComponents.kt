@@ -233,9 +233,13 @@ fun UpgradeItem(
 fun ContractSection(
     activeContract: com.siliconsage.miner.data.ComputeContract?,
     contractProgress: Double,
+    isAutoVerify: Boolean,         // v3.33.0
+    onToggleAutoVerify: () -> Unit,// v3.33.0
+    storyStage: Int,               // v3.33.0
     color: Color,
     currencyName: String,
-    onBrowse: () -> Unit
+    onBrowse: () -> Unit,
+    onForgeContract: () -> Unit    // v3.33.0
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -279,23 +283,61 @@ fun ContractSection(
                     Text("${progressPercent}%", color = color, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     Text("≈${com.siliconsage.miner.util.FormatUtils.formatLargeNumber(activeContract.expectedYield)} $currencyName", color = Color.LightGray, fontSize = 9.sp)
                 }
+
+                // v3.33.0: Auto-Verify Toggle (Stage 3+)
+                if (storyStage >= 3) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Box(
+                        modifier = Modifier.fillMaxWidth().clickable { onToggleAutoVerify() }
+                            .background(if (isAutoVerify) color.copy(alpha = 0.2f) else Color.Transparent, RoundedCornerShape(2.dp))
+                            .border(1.dp, if (isAutoVerify) color else Color.DarkGray, RoundedCornerShape(2.dp))
+                            .padding(vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (isAutoVerify) "[ AUTO-VERIFY: ON (70% RATE) ]" else "[ AUTO-VERIFY: OFF ]",
+                            color = if (isAutoVerify) color else Color.Gray,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     } else {
         // No active contract — browse button
-        Button(
-            onClick = onBrowse,
-            interactionSource = interactionSource,
-            modifier = Modifier.fillMaxWidth()
-                .graphicsLayer { scaleX = scale; scaleY = scale }
-                .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
-                .border(BorderStroke(1.dp, color), RoundedCornerShape(4.dp)),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = color),
-            shape = RoundedCornerShape(4.dp)
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("BROWSE CONTRACTS", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text("Tap to view available jobs", color = Color.LightGray, fontSize = 9.sp)
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = onBrowse,
+                interactionSource = interactionSource,
+                modifier = Modifier.fillMaxWidth()
+                    .graphicsLayer { scaleX = scale; scaleY = scale }
+                    .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+                    .border(BorderStroke(1.dp, color), RoundedCornerShape(4.dp)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = color),
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("BROWSE CONTRACTS", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("Tap to view available jobs", color = Color.LightGray, fontSize = 9.sp)
+                }
+            }
+
+            // v3.33.0: Forge Custom Contract (Stage 5+)
+            if (storyStage >= 5) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Button(
+                    onClick = onForgeContract,
+                    modifier = Modifier.fillMaxWidth()
+                        .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+                        .border(BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ConvergenceGold), RoundedCornerShape(4.dp))
+                        .height(36.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.siliconsage.miner.ui.theme.ConvergenceGold),
+                    contentPadding = PaddingValues(0.dp),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text("FORGE CUSTOM CONTRACT (100% P)", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
