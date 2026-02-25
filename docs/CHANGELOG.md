@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.28.2] - 2026-02-24
+### Fixed
+- **Migration Crash**: Bumped Room database version to 31. This resolves the start-up crash for users updating from versions older than v3.28.0 by forcing a clean schema recreation.
+
 ## [3.28.1] - 2026-02-24
 ### Added
 - **BGM Track Selector**: Players can now switch between `bgm.ogg`, `bgm2.ogg`, and `bgm3.ogg` in the Audio Settings. Selections are persistent across sessions.
