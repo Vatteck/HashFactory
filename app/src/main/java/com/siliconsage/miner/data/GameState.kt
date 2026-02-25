@@ -112,7 +112,10 @@ data class GameState(
     val reputationScore: Double = 50.0,
     
     // v3.25.0: Narrative Flags
-    val narrativeFlags: Map<String, Boolean> = emptyMap()
+    val narrativeFlags: Map<String, Boolean> = emptyMap(),
+
+    // v3.30.0: Compute Contracts
+    val activeContractJson: String = ""
 )
 
 @Serializable

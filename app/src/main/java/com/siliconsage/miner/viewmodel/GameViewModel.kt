@@ -148,6 +148,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 if (isSettingsPaused.value || isKernelInitializing.value) continue
                 val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value, substrateSaturation.value)
                 if (!res.flopsDelta.isNaN()) flops.update { it + res.flopsDelta }
+                // v3.30.0: Tick active contract based on FLOPS rate
+                ContractManager.tickActiveContract(this@GameViewModel, flopsProductionRate.value, 0.1)
 
                 // v3.13.19: Applying Wage-Docking Bleed
                 if (isWageDocking.value) {
@@ -338,7 +340,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 marketMultiplier = marketMultiplier.value, thermalRateModifier = thermalRateModifier.value, energyPriceMultiplier = energyPriceMultiplier.value,
                 newsProductionMultiplier = newsProductionMultiplier.value, substrateMass = substrateMass.value, substrateSaturation = substrateSaturation.value,
                 heuristicEfficiency = heuristicEfficiency.value, identityCorruption = identityCorruption.value, migrationCount = migrationCount.value,
-                lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value, specializedNodes = specializedNodes.value
+                lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value, specializedNodes = specializedNodes.value,
+                activeContractJson = activeContract.value?.let { kotlinx.serialization.json.Json.encodeToString(com.siliconsage.miner.data.ComputeContract.serializer(), it) } ?: ""
             ))
         }
     }
@@ -352,7 +355,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
         val p = calculateClickPower()
-        flops.update { it + p }
+        // v3.30.0: Click power boosts active contract instead of accumulating raw flops
+        if (activeContract.value != null) {
+            ContractManager.boostActiveContract(this, p)
+        } else {
+            flops.update { it + p }
+        }
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         if (storyStage.value >= 3) substrateMass.update { it + (p * 0.01) }
         val cur = clickBufferProgress.value + 0.025f
@@ -598,27 +606,39 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
     fun onDiagnosticTap(idx: Int) { val curr = diagnosticGrid.value.toMutableList(); if (idx in curr.indices && curr[idx]) { curr[idx] = false; diagnosticGrid.value = curr; if (curr.none { it }) { isDiagnosticsActive.value = false; addLog("[SYSTEM]: NETWORK REPAIRED."); refreshProductionRates() } } }
     fun resolveFork(c: Int) { isGovernanceForkActive.value = false }
+    // v3.30.0: exchangeFlops replaced by contract system
     fun exchangeFlops() {
+        // Legacy fallback: if no contracts available, direct convert at old rate
         var g = flops.value * 0.1
         if (g.isNaN() || g.isInfinite()) g = 0.0
         flops.update { 0.0 }
-        // At stage 4+, upgrades cost substrateMass - fill that pool instead
         if (storyStage.value >= 4) {
             substrateMass.update { it + g }
         } else {
-            // v3.16.x: Signal Quality Bonus (+10% NT if signal is clear/headroom high)
             var finalG = g
-            val hasSignalBonus = isSignalClear.value
-            if (hasSignalBonus) {
-                finalG *= 1.1
-            }
-            
+            if (isSignalClear.value) finalG *= 1.1
             updateNeuralTokens(finalG)
-            
-            val bonusMsg = if (hasSignalBonus) " (Signal Quality Bonus: +10%)" else ""
+            val bonusMsg = if (isSignalClear.value) " (Signal Quality Bonus: +10%)" else ""
             addLogPublic("[CREDIT]: Transferred ${formatLargeNumber(finalG)} NT.$bonusMsg")
         }
         SoundManager.play("buy")
+    }
+
+    // v3.30.0: Contract Economy
+    fun purchaseContract(contract: com.siliconsage.miner.data.ComputeContract) {
+        ContractManager.purchaseContract(this, contract)
+    }
+
+    fun toggleContractPicker() {
+        showContractPicker.update { !it }
+    }
+
+    fun refreshContracts() {
+        availableContracts.value = ContractManager.generateAvailableContracts(
+            stage = storyStage.value,
+            conversionRate = conversionRate.value,
+            marketMultiplier = marketMultiplier.value
+        )
     }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)

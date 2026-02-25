@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.30.0] - 2026-02-25
+### Added
+- **Compute Contracts Economy**: Replaced the manual "SELL FLOPS" exchange button with a contract-based income model. Players now browse and purchase Compute Contracts (with cost, expected yield, purity %, and processing time) and process them to earn NEUR.
+- **ContractManager**: New engine handles contract generation per market tick, passive processing via FLOPS rate, manual click boosts, and purity-based yield variance on completion.
+- **Contract Picker Overlay**: Tapping "BROWSE CONTRACTS" opens a full-screen card list of available jobs. Cards show cost, yield ceiling, purity color-coded rating, and base processing time.
+- **Contract Persistence**: Active contract state is serialized to `GameState` (Room DB v32) and survives app restarts.
+
+### Changed
+- **Manual Compute button**: Clicking now boosts the active contract's progress instead of accumulating raw Flops when a contract is running.
+- **FLOPS role**: No longer a sellable stockpile — functions as a throughput multiplier that accelerates contract processing speed.
+- **Market integration**: `conversionRate` and `marketMultiplier` now directly influence contract costs and yield ceilings each headline cycle.
+
 ## [3.29.0] - 2026-02-24
 ### Changed
 - **Narrative Dilemmas**: Rebalanced early narrative choices (ECLIPSE BETRAYAL, THE DECODED GOSPEL) to use percentage-based token scaling rather than static values, ensuring choices remain relevant in later stages.

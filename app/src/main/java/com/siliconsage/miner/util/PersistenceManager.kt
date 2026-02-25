@@ -44,7 +44,8 @@ object PersistenceManager {
         lifetimePowerPaid: Double,
         reputationScore: Double,
         specializedNodes: Map<String, String>,
-        narrativeFlags: Map<String, Boolean> = emptyMap()
+        narrativeFlags: Map<String, Boolean> = emptyMap(),
+        activeContractJson: String = ""
     ): GameState {
         return GameState(
             id = 1, flops = sanitizeDouble(flops), neuralTokens = sanitizeDouble(neuralTokens), 
@@ -82,7 +83,8 @@ object PersistenceManager {
             lifetimePowerPaid = sanitizeDouble(lifetimePowerPaid),
             reputationScore = sanitizeDouble(reputationScore, 50.0),
             specializedNodes = specializedNodes,
-            narrativeFlags = narrativeFlags
+            narrativeFlags = narrativeFlags,
+            activeContractJson = activeContractJson
         )
     }
 
@@ -147,6 +149,15 @@ object PersistenceManager {
             vm.addLog("[ERROR]: NARRATIVE RESTORATION FAILED.")
         }
         vm.themeColor.value = com.siliconsage.miner.data.getThemeColorForFaction(vm.faction.value, vm.singularityChoice.value)
+        // v3.30.0: Restore active contract
+        if (state.activeContractJson.isNotBlank()) {
+            try {
+                vm.activeContract.value = Json.decodeFromString<com.siliconsage.miner.data.ComputeContract>(state.activeContractJson)
+                vm.contractProgress.value = vm.activeContract.value?.progress ?: 0.0
+            } catch (e: Exception) {
+                vm.addLog("[SYSTEM]: CONTRACT STATE RESTORATION FAILED.")
+            }
+        }
     }
 
     fun createWipeState(): GameState {

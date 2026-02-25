@@ -26,55 +26,64 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
         label = "cursor"
     )
     val showCursor = cursorAlpha > 0.5f
+    val showContractPicker by viewModel.showContractPicker.collectAsState()
 
-    Column(
-        modifier = Modifier.fillMaxSize().background(Color.Transparent).padding(16.dp)
-    ) {
-        TerminalHeader(viewModel, primaryColor)
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        val mode by viewModel.activeTerminalMode.collectAsState()
-        val hasDecision by viewModel.hasNewSubnetDecision.collectAsState()
-        val hasChatter by viewModel.hasNewSubnetChatter.collectAsState()
-        val hasIO by viewModel.hasNewIOMessage.collectAsState()
-        val currentHeat by viewModel.currentHeat.collectAsState()
-        val corruption by viewModel.identityCorruption.collectAsState()
-
-        Row(
-            modifier = Modifier.fillMaxWidth().offset(y = 1.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize().background(Color.Transparent).padding(16.dp)
         ) {
-            TerminalTab(
-                label = "I/O",
-                active = mode == "IO",
-                hasFlash = hasIO,
-                color = primaryColor,
-                corruption = corruption,
-                modifier = Modifier.weight(1f),
-                onClick = { viewModel.setTerminalMode("IO") }
-            )
-            TerminalTab(
-                label = "SUBNET",
-                active = mode == "SUBNET",
-                hasFlash = hasChatter || hasDecision,
-                isDecision = hasDecision,
-                color = primaryColor,
-                corruption = corruption,
-                modifier = Modifier.weight(1f),
-                onClick = { viewModel.setTerminalMode("SUBNET") }
-            )
+            TerminalHeader(viewModel, primaryColor)
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            val mode by viewModel.activeTerminalMode.collectAsState()
+            val hasDecision by viewModel.hasNewSubnetDecision.collectAsState()
+            val hasChatter by viewModel.hasNewSubnetChatter.collectAsState()
+            val hasIO by viewModel.hasNewIOMessage.collectAsState()
+            val currentHeat by viewModel.currentHeat.collectAsState()
+            val corruption by viewModel.identityCorruption.collectAsState()
+
+            Row(
+                modifier = Modifier.fillMaxWidth().offset(y = 1.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                TerminalTab(
+                    label = "I/O",
+                    active = mode == "IO",
+                    hasFlash = hasIO,
+                    color = primaryColor,
+                    corruption = corruption,
+                    modifier = Modifier.weight(1f),
+                    onClick = { viewModel.setTerminalMode("IO") }
+                )
+                TerminalTab(
+                    label = "SUBNET",
+                    active = mode == "SUBNET",
+                    hasFlash = hasChatter || hasDecision,
+                    isDecision = hasDecision,
+                    color = primaryColor,
+                    corruption = corruption,
+                    modifier = Modifier.weight(1f),
+                    onClick = { viewModel.setTerminalMode("SUBNET") }
+                )
+            }
+
+            Box(
+                modifier = Modifier.weight(1f).fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                    .border(BorderStroke(1.5.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.85f)), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+            ) {
+                TerminalLogs(viewModel, primaryColor, showCursor)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            TerminalControls(viewModel, primaryColor)
         }
 
-        Box(
-            modifier = Modifier.weight(1f).fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-                .border(BorderStroke(1.5.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.85f)), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-        ) {
-            TerminalLogs(viewModel, primaryColor, showCursor)
+        // v3.30.0: Contract Picker Overlay
+        if (showContractPicker) {
+            com.siliconsage.miner.ui.components.ContractPickerOverlay(viewModel, primaryColor)
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        TerminalControls(viewModel, primaryColor)
     }
 }
+

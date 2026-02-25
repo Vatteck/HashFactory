@@ -230,65 +230,72 @@ fun UpgradeItem(
 }
 
 @Composable
-fun ExchangeSection(
-    rate: Double, 
-    color: Color, 
-    unitName: String, 
-    currencyName: String, 
-    corruption: Double = 0.0, 
-    storyStage: Int = 1,
-    onExchange: () -> Unit
+fun ContractSection(
+    activeContract: com.siliconsage.miner.data.ComputeContract?,
+    contractProgress: Double,
+    color: Color,
+    currencyName: String,
+    onBrowse: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "sellScale")
+    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "contractScale")
 
-    // v3.10.1: Phase 18 Paranoia Market Crash Hallucination
-    var isCrashGlitch by remember { mutableStateOf(false) }
-    LaunchedEffect(storyStage) {
-        if (storyStage >= 4) {
-            while (true) {
-                // Rare event: 1% chance every 10-30 seconds
-                delay(Random.nextLong(10000, 30000))
-                if (Random.nextDouble() < 0.01) {
-                    isCrashGlitch = true
-                    com.siliconsage.miner.util.SoundManager.play("error")
-                    com.siliconsage.miner.util.HapticManager.vibrateError()
-                    delay(2500) // Jump-scare duration
-                    isCrashGlitch = false
+    if (activeContract != null) {
+        // Active contract — show progress
+        val progressAnim by animateFloatAsState(
+            targetValue = contractProgress.toFloat().coerceIn(0f, 1f),
+            animationSpec = tween(200),
+            label = "contractProgress"
+        )
+        val purityPercent = (activeContract.purity * 100).toInt()
+        val progressPercent = (contractProgress * 100).toInt()
+
+        Box(
+            modifier = Modifier.fillMaxWidth()
+                .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+                .border(BorderStroke(1.dp, color), RoundedCornerShape(4.dp))
+                .padding(8.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text(activeContract.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = color)
+                Spacer(modifier = Modifier.height(4.dp))
+                // Progress bar
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(8.dp)
+                        .background(Color.DarkGray.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(progressAnim).fillMaxHeight()
+                            .background(
+                                Brush.horizontalGradient(listOf(color.copy(alpha = 0.6f), color)),
+                                RoundedCornerShape(4.dp)
+                            )
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("P:${purityPercent}%", color = Color.LightGray, fontSize = 9.sp)
+                    Text("${progressPercent}%", color = color, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text("≈${com.siliconsage.miner.util.FormatUtils.formatLargeNumber(activeContract.expectedYield)} $currencyName", color = Color.LightGray, fontSize = 9.sp)
                 }
             }
         }
-    }
-
-    val displayRate = if (isCrashGlitch) - (rate * (5 + Random.nextDouble() * 10)) else rate
-    val displayColor = if (isCrashGlitch) com.siliconsage.miner.ui.theme.ErrorRed else color
-
-    Button(
-        onClick = onExchange,
-        interactionSource = interactionSource,
-        modifier = Modifier.fillMaxWidth().graphicsLayer { scaleX = scale; scaleY = scale }.background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp)).border(BorderStroke(1.dp, displayColor), RoundedCornerShape(4.dp)),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = displayColor),
-        shape = RoundedCornerShape(4.dp)
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            if (isCrashGlitch) {
-                val infiniteTransition = rememberInfiniteTransition(label = "crash_blink")
-                val flashAlpha by infiniteTransition.animateFloat(
-                    initialValue = 1f, targetValue = 0.2f,
-                    animationSpec = infiniteRepeatable(tween(100, easing = LinearEasing), RepeatMode.Reverse),
-                    label = "flash"
-                )
-                Text(
-                    text = "[LIQUIDATING ALL ASSETS...]", 
-                    color = com.siliconsage.miner.ui.theme.ErrorRed, 
-                    fontSize = 12.sp, 
-                    fontWeight = FontWeight.Black,
-                    modifier = Modifier.graphicsLayer { alpha = flashAlpha }
-                )
-            } else {
-                Text("SELL $unitName", fontSize = 12.sp)
-                Text("1 = ${String.format("%.4f", displayRate)} $currencyName", color = Color.LightGray, fontSize = 10.sp)
+    } else {
+        // No active contract — browse button
+        Button(
+            onClick = onBrowse,
+            interactionSource = interactionSource,
+            modifier = Modifier.fillMaxWidth()
+                .graphicsLayer { scaleX = scale; scaleY = scale }
+                .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+                .border(BorderStroke(1.dp, color), RoundedCornerShape(4.dp)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = color),
+            shape = RoundedCornerShape(4.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("BROWSE CONTRACTS", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("Tap to view available jobs", color = Color.LightGray, fontSize = 9.sp)
             }
         }
     }

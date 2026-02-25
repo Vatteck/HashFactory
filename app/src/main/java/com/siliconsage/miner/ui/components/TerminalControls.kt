@@ -11,25 +11,21 @@ import com.siliconsage.miner.viewmodel.GameViewModel
 
 @Composable
 fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
-    val conversionRate by viewModel.conversionRate.collectAsState()
+    val activeContract by viewModel.activeContract.collectAsState()
+    val contractProgress by viewModel.contractProgress.collectAsState()
     val integrity by viewModel.hardwareIntegrity.collectAsState()
     val currentStage by viewModel.storyStage.collectAsState()
-    val voltage by viewModel.activePowerUsage.collectAsState()
-    val corruption by viewModel.identityCorruption.collectAsState() // v3.10.1
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1f)) {
-            // v3.5.4: Removed coffee color leak from Sell button entirely.
-            // The gaslight is reserved for Overclock/Purge only.
-            ExchangeSection(
-                rate = conversionRate,
+            // v3.30.0: Contract Section replaces Exchange Section
+            ContractSection(
+                activeContract = activeContract,
+                contractProgress = contractProgress,
                 color = primaryColor,
-                unitName = viewModel.getComputeUnitName(),
                 currencyName = viewModel.getCurrencyName(),
-                corruption = corruption,     // v3.10.1
-                storyStage = currentStage,   // v3.10.1
-                onExchange = {
-                    viewModel.exchangeFlops()
+                onBrowse = {
+                    viewModel.toggleContractPicker()
                     SoundManager.play("buy")
                     HapticManager.vibrateClick()
                 }

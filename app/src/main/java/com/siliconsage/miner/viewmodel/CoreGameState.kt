@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import com.siliconsage.miner.data.ComputeContract
 
 open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val flops = MutableStateFlow(0.0)
@@ -233,6 +234,12 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     var lastRaidTime = 0L
     var lastStageChangeTime = System.currentTimeMillis()
     val narrativeQueue = mutableListOf<NarrativeItem>()
+
+    // v3.30.0: Compute Contracts Economy
+    val activeContract = MutableStateFlow<ComputeContract?>(null)
+    val availableContracts = MutableStateFlow<List<ComputeContract>>(emptyList())
+    val contractProgress = MutableStateFlow(0.0)
+    val showContractPicker = MutableStateFlow(false)
 
     // v3.13.44 Restoration
     var currentPhaseStartTime = 0L

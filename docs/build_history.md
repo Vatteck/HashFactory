@@ -81,3 +81,6 @@
 
 ## 2026-02-24 14:48 — v3.26.1 (Build 429)
 - Summary: UI Polish Hotfix
+## 2026-02-24 22:29 — v3.29.0 (Build 434)
+- Summary: Narrative Balance & Environmental Fixes
+
