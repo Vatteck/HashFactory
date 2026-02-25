@@ -637,7 +637,10 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         availableContracts.value = ContractManager.generateAvailableContracts(
             stage = storyStage.value,
             conversionRate = conversionRate.value,
-            marketMultiplier = marketMultiplier.value
+            marketMultiplier = marketMultiplier.value,
+            faction = faction.value,
+            singularityChoice = singularityChoice.value,
+            playerNeur = neuralTokens.value
         )
     }
 

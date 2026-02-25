@@ -30,7 +30,8 @@ object MarketManager {
             corruption = vm.identityCorruption.value,
             playerRank = vm.playerRank.value,
             aquiferLevel = vm.aquiferLevel.value,
-            isQuotaActive = vm.isQuotaActive.value // v3.16.0
+            isQuotaActive = vm.isQuotaActive.value,
+            contractsCompleted = vm.contractsCompleted.value // v3.32.0
         )
         
         vm.updateNews(headline)

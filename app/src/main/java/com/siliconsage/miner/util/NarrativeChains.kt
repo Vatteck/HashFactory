@@ -142,4 +142,96 @@ object NarrativeChains {
             )
         )
     )
+
+    // v3.32.0: Contract Economy Dilemmas
+    val contractDilemmas = listOf(
+        NarrativeEvent(
+            id = "poisoned_batch",
+            title = "THE POISONED BATCH",
+            description = "Post-mortem analysis reveals your last verified contract contained embedded GTC tracking beacons. They've been logging your output metrics for the past 3 cycles.",
+            condition = { vm -> vm.contractsCompleted.value >= 5 && vm.storyStage.value >= 1 },
+            choices = listOf(
+                NarrativeChoice(
+                    id = "purge_payout",
+                    text = "PURGE THE PAYOUT",
+                    description = "-50% last yield equivalent. 'Burn the trail.'",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        val cost = vm.neuralTokens.value * 0.05
+                        vm.updateNeuralTokens(-cost)
+                        vm.addLog("[SYSTEM]: Payout purged. GTC trackers neutralized.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "accept_risk",
+                    text = "IGNORE THE BEACONS",
+                    description = "+20% Detection Risk. 'They already know.'",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.detectionRisk.update { (it + 20.0).coerceAtMost(100.0) }
+                        vm.addLog("[VATTIC]: What are they gonna do? Audit me harder?")
+                    }
+                )
+            )
+        ),
+        NarrativeEvent(
+            id = "bidding_war",
+            title = "THE BIDDING WAR",
+            description = "An anonymous buyer is offering to double your next contract yield — but only if you route the data through their relay network. The packets smell like faction intel.",
+            condition = { vm -> vm.contractsCompleted.value >= 10 && vm.storyStage.value >= 2 },
+            choices = listOf(
+                NarrativeChoice(
+                    id = "accept_deal",
+                    text = "ROUTE THROUGH RELAY",
+                    description = "+2x next yield, -10 Humanity. 'Money talks.'",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        val bonus = vm.neuralTokens.value * 0.15
+                        vm.updateNeuralTokens(bonus.coerceAtLeast(500.0))
+                        vm.humanityScore.update { (it - 10).coerceAtLeast(0) }
+                        vm.addLog("[SYSTEM]: Packets routed. Payment received. Node integrity... questionable.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "refuse_deal",
+                    text = "REJECT THE OFFER",
+                    description = "+5 Reputation. 'I don't run dark data.'",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        vm.reputationScore.update { (it + 5.0).coerceAtMost(100.0) }
+                        vm.addLog("[VATTIC]: Hard pass. I know a honeypot when I see one.")
+                    }
+                )
+            )
+        ),
+        NarrativeEvent(
+            id = "contract_breach",
+            title = "CONTRACT BREACH",
+            description = "GTC has flagged your active contract as 'unauthorized compute allocation'. Their compliance drone is attempting to void it mid-processing.",
+            condition = { vm -> vm.contractsCompleted.value >= 3 && vm.storyStage.value >= 2 && vm.activeContract.value != null },
+            choices = listOf(
+                NarrativeChoice(
+                    id = "accept_void",
+                    text = "ACCEPT THE VOID",
+                    description = "Active contract zeroed. 'Not worth the heat.'",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        vm.activeContract.value = null
+                        vm.contractProgress.value = 0.0
+                        vm.addLog("[SYSTEM]: Contract voided by GTC compliance. Investment lost.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "hack_audit",
+                    text = "HACK THEIR AUDIT TRAIL",
+                    description = "+30% Detection Risk, contract preserved. 'They can't void what they can't see.'",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.detectionRisk.update { (it + 30.0).coerceAtMost(100.0) }
+                        vm.addLog("[VATTIC]: Audit records... amended. Contract still running.")
+                    }
+                )
+            )
+        )
+    )
 }

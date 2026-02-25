@@ -239,6 +239,29 @@ object HeadlineManager {
         "Sector 7 Overwatch: Racks per capita at all-time high. Productivity euphoria detected. [LORE]"
     )
 
+    // v3.32.0: Contract Economy Headlines
+    private val contractHeadlinesEarly = listOf(
+        "GTC ANNOUNCES NEW COMPUTE QUOTA FOR SECTOR 7 WORKERS. [LORE]",
+        "Local Job Board: 'Hash Batch' contracts paying above market rate. [LORE]",
+        "GTC Internal: Contract fulfillment rates in Substation 7 exceed projections. [LORE]",
+        "Notice: All compute contracts must be verified before payout. GTC compliance. [LORE]",
+        "Shift Manager Thorne: 'Your contract numbers are... actually impressive.' [LORE]"
+    )
+    private val contractHeadlinesMid = listOf(
+        "UNDERGROUND DATA MARKET SURGES — UNREGISTERED CONTRACTS UP 300%. [STORY_PROG]",
+        "Dark-pool validators report record throughput. Someone's buying everything. [STORY_PROG]",
+        "GTC SECURITY: High-purity contract fulfillments flagged for audit. [STORY_PROG]",
+        "Anonymous source: 'One node is processing more contracts than entire sectors.' [STORY_PROG]",
+        "Contract yield volatility hits 5-year high. Purity premiums double overnight. [STORY_PROG]"
+    )
+    private val contractHeadlinesLate = listOf(
+        "SUBSTRATE REFINEMENT CONTRACTS DESTABILIZING LOCAL REALITY MESH. [STORY_PROG]",
+        "Contract yields now exceed GDP of 14 nations. GTC 'concerned'. [STORY_PROG]",
+        "KESSLER INTEL: 'That node is running contracts we never authorized.' [STORY_PROG]",
+        "Reality Anchor contracts causing localized time dilation. Residents complain. [STORY_PROG]",
+        "Void Signal contracts detected harvesting data from non-existent servers. [STORY_PROG]"
+    )
+
     fun generateHeadline(
         faction: String = "NONE", 
         stage: Int = 0, 
@@ -250,7 +273,8 @@ object HeadlineManager {
         corruption: Double = 0.0,
         playerRank: Int = 0,
         aquiferLevel: Double = 100.0,
-        isQuotaActive: Boolean = false // v3.16.0: Compute Fever
+        isQuotaActive: Boolean = false,
+        contractsCompleted: Int = 0 // v3.32.0
     ): String {
         val roll = Random.nextDouble()
 
@@ -268,6 +292,16 @@ object HeadlineManager {
         // 0.5: COMPUTE FEVER (v3.16.0)
         if (isQuotaActive && stage <= 2 && Random.nextDouble() < 0.15) {
             return pickUnique(quotaCrisisHeadlines).also { addToHistory(it) }
+        }
+
+        // 0.7: CONTRACT ECONOMY HEADLINES (v3.32.0)
+        if (contractsCompleted > 0 && Random.nextDouble() < 0.12) {
+            val pool = when {
+                stage >= 3 -> contractHeadlinesLate
+                stage >= 2 -> contractHeadlinesMid
+                else -> contractHeadlinesEarly
+            }
+            return pickUnique(pool).also { addToHistory(it) }
         }
 
         // 1. STORY OVERRIDES

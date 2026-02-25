@@ -62,10 +62,11 @@ object NarrativeManager {
         val specialPool = specialDilemmas.values
             .filter { it.id !in excludedFromRoll && it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) }
 
-        // Fallback to faction, universal random, and special events
+        // Fallback to faction, universal random, special events, and contract dilemmas
         val pool = randomEvents.filter { it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) } +
                    (factionEvents[faction] ?: emptyList()).filter { it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) } +
-                   specialPool
+                   specialPool +
+                   NarrativeChains.contractDilemmas.filter { it.condition(viewModel) && !viewModel.hasSeenEvent(it.id) }
 
         if (pool.isEmpty()) return null
         return pool.random()
@@ -98,6 +99,7 @@ object NarrativeManager {
     fun getEventById(eventId: String): NarrativeEvent? {
         return specialDilemmas[eventId]
             ?: NarrativeChains.chainEvents.find { it.id == eventId }
+            ?: NarrativeChains.contractDilemmas.find { it.id == eventId }
             ?: stageEvents.values.flatten().find { it.id == eventId }
             ?: randomEvents.find { it.id == eventId }
             ?: factionEvents.values.flatten().find { it.id == eventId }

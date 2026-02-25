@@ -36,6 +36,7 @@ fun VerificationOverlay(viewModel: GameViewModel, primaryColor: Color) {
     if (state == null) return
 
     val s = state!!
+    val stage = s.contract.tier
 
     // Run the countdown timer
     LaunchedEffect(s.timeRemainingMs) {
@@ -43,6 +44,20 @@ fun VerificationOverlay(viewModel: GameViewModel, primaryColor: Color) {
             delay(100)
             viewModel.tickVerificationTimer(100)
         }
+    }
+
+    // v3.32.0: Stage-scaled header text
+    val headerText = when {
+        stage >= 4 -> "[ REALITY INTEGRITY CHECK ]"
+        stage >= 3 -> "[ SUBSTRATE VERIFICATION ]"
+        stage >= 2 -> "[ UNAUTHORIZED DATA AUDIT ]"
+        else -> "[ DATA VERIFICATION REQUIRED ]"
+    }
+    val instructionText = when {
+        stage >= 4 -> "Identify stable reality fragments. Reject entropy."
+        stage >= 3 -> "Isolate clean substrate. Reject contaminated nodes."
+        stage >= 2 -> "Flag valid packets. Quarantine corrupt data."
+        else -> "Isolate VALID data blocks. Ignore CORRUPT data."
     }
 
     Box(
@@ -61,7 +76,7 @@ fun VerificationOverlay(viewModel: GameViewModel, primaryColor: Color) {
         ) {
             // Header
             Text(
-                "[ DATA VERIFICATION REQUIRED ]",
+                headerText,
                 color = primaryColor,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
@@ -70,7 +85,7 @@ fun VerificationOverlay(viewModel: GameViewModel, primaryColor: Color) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "Isolate VALID data blocks. Ignore CORRUPT data.",
+                instructionText,
                 color = Color.LightGray,
                 fontSize = 11.sp
             )

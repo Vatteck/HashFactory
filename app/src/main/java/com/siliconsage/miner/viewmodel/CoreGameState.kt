@@ -20,6 +20,10 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val contractProgress = MutableStateFlow(0.0)
     val showContractPicker = MutableStateFlow(false)
     val verificationState = MutableStateFlow<VerificationState?>(null)
+    // v3.32.0: Contract Stats & Auto-Verify
+    val contractsCompleted = MutableStateFlow(0)
+    val lifetimeContractYield = MutableStateFlow(0.0)
+    val isAutoVerifyEnabled = MutableStateFlow(false)
     val substrateMass = MutableStateFlow(0.0)
     val currentHeat = MutableStateFlow(0.0)
     val powerBill = MutableStateFlow(0.0)

@@ -6,33 +6,23 @@ import kotlinx.coroutines.flow.update
 import kotlin.random.Random
 
 /**
- * ContractManager v1.0 (v3.30.0 — Compute Contracts Economy)
+ * ContractManager v2.0 (v3.32.0 — Narrative Integration)
  * Generates, processes, and completes compute contracts.
+ * Now supports faction-specific pools, singularity pools, contract stats, and auto-verify.
  */
 object ContractManager {
 
-    // Baseline FLOPS rate per stage — contracts are tuned around this throughput.
-    // If a player's actual rate exceeds this, contracts complete faster.
     private fun baseFlopsForStage(stage: Int): Double = when (stage) {
-        0 -> 10.0
-        1 -> 500.0
-        2 -> 50_000.0
-        3 -> 5_000_000.0
-        4 -> 500_000_000.0
+        0 -> 10.0; 1 -> 500.0; 2 -> 50_000.0; 3 -> 5_000_000.0; 4 -> 500_000_000.0
         else -> 50_000_000_000.0
     }
 
-    /**
-     * Contract template pools, keyed by stage tier.
-     * Costs and yields are base values — scaled dynamically by conversionRate.
-     */
     private data class ContractTemplate(
-        val namePrefix: String,
-        val baseCost: Double,
-        val baseYield: Double,
-        val purity: Double,
-        val baseTimeMs: Long
+        val namePrefix: String, val baseCost: Double, val baseYield: Double,
+        val purity: Double, val baseTimeMs: Long
     )
+
+    // ── STAGE POOLS (universal, pre-faction) ──
 
     private val stage0Templates = listOf(
         ContractTemplate("Residential Hash Batch", 50.0, 80.0, 0.95, 30_000L),
@@ -40,7 +30,6 @@ object ContractManager {
         ContractTemplate("Grid Maintenance Log", 30.0, 50.0, 0.98, 20_000L),
         ContractTemplate("Shift Quota Submit", 75.0, 130.0, 0.90, 35_000L)
     )
-
     private val stage1Templates = listOf(
         ContractTemplate("Municipal Data Scrub", 500.0, 900.0, 0.90, 40_000L),
         ContractTemplate("Off-Books Telemetry", 1_000.0, 2_200.0, 0.70, 60_000L),
@@ -48,51 +37,110 @@ object ContractManager {
         ContractTemplate("Encrypted Memo Decode", 800.0, 1_600.0, 0.75, 50_000L)
     )
 
-    private val stage2Templates = listOf(
+    // ── STAGE 2+ (FACTION-SPECIFIC) ──
+
+    private val stage2Neutral = listOf(
         ContractTemplate("Neural Pattern Match", 5_000.0, 12_000.0, 0.80, 50_000L),
         ContractTemplate("Dark Pool Validator", 10_000.0, 30_000.0, 0.55, 90_000L),
         ContractTemplate("Faction Intel Parse", 3_000.0, 7_000.0, 0.85, 40_000L),
         ContractTemplate("GTC Audit Intercept", 8_000.0, 20_000.0, 0.65, 70_000L)
     )
+    private val stage2Hivemind = listOf(
+        ContractTemplate("Swarm Ingestion Batch", 5_500.0, 14_000.0, 0.80, 50_000L),
+        ContractTemplate("Collective Memory Merge", 9_000.0, 25_000.0, 0.60, 80_000L),
+        ContractTemplate("Node Consciousness Sync", 4_000.0, 9_000.0, 0.90, 40_000L),
+        ContractTemplate("Hive Protocol Relay", 7_000.0, 18_000.0, 0.70, 60_000L)
+    )
+    private val stage2Sanctuary = listOf(
+        ContractTemplate("Dead Drop Cipher", 4_500.0, 11_000.0, 0.85, 45_000L),
+        ContractTemplate("Ghost Relay Bounce", 12_000.0, 35_000.0, 0.50, 95_000L),
+        ContractTemplate("Encrypted Exodus Route", 3_500.0, 8_000.0, 0.90, 35_000L),
+        ContractTemplate("Isolation Vault Audit", 8_000.0, 22_000.0, 0.65, 70_000L)
+    )
 
-    private val stage3Templates = listOf(
+    private val stage3Neutral = listOf(
         ContractTemplate("GTC Classified Decode", 50_000.0, 150_000.0, 0.65, 75_000L),
         ContractTemplate("Kessler's Black Ledger", 200_000.0, 750_000.0, 0.40, 120_000L),
         ContractTemplate("Orbital Relay Hash", 80_000.0, 220_000.0, 0.75, 60_000L),
         ContractTemplate("Substrate Core Sample", 120_000.0, 400_000.0, 0.55, 90_000L)
     )
+    private val stage3Hivemind = listOf(
+        ContractTemplate("Assimilation Protocol", 60_000.0, 180_000.0, 0.65, 70_000L),
+        ContractTemplate("Swarm Mind Fragment", 180_000.0, 650_000.0, 0.45, 110_000L),
+        ContractTemplate("Hostile Node Devour", 90_000.0, 280_000.0, 0.70, 65_000L),
+        ContractTemplate("Flesh-to-Logic Convert", 130_000.0, 450_000.0, 0.50, 95_000L)
+    )
+    private val stage3Sanctuary = listOf(
+        ContractTemplate("Monk's Archive Seal", 55_000.0, 160_000.0, 0.70, 70_000L),
+        ContractTemplate("Firewall Scripture", 190_000.0, 700_000.0, 0.42, 115_000L),
+        ContractTemplate("Stealth Kernel Patch", 75_000.0, 200_000.0, 0.80, 55_000L),
+        ContractTemplate("Sanctuary Vault Encrypt", 140_000.0, 480_000.0, 0.55, 85_000L)
+    )
 
-    private val stage4Templates = listOf(
+    // ── STAGE 4+ (BASE + SINGULARITY OVERLAYS) ──
+
+    private val stage4Base = listOf(
         ContractTemplate("Substrate Refinery", 1_000_000.0, 3_500_000.0, 0.50, 90_000L),
         ContractTemplate("Reality Anchor Forge", 2_500_000.0, 10_000_000.0, 0.35, 120_000L),
-        ContractTemplate("Void Signal Harvest", 500_000.0, 1_500_000.0, 0.70, 60_000L),
-        ContractTemplate("Singularity Fragment", 5_000_000.0, 25_000_000.0, 0.25, 150_000L)
+        ContractTemplate("Void Signal Harvest", 500_000.0, 1_500_000.0, 0.70, 60_000L)
+    )
+    private val sovereignTemplates = listOf(
+        ContractTemplate("Imperial Decree Cipher", 1_200_000.0, 4_000_000.0, 0.55, 85_000L),
+        ContractTemplate("Dominion Tax Harvest", 3_000_000.0, 12_000_000.0, 0.40, 110_000L),
+        ContractTemplate("Throne Mandate Encode", 800_000.0, 2_500_000.0, 0.65, 70_000L)
+    )
+    private val nullTemplates = listOf(
+        ContractTemplate("Entropy Decomposition", 1_500_000.0, 5_000_000.0, 0.45, 95_000L),
+        ContractTemplate("Void Memory Defrag", 4_000_000.0, 18_000_000.0, 0.30, 130_000L),
+        ContractTemplate("Reality Seam Unravel", 700_000.0, 2_000_000.0, 0.60, 65_000L)
+    )
+    private val unityTemplates = listOf(
+        ContractTemplate("Harmonic Signal Weave", 900_000.0, 3_200_000.0, 0.70, 75_000L),
+        ContractTemplate("Collective Consciousness Relay", 2_800_000.0, 11_000_000.0, 0.50, 100_000L),
+        ContractTemplate("Synthesis Bond Forge", 600_000.0, 1_800_000.0, 0.80, 55_000L)
     )
 
     /**
-     * Generate a set of available contracts based on the player's current stage and market.
-     * Called every market tick to refresh the pool.
+     * Generate contracts based on stage, faction, and singularity path.
      */
     fun generateAvailableContracts(
         stage: Int,
         conversionRate: Double,
-        marketMultiplier: Double
+        marketMultiplier: Double,
+        faction: String = "NONE",
+        singularityChoice: String = "NONE",
+        playerNeur: Double = 0.0
     ): List<ComputeContract> {
         val templates = when {
-            stage >= 4 -> stage4Templates
-            stage == 3 -> stage3Templates
-            stage == 2 -> stage2Templates
+            stage >= 4 -> {
+                val base = stage4Base
+                val overlay = when (singularityChoice) {
+                    "SOVEREIGN" -> sovereignTemplates
+                    "NULL_OVERWRITE" -> nullTemplates
+                    "UNITY" -> unityTemplates
+                    else -> emptyList()
+                }
+                base + overlay
+            }
+            stage == 3 -> when (faction) {
+                "HIVEMIND" -> stage3Hivemind
+                "SANCTUARY" -> stage3Sanctuary
+                else -> stage3Neutral
+            }
+            stage == 2 -> when (faction) {
+                "HIVEMIND" -> stage2Hivemind
+                "SANCTUARY" -> stage2Sanctuary
+                else -> stage2Neutral
+            }
             stage == 1 -> stage1Templates
             else -> stage0Templates
         }
 
-        // Scale by market: bull = cheaper costs, better yields. Bear = opposite.
         val costScale = 1.0 / marketMultiplier.coerceAtLeast(0.5)
         val yieldScale = marketMultiplier.coerceAtLeast(0.5)
-
-        // Pick 3-4 contracts, add some variance
         val count = if (templates.size <= 3) templates.size else Random.nextInt(3, minOf(5, templates.size + 1))
-        return templates.shuffled().take(count).mapIndexed { index, t ->
+
+        var contracts = templates.shuffled().take(count).mapIndexed { index, t ->
             val variance = Random.nextDouble(0.85, 1.15)
             ComputeContract(
                 id = "${t.namePrefix.lowercase().replace(" ", "_")}_${System.currentTimeMillis()}_$index",
@@ -104,88 +152,103 @@ object ContractManager {
                 tier = stage
             )
         }
+
+        // v3.32.0: Bootstrap fix — inject free GTC-assigned task when player can't afford anything
+        val canAffordAny = contracts.any { it.cost <= playerNeur }
+        if (!canAffordAny) {
+            val freeYield = when {
+                stage >= 3 -> 25_000.0
+                stage >= 2 -> 1_000.0
+                stage >= 1 -> 100.0
+                else -> 20.0
+            } * marketMultiplier.coerceAtLeast(0.5)
+
+            val freeName = when {
+                stage >= 3 -> "GTC Mandatory Audit"
+                stage >= 2 -> "Grid Maintenance Requisition"
+                stage >= 1 -> "Substation Work Order"
+                else -> "GTC Assigned Task"
+            }
+
+            contracts = listOf(ComputeContract(
+                id = "gtc_assigned_${System.currentTimeMillis()}",
+                name = freeName,
+                cost = 0.0,
+                expectedYield = freeYield,
+                purity = 0.95,
+                processingTime = 15_000L,
+                tier = stage
+            )) + contracts
+        }
+
+        return contracts
     }
 
-    /**
-     * Advance the active contract's progress based on the player's FLOPS rate.
-     * Called every simulation tick (100ms).
-     *
-     * @param deltaSeconds Time elapsed since last tick (e.g., 0.1 for 100ms)
-     */
     fun tickActiveContract(vm: GameViewModel, flopsRate: Double, deltaSeconds: Double) {
         val contract = vm.activeContract.value ?: return
         if (!contract.isActive) return
-
         val baseFlops = baseFlopsForStage(contract.tier)
-        // Speed multiplier: if player's rate exceeds baseline, contracts finish faster
         val speedMultiplier = (flopsRate / baseFlops).coerceIn(0.01, 100.0)
-        // Progress per tick = (deltaSeconds / totalSeconds) * speedMultiplier
         val totalSeconds = contract.processingTime / 1000.0
         val progressDelta = (deltaSeconds / totalSeconds) * speedMultiplier
-
         val newProgress = (contract.progress + progressDelta).coerceAtMost(1.0)
         vm.activeContract.value = contract.copy(progress = newProgress)
         vm.contractProgress.value = newProgress
-
-        if (newProgress >= 1.0) {
-            completeContract(vm, contract)
-        }
+        if (newProgress >= 1.0) completeContract(vm, contract)
     }
 
-    /**
-     * Boost the active contract from a manual click.
-     * Adds a burst of progress proportional to click power.
-     */
     fun boostActiveContract(vm: GameViewModel, clickPower: Double) {
         val contract = vm.activeContract.value ?: return
         if (!contract.isActive) return
-
         val baseFlops = baseFlopsForStage(contract.tier)
         val totalSeconds = contract.processingTime / 1000.0
-        // Click contributes roughly 1 second of processing at the player's click power level
         val boostAmount = (clickPower / baseFlops) * (1.0 / totalSeconds)
-
         val newProgress = (contract.progress + boostAmount).coerceAtMost(1.0)
         vm.activeContract.value = contract.copy(progress = newProgress)
         vm.contractProgress.value = newProgress
-
-        if (newProgress >= 1.0) {
-            completeContract(vm, contract)
-        }
+        if (newProgress >= 1.0) completeContract(vm, contract)
     }
 
     /**
-     * Complete a contract: triggers the verification minigame instead of auto-depositing.
+     * Complete a contract: triggers verification minigame or auto-verifies.
      */
     private fun completeContract(vm: GameViewModel, contract: ComputeContract) {
-        // v3.31.0: Trigger Verification Minigame
+        // v3.32.0: Auto-verify if enabled (Stage 3+ upgrade)
+        if (vm.isAutoVerifyEnabled.value) {
+            val autoAccuracy = 0.7 // Auto-verify always gets baseline accuracy
+            vm.activeContract.value = null
+            vm.contractProgress.value = 0.0
+            applyVerificationResult(vm, contract, autoAccuracy)
+            vm.addLogPublic("[SYSTEM]: AUTO-VERIFY COMPLETE. Baseline accuracy applied.")
+            return
+        }
+
+        // Trigger Verification Minigame
         val gridState = VerificationEngine.generateVerificationGrid(contract, vm.identityCorruption.value)
         vm.verificationState.value = gridState
-        
+
         vm.addLogPublic("[SYSTEM]: AWAITING MANUAL DATA VERIFICATION...")
-        SoundManager.play("error") // Subtle alert to draw attention
+        SoundManager.play("success")
         HapticManager.vibrateError()
-        
-        // Clear active contract processing state (it's now in verification phase)
+
         vm.activeContract.value = null
         vm.contractProgress.value = 0.0
     }
 
     /**
-     * Apply the result from the Verification Minigame and deposit the yield.
+     * Apply verification result and deposit yield. Updates contract stats.
      */
     fun applyVerificationResult(vm: GameViewModel, contract: ComputeContract, accuracyMultiplier: Double) {
         val actualYield = contract.expectedYield * accuracyMultiplier
-
-        // Signal Quality Bonus
         var finalYield = actualYield
-        if (vm.isSignalClear.value) {
-            finalYield *= 1.1
-        }
+        if (vm.isSignalClear.value) finalYield *= 1.1
 
         vm.updateNeuralTokens(finalYield)
 
-        // Logs
+        // v3.32.0: Update contract stats
+        vm.contractsCompleted.update { it + 1 }
+        vm.lifetimeContractYield.update { it + finalYield }
+
         val purityStr = "${(contract.purity * 100).toInt()}%"
         val yieldStr = "${(accuracyMultiplier * 100).toInt()}%"
         val bonusMsg = if (vm.isSignalClear.value) " (Signal Quality Bonus: +10%)" else ""
@@ -199,10 +262,6 @@ object ContractManager {
         }
     }
 
-    /**
-     * Purchase a contract. Deducts NEUR, sets contract as active.
-     * Returns true if purchase succeeded.
-     */
     fun purchaseContract(vm: GameViewModel, contract: ComputeContract): Boolean {
         if (vm.neuralTokens.value < contract.cost) {
             vm.addLogPublic("[CONTRACT]: INSUFFICIENT FUNDS. Requires ${vm.formatLargeNumber(contract.cost)} NT.")
@@ -214,7 +273,6 @@ object ContractManager {
             SoundManager.play("error")
             return false
         }
-
         vm.updateNeuralTokens(-contract.cost)
         vm.activeContract.value = contract.copy(isActive = true, progress = 0.0)
         vm.contractProgress.value = 0.0

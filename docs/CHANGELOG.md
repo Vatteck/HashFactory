@@ -1,7 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [3.31.0] - 2026-02-25
+## [3.32.0] - 2026-02-25
+### Added
+- **Contract Faction Pools**: Contracts are now faction-aware (Stage 2+). Hivemind players see assimilation/swarm contracts, Sanctuary players see encryption/stealth contracts.
+- **Singularity Pools**: Post-singularity contracts (Stage 4+) now include Sovereign, Null Overwrite, and Unity specific flavors.
+- **Contract Headlines**: 15 new contract-reactive headlines added to the news ticker, appearing as players complete contracts across different stages.
+- **Contract Dilemmas**: 3 new narrative dilemmas added ('The Poisoned Batch', 'The Bidding War', 'Contract Breach') that trigger based on your contract history and faction standing.
+- **Contract Stats Tracking**: The game now tracks `contractsCompleted` and `lifetimeContractYield`.
+- **Auto-Verifier**: Contracts can now be auto-verified (if enabled) skipping the minigame entirely but only granting a baseline 70% accuracy yield.
+- **Visual Scaling**: The verification grid mechanics (header text, block colors) now visually scale with your narrative stage, getting progressively more glitchy and abstract.
+
+### Fixed
+- **Contract Bootstrap Fix**: Fixed an issue where new players could not afford their first contract. A free "GTC Assigned Task" is now automatically injected into the market when a player has insufficient funds for all other contracts.
+
 ### Added
 - **Contract Verification Minigame**: When a contract reaches 100%, a 4×4 hex grid overlay appears. Players tap blocks they identify as "valid data" while avoiding "corrupt data" blocks within a countdown timer. Accuracy determines final yield (up to 1.5× for perfect runs, down to 0.4× for bad ones).
 - **VerificationEngine**: New engine generates grids scaled to contract purity and player corruption level. High corruption adds glitched labels that blur the line between valid and corrupt blocks.
