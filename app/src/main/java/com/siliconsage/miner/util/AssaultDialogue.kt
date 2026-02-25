@@ -143,14 +143,15 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "seal_maglocks",
                     text = "SEAL MAG-LOCKS",
-                    description = "Trap them inside. Non-lethal. 70% success, +100B PERSISTENCE.",
+                    description = "Trap them inside. Non-lethal. 70% success, +10% Current Persistence.",
                     color = NeonGreen,
                     effect = { vm ->
                         val baseSuccess = 0.70
                         val guardPostBonus = if (vm.specializedNodes.value[nodeId] == "GUARD_POST") 0.30 else 0.0
                         if (kotlin.random.Random.nextDouble() < (baseSuccess + guardPostBonus).coerceAtMost(1.0)) {
                             vm.resolveRaidSuccess(nodeId)
-                            vm.debugAddInsight(100.0)
+                            val currentP = vm.persistence.value
+                            vm.debugAddInsight((currentP * 0.10).coerceAtLeast(100.0))
                             vm.addLog(maglockSuccessMessages.random())
                             vm.addLog("[INTERCEPTED - GTC LEAD]: \"Command, we're boxed in. Repeat, BOXED IN!\"")
                             vm.addLog(aftermathMessages.random())
@@ -164,10 +165,10 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "power_pulse",
                     text = "POWER PULSE",
-                    description = "EMP burst. 95% success, but costs 20% hardware integrity.",
+                    description = "EMP burst. 95% success, but costs 10% hardware integrity.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.debugSetIntegrity(vm.hardwareIntegrity.value - 20.0)
+                        vm.debugSetIntegrity(vm.hardwareIntegrity.value - 10.0)
                         val baseSuccess = 0.95
                         val guardPostBonus = if (vm.specializedNodes.value[nodeId] == "GUARD_POST") 0.30 else 0.0
                         if (kotlin.random.Random.nextDouble() < (baseSuccess + guardPostBonus).coerceAtMost(1.0)) {

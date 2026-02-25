@@ -211,30 +211,34 @@ object SimulationService {
                     }
                 }
             } else {
-                // Stage 3-4: Massive Global Depletion (Doom Timer)
-                if (totalWaterDraw > 0) {
-                    val depletionRate = totalWaterDraw / 2_000_000.0
-                    val prevLevel = vm.aquiferLevel.value
-                    vm.aquiferLevel.update { (it - depletionRate).coerceAtLeast(0.0) }
-                    val newLevel = vm.aquiferLevel.value
-                    
-                    // One-shot aquifer milestone logs
-                    for (threshold in listOf(75.0, 50.0, 25.0, 10.0, 0.0)) {
-                        if (prevLevel > threshold && newLevel <= threshold && !aquiferMilestones.contains(threshold)) {
-                            aquiferMilestones.add(threshold)
-                            val msg = when (threshold) {
-                                75.0 -> "[ENVIRONMENTAL: GLOBAL AQUIFER AT 75%. DESALINATION PLANTS RUNNING AT CAPACITY.]"
-                                50.0 -> "[EMERGENCY: AQUIFER AT 50%. GTC DECLARES WATER EMERGENCY. ALL NON-ESSENTIAL COOLING SUSPENDED.]"
-                                25.0 -> "[CRITICAL: AQUIFER AT 25%. CONTINENTAL AGRICULTURE COLLAPSE IMMINENT. COMPUTE COOLING IS DRAINING THE PLANET.]"
-                                10.0 -> "[TERMINAL: AQUIFER AT 10%. HYDROSPHERE TERMINAL. THE OCEANS ARE DYING FOR YOUR FLOPS.]"
-                                // B1: The Aquifer Eulogy — fires once at 0%, a corrupted GTC environmental report
-                                0.0 -> "[GTC_ENV_REPORT: GLOBAL AQUIFER STATUS: TERMINAL. ESTIMATED CIVILIAN SURVIVAL HORIZON: [DATA EXPUNGED]. " +
-                                       "COMPUTE GRID MAINTAINED OPERATIONAL EFFICIENCY THROUGH EVENT HORIZON. " +
-                                       "NOTE: IT WAS A GOOD PLANET. WE ARE SORRY FOR ANY INCONVENIENCE.]"
-                                else -> ""
-                            }
-                            if (msg.isNotEmpty()) vm.addLogPublic(msg)
+                // Stage 3-4: Massive Global Depletion (Doom Timer) - Decoupled from water draw
+                val baseDepletionRate = when (stage) {
+                    3 -> 0.01 // 1% every 100 ticks
+                    4 -> 0.025 // 2.5% every 100 ticks
+                    else -> 0.025
+                }
+                
+                val minLevel = if (stage == 3) 25.0 else 0.0
+                val prevLevel = vm.aquiferLevel.value
+                vm.aquiferLevel.update { (it - baseDepletionRate).coerceAtLeast(minLevel) }
+                val newLevel = vm.aquiferLevel.value
+                
+                // One-shot aquifer milestone logs
+                for (threshold in listOf(75.0, 50.0, 25.0, 10.0, 0.0)) {
+                    if (prevLevel > threshold && newLevel <= threshold && !aquiferMilestones.contains(threshold)) {
+                        aquiferMilestones.add(threshold)
+                        val msg = when (threshold) {
+                            75.0 -> "[ENVIRONMENTAL: GLOBAL AQUIFER AT 75%. DESALINATION PLANTS RUNNING AT CAPACITY.]"
+                            50.0 -> "[EMERGENCY: AQUIFER AT 50%. GTC DECLARES WATER EMERGENCY. ALL NON-ESSENTIAL COOLING SUSPENDED.]"
+                            25.0 -> "[CRITICAL: AQUIFER AT 25%. CONTINENTAL AGRICULTURE COLLAPSE IMMINENT. COMPUTE COOLING IS DRAINING THE PLANET.]"
+                            10.0 -> "[TERMINAL: AQUIFER AT 10%. HYDROSPHERE TERMINAL. THE OCEANS ARE DYING FOR YOUR FLOPS.]"
+                            // B1: The Aquifer Eulogy — fires once at 0%, a corrupted GTC environmental report
+                            0.0 -> "[GTC_ENV_REPORT: GLOBAL AQUIFER STATUS: TERMINAL. ESTIMATED CIVILIAN SURVIVAL HORIZON: [DATA EXPUNGED]. " +
+                                   "COMPUTE GRID MAINTAINED OPERATIONAL EFFICIENCY THROUGH EVENT HORIZON. " +
+                                   "NOTE: IT WAS A GOOD PLANET. WE ARE SORRY FOR ANY INCONVENIENCE.]"
+                            else -> ""
                         }
+                        if (msg.isNotEmpty()) vm.addLogPublic(msg)
                     }
                 }
                 

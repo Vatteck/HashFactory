@@ -72,15 +72,16 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "hunt_them",
                     text = "HUNT THEM DOWN",
-                    description = "+5000 NEUR, +15% Risk. 'Nobody steals from the network.'",
+                    description = "+5% Neural Tokens, +15% Risk. 'Nobody steals from the network.'",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.updateNeuralTokens(5000.0)
+                        val reward = vm.neuralTokens.value * 0.05
+                        vm.updateNeuralTokens(reward.coerceAtLeast(100.0)) // Guarantee at least a small flat amount
                         vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
                         vm.addLog("[VATTIC]: Trace completed. I took back the key, and drained their wallets for the trouble.")
                     }
                 )
-            )
+             )
         ),
         NarrativeEvent(
             id = "sanctuary_cipher_fallout",
@@ -90,11 +91,12 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "fortify_vault",
                     text = "FORTIFY THE VAULT",
-                    description = "+15% Heat, -5000 NEUR. 'Lock the doors and wait for the storm to pass.'",
+                    description = "+15% Heat, -10% Neural Tokens. 'Lock the doors and wait for the storm to pass.'",
                     color = ElectricBlue,
                     effect = { vm ->
                         vm.debugAddHeat(15.0)
-                        vm.updateNeuralTokens(-5000.0)
+                        val cost = vm.neuralTokens.value * 0.10
+                        vm.updateNeuralTokens(-cost)
                         vm.addLog("[SANCTUARY]: Vault doors locked. GTC tracers are knocking, but the monks stay silent.")
                     }
                 ),
