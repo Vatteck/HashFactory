@@ -22,8 +22,12 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     // v3.35.0: Surveillance Expansion
     val activeHarvesters = MutableStateFlow<Map<Int, Int>>(emptyMap()) // Sector ID -> Count
     val harvestBuffers = MutableStateFlow<Map<Int, Double>>(emptyMap()) // Sector ID -> Buffer
-    val storageCapacity = MutableStateFlow(1000.0) // Global capacity
-    val currentStorageUsed = MutableStateFlow(0.0) // Global used
+    val storageCapacity = MutableStateFlow(1000.0) // Global capacity (surveillance harvesters)
+    val currentStorageUsed = MutableStateFlow(0.0) // Global used (surveillance harvesters)
+
+    // v3.36.0: Contract Storage Infrastructure
+    val contractStorageCapacity = MutableStateFlow(50.0) // Derived from storage upgrades
+    val contractStorageUsed = MutableStateFlow(0.0)      // Derived from activeContracts.sumOf { it.size }
     
     val availableContracts = MutableStateFlow<List<ComputeContract>>(emptyList())
     val showContractPicker = MutableStateFlow(false)

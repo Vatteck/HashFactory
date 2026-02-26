@@ -16,5 +16,6 @@ data class ComputeContract(
     val processingTime: Long,  // Base time in ms to complete at baseline flops
     val progress: Double = 0.0,// 0.0 to 1.0
     val isActive: Boolean = false,
-    val tier: Int = 0          // Stage gate
+    val tier: Int = 0,         // Stage gate
+    val size: Double = 1.0     // v3.36.0: Storage units consumed while active
 )

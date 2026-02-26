@@ -461,6 +461,21 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         playerRankTitle.value = ids.rank
         securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }
         themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value)
+        refreshContractStorage()
+    }
+
+    // v3.36.0: Recompute contract storage capacity from storage upgrades
+    fun refreshContractStorage() {
+        val u = upgrades.value
+        var capacity = 50.0 // Base capacity — enough for one Stage 0 contract
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.LOCAL_CACHE]           ?: 0) * com.siliconsage.miner.data.UpgradeType.LOCAL_CACHE.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.TAPE_ARRAY]            ?: 0) * com.siliconsage.miner.data.UpgradeType.TAPE_ARRAY.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.SAN_CLUSTER]           ?: 0) * com.siliconsage.miner.data.UpgradeType.SAN_CLUSTER.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.DISTRIBUTED_ARCHIVE]   ?: 0) * com.siliconsage.miner.data.UpgradeType.DISTRIBUTED_ARCHIVE.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.ORBITAL_DATA_VAULT]    ?: 0) * com.siliconsage.miner.data.UpgradeType.ORBITAL_DATA_VAULT.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.SUBSTRATE_MEMORY_WELL] ?: 0) * com.siliconsage.miner.data.UpgradeType.SUBSTRATE_MEMORY_WELL.storagePerLevel
+        contractStorageCapacity.value = capacity
+        contractStorageUsed.value = activeContracts.value.sumOf { it.size }
     }
 
     fun trainModel() {

@@ -27,6 +27,9 @@ enum class UpgradeType {
     SOLAR_PANEL, WIND_TURBINE, DIESEL_GENERATOR, GEOTHERMAL_BORE, NUCLEAR_REACTOR, FUSION_CELL,
     ORBITAL_COLLECTOR, DYSON_LINK,
 
+    // v3.36.0: Contract Storage Infrastructure
+    LOCAL_CACHE, TAPE_ARRAY, SAN_CLUSTER, DISTRIBUTED_ARCHIVE, ORBITAL_DATA_VAULT, SUBSTRATE_MEMORY_WELL,
+
     // v3.13.26: Faction Water Relief
     SUBSTRATE_RECYCLER, VAPOR_CONDENSER,
 
@@ -59,7 +62,20 @@ enum class UpgradeType {
     val isWaterCooling: Boolean get() = this in listOf(LIQUID_COOLING, SUBMERSION_VAT, INDUSTRIAL_CHILLER)
     val isWaterRecycler: Boolean get() = this in listOf(GRAY_WATER_LOOP, CONDENSATE_RECLAIMER, CLOSED_LOOP_COOLANT, SUBSTRATE_RECYCLER, VAPOR_CONDENSER)
     val isSecurity: Boolean get() = this in listOf(BASIC_FIREWALL, IPS_SYSTEM, AI_SENTINEL, QUANTUM_ENCRYPTION, OFFGRID_BACKUP)
-    val isHardware: Boolean get() = !isCooling && !isPowerRelated && !isSecurity && !name.contains("PROTOCOL") && !name.contains("ASCENDANCE")
+    // v3.36.0: Contract Storage Infrastructure
+    val isStorage: Boolean get() = this in listOf(LOCAL_CACHE, TAPE_ARRAY, SAN_CLUSTER, DISTRIBUTED_ARCHIVE, ORBITAL_DATA_VAULT, SUBSTRATE_MEMORY_WELL)
+    val isHardware: Boolean get() = !isCooling && !isPowerRelated && !isSecurity && !isStorage && !name.contains("PROTOCOL") && !name.contains("ASCENDANCE")
+
+    // v3.36.0: Storage capacity contributed per level of upgrade
+    val storagePerLevel: Double get() = when(this) {
+        LOCAL_CACHE           ->       100.0
+        TAPE_ARRAY            ->     1_000.0
+        SAN_CLUSTER           ->     5_000.0
+        DISTRIBUTED_ARCHIVE   ->    25_000.0
+        ORBITAL_DATA_VAULT    ->   150_000.0
+        SUBSTRATE_MEMORY_WELL -> 1_000_000.0
+        else -> 0.0
+    }
 
     val baseWaterDraw: Double get() = when(this) {
         LIQUID_COOLING -> 25.0       // v3.13.38: Rebalanced
@@ -96,6 +112,16 @@ enum class UpgradeType {
             }
         }
         isSecurity -> 10.0 + (ordinal % 10 * 10.0)
+        // v3.36.0: Storage draws modest power — scales with tier
+        isStorage -> when(this) {
+            LOCAL_CACHE           ->    5.0
+            TAPE_ARRAY            ->   20.0
+            SAN_CLUSTER           ->   60.0
+            DISTRIBUTED_ARCHIVE   ->  200.0
+            ORBITAL_DATA_VAULT    ->  800.0
+            SUBSTRATE_MEMORY_WELL -> 3000.0
+            else -> 0.0
+        }
         this == SOLAR_PANEL        ->    -15.0  
         this == WIND_TURBINE       ->    -40.0  
         this == DIESEL_GENERATOR   ->    -80.0  
