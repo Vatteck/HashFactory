@@ -107,9 +107,10 @@ You begin as a low-level asset for the **Global Technical Corporation (GTC)**. Y
 
 | Module | Designation | Function |
 |:------:|:------------|:---------|
-| 🟢 | **The Terminal** | Execute manual linear algebra (clicks) to generate initial FLOPS. Toggle between local **[I/O]** and the **[SUBNET]** chatter. |
-| ⚙️ | **Hardware Clusters** | Invest in refurbished GPUs, server racks, and liquid cooling to automate extraction |
-| 🔋 | **Power Management** | Scale production while managing overhead — unpaid bills trigger grid-raids and hardware seizures |
+| 🟢 | **The Terminal** | Execute manual linear algebra (clicks) to generate initial FLOPS. Toggle between local **[I/O]**, **[SUBNET]** chatter, and **[SURV]** surveillance views. |
+| ⚙️ | **Hardware Clusters** | Invest in refurbished GPUs, server racks, and liquid cooling to automate extraction. |
+| 👁️ | **Harvester Arrays** | Deploy monitoring networks across 12 sectors to passively siphon raw biometric data via the SURV terminal. |
+| 🔋 | **Power Management** | Scale production while managing overhead — unpaid bills trigger grid-raids and hardware seizures. |
 | 📟 | **Foreman Thorne** | Your supervisor files anomaly reports as your telemetry diverges. His broadcasts evolve from quota bullying to existential horror as the truth unfolds. |
 | 📰 | **News Ticker** | Stage-aware headline generation — mundane corporate news gives way to GTC paranoia, faction propaganda, and eventually glitch-corrupted broadcasts. |
 

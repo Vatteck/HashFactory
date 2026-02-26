@@ -1,10 +1,10 @@
 {
-  "version": "3.33.0",
-  "build": 438,
+  "version": "3.35.0",
+  "build": 439,
   "date": "2026-02-25",
   "changelog": [
-    "28608b1 feat: FLOPS economy rebalance, stage 5 forging (v3.33.0)"
+    "3174343 3.35.0"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.33.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.33.0/MINER_3.33.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.35.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.35.0/MINER_3.35.0.apk"
 }
