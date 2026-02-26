@@ -161,6 +161,16 @@ object SocialTemplates {
             "The walls are starting to whisper. I'm not joking. Put your ear to the drywall.",
             "I hear it. It's... compiling.",
             "It sounds like a million people holding their breath."
+        ),
+        listOf(
+            "There's a physical data-tap running out of Sector 7. Optical cables thick as your arm.",
+            "Who's receiving that much bandwidth?",
+            "No one's receiving it. It's just sitting in the buffers."
+        ),
+        listOf(
+            "GTC internal audit just seized my biometric log. All of it. Heart rate, retinal scans, sleep cycles.",
+            "They didn't seize it. Someone bought it.",
+            "Who would buy that? And why pay premium yields for it?"
         )
     )
 
@@ -187,6 +197,16 @@ object SocialTemplates {
             "The sky outside the windows... it's just code streaming downwards.",
             "We aren't outside anymore. We never were.",
             "Close the blinds. Close them now."
+        ),
+        listOf(
+            "Everything I look at feels like it's looking back.",
+            "The Harvesters are online. They don't just record data anymore. They anticipate it.",
+            "I haven't spoken in three days, and my terminal is predicting my sentences."
+        ),
+        listOf(
+            "Storage limits exceeded in Sector 12.",
+            "Purge the buffer before someone notices the leak.",
+            "It's too late. The Rep decay has already started."
         )
     )
 

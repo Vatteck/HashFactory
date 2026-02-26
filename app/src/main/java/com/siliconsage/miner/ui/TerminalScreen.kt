@@ -66,6 +66,19 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.setTerminalMode("SUBNET") }
                 )
+                if (viewModel.storyStage.value >= 3) {
+                    val leakWarning = viewModel.currentStorageUsed.value >= viewModel.storageCapacity.value * 0.9
+                    TerminalTab(
+                        label = "SURV",
+                        active = mode == "SURVEILLANCE",
+                        hasFlash = leakWarning,
+                        isDecision = false,
+                        color = ErrorRed,
+                        corruption = corruption,
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.setTerminalMode("SURVEILLANCE") }
+                    )
+                }
             }
 
             Box(

@@ -232,6 +232,39 @@ object NarrativeChains {
                     }
                 )
             )
+        ),
+        // v3.35.0: Surveillance Harvester Leak Dilemma
+        NarrativeEvent(
+            id = "harvester_leak_dilemma",
+            title = "DATA HEMORRHAGE",
+            description = "One of your Subnet Harvesters has overflowed its buffer. Raw biometric data is spilling onto the public network. GTC scrubbers are en route, but a black-market broker is offering to extract the spill first.",
+            condition = { vm -> vm.currentStorageUsed.value >= vm.storageCapacity.value * 0.8 && vm.storyStage.value >= 3 },
+            choices = listOf(
+                NarrativeChoice(
+                    id = "sell_spill",
+                    text = "SELL TO BROKER",
+                    description = "+25% Neural Tokens, +15% Detection Risk. 'Cash in the leak.'",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        val bonus = vm.neuralTokens.value * 0.25
+                        vm.updateNeuralTokens(bonus.coerceAtLeast(1000.0))
+                        vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
+                        vm.addLog("[SYSTEM]: Spilled data sold. Trace elements remain.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "scrub_spill",
+                    text = "AUTHORIZE GTC SCRUB",
+                    description = "Lose 20% Storage Capacity temporarily, -10 Reputation. 'Play dumb.'",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        val capacityLoss = vm.storageCapacity.value * 0.20
+                        vm.storageCapacity.update { (it - capacityLoss).coerceAtLeast(100.0) }
+                        vm.reputationScore.update { (it - 10.0).coerceAtLeast(0.0) }
+                        vm.addLog("[SYSTEM]: GTC scrubbers contained the leak... and damaged the buffers.")
+                    }
+                )
+            )
         )
     )
 }

@@ -12,9 +12,19 @@ import kotlin.random.Random
  */
 object ContractManager {
 
-    private fun baseFlopsForStage(stage: Int): Double = when (stage) {
+    fun baseFlopsForStage(stage: Int): Double = when (stage) {
         0 -> 10.0; 1 -> 500.0; 2 -> 50_000.0; 3 -> 5_000_000.0; 4 -> 500_000_000.0
         else -> 50_000_000_000.0
+    }
+
+    fun baseRewardForStage(stage: Int): Double = when (stage) {
+        0 -> 100.0; 1 -> 1_500.0; 2 -> 25_000.0; 3 -> 500_000.0; 4 -> 10_000_000.0
+        else -> 200_000_000.0
+    }
+
+    fun getProcessingTimeForTier(tier: Int): Long = when (tier) {
+        0 -> 30_000L; 1 -> 45_000L; 2 -> 60_000L; 3 -> 90_000L; 4 -> 120_000L
+        else -> 180_000L
     }
 
     private data class ContractTemplate(
@@ -270,6 +280,13 @@ object ContractManager {
         currentProgresses.remove(contract.id)
         vm.contractProgresses.value = currentProgresses
 
+        // v3.35.0: Harvesting 100% Purity contracts auto-bypass verification
+        if (contract.purity >= 1.0) {
+            applyVerificationResult(vm, contract, 1.5) // Max 1.5x payout guarantee
+            vm.addLogPublic("[SYSTEM]: HIGH-PURITY HARVEST DETECTED. VERIFICATION BYPASSED.")
+            return
+        }
+
         // v3.32.0: Auto-verify if enabled (Stage 3+ upgrade)
         if (vm.isAutoVerifyEnabled.value) {
             val autoAccuracy = 0.7 // Auto-verify always gets baseline accuracy
@@ -340,6 +357,12 @@ object ContractManager {
         SoundManager.play("buy")
         HapticManager.vibrateClick()
         return true
+    }
+
+    fun addContractToAvailable(vm: GameViewModel, contract: ComputeContract) {
+        val current = vm.availableContracts.value.toMutableList()
+        current.add(0, contract) // Inject at top
+        vm.availableContracts.value = current.take(10) // Keep pool manageable
     }
 
     // v3.33.0: Stage 5 Contract Forging

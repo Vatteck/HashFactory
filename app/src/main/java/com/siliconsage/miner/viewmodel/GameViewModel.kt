@@ -134,6 +134,11 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                         ContractManager.tickActiveContracts(this@GameViewModel, flopsProductionRate.value, offlineSeconds)
                     }
                     
+                    // v3.35.0: Evolve Surveillance Harvesters
+                    if (offlineSeconds > 0.0 && activeHarvesters.value.isNotEmpty()) {
+                        SurveillanceManager.tickHarvesters(this@GameViewModel, offlineSeconds)
+                    }
+                    
                     isNarrativeSyncing.value = true
                     offlineStats.value = offline
                     showOfflineEarnings.value = true
@@ -157,6 +162,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 if (!res.flopsDelta.isNaN()) flops.update { it + res.flopsDelta }
                 // v3.30.0: Tick active contract based on FLOPS rate
                 ContractManager.tickActiveContracts(this@GameViewModel, flopsProductionRate.value, 0.1)
+                
+                // v3.35.0: Tick Surveillance Harvesters
+                SurveillanceManager.tickHarvesters(this@GameViewModel, 0.1)
 
                 // v3.13.19: Applying Wage-Docking Bleed
                 if (isWageDocking.value) {

@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.35.0] - 2026-02-25
+### Surveillance Harvester Expansion
+- **Subnet Sector Surveillance**: Added new `SurveillanceVisualizer` UI to the Terminal `SURV` tab. Players can now deploy Harvesters across 12 sectors to passively siphon raw biometric data.
+- **High-Purity Contracts**: Harvester buffers at 100% automatically generate "Raw Biometric Bundle" Compute Contracts that inherently bypass the Verification Minigame and apply a 1.5x payout guarantee.
+- **Data Leaks**: Added a global data storage cache. Exceeding capacity triggers continuous Detection Risk spikes and Reputation damage until the buffer is cleared.
+- **Narrative Integration**: Expanded the Dystopian Subnet chatter with new strings reacting to predictive text and oppressive surveillance. Added the "DATA HEMORRHAGE" dilemma to trigger when storage thresholds hit critical levels.
+
 ## [3.27.0] - 2026-02-24
 ### UI Polish & Chatter Sync Hotfix
 - **UI Colors**: Segmented the `ResourceDisplay` string format. Rates are now permanently colored `ElectricBlue`, while efficiency multipliers are dynamically colored (`Yellow` for <1.0, `ElectricBlue` for >=1.0).

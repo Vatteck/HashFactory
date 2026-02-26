@@ -46,7 +46,11 @@ object PersistenceManager {
         specializedNodes: Map<String, String>,
         narrativeFlags: Map<String, Boolean> = emptyMap(),
         unlockedContractSlots: Int = 1,
-        activeContractsJson: String = "[]"
+        activeContractsJson: String = "[]",
+        activeHarvestersJson: String = "{}",
+        harvestBuffersJson: String = "{}",
+        storageCapacity: Double = 1000.0,
+        currentStorageUsed: Double = 0.0
     ): GameState {
         return GameState(
             id = 1, flops = sanitizeDouble(flops), neuralTokens = sanitizeDouble(neuralTokens), 
@@ -86,7 +90,11 @@ object PersistenceManager {
             specializedNodes = specializedNodes,
             narrativeFlags = narrativeFlags,
             unlockedContractSlots = unlockedContractSlots,
-            activeContractsJson = activeContractsJson
+            activeContractsJson = activeContractsJson,
+            activeHarvestersJson = activeHarvestersJson,
+            harvestBuffersJson = harvestBuffersJson,
+            storageCapacity = storageCapacity,
+            currentStorageUsed = currentStorageUsed
         )
     }
 
@@ -167,6 +175,27 @@ object PersistenceManager {
                 vm.contractProgresses.value = currentProgresses
             } catch (e: Exception) {
                 vm.addLog("[SYSTEM]: CONTRACT STATE RESTORATION FAILED.")
+            }
+        }
+        
+        // v3.35.0: Restore Surveillance Expansion states
+        vm.storageCapacity.value = sanitizeDouble(state.storageCapacity, 1000.0)
+        vm.currentStorageUsed.value = sanitizeDouble(state.currentStorageUsed, 0.0)
+        
+        if (state.activeHarvestersJson.isNotBlank() && state.activeHarvestersJson != "{}") {
+            try {
+                val map = Json.decodeFromString<Map<Int, Int>>(state.activeHarvestersJson)
+                vm.activeHarvesters.value = map
+            } catch (e: Exception) {
+                vm.addLog("[SYSTEM]: HARVESTER STATE CORRUPTED.")
+            }
+        }
+        if (state.harvestBuffersJson.isNotBlank() && state.harvestBuffersJson != "{}") {
+            try {
+                val map = Json.decodeFromString<Map<Int, Double>>(state.harvestBuffersJson)
+                vm.harvestBuffers.value = map
+            } catch (e: Exception) {
+                vm.addLog("[SYSTEM]: HARVEST BUFFER CORRUPTED.")
             }
         }
     }
@@ -264,7 +293,16 @@ object PersistenceManager {
             lifetimePowerPaid = vm.lifetimePowerPaid.value,
             reputationScore = vm.reputationScore.value,
             specializedNodes = vm.specializedNodes.value,
-            narrativeFlags = vm.narrativeFlags.value
+            narrativeFlags = vm.narrativeFlags.value,
+            unlockedContractSlots = vm.unlockedContractSlots.value,
+            activeContractsJson = Json.encodeToString(
+                kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.ComputeContract.serializer()),
+                vm.activeContracts.value
+            ),
+            activeHarvestersJson = Json.encodeToString(vm.activeHarvesters.value),
+            harvestBuffersJson = Json.encodeToString(vm.harvestBuffers.value),
+            storageCapacity = vm.storageCapacity.value,
+            currentStorageUsed = vm.currentStorageUsed.value
         )
         val json = Json { prettyPrint = true }
         return json.encodeToString(state)

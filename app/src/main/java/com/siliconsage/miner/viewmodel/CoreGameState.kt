@@ -18,6 +18,13 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val activeContracts = MutableStateFlow<List<ComputeContract>>(emptyList()) // v3.34.0
     val unlockedContractSlots = MutableStateFlow(1) // v3.34.0
     val contractProgresses = MutableStateFlow<Map<String, Double>>(emptyMap()) // map of contractId to progress
+    
+    // v3.35.0: Surveillance Expansion
+    val activeHarvesters = MutableStateFlow<Map<Int, Int>>(emptyMap()) // Sector ID -> Count
+    val harvestBuffers = MutableStateFlow<Map<Int, Double>>(emptyMap()) // Sector ID -> Buffer
+    val storageCapacity = MutableStateFlow(1000.0) // Global capacity
+    val currentStorageUsed = MutableStateFlow(0.0) // Global used
+    
     val availableContracts = MutableStateFlow<List<ComputeContract>>(emptyList())
     val showContractPicker = MutableStateFlow(false)
     val verificationState = MutableStateFlow<VerificationState?>(null)

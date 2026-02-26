@@ -131,7 +131,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                             timestamp = entry.timestamp
                         )
                     }
-                } else {
+                } else if (mode == "SUBNET") {
                     itemsIndexed(items = subnetMessages, key = { _, message -> message.id }) { _, message ->
                         SubnetMessageLine(message, primaryColor, viewModel)
                     }
@@ -148,6 +148,10 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                             val typingText = remember { typingTexts.random() }
                             Text(text = typingText, color = primaryColor.copy(alpha = 0.5f), fontSize = 10.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp))
                         }
+                    }
+                } else if (mode == "SURVEILLANCE") {
+                    item {
+                        SurveillanceVisualizer(viewModel = viewModel, primaryColor = primaryColor)
                     }
                 }
             }

@@ -116,7 +116,13 @@ data class GameState(
 
     // v3.30.0: Compute Contracts
     val unlockedContractSlots: Int = 1, // v3.34.0
-    val activeContractsJson: String = "[]"
+    val activeContractsJson: String = "[]",
+    
+    // v3.35.0: Surveillance Expansion
+    val activeHarvestersJson: String = "{}",
+    val harvestBuffersJson: String = "{}",
+    val storageCapacity: Double = 1000.0,
+    val currentStorageUsed: Double = 0.0
 )
 
 @Serializable
