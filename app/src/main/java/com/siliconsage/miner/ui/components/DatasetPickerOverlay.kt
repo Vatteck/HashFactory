@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.data.Dataset
 import com.siliconsage.miner.ui.theme.ErrorRed
+import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.util.FormatUtils
 import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
@@ -72,8 +73,8 @@ fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(availableDatasets, key = { it.id }) { dataset ->
                         DatasetCard(dataset, neuralTokens, contractStorageCapacity, primaryColor) {
-                            val success = viewModel.purchaseDataset(dataset)
-                            if (success) viewModel.toggleDatasetPicker()
+                            viewModel.purchaseDataset(dataset)
+                            viewModel.toggleDatasetPicker()
                         }
                     }
                 }

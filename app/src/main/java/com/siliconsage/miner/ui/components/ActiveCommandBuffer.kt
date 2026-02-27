@@ -25,15 +25,10 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val hex by viewModel.activeCommandHex.collectAsState()
     
     // v3.38.0: Unified Buffer Logic
-    val activeContracts by viewModel.activeContracts.collectAsState()
-    val contractProgresses by viewModel.contractProgresses.collectAsState()
-    
-    // Find the current ticking contract (prioritize the first one that is incomplete)
-    val tickingContract = activeContracts.firstOrNull { (contractProgresses[it.id] ?: 0.0) < 1.0 }
-    val contractPurity = tickingContract?.purity ?: 1.0
+    val activeDataset by viewModel.activeDataset.collectAsState()
     
     val baseProgress by viewModel.clickBufferProgress.collectAsState()
-    val progress = if (tickingContract != null) (contractProgresses[tickingContract.id] ?: 0.0).toFloat() else baseProgress
+    val progress = if (activeDataset != null) activeDataset!!.progress.toFloat() else baseProgress
     val pellets by viewModel.clickBufferPellets.collectAsState()
 
     val currentHeat by viewModel.currentHeat.collectAsState()
@@ -84,12 +79,12 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
 
         Text(
             text = buildAnnotatedString {
-                if (tickingContract != null) {
+                if (activeDataset != null) {
                     withStyle(SpanStyle(color = promptUserColor, fontWeight = FontWeight.ExtraBold)) { append(user) }
                     withStyle(SpanStyle(color = Color.White.copy(alpha = 0.8f))) { append("@") }
                     withStyle(SpanStyle(color = promptHostColor, fontWeight = FontWeight.Bold)) { append(host) }
                     withStyle(SpanStyle(color = Color.White.copy(alpha = 0.6f))) { append(":~> ") }
-                    withStyle(SpanStyle(color = NeonGreen, fontWeight = FontWeight.Bold)) { append("EXEC [${tickingContract.name}]") }
+                    withStyle(SpanStyle(color = NeonGreen, fontWeight = FontWeight.Bold)) { append("EXEC [${activeDataset!!.name}]") }
                 } else {
                     withStyle(SpanStyle(color = promptUserColor, fontWeight = FontWeight.ExtraBold)) { append(user) }
                     withStyle(SpanStyle(color = Color.White.copy(alpha = 0.8f))) { append("@") }
@@ -98,7 +93,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                 }
 
                 // v3.12.0: High-integrity/heat bracket glitching
-                if (tickingContract == null) {
+                if (activeDataset == null) {
                     val promptToken = if (globalGlitchIntensity > 0.8 && Random.nextDouble() < 0.2) {
                         listOf("{", "<", "§", "Ø").random()
                     } else "$"
@@ -128,7 +123,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         }
         
         // v3.38.0 Purity visual
-        val bufferHeatColor = if (contractPurity < 0.8) ErrorRed.copy(alpha = 0.8f) else baseBufferColor
+        val bufferHeatColor = if (activeDataset != null && activeDataset!!.purity < 0.8) ErrorRed.copy(alpha = 0.8f) else baseBufferColor
 
         // A2: Pellet ghost trail — track last 3 positions
         val pelletHistory = remember { androidx.compose.runtime.snapshots.SnapshotStateList<Int>() }

@@ -156,11 +156,13 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 }
             }
 
-            val cmdShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
-            Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f), cmdShape).border(BorderStroke(1.dp, primaryColor.copy(alpha = 0.55f)), cmdShape)) {
-                ActiveCommandBuffer(viewModel, primaryColor)
+            if (mode != "DATAMINER") {
+                val cmdShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f), cmdShape).border(BorderStroke(1.dp, primaryColor.copy(alpha = 0.55f)), cmdShape)) {
+                    ActiveCommandBuffer(viewModel, primaryColor)
+                }
+                ManualComputeButton(viewModel, primaryColor)
             }
-            ManualComputeButton(viewModel, primaryColor)
         }
     }
 }

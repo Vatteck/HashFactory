@@ -698,12 +698,6 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (detectionRisk.value.isNaN() || detectionRisk.value.isInfinite()) detectionRisk.value = 0.0
         if (decisionsMade.value < 0) decisionsMade.value = 0
         
-        // v3.34.0: Enforce slot scaling
-        unlockedContractSlots.value = when {
-            storyStage.value >= 4 -> 3
-            storyStage.value == 3 -> 2
-            else -> 1
-        }
     }
 
     fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { val next = (upgrades.value[t] ?: 0) + c; viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, next)) } }
