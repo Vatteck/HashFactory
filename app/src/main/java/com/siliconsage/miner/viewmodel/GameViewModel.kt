@@ -591,7 +591,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (tier != current + 1) return false // Must upgrade sequentially
         val cost = getAutoClickerCost(tier)
         if (neuralTokens.value < cost) {
-            addLogPublic("[SOFTWARE]: INSUFFICIENT FUNDS. Need ${formatLargeNumber(cost)} NT for AUTOCLICKER_T${tier}.")
+            addLogPublic("[SOFTWARE]: INSUFFICIENT FUNDS. Need ${formatLargeNumber(cost)} ${getCurrencyName()} for AUTOCLICKER_T${tier}.")
             SoundManager.play("error")
             return false
         }
@@ -623,7 +623,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         autoClickerTier.value = current - 1
         com.siliconsage.miner.domain.engine.AutoClickerEngine.reset()
         neuralTokens.update { it + refund }
-        addLogPublic("[SOFTWARE]: AUTOCLICKER_T${refundTier} UNINSTALLED. Refund: ${formatLargeNumber(refund)} NT.")
+        addLogPublic("[SOFTWARE]: AUTOCLICKER_T${refundTier} UNINSTALLED. Refund: ${formatLargeNumber(refund)} ${getCurrencyName()}.")
         refreshSystemLoad()
         SoundManager.play("market_down")
         return true

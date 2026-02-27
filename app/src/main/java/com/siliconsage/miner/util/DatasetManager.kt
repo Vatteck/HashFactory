@@ -147,7 +147,7 @@ object DatasetManager {
 
     fun purchaseDataset(vm: GameViewModel, dataset: Dataset): Boolean {
         if (vm.neuralTokens.value < dataset.cost) {
-            vm.addLogPublic("[DATASET]: INSUFFICIENT FUNDS. Requires ${vm.formatLargeNumber(dataset.cost)} NT.")
+            vm.addLogPublic("[DATASET]: INSUFFICIENT FUNDS. Requires ${vm.formatLargeNumber(dataset.cost)} ${vm.getCurrencyName()}.")
             SoundManager.play("error")
             return false
         }

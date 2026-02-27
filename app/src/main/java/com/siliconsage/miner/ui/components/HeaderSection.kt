@@ -386,26 +386,6 @@ fun HeaderSection(
                              }
                         }
 
-                        // v4.0.1: System Load Display
-                        val sysLoad by viewModel.systemLoadSnapshot.collectAsState()
-                        if (sysLoad.cpuMax > 1.0) { // Only show once hardware is purchased
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 4.dp)) {
-                                val loadColor = when {
-                                    sysLoad.isLocked -> ErrorRed
-                                    sysLoad.isThrottled -> Color(0xFFFFAA00)
-                                    else -> color.copy(alpha = 0.7f)
-                                }
-                                Text(text = "SYS.LOAD", color = Color.Gray, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                                Text(
-                                    text = "${(sysLoad.loadPercent * 100).toInt()}%${if (sysLoad.isLocked) "!" else if (sysLoad.isThrottled) "↓" else ""}",
-                                    color = loadColor,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Black,
-                                    fontFamily = FontFamily.Monospace
-                                )
-                            }
-                        }
-
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
                             Canvas(modifier = Modifier.size(48.dp)) {
                                 val strokeW = 3.5.dp.toPx()
@@ -461,6 +441,23 @@ fun HeaderSection(
                 Button(onClick = { onPurge() }, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f * lockoutFade) else Color.DarkGray.copy(alpha = 0.3f * lockoutFade), contentColor = if (isPurging) ElectricBlue.copy(alpha = lockoutFade) else Color.White.copy(alpha = lockoutFade)), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isPurging) ElectricBlue.copy(alpha = lockoutFade) else Color.DarkGray.copy(alpha = lockoutFade))) { val purgeTextV = if (storyStage <= 1) "TAKE A BREATH" else if (storyStage == 2) "SCRUB O2" else "PURGE HEAT"; Icon(Icons.Default.Air, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(text = purgeTextV, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
             }
             Box(modifier = Modifier.fillMaxWidth().height(6.dp).background(Color.Black.copy(alpha = 0.5f)).border(BorderStroke(0.5.dp, color.copy(alpha = 0.2f))).clip(RoundedCornerShape(1.dp))) { Canvas(modifier = Modifier.fillMaxSize()) { val wv2 = size.width; val tProg = (currentHeatState.value / 100.0).coerceIn(0.0, 1.0).toFloat(); val iProg = (integrityState.value / 100.0).coerceIn(0.0, 1.0).toFloat(); for (i in 0 until 20) { val pFactor = i.toFloat() / 20; val xv2 = i * (wv2 / 20 + 2.dp.toPx()); drawRect(color = Color.DarkGray.copy(alpha = 0.2f), topLeft = Offset(xv2, 0f), size = Size(wv2 / 20, size.height)); if (pFactor <= tProg) { drawRect(color = if (isThermalLockout) ErrorRed.copy(alpha = heartbeatAlpha) else if (pFactor < 0.6f) color.copy(alpha=0.6f) else if (pFactor < 0.85f) Color(0xFFFFA500) else ErrorRed, topLeft = Offset(xv2, 0f), size = Size(wv2 / 20, size.height)) }; if (pFactor > (1f - (100.0 - integrityState.value).toFloat() / 100f)) { drawRect(color = ErrorRed.copy(alpha=0.4f), topLeft = Offset(xv2, 0f), size = Size(wv2 / 20, size.height)) } } } }
+
+            // v4.0.1: System Load Bar (always visible once hardware > base)
+            val sysLoadHeader by viewModel.systemLoadSnapshot.collectAsState()
+            if (sysLoadHeader.cpuMax > 1.0) {
+                Spacer(Modifier.height(2.dp))
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    val sysLoadColor = when { sysLoadHeader.isLocked -> ErrorRed; sysLoadHeader.isThrottled -> Color(0xFFFFAA00); else -> color.copy(alpha = 0.6f) }
+                    Text(text = "SYS ", color = Color.Gray, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Box(modifier = Modifier.weight(1f).height(4.dp).background(Color.Black.copy(alpha = 0.5f)).border(BorderStroke(0.5.dp, sysLoadColor.copy(alpha = 0.3f))).clip(RoundedCornerShape(1.dp))) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val loadProg = sysLoadHeader.loadPercent.toFloat().coerceIn(0f, 1f)
+                            drawRect(color = sysLoadColor.copy(alpha = 0.7f), size = Size(size.width * loadProg, size.height))
+                        }
+                    }
+                    Text(text = " ${(sysLoadHeader.loadPercent * 100).toInt()}%", color = sysLoadColor, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                }
+            }
 
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermTextValue = buildAnnotatedString { 

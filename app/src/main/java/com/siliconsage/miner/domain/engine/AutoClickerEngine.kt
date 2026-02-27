@@ -30,6 +30,7 @@ object AutoClickerEngine {
     /**
      * Called every 100ms from the game loop.
      * Processes automatic node taps on the active dataset.
+     * FLOPS rate influences speed — more hardware = faster processing.
      */
     fun tick(vm: GameViewModel) {
         val tier = vm.autoClickerTier.value
@@ -42,8 +43,13 @@ object AutoClickerEngine {
         val loadSnapshot = vm.systemLoadSnapshot.value
         val speedMult = loadSnapshot.throttleMultiplier
 
-        // Accumulate taps (0.1s per tick * speed * throttle)
-        tapAccumulator += SPEED[tier.coerceIn(0, 3)] * 0.1 * speedMult
+        // FLOPS bonus: hardware investment pays off — log10(flopsRate) as a soft multiplier
+        // At 1k FLOPS/s → 1.3x, 1M → 1.6x, 1B → 1.9x (diminishing returns)
+        val flopsRate = vm.flopsProductionRate.value.coerceAtLeast(1.0)
+        val flopsBonus = 1.0 + (kotlin.math.log10(flopsRate) * 0.1).coerceIn(0.0, 1.5)
+
+        // Accumulate taps (0.1s per tick * speed * throttle * flops bonus)
+        tapAccumulator += SPEED[tier.coerceIn(0, 3)] * 0.1 * speedMult * flopsBonus
 
         // Process whole taps
         while (tapAccumulator >= 1.0) {

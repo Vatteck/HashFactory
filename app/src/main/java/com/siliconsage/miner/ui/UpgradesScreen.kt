@@ -269,6 +269,7 @@ fun SoftwarePanel(viewModel: GameViewModel, themeColor: Color) {
     val autoClickerTier by viewModel.autoClickerTier.collectAsState()
     val systemLoad by viewModel.systemLoadSnapshot.collectAsState()
     val neuralTokens by viewModel.neuralTokens.collectAsState()
+    val currencyName = viewModel.getCurrencyName()
 
     val tiers = listOf(
         Triple("MANUAL_TAP.exe",      "Base kernel input. Painfully human. No CPU cost.",   0.0),
@@ -387,7 +388,7 @@ fun SoftwarePanel(viewModel: GameViewModel, themeColor: Color) {
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text(
-                                    text = "INSTALL  ${viewModel.formatLargeNumber(cost)} NT",
+                                    text = "INSTALL  ${viewModel.formatLargeNumber(cost)} $currencyName",
                                     fontSize = 10.sp,
                                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                                 )
@@ -401,7 +402,7 @@ fun SoftwarePanel(viewModel: GameViewModel, themeColor: Color) {
                                 modifier = Modifier.wrapContentWidth()
                             ) {
                                 Text(
-                                    text = "UNINSTALL  +${viewModel.formatLargeNumber(cost * 0.4)} NT",
+                                    text = "UNINSTALL  +${viewModel.formatLargeNumber(cost * 0.4)} $currencyName",
                                     fontSize = 9.sp,
                                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                                 )
