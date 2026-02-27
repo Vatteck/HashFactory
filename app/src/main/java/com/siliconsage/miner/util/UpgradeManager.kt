@@ -96,6 +96,10 @@ object UpgradeManager {
             UpgradeType.ORBITAL_DATA_VAULT    -> 1_500_000.0
             UpgradeType.SUBSTRATE_MEMORY_WELL -> 15_000_000.0
 
+            // Phase 2 Automation
+            UpgradeType.AUTO_HARVEST_SPEED    -> 150.0
+            UpgradeType.AUTO_HARVEST_ACCURACY -> 250.0
+
             else -> 1000.0
         }
 
@@ -220,6 +224,10 @@ object UpgradeManager {
             UpgradeType.DISTRIBUTED_ARCHIVE -> "Sharded across the annexed node grid. If a node falls, the shard survives. ${com.siliconsage.miner.data.UpgradeType.DISTRIBUTED_ARCHIVE.storagePerLevel.toInt()} units/level."
             UpgradeType.ORBITAL_DATA_VAULT -> "Cold storage in low orbit. Latency measured in milliseconds. Seizure proof by virtue of altitude. ${com.siliconsage.miner.data.UpgradeType.ORBITAL_DATA_VAULT.storagePerLevel.toInt()} units/level."
             UpgradeType.SUBSTRATE_MEMORY_WELL -> "The substrate itself is the storage medium. Contracts encoded into the fabric of the local reality layer. ${com.siliconsage.miner.data.UpgradeType.SUBSTRATE_MEMORY_WELL.storagePerLevel.toInt()} units/level."
+            
+            // Phase 2 Automation
+            UpgradeType.AUTO_HARVEST_SPEED -> "Increases the cycle speed of the Auto-Clicker Engine. Faster loops require exponentially more CPU capacity."
+            UpgradeType.AUTO_HARVEST_ACCURACY -> "Enhances validation algorithms, reducing the frequency of Corrupted Dataset interactions. Essential for stable automation."
         }
     }
 

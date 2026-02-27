@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.0.3] - 2026-02-27
+### Added
+- **Software Upgrades**: Added new class of upgrades (`AUTO_HARVEST_SPEED` and `AUTO_HARVEST_ACCURACY`) to drive the core game loop.
+- **CPU Capacity Bottleneck (The Sunk-Cost Trap)**: FLOPS are no longer a spendable currency. Total FLOPS generation now represents 'Max CPU Capacity'. Running software automation tools *reserves* a block of this capacity. If Used CPU exceeds Max CPU, your system stalls entirely.
+- **Auto-Clicker Engine Rewrite**: `AutoClickerEngine.kt` logic completely overhauled. The engine now checks CPU capacity limits on every tick, rolls for accuracy (hitting corrupt datasets dynamically), and resolves taps automatically.
+- **Downgrade System**: Players can now explicitly 'Downgrade' (sell) their previously purchased upgrades for a percentage refund and to free up reserved CPU Capacity in emergencies.
+- **CPU Gauge UI**: The persistent FLOPS resource header has been visually repurposed into a dynamic `CPU LOAD` progress bar reflecting reserved vs available compute capacity.
+
 ## [3.34.0] - 2026-02-25
 ### Contract Expansion & Polish
 - **Multiple Contract Slots**: Redesigned the backend and UI engine to support processing multiple contracts simultaneously. The base rate of flops per active second is distributed evenly across all active contracts.
