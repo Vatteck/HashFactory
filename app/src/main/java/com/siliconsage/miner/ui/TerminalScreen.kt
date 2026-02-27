@@ -91,12 +91,12 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             }
 
             if (mode == "DATAMINER") {
-                Box(modifier = Modifier.weight(0.6f).fillMaxWidth()) {
+                Box(modifier = Modifier.weight(0.82f).fillMaxWidth()) {
                     com.siliconsage.miner.ui.components.DatasetGrid(viewModel, primaryColor)
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Box(
-                    modifier = Modifier.weight(0.4f).fillMaxWidth()
+                    modifier = Modifier.weight(0.18f).fillMaxWidth()
                         .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
                         .border(BorderStroke(1.5.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.85f)), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
                 ) {
