@@ -101,7 +101,7 @@ object ResourceEngine {
         shadowRelays: Set<String> = emptySet(),
         gridFlopsBonuses: Map<String, Double>,
         faction: String,
-        humanityScore: Int,
+        decisionsMade: Int,
         location: String,
         prestigeMultiplier: Double,
         unlockedPerks: Set<String>,
@@ -129,7 +129,7 @@ object ResourceEngine {
             shadowRelays = shadowRelays,
             gridFlopsBonuses = gridFlopsBonuses,
             faction = faction,
-            humanityScore = humanityScore,
+            decisionsMade = decisionsMade,
             saturation = saturation
         )
 

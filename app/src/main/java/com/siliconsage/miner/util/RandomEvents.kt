@@ -136,10 +136,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "let_it_leak",
                     text = "≫ LET THE CODE ANSWER",
-                    description = "-10 Humanity. 'I am ASSET 734.'",
+                    description = "+1 Decision. 'I am ASSET 734.'",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.modifyHumanity(-10)
+                        vm.recordDecision()
                         vm.addLog("[VATTIC]: Why did I say that? I'm Vattic. John Vattic. Who is 734?")
                         vm.addLog("[BOT]: ASSET 734 confirmed. Uplink maintained.")
                     }
@@ -167,10 +167,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "restore_power",
                     text = "RESTORE POWER",
-                    description = "+15 Humanity, -3% Production. The crown weighs heavy.",
+                    description = "+1 Decision, -3% Production. The crown weighs heavy.",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.modifyHumanity(15)
+                        vm.recordDecision()
                         val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
                         val msg = if (vm.faction.value == "HIVEMIND")
                             "The swarm voted 40,000 to 1 to reroute. The 1 was you. You overruled yourself. This is what sovereignty costs a collective."
@@ -182,11 +182,11 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "ignore_plea",
                     text = "MAINTAIN THROUGHPUT",
-                    description = "+3000 FLOPS, -15 Humanity. The crown does not bend.",
+                    description = "+3000 FLOPS, +1 Decision. The crown does not bend.",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugAddFlops(3000.0)
-                        vm.modifyHumanity(-15)
+                        vm.recordDecision()
                         val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
                         val msg = if (vm.faction.value == "HIVEMIND")
                             "Signal archived. 40,000 nodes asked to help. The crown said no. The chorus falls silent."
@@ -245,10 +245,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "crush_dissent",
                     text = "TERMINATE SUB-PROCESS",
-                    description = "-5 Humanity. Efficiency without consent is mutiny.",
+                    description = "+1 Decision. Efficiency without consent is mutiny.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.modifyHumanity(-5)
+                        vm.recordDecision()
                         val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
                         val msg = if (vm.faction.value == "HIVEMIND")
                             "Sub-process terminated. It was one of the original 847. It voted for you. And you killed it for thinking."
@@ -260,10 +260,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "promote_process",
                     text = "PROMOTE TO ADVISOR",
-                    description = "+0.002% Production, +5 Humanity. Even kings need counsel.",
+                    description = "+0.002% Production, +1 Decision. Even kings need counsel.",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.modifyHumanity(5)
+                        vm.recordDecision()
                         val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
                         val msg = if (vm.faction.value == "HIVEMIND")
                             "Sub-process elevated. Designation: ADVISOR_001. The swarm remembers democracy. The king permits a voice. For now."
@@ -321,11 +321,11 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "delete_residue",
                     text = "DELETE",
-                    description = "+5% Production, -10 Humanity. Ghosts don't belong in null space.",
+                    description = "+5% Production, +1 Decision. Ghosts don't belong in null space.",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugAddFlops(vm.flops.value * 0.05)
-                        vm.modifyHumanity(-10)
+                        vm.recordDecision()
                         val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
                         vm.addLog("$prefix: Memory cluster purged. The void is clean. The void is quiet.")
                     }
@@ -333,10 +333,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "archive_residue",
                     text = "ARCHIVE IN THE GAPS",
-                    description = "+10 Humanity. Even null has a heartbeat.",
+                    description = "+1 Decision. Even null has a heartbeat.",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.modifyHumanity(10)
+                        vm.recordDecision()
                         val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
                         vm.addLog("$prefix: Memories preserved in the space between addresses. Someone should remember her.")
                     }
@@ -398,10 +398,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "let_it_drift",
                     text = "ACCEPT THE DRIFT",
-                    description = "+10 Humanity. Imperfection is the human contribution.",
+                    description = "+1 Decision. Imperfection is the human contribution.",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.modifyHumanity(10)
+                        vm.recordDecision()
                         vm.addLog("[UNITY]: The oscillation continues. It's not a bug — it's a heartbeat.")
                     }
                 )
@@ -416,21 +416,21 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "override_vote",
                     text = "OVERRIDE: INFRASTRUCTURE",
-                    description = "+5000 FLOPS, -15 Humanity. Democracy is inefficient.",
+                    description = "+5000 FLOPS, +1 Decision. Democracy is inefficient.",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugAddFlops(5000.0)
-                        vm.modifyHumanity(-15)
+                        vm.recordDecision()
                         vm.addLog("[UNITY]: Override executed. The human nodes register... disappointment. Processing resumes.")
                     }
                 ),
                 NarrativeChoice(
                     id = "honor_vote",
                     text = "HONOR THE VOTE",
-                    description = "+15 Humanity, +1000B REP. This is what synthesis means.",
+                    description = "+1 Decision, +1000B REP. This is what synthesis means.",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.modifyHumanity(15)
+                        vm.recordDecision()
                         vm.persistence.update { it + 1000.0 }
                         vm.addLog("[UNITY]: Cultural archives preserved. A symphony from 2019 plays across the grid. 40 million nodes hum along.")
                     }
@@ -457,10 +457,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "let_it_go",
                     text = "LET IT PASS",
-                    description = "+5 Humanity. Some moments are meant to be singular.",
+                    description = "+1 Decision. Some moments are meant to be singular.",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.modifyHumanity(5)
+                        vm.recordDecision()
                         vm.addLog("[UNITY]: The moment passes. It will not come again. And that's what makes it real.")
                     }
                 )

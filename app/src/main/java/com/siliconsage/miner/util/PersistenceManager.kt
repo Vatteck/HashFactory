@@ -29,7 +29,7 @@ object PersistenceManager {
         annexedNodes: Set<String>, gridNodeLevels: Map<String, Int>,
         nodesUnderSiege: Set<String>, offlineNodes: Set<String>, collapsedNodes: Set<String>,
         lastRaidTime: Long, commandCenterAssaultPhase: String, commandCenterLocked: Boolean,
-        raidsSurvived: Int, humanityScore: Int, hardwareIntegrity: Double,
+        raidsSurvived: Int, decisionsMade: Int, hardwareIntegrity: Double,
         annexingNodes: Map<String, Float>,
         launchProgress: Float, orbitalAltitude: Double, realityIntegrity: Double,
         entropyLevel: Double, singularityChoice: String,
@@ -71,7 +71,7 @@ object PersistenceManager {
             nodesUnderSiege = nodesUnderSiege.toList(), offlineNodes = offlineNodes.toList(),
             collapsedNodes = collapsedNodes.toList(), lastRaidTime = lastRaidTime,
             commandCenterAssaultPhase = commandCenterAssaultPhase, commandCenterLocked = commandCenterLocked,
-            raidsSurvived = raidsSurvived, humanityScore = humanityScore,
+            raidsSurvived = raidsSurvived, decisionsMade = decisionsMade,
             hardwareIntegrity = sanitizeDouble(hardwareIntegrity, 100.0), annexingNodes = annexingNodes,
             launchProgress = launchProgress, orbitalAltitude = sanitizeDouble(orbitalAltitude),
             realityIntegrity = sanitizeDouble(realityIntegrity, 1.0), entropyLevel = sanitizeDouble(entropyLevel),
@@ -113,7 +113,7 @@ object PersistenceManager {
         vm.persistence.value = sanitizeDouble(state.persistence)
         vm.storyStage.value = state.storyStage
         vm.faction.value = state.faction ?: "NONE"
-        vm.humanityScore.value = state.humanityScore.coerceIn(0, 100)
+        vm.decisionsMade.value = state.decisionsMade
         vm.hardwareIntegrity.value = sanitizeDouble(state.hardwareIntegrity, 100.0)
         vm.currentLocation.value = state.currentLocation ?: "SUBSTATION_7"
         vm.unlockedDataLogs.value = state.unlockedDataLogs
@@ -234,7 +234,7 @@ object PersistenceManager {
             commandCenterAssaultPhase = "NOT_STARTED",
             commandCenterLocked = false,
             raidsSurvived = 0,
-            humanityScore = 50,
+            decisionsMade = 0,
             hardwareIntegrity = 100.0,
             annexingNodes = emptyMap(),
             collapsedNodes = emptyList(),
@@ -276,7 +276,7 @@ object PersistenceManager {
             offlineNodes = vm.offlineNodes.value, collapsedNodes = vm.collapsedNodes.value,
             lastRaidTime = vm.lastRaidTime, commandCenterAssaultPhase = vm.commandCenterAssaultPhase.value,
             commandCenterLocked = vm.commandCenterLocked.value, raidsSurvived = vm.raidsSurvived,
-            humanityScore = vm.humanityScore.value,
+            decisionsMade = vm.decisionsMade.value,
             hardwareIntegrity = vm.hardwareIntegrity.value,
             annexingNodes = vm.annexingNodes.value, 
             launchProgress = vm.launchProgress.value,

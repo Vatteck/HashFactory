@@ -66,8 +66,8 @@ data class GameState(
     val commandCenterLocked: Boolean = false, // Permanent lockout if integrity=0 during assault
     val raidsSurvived: Int = 0, // Track for escalating Kessler dialogue
     
-    // v2.9.18: Phase 12 Layer 3 - Climax Mechanics
-    val humanityScore: Int = 50, // 0 to 100 (NULL < 20, UNITY > 30)
+    // v3.37.0: Replaced humanityScore with decisionsMade, tracking narrative interaction volume
+    val decisionsMade: Int = 0,
     val hardwareIntegrity: Double = 100.0, // Persist integrity across sessions
     
     // v2.9.29: Progress tracking

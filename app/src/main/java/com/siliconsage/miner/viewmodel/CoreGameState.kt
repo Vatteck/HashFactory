@@ -155,7 +155,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val kesslerStatus = MutableStateFlow("ACTIVE")
     val currentNews = MutableStateFlow<String?>(null)
     val stakedTokens = MutableStateFlow(0.0)
-    val humanityScore = MutableStateFlow(50)
+    val decisionsMade = MutableStateFlow(0)
     val uploadProgress = MutableStateFlow(0f)
     val updateDownloadProgress = MutableStateFlow(0f)
     val activeClimaxTransition = MutableStateFlow<String?>(null)

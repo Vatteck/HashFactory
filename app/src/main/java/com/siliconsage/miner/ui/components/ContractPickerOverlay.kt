@@ -86,9 +86,15 @@ fun ContractPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(contracts) { contract ->
+                        val hasFunds = currentTokens >= contract.cost
+                        val hasStorage = (viewModel.contractStorageCapacity.value - viewModel.contractStorageUsed.value) >= contract.size
+                        val canPurchase = hasFunds && hasStorage
+                        
                         ContractCard(
                             contract = contract,
-                            canAfford = currentTokens >= contract.cost,
+                            canPurchase = canPurchase,
+                            hasFunds = hasFunds,
+                            hasStorage = hasStorage,
                             primaryColor = primaryColor,
                             currencyName = currencyName,
                             onPurchase = {
@@ -120,13 +126,15 @@ fun ContractPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
 @Composable
 private fun ContractCard(
     contract: ComputeContract,
-    canAfford: Boolean,
+    canPurchase: Boolean,
+    hasFunds: Boolean,
+    hasStorage: Boolean,
     primaryColor: Color,
     currencyName: String,
     onPurchase: () -> Unit
 ) {
-    val borderColor = if (canAfford) primaryColor else Color.Gray
-    val textColor = if (canAfford) Color.White else Color.Gray
+    val borderColor = if (canPurchase) primaryColor else Color.Gray
+    val textColor = if (canPurchase) Color.White else Color.Gray
     val purityPercent = (contract.purity * 100).toInt()
     val purityColor = when {
         contract.purity >= 0.85 -> NeonGreen
@@ -140,7 +148,7 @@ private fun ContractCard(
             .background(Color(0xFF111111), RoundedCornerShape(6.dp))
             .border(BorderStroke(1.dp, borderColor.copy(alpha = 0.5f)), RoundedCornerShape(6.dp))
             .clip(RoundedCornerShape(6.dp))
-            .clickable(enabled = canAfford) {
+            .clickable(enabled = canPurchase) {
                 onPurchase()
                 HapticManager.vibrateClick()
             }
@@ -178,7 +186,7 @@ private fun ContractCard(
                     Text("COST", color = Color.Gray, fontSize = 9.sp)
                     Text(
                         "${FormatUtils.formatLargeNumber(contract.cost)} $currencyName",
-                        color = if (canAfford) ErrorRed else Color.DarkGray,
+                        color = if (hasFunds) ErrorRed else Color.DarkGray,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -187,7 +195,7 @@ private fun ContractCard(
                     Text("YIELD", color = Color.Gray, fontSize = 9.sp)
                     Text(
                         "≈${FormatUtils.formatLargeNumber(contract.expectedYield)} $currencyName",
-                        color = if (canAfford) NeonGreen else Color.DarkGray,
+                        color = if (hasFunds) NeonGreen else Color.DarkGray,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -197,17 +205,18 @@ private fun ContractCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             // Processing time
-            val timeSeconds = contract.processingTime / 1000
-            Text(
-                "Base Processing: ${timeSeconds}s",
-                color = Color.Gray,
-                fontSize = 9.sp
-            )
+            // Processing time & Size
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                val timeSeconds = contract.processingTime / 1000
+                Text("Base Processing: ${timeSeconds}s", color = Color.Gray, fontSize = 9.sp)
+                Text("SIZE: ${contract.size}u", color = if (hasStorage) ElectricBlue else ErrorRed, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            }
 
-            if (!canAfford) {
+            if (!canPurchase) {
                 Spacer(modifier = Modifier.height(4.dp))
+                val errorMsg = if (!hasFunds) "[ INSUFFICIENT FUNDS ]" else "[ INSUFFICIENT STORAGE ]"
                 Text(
-                    "INSUFFICIENT FUNDS",
+                    errorMsg,
                     color = ErrorRed.copy(alpha = 0.6f),
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold

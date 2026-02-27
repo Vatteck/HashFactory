@@ -36,8 +36,8 @@ object NarrativeManager {
         isTrueNull: Boolean,
         isSovereign: Boolean,
         hasUnityPath: Boolean,
-        humanityScore: Int
-    ) = AssaultDialogue.generateConfrontationDilemma(faction, isTrueNull, isSovereign, hasUnityPath, humanityScore)
+        decisionsMade: Int
+    ) = AssaultDialogue.generateConfrontationDilemma(faction, isTrueNull, isSovereign, hasUnityPath, decisionsMade)
 
     fun generateDepartureDilemma(faction: String) = AssaultDialogue.generateDepartureDilemma(faction)
 

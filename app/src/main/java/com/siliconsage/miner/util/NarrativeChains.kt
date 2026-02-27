@@ -183,12 +183,12 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "accept_deal",
                     text = "ROUTE THROUGH RELAY",
-                    description = "+2x next yield, -10 Humanity. 'Money talks.'",
+                    description = "+2x next yield, +1 Decision. 'Money talks.'",
                     color = NeonGreen,
                     effect = { vm ->
                         val bonus = vm.neuralTokens.value * 0.15
                         vm.updateNeuralTokens(bonus.coerceAtLeast(500.0))
-                        vm.humanityScore.update { (it - 10).coerceAtLeast(0) }
+                        vm.recordDecision()
                         vm.addLog("[SYSTEM]: Packets routed. Payment received. Node integrity... questionable.")
                     }
                 ),

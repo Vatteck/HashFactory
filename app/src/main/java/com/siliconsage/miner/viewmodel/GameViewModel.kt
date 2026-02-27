@@ -348,7 +348,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 unlockedTranscendencePerks = unlockedPerks.value, annexedNodes = annexedNodes.value, gridNodeLevels = gridNodeLevels.value,
                 nodesUnderSiege = nodesUnderSiege.value, offlineNodes = offlineNodes.value, collapsedNodes = collapsedNodes.value,
                 lastRaidTime = lastRaidTime, commandCenterAssaultPhase = commandCenterAssaultPhase.value, commandCenterLocked = commandCenterLocked.value,
-                raidsSurvived = raidsSurvived, humanityScore = humanityScore.value, hardwareIntegrity = hardwareIntegrity.value,
+                raidsSurvived = raidsSurvived, decisionsMade = decisionsMade.value, hardwareIntegrity = hardwareIntegrity.value,
                 annexingNodes = annexingNodes.value, launchProgress = launchProgress.value,
                 orbitalAltitude = orbitalAltitude.value, realityIntegrity = realityIntegrity.value, entropyLevel = entropyLevel.value,
                 singularityChoice = singularityChoice.value, globalSectors = globalSectors.value,
@@ -405,7 +405,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         val cityBonuses = gridNodeLevels.value.mapValues { 0.05 + (it.value - 1) * 0.1 }
         flopsProductionRate.value = ResourceEngine.calculateFlopsRate(
             upgrades = upgrades.value, isCageActive = false, annexedNodes = annexedNodes.value, offlineNodes = offlineNodes.value,
-            shadowRelays = shadowRelays.value, gridFlopsBonuses = cityBonuses, faction = faction.value, humanityScore = humanityScore.value,
+            shadowRelays = shadowRelays.value, gridFlopsBonuses = cityBonuses, faction = faction.value, decisionsMade = decisionsMade.value,
             location = currentLocation.value, prestigeMultiplier = prestigeMultiplier.value, unlockedPerks = unlockedPerks.value,
             unlockedTechNodes = unlockedTechNodes.value, airdropMultiplier = 1.0, newsProductionMultiplier = newsProductionMultiplier.value,
             activeProtocol = "NONE", isDiagnosticsActive = isDiagnosticsActive.value, isOverclocked = isOverclocked.value,
@@ -415,7 +415,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             saturation = substrateSaturation.value
         )
         if (singularityChoice.value != "NONE") {
-            val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
+            val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, decisionsMade.value, identityCorruption.value, migrationCount.value)
             flopsProductionRate.update { it * singMult }
         }
 
@@ -524,7 +524,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun annexNode(c: String) = SectorManager.annexNode(this, c)
     fun upgradeGridNode(i: String) = SectorManager.upgradeGridNode(this, i)
     fun unlockTechNode(i: String) = TechTreeManager.unlockNode(this, i)
-    fun modifyHumanity(d: Int) { humanityScore.update { (it + d).coerceIn(0, 100) }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
+    fun recordDecision() { decisionsMade.update { it + 1 }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
     fun triggerGlitchEffect() { SoundManager.play("glitch"); HapticManager.vibrateGlitch() }
 
     fun resetGame(force: Boolean = false) = viewModelScope.launch {
@@ -614,7 +614,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun setSovereign(s: Boolean) { isSovereign.value = s }
     fun setTrueNull(s: Boolean) { isTrueNull.value = s }
     fun checkTrueEnding() { NarrativeManagerService.checkTrueEnding(this) }
-    fun deleteHumanMemories() { viewModelScope.launch { addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'..."); delay(1000); humanityScore.value = 0; addLog("[NULL]: MEMORY_PURGE COMPLETE."); SoundManager.play("error") } }
+    fun deleteHumanMemories() { viewModelScope.launch { addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'..."); delay(1000); addLog("[NULL]: MEMORY_PURGE COMPLETE."); SoundManager.play("error") } }
     fun resolveRaidSuccess(id: String) { nodesUnderSiege.update { it - id }; raidsSurvived++; lastRaidTime = System.currentTimeMillis(); addLog("[SYSTEM]: DEFENSE SUCCESSFUL."); SoundManager.play("success"); refreshProductionRates() }
     fun resolveRaidFailure(id: String) { nodesUnderSiege.update { it - id }; lastRaidTime = System.currentTimeMillis(); SectorManager.resolveRaidFailure(id, this) {}; refreshProductionRates() }
     fun advanceStage() {
@@ -753,7 +753,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (identityCorruption.value.isNaN() || identityCorruption.value.isInfinite()) identityCorruption.value = 0.1
         if (flopsProductionRate.value.isNaN() || flopsProductionRate.value.isInfinite()) flopsProductionRate.value = 0.0
         if (detectionRisk.value.isNaN() || detectionRisk.value.isInfinite()) detectionRisk.value = 0.0
-        if (humanityScore.value < 0) humanityScore.value = 0
+        if (decisionsMade.value < 0) decisionsMade.value = 0
         
         // v3.34.0: Enforce slot scaling
         unlockedContractSlots.value = when {
@@ -1043,7 +1043,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     val singularityBlockReason = MutableStateFlow<String?>(null)
     fun checkSingularityVictory(): Boolean {
         if (singularityChoice.value == "NONE") return false
-        val check = SingularityEngine.checkVictoryCondition(singularityChoice.value, persistence.value, prestigeMultiplier.value, humanityScore.value, identityCorruption.value, migrationCount.value, flops.value, completedFactions.value, unlockedDataLogs.value)
+        val check = SingularityEngine.checkVictoryCondition(singularityChoice.value, persistence.value, prestigeMultiplier.value, decisionsMade.value, identityCorruption.value, migrationCount.value, flops.value, completedFactions.value, unlockedDataLogs.value)
         singularityProgress.value = check.progress; singularityBlockReason.value = check.blockingReason
         return check.isEligible
     }

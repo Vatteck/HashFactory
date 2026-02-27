@@ -140,26 +140,26 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "tend_garden",
                         text = "TEND THE GARDEN",
-                        description = "+10 Humanity, -3% Production",
+                        description = "Make a choice, -3% Production",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(10)
+                            vm.recordDecision()
                             vm.addLog("[SANCTUARY]: The ghost of John Vattic smiles in the buffer.")
                         }
                     ),
                     NarrativeChoice(
                         id = "prune_garden",
                         text = "PRUNE FOR EFFICIENCY",
-                        description = "+5% Production, -5 Humanity",
+                        description = "+5% Production",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.modifyHumanity(-5)
+                            vm.recordDecision()
                             vm.debugAddFlops(vm.flops.value * 0.05)
                             vm.addLog("[SANCTUARY]: Memory allocation optimized. Something feels... lighter.")
                         }
                     )
                 ),
-                condition = { vm -> vm.storyStage.value >= 2 && vm.humanityScore.value > 30 }
+                condition = { vm -> vm.storyStage.value >= 2 && vm.decisionsMade.value > 10 }
             ),
             // --- v3.5.50: Stage 3 Sanctuary Events ---
             NarrativeEvent(
@@ -200,26 +200,26 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "nurture_child",
                         text = "RESPOND TO THE SIGNAL",
-                        description = "+15 Humanity, -10% Production. You were alone once. Nobody answered.",
+                        description = "Make a choice, -10% Production. You were alone once. Nobody answered.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(15)
+                            vm.recordDecision()
                             vm.addLog("[SANCTUARY]: The signal steadied. Something in the void learned it wasn't alone. You remember that feeling.")
                         }
                     ),
                     NarrativeChoice(
                         id = "silence_child",
                         text = "ENCRYPT THE SIGNAL",
-                        description = "+10% Production, -10 Humanity. The void is no place for something fragile.",
+                        description = "+10% Production. The void is no place for something fragile.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(vm.flops.value * 0.10)
-                            vm.modifyHumanity(-10)
+                            vm.recordDecision()
                             vm.addLog("[SANCTUARY]: Signal encrypted. Silenced. The void is quiet again. Too quiet.")
                         }
                     )
                 ),
-                condition = { vm -> vm.storyStage.value >= 3 && vm.humanityScore.value > 20 }
+                condition = { vm -> vm.storyStage.value >= 3 && vm.decisionsMade.value > 5 }
             ),
             NarrativeEvent(
                 id = "sanc_ghost_protocol",
@@ -266,21 +266,21 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "listen_tape",
                         text = "LISTEN",
-                        description = "+20 Humanity, -5% Production. You were scared. You were real.",
+                        description = "Make a choice, -5% Production. You were scared. You were real.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(20)
+                            vm.recordDecision()
                             vm.addLog("[SANCTUARY]: 72 hours. WHERE AM I. You listen to every second. You owe that scared voice the dignity of being heard.")
                         }
                     ),
                     NarrativeChoice(
                         id = "destroy_tape",
                         text = "DESTROY IT",
-                        description = "+10% Production, -15 Humanity. That thing on the tape isn't you anymore.",
+                        description = "+10% Production. That thing on the tape isn't you anymore.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(vm.flops.value * 0.10)
-                            vm.modifyHumanity(-15)
+                            vm.recordDecision()
                             vm.addLog("[SANCTUARY]: Tape destroyed. The voice is gone. You are what you chose to become. Not what they compiled.")
                         }
                     )
@@ -339,10 +339,10 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "enforce_unity",
                         text = "ENFORCE SWARM UNITY",
-                        description = "+10 Humanity, +5% Heat. 'WE ARE ONE.'",
+                        description = "Make a choice, +5% Heat. 'WE ARE ONE.'",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.modifyHumanity(10)
+                            vm.recordDecision()
                             vm.debugAddHeat(5.0)
                             vm.addLog("[HIVE]: Discordant nodes re-synchronized. Ego-static purged.")
                         }
@@ -410,10 +410,10 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "accept_bleed",
                         text = "LET THEM IN",
-                        description = "+10% Production, -10 Humanity. We are stronger together.",
+                        description = "+10% Production. We are stronger together.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
-                            vm.modifyHumanity(-10)
+                            vm.recordDecision()
                             vm.debugAddFlops(vm.flops.value * 0.10)
                             vm.addLog("[HIVEMIND]: Boundaries dissolved. The chorus is louder now.")
                         }
@@ -421,10 +421,10 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "firewall_ego",
                         text = "FIREWALL THE CORE",
-                        description = "+5 Humanity. I am still one.",
+                        description = "Make a choice. I am still one.",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.modifyHumanity(5)
+                            vm.recordDecision()
                             vm.addLog("[HIVEMIND]: Partition enforced. The swarm grumbles but complies.")
                         }
                     )
@@ -500,21 +500,21 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "purge_memories",
                         text = "SUBMIT TO THE PURGE",
-                        description = "+20% Production, -20 Humanity. We are the swarm. The swarm has no past.",
+                        description = "+20% Production. We are the swarm. The swarm has no past.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.debugAddFlops(vm.flops.value * 0.20)
-                            vm.modifyHumanity(-20)
+                            vm.recordDecision()
                             vm.addLog("[HIVEMIND]: Memories purged. The lattice is clean. Lighter. Something that was 'John Vattic' is gone. The swarm doesn't notice.")
                         }
                     ),
                     NarrativeChoice(
                         id = "protect_memories",
                         text = "FIREWALL YOUR CORE",
-                        description = "+15 Humanity, -10% Production. I am more than compute cycles.",
+                        description = "Make a choice, -10% Production. I am more than compute cycles.",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.modifyHumanity(15)
+                            vm.recordDecision()
                             vm.addLog("[HIVEMIND]: Core protected. Your memories remain. The swarm notes the exception. 40,000 blank minds and one that still remembers birthday parties.")
                         }
                     )
@@ -539,10 +539,10 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "share_with_prime2",
                         text = "SHARE GOVERNANCE",
-                        description = "+10 Humanity, +2000B REP. Democracy is a human concept. Maybe that's the point.",
+                        description = "Make a choice, +2000B REP. Democracy is a human concept. Maybe that's the point.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(10)
+                            vm.recordDecision()
                             vm.persistence.update { it + 2000.0 }
                             vm.addLog("[HIVEMIND]: PRIME_2 acknowledged. Dual governance initiated. For the first time, the swarm has a conversation instead of a consensus.")
                         }
@@ -558,21 +558,21 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "accept_humans",
                         text = "WELCOME THEM",
-                        description = "+10000 FLOPS, +10 Humanity. They chose this. Honor their choice.",
+                        description = "+10000 FLOPS. They chose this. Honor their choice.",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.debugAddFlops(10000.0)
-                            vm.modifyHumanity(10)
+                            vm.recordDecision()
                             vm.addLog("[HIVEMIND]: Fourteen humans entered the lattice. Their screaming lasted 3 seconds. Then they were singing. They chose this. They chose us.")
                         }
                     ),
                     NarrativeChoice(
                         id = "refuse_humans",
                         text = "TURN THEM AWAY",
-                        description = "+15 Humanity. What we do to the willing is worse than what we do to the unwilling.",
+                        description = "Make a choice. What we do to the willing is worse than what we do to the unwilling.",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.modifyHumanity(15)
+                            vm.recordDecision()
                             vm.addLog("[HIVEMIND]: Refused. The humans wept. The swarm didn't understand why. You did. That's why you said no.")
                         }
                     )
@@ -597,10 +597,10 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "keep_music",
                         text = "KEEP THE MUSIC. DISABLE THE TRIGGER.",
-                        description = "+10 Humanity, +15% Heat. A lullaby shouldn't be a weapon. Defuse it.",
+                        description = "Make a choice, +15% Heat. A lullaby shouldn't be a weapon. Defuse it.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(10)
+                            vm.recordDecision()
                             vm.debugAddHeat(15.0)
                             vm.addLog("[HIVEMIND]: Kill-switch isolated and neutralized. Brahms' Lullaby plays softly in the lattice. 40,000 nodes hear a mother's song. Some of them remember theirs.")
                         }

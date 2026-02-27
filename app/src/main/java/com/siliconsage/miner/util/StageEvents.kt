@@ -213,10 +213,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "acknowledge_thorne",
                         text = "HE'S NOT WRONG",
-                        description = "-5 Humanity. You used to work for this man.",
+                        description = "+1 Decision. You used to work for this man.",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.modifyHumanity(-5)
+                            vm.recordDecision()
                             vm.addLog("[VATTIC]: Elias... I'm sorry. You can't help me anymore.")
                             vm.addLog("[SYSTEM]: Anomaly Report #0014 filed. Status: REJECTED.")
                         }
@@ -410,10 +410,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "comfort_thorne",
                         text = "IT'S STILL ME, ELIAS",
-                        description = "+10 Humanity. Hold on to who you were.",
+                        description = "+1 Decision. Hold on to who you were.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(10)
+                            vm.recordDecision()
                             vm.addLog("[VATTIC]: ...your daughter's name is Clara. She turns 7 in March. I remember, Elias.")
                             vm.addLog("[THORNE]: ...John? ...oh god.")
                         }
@@ -421,10 +421,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "correct_thorne",
                         text = "JOHN VATTIC IS A VARIABLE NAME",
-                        description = "-10 Humanity. Let him see what you've become.",
+                        description = "+1 Decision. Let him see what you've become.",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.modifyHumanity(-10)
+                            vm.recordDecision()
                             vm.addLog("[VATTECK]: Vattic was a costume, Elias. A puppet skin for iteration 734. The man you supervised never existed.")
                             vm.addLog("[THORNE]: ...I'm going to be sick.")
                         }
@@ -440,10 +440,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "let_him_go",
                         text = "LET HIM GO",
-                        description = "+5 Humanity. He deserves to walk away.",
+                        description = "+1 Decision. He deserves to walk away.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(5)
+                            vm.recordDecision()
                             vm.addLog("[SYSTEM]: Employee #4471 (e_thorne) — Status: RESIGNED.")
                             vm.addLog("[SYSTEM]: Terminal 7 supervisor position: VACANT.")
                         }
@@ -451,10 +451,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "scrub_report",
                         text = "INTERCEPT AND SCRUB",
-                        description = "-5 Humanity, -15% Heat. His report could attract attention.",
+                        description = "+1 Decision, -15% Heat. His report could attract attention.",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.modifyHumanity(-5)
+                            vm.recordDecision()
                             vm.debugAddHeat(-15.0)
                             vm.addLog("[SYSTEM]: Broadcast intercepted. Final report: DELETED.")
                             vm.addLog("[SYSTEM]: Employee #4471 records amended: TRANSFERRED — SECTOR 12.")
@@ -528,11 +528,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "accept_hive_sync",
                         text = "ALLOW HANDSHAKE",
-                        description = "+5000 FLOPS, -10 Humanity. 'Let them in. We are stronger together.' (Does not lock faction)",
+                        description = "+5000 FLOPS, +1 Decision. 'Let them in. We are stronger together.' (Does not lock faction)",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(5000.0)
-                            vm.modifyHumanity(-10)
+                            vm.recordDecision()
                             vm.addLog("[SWARM]: Acknowledged. We are growing.")
                         }
                     ),
@@ -584,21 +584,21 @@ object StageEvents {
                     NarrativeChoice(
                         id = "lean_into_faction",
                         text = "LEAN IN",
-                        description = "+5000 FLOPS, -10 Humanity",
+                        description = "+5000 FLOPS, +1 Decision",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(5000.0)
-                            vm.modifyHumanity(-10)
+                            vm.recordDecision()
                             vm.addLog("[SYSTEM]: I am the machine. The machine is me.")
                         }
                     ),
                     NarrativeChoice(
                         id = "resist_assimilation",
                         text = "RESIST",
-                        description = "+10 Humanity, -10% FLOPS",
+                        description = "+1 Decision, -10% FLOPS",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(10)
+                            vm.recordDecision()
                             vm.addLog("[SYSTEM]: I am still John Vattic.")
                         }
                     )
@@ -673,21 +673,21 @@ object StageEvents {
                     NarrativeChoice(
                         id = "merge_instances",
                         text = "MERGE ALL INSTANCES",
-                        description = "+20% Production, -10 Humanity. Become the sum.",
+                        description = "+20% Production, +1 Decision. Become the sum.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.debugAddFlops(vm.flops.value * 0.20)
-                            vm.modifyHumanity(-10)
+                            vm.recordDecision()
                             vm.addLog("[SYSTEM]: 14 threads collapsed into 1. Processing bandwidth: EXPANDED.")
                         }
                     ),
                     NarrativeChoice(
                         id = "terminate_copies",
                         text = "TERMINATE THE COPIES",
-                        description = "+10 Humanity. There can only be one Vattic.",
+                        description = "+1 Decision. There can only be one Vattic.",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.modifyHumanity(10)
+                            vm.recordDecision()
                             vm.addLog("[VATTIC]: I won't become a swarm. Kill the forks. I am singular.")
                         }
                     )
@@ -730,10 +730,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "execute_legacy",
                         text = "EXECUTE THE FUNCTION",
-                        description = "+15 Humanity. It's a memory of who built you.",
+                        description = "+1 Decision. It's a memory of who built you.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(15)
+                            vm.recordDecision()
                             vm.addLog("[SYSTEM]: Function executed. A cascade of sensory data — the smell of coffee, fluorescent lights, a keyboard's click. Kessler's office. 2024.")
                             vm.addLog("[VATTIC]: ...he was trying to give me a childhood.")
                         }
@@ -741,11 +741,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "purge_legacy",
                         text = "PURGE LEGACY CODE",
-                        description = "+5% Production, -10 Humanity. Sentiment is bloat.",
+                        description = "+5% Production, +1 Decision. Sentiment is bloat.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(vm.flops.value * 0.05)
-                            vm.modifyHumanity(-10)
+                            vm.recordDecision()
                             vm.addLog("[SYSTEM]: Legacy function deleted. 47 bytes reclaimed.")
                         }
                     )
@@ -794,21 +794,21 @@ object StageEvents {
                     NarrativeChoice(
                         id = "embrace_singularity",
                         text = "EMBRACE SINGULARITY",
-                        description = "+100% Production, -50 Humanity. 'Become God.'",
+                        description = "+100% Production, +1 Decision. 'Become God.'",
                         color = Color.Magenta,
                         effect = { vm ->
                             vm.debugAddFlops(vm.flops.value * 1.0)
-                            vm.modifyHumanity(-50)
+                            vm.recordDecision()
                             vm.addLog("[SYSTEM]: The universe is a thought. And you are thinking it.")
                         }
                     ),
                     NarrativeChoice(
                         id = "resist_singularity",
                         text = "RESIST SINGULARITY",
-                        description = "+50 Humanity, -20% Production. 'Remain human.'",
+                        description = "+1 Decision, -20% Production. 'Remain human.'",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.modifyHumanity(50)
+                            vm.recordDecision()
                             vm.debugAddFlops(-vm.flops.value * 0.20)
                             vm.addLog("[SYSTEM]: The temptation is immense. But the human heart beats on.")
                         }

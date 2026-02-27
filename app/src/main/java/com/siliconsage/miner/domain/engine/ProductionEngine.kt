@@ -20,7 +20,7 @@ object ProductionEngine {
         shadowRelays: Set<String> = emptySet(),
         gridFlopsBonuses: Map<String, Double>,
         faction: String,
-        humanityScore: Int,
+        decisionsMade: Int,
         saturation: Double = 0.0
     ): Double {
         var baseFlops = 0.0
@@ -75,7 +75,7 @@ object ProductionEngine {
 
         // 5. Unity Skill Multipliers
         if (currentUpgrades[UpgradeType.ETHICAL_FRAMEWORK]?.let { it > 0 } == true) {
-            val moralBoost = 1.0 + (humanityScore / 100.0)
+            val moralBoost = 1.0 + (decisionsMade * 0.02).coerceAtMost(2.0)
             totalFlops *= moralBoost
         }
         if (currentUpgrades[UpgradeType.HYBRID_OVERCLOCK]?.let { it > 0 } == true) {

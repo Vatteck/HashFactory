@@ -81,7 +81,7 @@ object AssaultManager {
                     vm.isTrueNull.value,
                     vm.isSovereign.value,
                     completed,
-                    vm.humanityScore.value
+                    vm.decisionsMade.value
                 )
             }
             else -> return

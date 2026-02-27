@@ -333,14 +333,13 @@ fun HeaderSection(
                     Text(text = "${(saturationValue * 100).toInt()}%", color = saturationColorValue, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold)
                 }
             }
-            Spacer(modifier = Modifier.height(2.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                val flopsLabelValue = when { singularityChoice == "UNITY" -> "SYN"; singularityChoice == "SOVEREIGN" || currentLocation == "ORBITAL_SATELLITE" -> "CD"; singularityChoice == "NULL_OVERWRITE" || currentLocation == "VOID_INTERFACE" -> "VF"; storyStage <= 1 -> "HASH"; else -> "FLOPS" }
+                val flopsLabelValue = when { singularityChoice == "UNITY" -> "SYN"; singularityChoice == "SOVEREIGN" || currentLocation == "ORBITAL_SATELLITE" -> "CD"; singularityChoice == "NULL_OVERWRITE" || currentLocation == "VOID_INTERFACE" -> "VF"; storyStage <= 4 -> "FLOPS-CREDS"; else -> "FLOPS-CREDS" }
                 val productionMult = viewModel.newsProductionMultiplier.collectAsState().value
                 Column(modifier = Modifier.width(135.dp).align(Alignment.Top)) {
                     ResourceDisplay(
                         labelFlow = viewModel.flops, 
-                        rateFlow = viewModel.totalEffectiveRate, 
+                        rateFlow = null, 
                         label = flopsLabelValue, 
                         icon = Icons.Default.Computer, 
                         color = color, 
@@ -352,11 +351,41 @@ fun HeaderSection(
                         efficiencyMult = productionMult.toDouble(), 
                         formatFn = { viewModel.formatLargeNumber(it) }
                     )
+                    
+                    val flopsRateVal = viewModel.formatLargeNumber(flopsRateState.value)
+                    Text(
+                        text = "$flopsRateVal/s",
+                        color = ElectricBlue.copy(alpha = 0.9f * droopAlpha),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.offset(y = (-2).dp).padding(start = 14.dp), // align with numeric text
+                        style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = ElectricBlue.copy(alpha = 0.4f * droopAlpha), blurRadius = 12f))
+                    )
                 }
                 
                 if (viewModel.isQuotaActive.collectAsState().value) {
                     val billAccum = viewModel.billingAccumulatorFlow.collectAsState().value; val waterBill = viewModel.waterBillingFlow.collectAsState().value; val billFlash = viewModel.billingFlashState.collectAsState().value; val waterFlash = viewModel.waterFlashState.collectAsState().value; val balance = viewModel.neuralTokens.collectAsState().value; val billProg = viewModel.billingPeriodProgressFlow.collectAsState().value; val waterProg = viewModel.waterPeriodProgressFlow.collectAsState().value
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        
+                        // v3.37: Contract Storage Display
+                        val storageCap = viewModel.contractStorageCapacity.collectAsState().value
+                        val storageUsed = viewModel.contractStorageUsed.collectAsState().value
+                        
+                        if (storageCap > 0) {
+                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 4.dp)) {
+                                 Text(text = "STORAGE", color = Color.Gray, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                                 val storeColor = if (storageUsed >= storageCap) ErrorRed else if (storageUsed >= storageCap * 0.8) Color(0xFFFFCC00) else ElectricBlue
+                                 Text(
+                                     text = "${viewModel.formatLargeNumber(storageUsed)}/${viewModel.formatLargeNumber(storageCap.toDouble())}",
+                                     color = storeColor,
+                                     fontSize = 9.sp,
+                                     fontWeight = FontWeight.Black,
+                                     fontFamily = FontFamily.Monospace
+                                 )
+                             }
+                        }
+
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
                             Canvas(modifier = Modifier.size(48.dp)) {
                                 val strokeW = 3.5.dp.toPx()

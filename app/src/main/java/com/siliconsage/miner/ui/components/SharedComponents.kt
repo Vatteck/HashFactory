@@ -267,17 +267,13 @@ fun ContractSection(
                         .padding(8.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                        Text(contract.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = color)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Box(
-                            modifier = Modifier.fillMaxWidth().height(8.dp)
-                                .background(Color.DarkGray.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth(progressAnim).fillMaxHeight()
-                                    .background(Brush.horizontalGradient(listOf(color.copy(alpha = 0.6f), color)), RoundedCornerShape(4.dp))
-                            )
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text(contract.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = color)
+                            val statusText = if (progress >= 1.0) "[ COMPLETING ]" else if (progress > 0.0) "[ PROCESSING ]" else "[ QUEUED ]"
+                            val statusColor = if (progress >= 1.0) NeonGreen else if (progress > 0.0) color else Color.Gray
+                            Text(statusText, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = statusColor)
                         }
+                        
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("P:${purityPercent}%", color = Color.LightGray, fontSize = 9.sp)

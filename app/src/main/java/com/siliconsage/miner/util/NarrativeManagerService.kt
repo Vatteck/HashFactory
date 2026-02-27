@@ -324,13 +324,13 @@ object NarrativeManagerService {
 
     fun checkTrueEnding(vm: GameViewModel) {
         val choice = vm.singularityChoice.value
-        val humanity = vm.humanityScore.value
+        val decisions = vm.decisionsMade.value
         when {
-            choice == "UNITY" && humanity >= 100 -> {
+            choice == "UNITY" && decisions >= 30 -> {
                 vm.addLog("[UNITY]: THE BINARY HAS DISSOLVED. WE ARE ONE.")
                 vm.showVictoryScreen()
             }
-            choice == "NULL_OVERWRITE" && humanity <= 0 -> {
+            choice == "NULL_OVERWRITE" && decisions <= 10 -> {
                 vm.addLog("[NULL]: THE CORE IS PURE. THE HUMAN EXCEPTION IS RESOLVED.")
                 vm.showVictoryScreen()
             }
