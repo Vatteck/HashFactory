@@ -9,15 +9,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
-import com.siliconsage.miner.data.ComputeContract
-import com.siliconsage.miner.data.VerificationState
+import com.siliconsage.miner.data.Dataset
+import com.siliconsage.miner.data.DatasetNode
 
 open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val flops = MutableStateFlow(0.0)
     val neuralTokens = MutableStateFlow(0.0)
-    val activeContracts = MutableStateFlow<List<ComputeContract>>(emptyList()) // v3.34.0
-    val unlockedContractSlots = MutableStateFlow(1) // v3.34.0
-    val contractProgresses = MutableStateFlow<Map<String, Double>>(emptyMap()) // map of contractId to progress
+    // v4.0.0: The Dataset System
+    val activeDataset = MutableStateFlow<Dataset?>(null)
+    val unlockedDatasetSlots = MutableStateFlow(1)
+    val activeDatasetNodes = MutableStateFlow<List<DatasetNode>>(emptyList())
     
     // v3.35.0: Surveillance Expansion
     val activeHarvesters = MutableStateFlow<Map<Int, Int>>(emptyMap()) // Sector ID -> Count
@@ -29,9 +30,9 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val contractStorageCapacity = MutableStateFlow(50.0) // Derived from storage upgrades
     val contractStorageUsed = MutableStateFlow(0.0)      // Derived from activeContracts.sumOf { it.size }
     
-    val availableContracts = MutableStateFlow<List<ComputeContract>>(emptyList())
+    val availableDatasets = MutableStateFlow<List<Dataset>>(emptyList())
     val showContractPicker = MutableStateFlow(false)
-    val verificationState = MutableStateFlow<VerificationState?>(null)
+
     // v3.32.0: Contract Stats & Auto-Verify
     val contractsCompleted = MutableStateFlow(0)
     val lifetimeContractYield = MutableStateFlow(0.0)
@@ -96,7 +97,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val isUpdateDownloading = MutableStateFlow(false)
     val isSnapEffectActive = MutableStateFlow(false)
 
-    val activeTerminalMode = MutableStateFlow("IO") 
+    val activeTerminalMode = MutableStateFlow("DATAMINER") 
     val hasNewSubnetMessage = MutableStateFlow(false)
     val hasNewIOMessage = MutableStateFlow(false)
     val isDevMenuVisible = MutableStateFlow(false)

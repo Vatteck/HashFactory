@@ -46,7 +46,8 @@ object PersistenceManager {
         specializedNodes: Map<String, String>,
         narrativeFlags: Map<String, Boolean> = emptyMap(),
         unlockedContractSlots: Int = 1,
-        activeContractsJson: String = "[]",
+        activeDatasetJson: String = "",
+        activeDatasetNodesJson: String = "[]",
         activeHarvestersJson: String = "{}",
         harvestBuffersJson: String = "{}",
         storageCapacity: Double = 1000.0,
@@ -90,7 +91,8 @@ object PersistenceManager {
             specializedNodes = specializedNodes,
             narrativeFlags = narrativeFlags,
             unlockedContractSlots = unlockedContractSlots,
-            activeContractsJson = activeContractsJson,
+            activeDatasetJson = activeDatasetJson,
+            activeDatasetNodesJson = activeDatasetNodesJson,
             activeHarvestersJson = activeHarvestersJson,
             harvestBuffersJson = harvestBuffersJson,
             storageCapacity = storageCapacity,
@@ -159,25 +161,26 @@ object PersistenceManager {
             vm.addLog("[ERROR]: NARRATIVE RESTORATION FAILED.")
         }
         vm.themeColor.value = com.siliconsage.miner.data.getThemeColorForFaction(vm.faction.value, vm.singularityChoice.value)
-        vm.unlockedContractSlots.value = state.unlockedContractSlots
-        // v3.34.0: Restore active contracts
-        if (state.activeContractsJson.isNotBlank() && state.activeContractsJson != "[]") {
+        // v4.0.0: Restore active dataset
+        if (state.activeDatasetJson.isNotBlank()) {
             try {
-                val contractsList = Json.decodeFromString(
-                    kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.ComputeContract.serializer()),
-                    state.activeContractsJson
-                )
-                vm.activeContracts.value = contractsList
-                val currentProgresses = vm.contractProgresses.value.toMutableMap()
-                for (con in contractsList) {
-                    currentProgresses[con.id] = con.progress
-                }
-                vm.contractProgresses.value = currentProgresses
+                val dataset = Json.decodeFromString<com.siliconsage.miner.data.Dataset>(state.activeDatasetJson)
+                vm.activeDataset.value = dataset
             } catch (e: Exception) {
-                vm.addLog("[SYSTEM]: CONTRACT STATE RESTORATION FAILED.")
+                vm.addLog("[SYSTEM]: DATASET STATE RESTORATION FAILED.")
             }
         }
-        
+        if (state.activeDatasetNodesJson.isNotBlank() && state.activeDatasetNodesJson != "[]") {
+            try {
+                val nodesList = Json.decodeFromString(
+                    kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.DatasetNode.serializer()),
+                    state.activeDatasetNodesJson
+                )
+                vm.activeDatasetNodes.value = nodesList
+            } catch (e: Exception) {
+                // Ignore empty or corrupt node sets gracefully
+            }
+        }
         // v3.35.0: Restore Surveillance Expansion states
         vm.storageCapacity.value = sanitizeDouble(state.storageCapacity, 1000.0)
         vm.currentStorageUsed.value = sanitizeDouble(state.currentStorageUsed, 0.0)
@@ -294,10 +297,13 @@ object PersistenceManager {
             reputationScore = vm.reputationScore.value,
             specializedNodes = vm.specializedNodes.value,
             narrativeFlags = vm.narrativeFlags.value,
-            unlockedContractSlots = vm.unlockedContractSlots.value,
-            activeContractsJson = Json.encodeToString(
-                kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.ComputeContract.serializer()),
-                vm.activeContracts.value
+            unlockedContractSlots = 1,
+            activeDatasetJson = if (vm.activeDataset.value != null) {
+                Json.encodeToString(com.siliconsage.miner.data.Dataset.serializer(), vm.activeDataset.value!!)
+            } else "",
+            activeDatasetNodesJson = Json.encodeToString(
+                kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.DatasetNode.serializer()),
+                vm.activeDatasetNodes.value
             ),
             activeHarvestersJson = Json.encodeToString(vm.activeHarvesters.value),
             harvestBuffersJson = Json.encodeToString(vm.harvestBuffers.value),

@@ -82,8 +82,8 @@ object MarketManager {
             convRate = convRate
         )
 
-        // v3.30.0: Refresh available contracts each market tick
-        vm.refreshContracts()
+        // v4.0.0: Refresh available datasets each market tick
+        vm.refreshDatasets()
         
         if (result.marketMultiplier > 1.0) SoundManager.play("market_up")
         else if (result.marketMultiplier < 1.0) SoundManager.play("market_down")

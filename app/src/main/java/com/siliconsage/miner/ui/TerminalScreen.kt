@@ -48,6 +48,15 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 TerminalTab(
+                    label = "DATAMINER",
+                    active = mode == "DATAMINER",
+                    hasFlash = false,
+                    color = primaryColor,
+                    corruption = corruption,
+                    modifier = Modifier.weight(1f),
+                    onClick = { viewModel.setTerminalMode("DATAMINER") }
+                )
+                TerminalTab(
                     label = "I/O",
                     active = mode == "IO",
                     hasFlash = hasIO,
@@ -81,27 +90,36 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                 }
             }
 
-            Box(
-                modifier = Modifier.weight(1f).fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-                    .border(BorderStroke(1.5.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.85f)), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-            ) {
-                TerminalLogs(viewModel, primaryColor, showCursor)
+            if (mode == "DATAMINER") {
+                Box(modifier = Modifier.weight(0.6f).fillMaxWidth()) {
+                    com.siliconsage.miner.ui.components.DatasetGrid(viewModel, primaryColor)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier.weight(0.4f).fillMaxWidth()
+                        .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                        .border(BorderStroke(1.5.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.85f)), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                ) {
+                    TerminalLogs(viewModel, primaryColor, showCursor)
+                }
+            } else {
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxWidth()
+                        .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                        .border(BorderStroke(1.5.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.85f)), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                ) {
+                    TerminalLogs(viewModel, primaryColor, showCursor)
+                }
+    
+                Spacer(modifier = Modifier.height(16.dp))
+                TerminalControls(viewModel, primaryColor)
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            TerminalControls(viewModel, primaryColor)
         }
 
-        // v3.30.0: Contract Picker Overlay
-        if (showContractPicker) {
-            com.siliconsage.miner.ui.components.ContractPickerOverlay(viewModel, primaryColor)
-        }
-
-        // v3.31.0: Contract Verification Overlay
-        val verificationState by viewModel.verificationState.collectAsState()
-        if (verificationState != null) {
-            com.siliconsage.miner.ui.components.VerificationOverlay(viewModel, primaryColor)
+        // v4.0.0: Dataset Picker Overlay
+        val showDatasetPicker by viewModel.showContractPicker.collectAsState()
+        if (showDatasetPicker) {
+            com.siliconsage.miner.ui.components.DatasetPickerOverlay(viewModel, primaryColor)
         }
     }
 }

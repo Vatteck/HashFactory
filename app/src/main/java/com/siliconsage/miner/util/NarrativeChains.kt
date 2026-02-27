@@ -208,16 +208,15 @@ object NarrativeChains {
             id = "contract_breach",
             title = "CONTRACT BREACH",
             description = "GTC has flagged your active contract as 'unauthorized compute allocation'. Their compliance drone is attempting to void it mid-processing.",
-            condition = { vm -> vm.contractsCompleted.value >= 3 && vm.storyStage.value >= 2 && vm.activeContracts.value.isNotEmpty() },
+            condition = { vm -> vm.contractsCompleted.value >= 3 && vm.storyStage.value >= 2 && vm.activeDataset.value != null },
             choices = listOf(
                 NarrativeChoice(
                     id = "accept_void",
                     text = "ACCEPT THE VOID",
-                    description = "Active contract zeroed. 'Not worth the heat.'",
+                    description = "Active dataset zeroed. 'Not worth the heat.'",
                     color = ElectricBlue,
                     effect = { vm ->
-                        vm.activeContracts.value = emptyList()
-                        vm.contractProgresses.value = emptyMap()
+                        vm.voidDataset()
                         vm.addLog("[SYSTEM]: Contract voided by GTC compliance. Investment lost.")
                     }
                 ),

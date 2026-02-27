@@ -76,30 +76,30 @@ object SurveillanceManager {
             
             // Generate the contracts
             repeat(bundlesCreated) {
-                val contract = generateHarvestedContract(vm.storyStage.value)
-                ContractManager.addContractToAvailable(vm, contract)
+                val dataset = generateHarvestedDataset(vm.storyStage.value)
+                DatasetManager.addDatasetToAvailable(vm, dataset)
             }
             vm.addLog("[SYSTEM]: COMPLETED ${bundlesCreated}x HIGH-PURITY HARVEST BUNDLES.")
         }
     }
 
-    private fun generateHarvestedContract(storyStage: Int): com.siliconsage.miner.data.ComputeContract {
+    private fun generateHarvestedDataset(storyStage: Int): com.siliconsage.miner.data.Dataset {
         val tier = when {
             storyStage >= 4 -> 4
             storyStage == 3 -> 3
             storyStage == 2 -> 2
             else -> 1
         }
-        val baseYield = ContractManager.baseRewardForStage(tier) * 2.5 // Premium payout
-        val baseFlops = ContractManager.baseFlopsForStage(tier)
+        val baseYield = DatasetManager.baseCostForStage(tier) * 2.5 // Premium payout
 
-        return com.siliconsage.miner.data.ComputeContract(
+        return com.siliconsage.miner.data.Dataset(
             id = "HARVEST_${System.currentTimeMillis()}_${(1000..9999).random()}",
             name = "RAW BIOMETRIC BUNDLE",
             cost = 0.0,
             expectedYield = baseYield,
+            payoutPerValidRecord = baseYield / 16.0,
             purity = 1.0,
-            processingTime = ContractManager.getProcessingTimeForTier(tier),
+            totalRecords = 16,
             tier = tier
         )
     }

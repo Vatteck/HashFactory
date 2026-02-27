@@ -49,7 +49,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
 
     LaunchedEffect(logs.size, subnetMessages.size, mode) {
         if (!isPaused) {
-            if (mode == "IO" && logs.isNotEmpty()) listState.scrollToItem(logs.size - 1)
+            if ((mode == "IO" || mode == "DATAMINER") && logs.isNotEmpty()) listState.scrollToItem(logs.size - 1)
             else if (mode == "SUBNET" && subnetMessages.isNotEmpty()) listState.scrollToItem(subnetMessages.size - 1)
         }
     }
@@ -114,7 +114,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 state = listState,
                 modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
-                if (mode == "IO") {
+                if (mode == "IO" || mode == "DATAMINER") {
                     itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
                         val displayMessage = if (isRaid && Random.nextFloat() > 0.7f) {
                             "0x" + Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"

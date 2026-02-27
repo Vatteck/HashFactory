@@ -114,9 +114,10 @@ data class GameState(
     // v3.25.0: Narrative Flags
     val narrativeFlags: Map<String, Boolean> = emptyMap(),
 
-    // v3.30.0: Compute Contracts
-    val unlockedContractSlots: Int = 1, // v3.34.0
-    val activeContractsJson: String = "[]",
+    // v4.0.0: The Dataset System (Faceminer Overhaul)
+    val unlockedContractSlots: Int = 1, // Keep for legacy/save-state compatibility or repurposed? We'll leave it
+    val activeDatasetJson: String = "", 
+    val activeDatasetNodesJson: String = "[]",
     
     // v3.35.0: Surveillance Expansion
     val activeHarvestersJson: String = "{}",
