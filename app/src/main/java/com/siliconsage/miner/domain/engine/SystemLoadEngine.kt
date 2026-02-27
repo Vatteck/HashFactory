@@ -70,10 +70,13 @@ object SystemLoadEngine {
         UpgradeType.MATRIOSHKA_BRAIN to 134_217_728.0,
     )
 
-    // ── SOFTWARE CPU DEMAND ──
-    // These are the "strain" costs. Auto-clicker tiers, scanners, etc.
-    // Also includes efficiency upgrades that trade CPU for throughput.
+    // ── SOFTWARE CPU DEMAND (per level) ──
+    // These are the "strain" costs. Automation, scanners, security, etc.
+    // The FACEMINER Rule: every software level eats CPU. Stack too many → throttle → lockout.
     private val cpuDemand: Map<UpgradeType, Double> = mapOf(
+        // Automation (Phase 2) — the big consumers
+        UpgradeType.AUTO_HARVEST_SPEED to 8.0,
+        UpgradeType.AUTO_HARVEST_ACCURACY to 5.0,
         // Efficiency upgrades have hidden CPU cost
         UpgradeType.AI_LOAD_BALANCER to 15.0,
         // Security software consumes CPU
@@ -84,8 +87,11 @@ object SystemLoadEngine {
         UpgradeType.OFFGRID_BACKUP to 50.0,
     )
 
-    // ── SOFTWARE RAM DEMAND ──
+    // ── SOFTWARE RAM DEMAND (per level) ──
     private val ramDemand: Map<UpgradeType, Double> = mapOf(
+        // Automation (Phase 2) — accuracy = ML models = RAM hungry
+        UpgradeType.AUTO_HARVEST_SPEED to 4.0,
+        UpgradeType.AUTO_HARVEST_ACCURACY to 6.0,
         UpgradeType.AI_LOAD_BALANCER to 8.0,
         UpgradeType.BASIC_FIREWALL to 2.0,
         UpgradeType.IPS_SYSTEM to 4.0,
@@ -93,10 +99,6 @@ object SystemLoadEngine {
         UpgradeType.QUANTUM_ENCRYPTION to 64.0,
         UpgradeType.OFFGRID_BACKUP to 32.0,
     )
-
-    // ── AUTO-CLICKER TIERS (new software upgrades, to be added to UpgradeType) ──
-    // These will be added in Phase B. For now, the engine supports them via the
-    // autoClickerCpuDemand/autoClickerRamDemand parameters.
 
     /**
      * Base system capacity for Stage 0 (before any hardware).
@@ -110,14 +112,10 @@ object SystemLoadEngine {
      *
      * @param upgrades Current upgrade counts (hardware provides capacity, software demands it)
      * @param activeDatasetSize Size of currently active dataset consuming storage
-     * @param autoClickerCpuDemand CPU consumed by current auto-clicker tier (0 if manual)
-     * @param autoClickerRamDemand RAM consumed by current auto-clicker tier (0 if manual)
      */
     fun calculateSnapshot(
         upgrades: Map<UpgradeType, Int>,
-        activeDatasetSize: Double = 0.0,
-        autoClickerCpuDemand: Double = 0.0,
-        autoClickerRamDemand: Double = 0.0
+        activeDatasetSize: Double = 0.0
     ): SystemSnapshot {
         // ── CAPACITY (hardware provides) ──
         var totalCpu = BASE_CPU
@@ -130,9 +128,9 @@ object SystemLoadEngine {
             totalStorage += type.storagePerLevel * count
         }
 
-        // ── DEMAND (software consumes) ──
-        var usedCpu = autoClickerCpuDemand
-        var usedRam = autoClickerRamDemand
+        // ── DEMAND (software consumes — all from demand maps, no external params) ──
+        var usedCpu = 0.0
+        var usedRam = 0.0
 
         for ((type, count) in upgrades) {
             usedCpu += (cpuDemand[type] ?: 0.0) * count
@@ -195,6 +193,12 @@ object SystemLoadEngine {
     fun calculateDowngradeRefund(baseCost: Double): Double {
         return baseCost * 0.40
     }
+
+    /** Expose CPU demand for a given upgrade type (per level). */
+    fun getCpuDemand(type: UpgradeType): Double = cpuDemand[type] ?: 0.0
+
+    /** Expose RAM demand for a given upgrade type (per level). */
+    fun getRamDemand(type: UpgradeType): Double = ramDemand[type] ?: 0.0
 
     private fun formatPercent(ratio: Double): String {
         return "${(ratio * 100).toInt()}%"

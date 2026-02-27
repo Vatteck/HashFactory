@@ -205,8 +205,8 @@ fun UpgradeItem(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 val canSell = level > 0 && type != UpgradeType.RESIDENTIAL_TAP
                 if (canSell) {
-                     Box(modifier = Modifier.clickable { onSell(type) }.background(ErrorRed.copy(alpha=0.1f), RoundedCornerShape(4.dp)).border(1.dp, ErrorRed.copy(alpha=0.5f), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                         Text("SELL", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                     Box(modifier = Modifier.clickable { onSell(type) }.background(ErrorRed.copy(alpha=0.15f), RoundedCornerShape(4.dp)).border(1.dp, ErrorRed.copy(alpha=0.6f), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                         Text("[-] DOWNGRADE", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Black)
                      }
                 } else { Spacer(modifier = Modifier.width(1.dp)) }
                 

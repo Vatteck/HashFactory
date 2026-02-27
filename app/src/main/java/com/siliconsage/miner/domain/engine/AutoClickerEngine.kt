@@ -1,67 +1,54 @@
 package com.siliconsage.miner.domain.engine
 
+import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.util.DatasetManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlin.random.Random
 
 /**
- * AutoClickerEngine v1.0 (v4.0.1 — FACEMINER Pressure Loop)
+ * AutoClickerEngine v2.0 (Phase 2 Automation)
  *
- * Progression: Manual → Assisted → Automated → Passive
+ * Driven by SOFTWARE upgrades (AUTO_HARVEST_SPEED / AUTO_HARVEST_ACCURACY).
+ * Bottlenecked by SystemLoadEngine — if system load is locked (>=100%), hard shutdown.
+ * Throttled proportionally when load exceeds 80%.
  *
- * Tier 0: Manual only (player taps nodes)
- * Tier 1: Assisted — slow auto-tap, 60% accuracy (hits corrupt nodes sometimes)
- * Tier 2: Automated — medium speed, 85% accuracy
- * Tier 3: Passive — fast, 95% accuracy, taps while app is backgrounded
- *
- * Each tier consumes CPU and RAM (see SystemLoadEngine).
- * Speed is in "taps per second" but we tick at 100ms, so we accumulate fractional taps.
+ * The Pressure Loop: more software → more system load → need more hardware →
+ * more heat + power → need more cooling + generators → repeat.
  */
 object AutoClickerEngine {
-
-    // Taps per second by tier
-    private val SPEED = doubleArrayOf(0.0, 0.5, 2.0, 8.0)
-    // Probability of correctly identifying a valid node (vs hitting corrupt)
-    private val ACCURACY = doubleArrayOf(0.0, 0.60, 0.85, 0.95)
 
     // Accumulator for fractional taps (100ms tick = 0.1s)
     private var tapAccumulator = 0.0
 
     /**
      * Called every 100ms from the game loop.
-     * Processes automatic node taps on the active dataset.
-     * FLOPS rate influences speed — more hardware = faster processing.
      */
     fun tick(vm: GameViewModel) {
-        val tier = vm.autoClickerTier.value
-        if (tier <= 0) return
+        val speedLevel = vm.upgrades.value[UpgradeType.AUTO_HARVEST_SPEED] ?: 0
+        if (speedLevel <= 0) return
+
+        // SystemLoadEngine bottleneck — overloaded system = hard shutdown
+        val snapshot = vm.systemLoadSnapshot.value
+        if (snapshot.isLocked) return
+
         val dataset = vm.activeDataset.value ?: return
         val nodes = vm.activeDatasetNodes.value
         if (nodes.isEmpty()) return
 
-        // System load throttle — if system is overloaded, auto-clicker stutters
-        val loadSnapshot = vm.systemLoadSnapshot.value
-        val speedMult = loadSnapshot.throttleMultiplier
+        // 0.5 taps/sec per speed level, throttled by system load
+        val tapsPerSecond = speedLevel * 0.5
+        tapAccumulator += tapsPerSecond * 0.1 * snapshot.throttleMultiplier
 
-        // FLOPS bonus: hardware investment pays off — log10(flopsRate) as a soft multiplier
-        // At 1k FLOPS/s → 1.3x, 1M → 1.6x, 1B → 1.9x (diminishing returns)
-        val flopsRate = vm.flopsProductionRate.value.coerceAtLeast(1.0)
-        val flopsBonus = 1.0 + (kotlin.math.log10(flopsRate) * 0.1).coerceIn(0.0, 1.5)
-
-        // Accumulate taps (0.1s per tick * speed * throttle * flops bonus)
-        tapAccumulator += SPEED[tier.coerceIn(0, 3)] * 0.1 * speedMult * flopsBonus
-
-        // Process whole taps
         while (tapAccumulator >= 1.0) {
             tapAccumulator -= 1.0
 
-            // Find unharvested nodes
             val available = nodes.filter { !it.isHarvested && !it.isCorruptTapped }
             if (available.isEmpty()) break
 
-            val accuracy = ACCURACY[tier.coerceIn(0, 3)]
+            val accuracyLevel = vm.upgrades.value[UpgradeType.AUTO_HARVEST_ACCURACY] ?: 0
+            // Base 50% accuracy + 5% per level, max 99%
+            val accuracy = (0.50 + (accuracyLevel * 0.05)).coerceIn(0.50, 0.99)
 
-            // AI tries to pick a valid node
             val validNodes = available.filter { it.isValid }
             val corruptNodes = available.filter { !it.isValid }
 

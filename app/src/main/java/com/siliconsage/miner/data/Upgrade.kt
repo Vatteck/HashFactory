@@ -13,6 +13,9 @@ data class Upgrade(
 )
 
 enum class UpgradeType {
+    // Software (Automation)
+    AUTO_HARVEST_SPEED, AUTO_HARVEST_ACCURACY,
+
     // Computing Hardware
     REFURBISHED_GPU, DUAL_GPU_RIG, MINING_ASIC, TENSOR_UNIT, NPU_CLUSTER, AI_WORKSTATION,
     SERVER_RACK, CLUSTER_NODE, SUPERCOMPUTER, QUANTUM_CORE, OPTICAL_PROCESSOR, BIO_NEURAL_NET,
@@ -64,7 +67,8 @@ enum class UpgradeType {
     val isSecurity: Boolean get() = this in listOf(BASIC_FIREWALL, IPS_SYSTEM, AI_SENTINEL, QUANTUM_ENCRYPTION, OFFGRID_BACKUP)
     // v3.36.0: Contract Storage Infrastructure
     val isStorage: Boolean get() = this in listOf(LOCAL_CACHE, TAPE_ARRAY, SAN_CLUSTER, DISTRIBUTED_ARCHIVE, ORBITAL_DATA_VAULT, SUBSTRATE_MEMORY_WELL)
-    val isHardware: Boolean get() = !isCooling && !isPowerRelated && !isSecurity && !isStorage && !name.contains("PROTOCOL") && !name.contains("ASCENDANCE")
+    val isSoftware: Boolean get() = this in listOf(AUTO_HARVEST_SPEED, AUTO_HARVEST_ACCURACY)
+    val isHardware: Boolean get() = !isCooling && !isPowerRelated && !isSecurity && !isStorage && !isSoftware && !name.contains("PROTOCOL") && !name.contains("ASCENDANCE")
 
     // v3.36.0: Storage capacity contributed per level of upgrade
     val storagePerLevel: Double get() = when(this) {
@@ -101,6 +105,12 @@ enum class UpgradeType {
     }
 
     val basePower: Double get() = when {
+        // Phase 2: Software draws power — automation isn't free
+        isSoftware -> when(this) {
+            AUTO_HARVEST_SPEED -> 15.0     // Fast loops burn watts
+            AUTO_HARVEST_ACCURACY -> 10.0  // ML inference draws modest power
+            else -> 0.0
+        }
         isHardware -> 5.0 + (ordinal * 4.5) // v3.13.44 Spec
         isCooling -> {
             val coolingIndex = ordinal - 15
@@ -154,6 +164,12 @@ enum class UpgradeType {
     }
 
     val baseHeat: Double get() = when {
+        // Phase 2: Software generates heat via CPU load
+        isSoftware -> when(this) {
+            AUTO_HARVEST_SPEED -> 0.3      // Fast loops = hot silicon
+            AUTO_HARVEST_ACCURACY -> 0.15  // ML inference = warm but controlled
+            else -> 0.0
+        }
         isHardware -> 0.2 + (ordinal * 0.45) 
         isCooling -> {
             val coolingIndex = ordinal - 15

@@ -334,33 +334,41 @@ fun HeaderSection(
                 }
             }
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                val flopsLabelValue = when { singularityChoice == "UNITY" -> "SYN"; singularityChoice == "SOVEREIGN" || currentLocation == "ORBITAL_SATELLITE" -> "CD"; singularityChoice == "NULL_OVERWRITE" || currentLocation == "VOID_INTERFACE" -> "VF"; storyStage <= 4 -> "FLOPS-CREDS"; else -> "FLOPS-CREDS" }
-                val productionMult = viewModel.newsProductionMultiplier.collectAsState().value
                 Column(modifier = Modifier.width(135.dp).align(Alignment.Top)) {
-                    ResourceDisplay(
-                        labelFlow = viewModel.flops, 
-                        rateFlow = null, 
-                        label = flopsLabelValue, 
-                        icon = Icons.Default.Computer, 
-                        color = color, 
-                        droopAlpha = droopAlpha, 
-                        isGlitchy = (currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE"), 
-                        glitchIntensity = (if (currentHeatState.value > 98.0) 0.4 else 0.08), 
-                        isRightAligned = false, 
-                        width = 135.dp, 
-                        efficiencyMult = productionMult.toDouble(), 
-                        formatFn = { viewModel.formatLargeNumber(it) }
+                    val sysLoad = viewModel.systemLoadSnapshot.collectAsState().value
+                    val loadPct = sysLoad.loadPercent
+                    
+                    Text(
+                        text = "SYS.LOAD",
+                        color = Color.Gray,
+                        fontSize = 7.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.padding(bottom = 2.dp)
                     )
                     
-                    val flopsRateVal = viewModel.formatLargeNumber(flopsRateState.value)
+                    val loadColor = when {
+                        sysLoad.isLocked -> ErrorRed
+                        sysLoad.isThrottled -> Color(0xFFFFCC00)
+                        else -> ElectricBlue
+                    }
+                    
+                    Box(modifier = Modifier.fillMaxWidth().padding(end = 12.dp).height(8.dp).background(Color.Black).border(0.5.dp, loadColor.copy(alpha = 0.5f))) {
+                        Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(loadPct.toFloat().coerceIn(0f, 1f)).background(loadColor.copy(alpha = droopAlpha)))
+                    }
+                    
+                    val statusTag = when {
+                        sysLoad.isLocked -> " [OVERLOAD]"
+                        sysLoad.isThrottled -> " [THROTTLED]"
+                        else -> ""
+                    }
                     Text(
-                        text = "$flopsRateVal/s",
-                        color = ElectricBlue.copy(alpha = 0.9f * droopAlpha),
-                        fontSize = 10.sp,
+                        text = "${(loadPct * 100).toInt()}%$statusTag",
+                        color = loadColor.copy(alpha = 0.9f * droopAlpha),
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace,
-                        modifier = Modifier.offset(y = (-2).dp).padding(start = 14.dp), // align with numeric text
-                        style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = ElectricBlue.copy(alpha = 0.4f * droopAlpha), blurRadius = 12f))
+                        modifier = Modifier.padding(top = 2.dp)
                     )
                 }
                 

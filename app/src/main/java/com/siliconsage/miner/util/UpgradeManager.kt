@@ -2,6 +2,7 @@ package com.siliconsage.miner.util
 
 import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.UpgradeType
+import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -252,6 +253,8 @@ object UpgradeManager {
         }
         
         return if (baseRate > 0) "+${FormatUtils.formatLargeNumber(baseRate)} $unit/s"
+        else if (type == UpgradeType.AUTO_HARVEST_SPEED) "⚙ +0.5 taps/s | CPU: +8 GHz"
+        else if (type == UpgradeType.AUTO_HARVEST_ACCURACY) "🎯 +5% accuracy | RAM: +6 GB"
         else if (type.isStorage) "💾 +${FormatUtils.formatLargeNumber(type.storagePerLevel)} STORAGE"
         else if (type.isGenerator) "⚡ +Power"
         else if (type.gridContribution > 0) "🛡 +SEC"
@@ -277,7 +280,27 @@ object UpgradeManager {
         val currentLevel = vm.upgrades.value[type] ?: 0
         val cost = vm.calculateUpgradeCost(type)
         val stage = vm.storyStage.value
-        
+
+        // Phase 2: Software stage gate — automation requires Stage 1+
+        if (type.isSoftware && stage < 1) {
+            vm.addLog("[KERNEL]: SOFTWARE INSTALL DENIED. Terminal lacks requisite clearance. Advance to Stage 1.")
+            SoundManager.play("error")
+            return false
+        }
+
+        // Phase 2: System load gate — block software purchases that would overload the system
+        if (type.isSoftware) {
+            val snapshot = vm.systemLoadSnapshot.value
+            val cpuCost = com.siliconsage.miner.domain.engine.SystemLoadEngine.getCpuDemand(type)
+            val ramCost = com.siliconsage.miner.domain.engine.SystemLoadEngine.getRamDemand(type)
+            val loadCheck = com.siliconsage.miner.domain.engine.SystemLoadEngine.canInstallSoftware(snapshot, cpuCost, ramCost)
+            if (loadCheck != null) {
+                vm.addLog("[KERNEL]: INSTALL ABORTED. $loadCheck Upgrade hardware or downgrade software.")
+                SoundManager.play("error")
+                return false
+            }
+        }
+
         // v3.2.46: Handle consolidated Substrate Mass for Stage 3+
         if (stage >= 3) {
             if (vm.substrateMass.value >= cost) {

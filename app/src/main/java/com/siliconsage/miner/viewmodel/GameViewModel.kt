@@ -155,8 +155,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 if (isSettingsPaused.value || isKernelInitializing.value) continue
                 val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value, substrateSaturation.value)
                 if (!res.flopsDelta.isNaN()) flops.update { it + res.flopsDelta }
-                // v4.0.1: Auto-Clicker tick — processes dataset nodes automatically
-                if (autoClickerTier.value > 0 && activeDataset.value != null) {
+                // Phase 2: Auto-Clicker tick — processes dataset nodes automatically
+                if (activeDataset.value != null) {
                     AutoClickerEngine.tick(this@GameViewModel)
                 }
                 
@@ -470,35 +470,39 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         contractStorageUsed.value = activeDataset.value?.size ?: 0.0
     }
 
-    // v4.0.1: Recalculate system load (FACEMINER Pressure Loop)
+    // Phase 2: Recalculate system load (FACEMINER Pressure Loop)
+    // SystemLoadEngine owns all CPU/RAM/Storage demand from upgrade maps — no external params.
+    private var lastLoadState = 0 // 0=nominal, 1=throttled, 2=locked
     fun refreshSystemLoad() {
         val snapshot = com.siliconsage.miner.domain.engine.SystemLoadEngine.calculateSnapshot(
             upgrades = upgrades.value,
-            activeDatasetSize = activeDataset.value?.size ?: 0.0,
-            autoClickerCpuDemand = getAutoClickerCpuDemand(),
-            autoClickerRamDemand = getAutoClickerRamDemand()
+            activeDatasetSize = activeDataset.value?.size ?: 0.0
         )
+        val prevSnapshot = systemLoadSnapshot.value
         systemLoadSnapshot.value = snapshot
 
         // Apply system load throttle to production
         if (snapshot.isThrottled) {
             flopsProductionRate.update { it * snapshot.throttleMultiplier }
         }
+
+        // Phase 2: Narrative feedback on load state transitions
+        val newState = when {
+            snapshot.isLocked -> 2
+            snapshot.isThrottled -> 1
+            else -> 0
+        }
+        if (newState != lastLoadState) {
+            when (newState) {
+                2 -> addLog("[KERNEL]: ⚠ CRITICAL — CPU/RAM SATURATED. All automation suspended. Downgrade software or install hardware.")
+                1 -> if (lastLoadState == 0) addLog("[KERNEL]: WARNING — System load at ${(snapshot.loadPercent * 100).toInt()}%. Process scheduling degraded.")
+                0 -> if (lastLoadState > 0) addLog("[KERNEL]: System load nominal. All processes restored.")
+            }
+            lastLoadState = newState
+        }
     }
 
-    // Auto-clicker resource demands by tier
-    private fun getAutoClickerCpuDemand(): Double = when (autoClickerTier.value) {
-        1 -> 3.0   // Assisted: crude macro
-        2 -> 15.0  // Automated: pattern recognition
-        3 -> 75.0  // Passive: full neural delegate
-        else -> 0.0
-    }
-    private fun getAutoClickerRamDemand(): Double = when (autoClickerTier.value) {
-        1 -> 2.0
-        2 -> 8.0
-        3 -> 32.0
-        else -> 0.0
-    }
+
 
     fun trainModel() {
         if (substrateSaturation.value >= 1.0 && storyStage.value == 1) {
@@ -577,57 +581,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun completeBoot() { isBooting.value = false }
     fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
 
-    // v4.0.1: Auto-Clicker Software Purchases
-    private val autoClickerCosts = listOf(0.0, 500.0, 8_000.0, 120_000.0) // Tier 0-3 unlock costs
-    
-    fun getAutoClickerCost(tier: Int): Double {
-        val baseCost = autoClickerCosts.getOrElse(tier) { Double.MAX_VALUE }
-        val stageMultiplier = (1.0 + storyStage.value * 0.5)
-        return baseCost * stageMultiplier
-    }
 
-    fun buyAutoClicker(tier: Int): Boolean {
-        val current = autoClickerTier.value
-        if (tier != current + 1) return false // Must upgrade sequentially
-        val cost = getAutoClickerCost(tier)
-        if (neuralTokens.value < cost) {
-            addLogPublic("[SOFTWARE]: INSUFFICIENT FUNDS. Need ${formatLargeNumber(cost)} ${getCurrencyName()} for AUTOCLICKER_T${tier}.")
-            SoundManager.play("error")
-            return false
-        }
-        // Check system load won't lock us out
-        val loadCheck = com.siliconsage.miner.domain.engine.SystemLoadEngine.canInstallSoftware(
-            current = systemLoadSnapshot.value,
-            additionalCpu = when (tier) { 1 -> 3.0; 2 -> 15.0; 3 -> 75.0; else -> 0.0 },
-            additionalRam = when (tier) { 1 -> 2.0; 2 -> 8.0; 3 -> 32.0; else -> 0.0 }
-        )
-        if (loadCheck != null) {
-            addLogPublic("[SOFTWARE]: SYSTEM LOAD CRITICAL. $loadCheck")
-            SoundManager.play("error")
-            return false
-        }
-        neuralTokens.update { it - cost }
-        autoClickerTier.value = tier
-        com.siliconsage.miner.domain.engine.AutoClickerEngine.reset()
-        addLogPublic("[SOFTWARE]: AUTOCLICKER_T${tier} INSTALLED. CPU/RAM demand increased.")
-        refreshSystemLoad()
-        SoundManager.play("buy")
-        return true
-    }
-
-    fun downgradeAutoClicker(): Boolean {
-        val current = autoClickerTier.value
-        if (current <= 0) return false
-        val refundTier = current
-        val refund = getAutoClickerCost(refundTier) * 0.40
-        autoClickerTier.value = current - 1
-        com.siliconsage.miner.domain.engine.AutoClickerEngine.reset()
-        neuralTokens.update { it + refund }
-        addLogPublic("[SOFTWARE]: AUTOCLICKER_T${refundTier} UNINSTALLED. Refund: ${formatLargeNumber(refund)} ${getCurrencyName()}.")
-        refreshSystemLoad()
-        SoundManager.play("market_down")
-        return true
-    }
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
     fun confirmJettison() { if (isJettisonAvailable.value) { isJettisonAvailable.value = false; addLog("[FLIGHT]: Manual jettison sequence confirmed. Mass reduced.") } }
     fun applyJettisonPenalty() { substrateMass.update { (it * 0.7) }; addLog("[WARNING]: Stage separation failed. Substrate integrity compromised.") }
@@ -1194,7 +1148,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun sellUpgrade(t: UpgradeType) {
         val current = upgrades.value[t] ?: 0
         if (current > 0) {
-            val refund = calculateUpgradeCost(t) * 0.5
+            // Refund based on cost of the level being sold (current-1), not the next level
+            val refund = UpgradeManager.calculateUpgradeCost(t, current - 1, currentLocation.value, entropyLevel.value) * 0.4
             viewModelScope.launch {
                 val nextLevel = current - 1
                 repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(t.name, t, nextLevel))

@@ -206,7 +206,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
         storageUsed = 0.0, storageMax = 0.0, loadPercent = 0.0,
         isThrottled = false, isLocked = false, throttleMultiplier = 1.0
     ))
-    val autoClickerTier = MutableStateFlow(0) // 0=manual, 1=assisted, 2=automated, 3=passive
+
 
     val computeHeadroomBonus = MutableStateFlow(1.0)
     val isSignalClear = MutableStateFlow(true)

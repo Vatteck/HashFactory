@@ -1,6 +1,26 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.0.1] - 2026-02-27
+### FACEMINER Pressure Loop — Phase 2 Complete
+**The automation economy overhaul. Every software upgrade now creates hardware demand. The pressure loop is closed.**
+
+- **SystemLoadEngine v2.0**: Three-axis capacity model (CPU/RAM/Storage). Hardware provides capacity, software consumes it. Throttle at >80%, hard lockout at 100%.
+- **Leveled Software Upgrades**: Replaced 4-tier auto-clicker with `AUTO_HARVEST_SPEED` and `AUTO_HARVEST_ACCURACY` as standard upgradeable levels.
+  - Speed: +0.5 taps/sec per level (8 GHz CPU, 4 GB RAM, 15 kW, 0.3 heat per level)
+  - Accuracy: +5% per level (5 GHz CPU, 6 GB RAM, 10 kW, 0.15 heat per level)
+- **Pre-Purchase Load Gate**: Software purchases are blocked if they would exceed system capacity. No more blind overloading.
+- **Stage Gate**: Automation requires Stage 1+ clearance.
+- **Downgrade Fix**: Refund now calculated correctly (40% of current level cost, not next-level).
+- **SYS.LOAD Header**: Combined weighted load indicator with OVERLOAD/THROTTLED status tags.
+- **Narrative Feedback**: Terminal logs on load state transitions (nominal → throttled → locked and back).
+- **SoftwarePanel UI**: Shows all three resource axes (CPU/RAM/DISK) in the load bar.
+
+### Technical
+- Refactored demand calculation into SystemLoadEngine's internal maps — no more external parameters.
+- Removed `usedCpuCapacity` and `autoClickerTier` from state.
+- Clean compile, no regressions.
+
 ## [3.35.0] - 2026-02-25
 ### Surveillance Harvester Expansion
 - **Subnet Sector Surveillance**: Added new `SurveillanceVisualizer` UI to the Terminal `SURV` tab. Players can now deploy Harvesters across 12 sectors to passively siphon raw biometric data.
