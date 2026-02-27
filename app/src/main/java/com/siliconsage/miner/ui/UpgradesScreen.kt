@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.ui.components.TechnicalCornerShape
@@ -63,15 +64,16 @@ fun UpgradesScreen(viewModel: GameViewModel) {
     
     val tabs = remember(nullActive, isTrueNull, isSovereign, storyStage) {
         when {
-            isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS", "NULL")
-            isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS", "SOVEREIGN")
+            isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS", "NULL", "SOFTWARE")
+            isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS", "SOVEREIGN", "SOFTWARE")
             storyStage >= 3 || nullActive -> {
-                val base = listOf("HARDWARE", "COOLING", "POWER", "SECURITY")
+                val base = listOf("HARDWARE", "COOLING", "POWER", "SECURITY", "SOFTWARE")
                 if (nullActive) base + "GHOSTS" else base + "RESEARCH"
             }
-            else -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY")
+            else -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY", "SOFTWARE")
         }
     }
+    val softwareTabIndex = tabs.indexOf("SOFTWARE")
     
     Box(
         modifier = Modifier
@@ -131,6 +133,12 @@ fun UpgradesScreen(viewModel: GameViewModel) {
 
             // List Content
             Box(modifier = Modifier.weight(1f).padding(16.dp)) {
+                // SOFTWARE tab — custom panel
+                if (selectedTab == softwareTabIndex) {
+                    SoftwarePanel(viewModel = viewModel, themeColor = themeColor)
+                    return@Box
+                }
+
                 val currentList = when (selectedTab) {
                     0 -> listOf(
                         UpgradeType.REFURBISHED_GPU, UpgradeType.DUAL_GPU_RIG, UpgradeType.MINING_ASIC,
@@ -234,6 +242,7 @@ fun UpgradesScreen(viewModel: GameViewModel) {
             }
         }
         
+        // ── SOFTWARE TAB ERROR also uses errorMessage ──
         // Error Popup Overlay
         if (errorMessage != null) {
              Box(
@@ -250,6 +259,157 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                      fontWeight = FontWeight.Bold
                  )
              }
+        }
+    }
+}
+
+// ── SOFTWARE PANEL (v4.0.1 — FACEMINER Pressure Loop) ──────────────────────
+@Composable
+fun SoftwarePanel(viewModel: GameViewModel, themeColor: Color) {
+    val autoClickerTier by viewModel.autoClickerTier.collectAsState()
+    val systemLoad by viewModel.systemLoadSnapshot.collectAsState()
+    val neuralTokens by viewModel.neuralTokens.collectAsState()
+
+    val tiers = listOf(
+        Triple("MANUAL_TAP.exe",      "Base kernel input. Painfully human. No CPU cost.",   0.0),
+        Triple("AUTOCLICKER_T1.exe",  "Macro assist. 0.5 taps/sec. 60% accuracy. Sloppy.",  viewModel.getAutoClickerCost(1)),
+        Triple("AUTOCLICKER_T2.exe",  "Pattern recognition. 2 taps/sec. 85% accuracy.",     viewModel.getAutoClickerCost(2)),
+        Triple("AUTOCLICKER_T3.exe",  "Neural delegate. 8 taps/sec. 95% accuracy. Hungry.", viewModel.getAutoClickerCost(3)),
+    )
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // System Load Bar
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(6.dp))
+                    .border(1.dp, themeColor.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                    .padding(12.dp)
+            ) {
+                val loadPct = (systemLoad.loadPercent * 100).toInt()
+                val loadColor = when {
+                    systemLoad.isLocked -> com.siliconsage.miner.ui.theme.ErrorRed
+                    systemLoad.isThrottled -> Color(0xFFFFAA00)
+                    else -> themeColor
+                }
+                Text(
+                    text = "SYSTEM LOAD: $loadPct%  ${if (systemLoad.isLocked) "[LOCKED]" else if (systemLoad.isThrottled) "[THROTTLED]" else "[NOMINAL]"}",
+                    color = loadColor,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+                Spacer(Modifier.height(6.dp))
+                LinearProgressIndicator(
+                    progress = { systemLoad.loadPercent.toFloat().coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth().height(6.dp),
+                    color = loadColor,
+                    trackColor = Color.DarkGray
+                )
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("CPU: ${systemLoad.cpuUsed.toInt()}/${systemLoad.cpuMax.toInt()} GHz", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    Text("RAM: ${systemLoad.ramUsed.toInt()}/${systemLoad.ramMax.toInt()} GB", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    Text("STORAGE: ${systemLoad.storageUsed.toInt()}/${systemLoad.storageMax.toInt()} GB", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                }
+            }
+        }
+
+        // Auto-Clicker Tier Cards
+        items(tiers.size) { i ->
+            val (name, desc, cost) = tiers[i]
+            val isInstalled = autoClickerTier >= i
+            val isNext = i == autoClickerTier + 1
+            val canAfford = neuralTokens >= cost
+            val borderColor = when {
+                isInstalled -> themeColor
+                isNext -> themeColor.copy(alpha = 0.4f)
+                else -> Color.DarkGray.copy(alpha = 0.3f)
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        if (isInstalled) themeColor.copy(alpha = 0.07f) else Color.Black.copy(alpha = 0.6f),
+                        RoundedCornerShape(6.dp)
+                    )
+                    .border(1.dp, borderColor, RoundedCornerShape(6.dp))
+                    .padding(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = name,
+                        color = if (isInstalled) themeColor else if (isNext) Color.White else Color.Gray,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                    Text(
+                        text = if (isInstalled) "[ ACTIVE ]" else if (i == 0) "[ BASE ]" else "[ LOCKED ]",
+                        color = if (isInstalled) themeColor else Color.Gray,
+                        fontSize = 10.sp,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = desc,
+                    color = Color.Gray,
+                    fontSize = 10.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+                if (cost > 0) {
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (isNext) {
+                            Button(
+                                onClick = { viewModel.buyAutoClicker(i) },
+                                enabled = canAfford && !systemLoad.isLocked,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = themeColor.copy(alpha = 0.15f),
+                                    contentColor = themeColor,
+                                    disabledContainerColor = Color.DarkGray.copy(alpha = 0.2f),
+                                    disabledContentColor = Color.Gray
+                                ),
+                                border = BorderStroke(1.dp, if (canAfford) themeColor else Color.DarkGray),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = "INSTALL  ${viewModel.formatLargeNumber(cost)} NT",
+                                    fontSize = 10.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                )
+                            }
+                        }
+                        if (isInstalled && i > 0) {
+                            OutlinedButton(
+                                onClick = { viewModel.downgradeAutoClicker() },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = com.siliconsage.miner.ui.theme.ErrorRed),
+                                border = BorderStroke(1.dp, com.siliconsage.miner.ui.theme.ErrorRed.copy(alpha = 0.5f)),
+                                modifier = Modifier.wrapContentWidth()
+                            ) {
+                                Text(
+                                    text = "UNINSTALL  +${viewModel.formatLargeNumber(cost * 0.4)} NT",
+                                    fontSize = 9.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

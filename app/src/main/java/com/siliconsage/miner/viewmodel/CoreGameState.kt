@@ -200,6 +200,14 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val reputationScore = MutableStateFlow(50.0)
     val reputationTier = MutableStateFlow("NEUTRAL")
 
+    // v4.0.1: System Load (FACEMINER Pressure Loop)
+    val systemLoadSnapshot = MutableStateFlow(com.siliconsage.miner.domain.engine.SystemLoadEngine.SystemSnapshot(
+        cpuUsed = 0.0, cpuMax = 1.0, ramUsed = 0.0, ramMax = 2.0,
+        storageUsed = 0.0, storageMax = 0.0, loadPercent = 0.0,
+        isThrottled = false, isLocked = false, throttleMultiplier = 1.0
+    ))
+    val autoClickerTier = MutableStateFlow(0) // 0=manual, 1=assisted, 2=automated, 3=passive
+
     val computeHeadroomBonus = MutableStateFlow(1.0)
     val isSignalClear = MutableStateFlow(true)
     val isQuotaActive = MutableStateFlow(false)

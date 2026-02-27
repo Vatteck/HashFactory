@@ -386,6 +386,26 @@ fun HeaderSection(
                              }
                         }
 
+                        // v4.0.1: System Load Display
+                        val sysLoad by viewModel.systemLoadSnapshot.collectAsState()
+                        if (sysLoad.cpuMax > 1.0) { // Only show once hardware is purchased
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 4.dp)) {
+                                val loadColor = when {
+                                    sysLoad.isLocked -> ErrorRed
+                                    sysLoad.isThrottled -> Color(0xFFFFAA00)
+                                    else -> color.copy(alpha = 0.7f)
+                                }
+                                Text(text = "SYS.LOAD", color = Color.Gray, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                                Text(
+                                    text = "${(sysLoad.loadPercent * 100).toInt()}%${if (sysLoad.isLocked) "!" else if (sysLoad.isThrottled) "↓" else ""}",
+                                    color = loadColor,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Black,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                        }
+
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
                             Canvas(modifier = Modifier.size(48.dp)) {
                                 val strokeW = 3.5.dp.toPx()
