@@ -118,6 +118,7 @@ data class GameState(
     val unlockedContractSlots: Int = 1, // Keep for legacy/save-state compatibility or repurposed? We'll leave it
     val activeDatasetJson: String = "", 
     val activeDatasetNodesJson: String = "[]",
+    val storedDatasetsJson: String = "[]", // v4.0.3: Dataset inventory
     
     // v3.35.0: Surveillance Expansion
     val activeHarvestersJson: String = "{}",

@@ -48,6 +48,7 @@ object PersistenceManager {
         unlockedContractSlots: Int = 1,
         activeDatasetJson: String = "",
         activeDatasetNodesJson: String = "[]",
+        storedDatasetsJson: String = "[]",
         activeHarvestersJson: String = "{}",
         harvestBuffersJson: String = "{}",
         storageCapacity: Double = 1000.0,
@@ -93,6 +94,7 @@ object PersistenceManager {
             unlockedContractSlots = unlockedContractSlots,
             activeDatasetJson = activeDatasetJson,
             activeDatasetNodesJson = activeDatasetNodesJson,
+            storedDatasetsJson = storedDatasetsJson,
             activeHarvestersJson = activeHarvestersJson,
             harvestBuffersJson = harvestBuffersJson,
             storageCapacity = storageCapacity,
@@ -179,6 +181,18 @@ object PersistenceManager {
                 vm.activeDatasetNodes.value = nodesList
             } catch (e: Exception) {
                 // Ignore empty or corrupt node sets gracefully
+            }
+        }
+        // v4.0.3: Restore dataset inventory
+        if (state.storedDatasetsJson.isNotBlank() && state.storedDatasetsJson != "[]") {
+            try {
+                val stored = Json.decodeFromString(
+                    kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.Dataset.serializer()),
+                    state.storedDatasetsJson
+                )
+                vm.storedDatasets.value = stored
+            } catch (e: Exception) {
+                vm.addLog("[SYSTEM]: STORED DATASET RESTORATION FAILED.")
             }
         }
         // v3.35.0: Restore Surveillance Expansion states
@@ -304,6 +318,10 @@ object PersistenceManager {
             activeDatasetNodesJson = Json.encodeToString(
                 kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.DatasetNode.serializer()),
                 vm.activeDatasetNodes.value
+            ),
+            storedDatasetsJson = Json.encodeToString(
+                kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.Dataset.serializer()),
+                vm.storedDatasets.value
             ),
             activeHarvestersJson = Json.encodeToString(vm.activeHarvesters.value),
             harvestBuffersJson = Json.encodeToString(vm.harvestBuffers.value),

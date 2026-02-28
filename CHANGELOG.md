@@ -1,6 +1,24 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.0.3] - 2026-02-27
+### Dataset Inventory & Storage Pressure Loop
+
+- **Dataset Inventory System**: Replace single active-slot with a queue/inventory. Player can hold multiple purchased datasets simultaneously. All stored datasets consume storage.
+- **Storage Consumed by Full Inventory**: `contractStorageUsed` now sums all stored + active dataset sizes. Storage pressure only works if hoarding costs capacity.
+- **Auto-Queue Processing**: When a dataset completes, the next stored dataset auto-loads. Assembly line feel.
+- **Dataset Load Functions**: Added `loadDataset()` and `loadNextDataset()` for manual/auto activation from inventory.
+- **Recalc Storage Used**: `recalcStorageUsed()` centralizes storage calculation — called on purchase, load, void, and complete.
+- **Log Unit Bug Fix**: All dataset log messages now use `FormatUtils.formatStorage()` instead of hardcoded "GB".
+- **Persistence**: Full `storedDatasets` state persisted via `storedDatasetsJson` column.
+- **SystemLoadEngine Integration**: Storage axis now accounts for full inventory (active + all stored).
+
+### Technical
+- Added `storedDatasets: MutableStateFlow<List<Dataset>>` to CoreGameState.
+- Added `storedDatasetsJson` to GameState and PersistenceManager.
+- DatasetManager refactored with new functions: `recalcStorageUsed()`, `loadNextDataset()`, `loadDataset()`.
+- Clean compile, full persistence roundtrip tested.
+
 ## [4.0.1] - 2026-02-27
 ### FACEMINER Pressure Loop — Phase 2 Complete
 **The automation economy overhaul. Every software upgrade now creates hardware demand. The pressure loop is closed.**

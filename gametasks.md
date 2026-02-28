@@ -62,3 +62,35 @@
 
 ---
 *Synced from workspace tasks.md*
+
+---
+
+## 🔴 v4.0.x — Dataset Storage Pressure Loop
+
+### Core (blocking — loop doesn't function without these)
+
+- [x] **[4.0.3] Dataset Inventory System** — Replace single active-slot with a queue/inventory. Player can hold multiple purchased datasets simultaneously. All stored datasets consume storage. Requires: DatasetManager refactor, new `storedDatasets: List<Dataset>` state, storage gate checks across entire inventory.
+
+- [x] **[4.0.3] Storage Consumed by Full Inventory** — `contractStorageUsed` must sum all stored + active dataset sizes. Right now it only tracks the one active dataset. Storage pressure only works if hoarding costs capacity.
+
+- [ ] **[4.0.4] Dataset Expiration** — Available datasets in the picker cycle out on a timer (e.g. 90-120s). High-purity datasets are rare and fleeting. Creates FOMO: "buy now even if I can't process yet." Pair with a countdown indicator in the picker UI.
+
+- [ ] **[4.0.4] Dataset Value Decay** — Stored datasets lose payout value over time (data goes stale). Rate scales with tier — Stage 0 data decays slowly, Stage 3+ decays fast. Incentivizes processing over hoarding indefinitely.
+
+### Polish (loop improvements)
+
+- [ ] **[4.0.5] Auto-Queue Processing** — Auto-clicker automatically loads next stored dataset when current one completes. Assembly-line feel. Opt-in toggle in SoftwarePanel.
+
+- [ ] **[4.0.5] Dataset Sell/Purge** — Let player sell stored datasets at a loss (e.g. 20% of cost) to free storage. Escape valve for over-buying. Log: "[DATASET]: BLOCK PURGED — PARTIAL RECOVERY."
+
+- [ ] **[4.0.5] Storage Overflow Consequences** — Surveillance Harvesters stop generating datasets when storage is at 100%. Currently fails silently. Add terminal warning + harvester pause state.
+
+- [ ] **[4.0.5] Dataset Picker Storage Display Fix** — Show remaining free storage, not just total capacity. "LOCAL STORAGE: 1.2 GB free / 5.0 GB" so player knows what they can afford to buy.
+
+- [ ] **[4.0.6] Storage Pressure Narrative** — Terminal logs react to storage fill level. "WARNING: CACHE AT 78%", "CRITICAL: DATASET QUEUE SATURATED — PURGE OR PROCESS", etc. Stage-gated voice (corporate at Stage 0-2, rogue at Stage 3+).
+
+- [ ] **[4.0.6] Dataset Purity Scout** — Spend a small fee to preview exact purity before purchasing. Adds an intel/gambling layer to dataset acquisition.
+
+### Bug Fixes
+
+- [x] **[4.0.3] Log Unit Bug** — `purchaseDataset()` in DatasetManager.kt hardcodes `"${sizeStr}GB"` in the log string. Replace with `FormatUtils.formatStorage(dataset.size)`.

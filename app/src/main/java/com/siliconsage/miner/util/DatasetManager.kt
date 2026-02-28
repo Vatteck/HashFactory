@@ -2,6 +2,7 @@ package com.siliconsage.miner.util
 
 import com.siliconsage.miner.data.Dataset
 import com.siliconsage.miner.data.DatasetNode
+import com.siliconsage.miner.util.FormatUtils
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.flow.update
 import kotlin.random.Random
@@ -145,53 +146,85 @@ object DatasetManager {
         vm.availableDatasets.value = current.take(10)
     }
 
+    // v4.0.3: Recalculate total storage used across active + entire inventory
+    fun recalcStorageUsed(vm: GameViewModel) {
+        val activeSize = vm.activeDataset.value?.size ?: 0.0
+        val storedSize = vm.storedDatasets.value.sumOf { it.size }
+        vm.contractStorageUsed.value = activeSize + storedSize
+    }
+
     fun purchaseDataset(vm: GameViewModel, dataset: Dataset): Boolean {
         if (vm.neuralTokens.value < dataset.cost) {
             vm.addLogPublic("[DATASET]: INSUFFICIENT FUNDS. Requires ${vm.formatLargeNumber(dataset.cost)} ${vm.getCurrencyName()}.")
             SoundManager.play("error")
             return false
         }
-        
-        // Ensure there is no active dataset
+
+        // v4.0.3: Storage capacity check against total used (active + all stored)
+        val totalUsed = (vm.activeDataset.value?.size ?: 0.0) + vm.storedDatasets.value.sumOf { it.size }
+        val freeSpace = vm.contractStorageCapacity.value - totalUsed
+        if (dataset.size > freeSpace) {
+            vm.addLogPublic("[DATASET]: STORAGE FULL. Need ${FormatUtils.formatStorage(dataset.size - freeSpace)} more. Upgrade LOCAL_CACHE or process existing data.")
+            SoundManager.play("error")
+            return false
+        }
+
+        vm.updateNeuralTokens(-dataset.cost)
+
+        // v4.0.3: Push to inventory — don't auto-activate
+        val stored = vm.storedDatasets.value.toMutableList()
+        stored.add(dataset)
+        vm.storedDatasets.value = stored
+        recalcStorageUsed(vm)
+
+        vm.addLogPublic("[DATASET]: ▼ ${dataset.name} STORED. (Purity: ${(dataset.purity * 100).toInt()}% | Size: ${FormatUtils.formatStorage(dataset.size)} | Queue: ${stored.size})")
+        SoundManager.play("buy")
+        HapticManager.vibrateClick()
+
+        // Remove from available pool
+        val currentAvailable = vm.availableDatasets.value.toMutableList()
+        currentAvailable.removeAll { it.id == dataset.id }
+        vm.availableDatasets.value = currentAvailable
+
+        // Auto-load if nothing active
+        if (vm.activeDataset.value == null) {
+            loadNextDataset(vm)
+        }
+
+        return true
+    }
+
+    // v4.0.3: Load the next stored dataset into the active slot
+    fun loadNextDataset(vm: GameViewModel) {
+        val stored = vm.storedDatasets.value.toMutableList()
+        if (stored.isEmpty()) return
+        val next = stored.removeAt(0)
+        vm.storedDatasets.value = stored
+        loadDataset(vm, next)
+    }
+
+    // v4.0.3: Activate a specific dataset from inventory
+    fun loadDataset(vm: GameViewModel, dataset: Dataset) {
         if (vm.activeDataset.value != null) {
             vm.addLogPublic("[DATASET]: ACTIVE DATASET DETECTED. Complete or abort current batch first.")
             SoundManager.play("error")
-            return false
+            return
         }
-        
-        // Storage capacity check
-        if (dataset.size > vm.contractStorageCapacity.value) {
-            val needed = (dataset.size - vm.contractStorageCapacity.value).toInt()
-            vm.addLogPublic("[DATASET]: STORAGE FULL. Need ${needed} more GB. Upgrade LOCAL_CACHE.")
-            SoundManager.play("error")
-            return false
-        }
-        
-        vm.updateNeuralTokens(-dataset.cost)
-        
-        // Generate nodes
+
         val targetValidCount = (dataset.totalRecords * dataset.purity).toInt().coerceAtLeast(1)
         val nodes = mutableListOf<DatasetNode>()
         for (i in 0 until dataset.totalRecords) {
             nodes.add(DatasetNode(id = i, isValid = i < targetValidCount))
         }
         nodes.shuffle()
-        
+
         vm.activeDatasetNodes.value = nodes
         vm.activeDataset.value = dataset.copy(isActive = true, progress = 0.0)
-        vm.contractStorageUsed.value = dataset.size
-        
-        val sizeStr = dataset.size.toInt()
-        vm.addLogPublic("[DATASET]: ▶ ${dataset.name} ACQUIRED. Grid initialized. (Purity: ${(dataset.purity * 100).toInt()}% | Size: ${sizeStr}GB)")
-        SoundManager.play("buy")
+        recalcStorageUsed(vm)
+
+        vm.addLogPublic("[DATASET]: ▶ ${dataset.name} LOADED. Grid initialized. (Purity: ${(dataset.purity * 100).toInt()}% | Size: ${FormatUtils.formatStorage(dataset.size)})")
+        SoundManager.play("click")
         HapticManager.vibrateClick()
-        
-        // Remove from available
-        val currentAvailable = vm.availableDatasets.value.toMutableList()
-        currentAvailable.removeAll { it.id == dataset.id }
-        vm.availableDatasets.value = currentAvailable
-        
-        return true
     }
     
     fun processNodeTap(vm: GameViewModel, nodeId: Int) {
@@ -235,11 +268,18 @@ object DatasetManager {
     private fun completeDataset(vm: GameViewModel, dataset: Dataset) {
         vm.activeDataset.value = null
         vm.activeDatasetNodes.value = emptyList()
-        vm.contractStorageUsed.value = 0.0
+        vm.activeDataset.value = null
+        vm.activeDatasetNodes.value = emptyList()
         vm.contractsCompleted.update { it + 1 }
-        
+        recalcStorageUsed(vm)
+
         vm.addLogPublic("[SYSTEM]: ✓ ${dataset.name} DATABLOCK RESOLVED.")
         SoundManager.play("success")
         HapticManager.vibrateClick()
+
+        // v4.0.3: Auto-load next dataset from inventory if available
+        if (vm.storedDatasets.value.isNotEmpty()) {
+            loadNextDataset(vm)
+        }
     }
 }

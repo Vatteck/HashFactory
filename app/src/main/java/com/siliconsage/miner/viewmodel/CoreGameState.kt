@@ -30,6 +30,8 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val contractStorageCapacity = MutableStateFlow(50.0) // Derived from storage upgrades
     val contractStorageUsed = MutableStateFlow(0.0)      // Derived from activeContracts.sumOf { it.size }
     
+    // v4.0.3: Dataset inventory — player can stockpile multiple datasets
+    val storedDatasets = MutableStateFlow<List<Dataset>>(emptyList())
     val availableDatasets = MutableStateFlow<List<Dataset>>(emptyList())
     val showContractPicker = MutableStateFlow(false)
 

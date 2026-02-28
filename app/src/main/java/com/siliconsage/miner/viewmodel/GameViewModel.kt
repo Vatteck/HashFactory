@@ -355,7 +355,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value, specializedNodes = specializedNodes.value,
                 unlockedContractSlots = 1,
                 activeDatasetJson = if (activeDataset.value != null) kotlinx.serialization.json.Json.encodeToString(com.siliconsage.miner.data.Dataset.serializer(), activeDataset.value!!) else "",
-                activeDatasetNodesJson = kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.DatasetNode.serializer()), activeDatasetNodes.value)
+                activeDatasetNodesJson = kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.DatasetNode.serializer()), activeDatasetNodes.value),
+                storedDatasetsJson = kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.Dataset.serializer()), storedDatasets.value)
             ))
         }
     }
@@ -467,7 +468,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         capacity += (u[com.siliconsage.miner.data.UpgradeType.ORBITAL_DATA_VAULT]    ?: 0) * com.siliconsage.miner.data.UpgradeType.ORBITAL_DATA_VAULT.storagePerLevel
         capacity += (u[com.siliconsage.miner.data.UpgradeType.SUBSTRATE_MEMORY_WELL] ?: 0) * com.siliconsage.miner.data.UpgradeType.SUBSTRATE_MEMORY_WELL.storagePerLevel
         contractStorageCapacity.value = capacity
-        contractStorageUsed.value = activeDataset.value?.size ?: 0.0
+        com.siliconsage.miner.util.DatasetManager.recalcStorageUsed(this)
     }
 
     // Phase 2: Recalculate system load (FACEMINER Pressure Loop)
@@ -476,7 +477,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun refreshSystemLoad() {
         val snapshot = com.siliconsage.miner.domain.engine.SystemLoadEngine.calculateSnapshot(
             upgrades = upgrades.value,
-            activeDatasetSize = activeDataset.value?.size ?: 0.0
+            activeDatasetSize = (activeDataset.value?.size ?: 0.0) + storedDatasets.value.sumOf { it.size }
         )
         val prevSnapshot = systemLoadSnapshot.value
         systemLoadSnapshot.value = snapshot
@@ -978,7 +979,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             SoundManager.play("error")
             activeDataset.value = null
             activeDatasetNodes.value = emptyList()
-            contractStorageUsed.value = 0.0
+            com.siliconsage.miner.util.DatasetManager.recalcStorageUsed(this)
         }
     }
 
