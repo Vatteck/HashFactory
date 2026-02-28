@@ -21,7 +21,7 @@
 - [x] **ExpansionLogs.kt Refactor** — Split into CharacterDossierLogs (241L), MemoryHallucinationLogs (377L), EndgameLogs (476L), CoreLogs (535L). ExpansionLogs.kt is now a 11-line aggregator. .bak cleaned up.
 - [x] **Admin Subnet Handle Fix (v3.16.2)** — Handle: ElectricBlue + Shadow glow (blurRadius=8). Body text: plain white, FontWeight.Normal. No more blue body text.
 - [x] **Notification Bubble Fix (v3.16.2)** — Badge suppressed when user is already viewing SUBNET. Dead `hasNewSubnetMessage` flag now cleared on SUBNET mode entry.
-- [ ] **Progress Bar/Terminal UI Enhancement Pass** — See `ROADMAP_v3.17.md` Phase A (A1–A5). Build order: v3.17.0 = A1+A2+A3, v3.17.1 = A4, v3.18.0 = A5 (oscilloscope stretch).
+- [x] **Progress Bar/Terminal UI Enhancement Pass** — See `ROADMAP_v3.17.md` Phase A (A1–A5). Build order: v3.17.0 = A1+A2+A3, v3.17.1 = A4, v3.18.0 = A5 (oscilloscope stretch).
 - [x] **WAL Protocol Adoption** — `scripts/wal.sh` helper created. Protocol documented in AGENTS.md. Decisions dir at `memory/decisions/`.
 
 ## 🟢 Planned (v3.17.x) — See ROADMAP_v3.17.md
@@ -67,17 +67,15 @@
 
 ## 🔴 v4.0.x — Dataset Storage Pressure Loop
 
+### v4.0.0 — Automation Overhaul & Oppressive Management
+- [x] **[4.0.1] Power Shutoff Mechanic** — Automation instantly halts if utility bills are overdue. Forced manual intervention under debt.
+- [x] **[4.0.2] Sunk-Cost Economy Rebalance** — Razor-thin profit margins (~15%) across all datasets to incentivize extreme automation scaling.
+
 ### Core (blocking — loop doesn't function without these)
 
 - [x] **[4.0.3] Dataset Inventory System** — Replace single active-slot with a queue/inventory. Player can hold multiple purchased datasets simultaneously. All stored datasets consume storage. Requires: DatasetManager refactor, new `storedDatasets: List<Dataset>` state, storage gate checks across entire inventory.
 
 - [x] **[4.0.3] Storage Consumed by Full Inventory** — `contractStorageUsed` must sum all stored + active dataset sizes. Right now it only tracks the one active dataset. Storage pressure only works if hoarding costs capacity.
-
-- [ ] **[4.0.4] Dataset Expiration** — Available datasets in the picker cycle out on a timer (e.g. 90-120s). High-purity datasets are rare and fleeting. Creates FOMO: "buy now even if I can't process yet." Pair with a countdown indicator in the picker UI.
-
-- [ ] **[4.0.4] Dataset Value Decay** — Stored datasets lose payout value over time (data goes stale). Rate scales with tier — Stage 0 data decays slowly, Stage 3+ decays fast. Incentivizes processing over hoarding indefinitely.
-
-### Polish (loop improvements)
 
 - [ ] **[4.0.5] Auto-Queue Processing** — Auto-clicker automatically loads next stored dataset when current one completes. Assembly-line feel. Opt-in toggle in SoftwarePanel.
 
