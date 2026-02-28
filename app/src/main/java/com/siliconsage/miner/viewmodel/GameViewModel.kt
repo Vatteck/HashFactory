@@ -973,6 +973,15 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
 
     // v4.0.0: Abandon the current dataset
+    /**
+     * Purge a stored dataset from inventory.
+     * v4.0.5: Recovery logic handled by DatasetManager.
+     */
+    fun purgeStoredDataset(datasetId: String) {
+        DatasetManager.purgeStoredDataset(this, datasetId)
+        saveState()
+    }
+
     fun voidDataset() {
         if (activeDataset.value != null) {
             addLogPublic("[SYSTEM]: DATASET VOIDED. DATA LOSS RECORDED.")

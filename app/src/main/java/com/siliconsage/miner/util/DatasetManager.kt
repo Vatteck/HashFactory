@@ -194,6 +194,29 @@ object DatasetManager {
         return true
     }
 
+    /**
+     * Purge a stored dataset from inventory.
+     * v4.0.5: Recovery of 20% of cost.
+     */
+    fun purgeStoredDataset(vm: GameViewModel, datasetId: String) {
+        val stored = vm.storedDatasets.value.toMutableList()
+        val index = stored.indexOfFirst { it.id == datasetId }
+        if (index == -1) return
+
+        val dataset = stored.removeAt(index)
+        vm.storedDatasets.value = stored
+
+        val refund = dataset.cost * 0.2
+        if (refund > 0) {
+            vm.updateNeuralTokens(refund)
+        }
+
+        recalcStorageUsed(vm)
+        vm.addLogPublic("[DATASET]: ▼ BLOCK PURGED. (Size: ${FormatUtils.formatStorage(dataset.size)}) recovered ${vm.formatLargeNumber(refund)} ${vm.getCurrencyName()}.")
+        SoundManager.play("sell")
+        HapticManager.vibrateClick()
+    }
+
     // v4.0.3: Load the next stored dataset into the active slot
     fun loadNextDataset(vm: GameViewModel) {
         val stored = vm.storedDatasets.value.toMutableList()
@@ -277,8 +300,8 @@ object DatasetManager {
         SoundManager.play("success")
         HapticManager.vibrateClick()
 
-        // v4.0.3: Auto-load next dataset from inventory if available
-        if (vm.storedDatasets.value.isNotEmpty()) {
+        // v4.0.5: Auto-load next dataset from inventory ONLY if enabled
+        if (vm.isAutoLoadEnabled.value && vm.storedDatasets.value.isNotEmpty()) {
             loadNextDataset(vm)
         }
     }

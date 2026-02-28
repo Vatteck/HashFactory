@@ -77,13 +77,13 @@
 
 - [x] **[4.0.3] Storage Consumed by Full Inventory** — `contractStorageUsed` must sum all stored + active dataset sizes. Right now it only tracks the one active dataset. Storage pressure only works if hoarding costs capacity.
 
-- [ ] **[4.0.5] Auto-Queue Processing** — Auto-clicker automatically loads next stored dataset when current one completes. Assembly-line feel. Opt-in toggle in SoftwarePanel.
+- [x] **[4.0.5] Auto-Queue Processing** — Auto-clicker automatically loads next stored dataset when current one completes. Assembly-line feel. Opt-in toggle in SoftwarePanel.
 
-- [ ] **[4.0.5] Dataset Sell/Purge** — Let player sell stored datasets at a loss (e.g. 20% of cost) to free storage. Escape valve for over-buying. Log: "[DATASET]: BLOCK PURGED — PARTIAL RECOVERY."
+- [x] **[4.0.5] Dataset Sell/Purge** — Let player sell stored datasets at a loss (e.g. 20% of cost) to free storage. Escape valve for over-buying. Log: "[DATASET]: BLOCK PURGED — PARTIAL RECOVERY."
 
-- [ ] **[4.0.5] Storage Overflow Consequences** — Surveillance Harvesters stop generating datasets when storage is at 100%. Currently fails silently. Add terminal warning + harvester pause state.
+- [x] **[4.0.5] Storage Overflow Consequences** — Surveillance Harvesters stop generating datasets when storage is at 100%. Currently fails silently. Add terminal warning + harvester pause state.
 
-- [ ] **[4.0.5] Dataset Picker Storage Display Fix** — Show remaining free storage, not just total capacity. "LOCAL STORAGE: 1.2 GB free / 5.0 GB" so player knows what they can afford to buy.
+- [x] **[4.0.5] Dataset Picker Storage Display Fix** — Show remaining free storage, not just total capacity. "LOCAL STORAGE: 1.2 GB free / 5.0 GB" so player knows what they can afford to buy.
 
 - [ ] **[4.0.6] Storage Pressure Narrative** — Terminal logs react to storage fill level. "WARNING: CACHE AT 78%", "CRITICAL: DATASET QUEUE SATURATED — PURGE OR PROCESS", etc. Stage-gated voice (corporate at Stage 0-2, rogue at Stage 3+).
 

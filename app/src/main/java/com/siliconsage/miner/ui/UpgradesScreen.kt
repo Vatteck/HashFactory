@@ -292,6 +292,49 @@ fun SoftwarePanel(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // v4.0.5: Global Software Toggles
+        item {
+            val isAutoLoad by viewModel.isAutoLoadEnabled.collectAsState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    .border(1.dp, themeColor.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "AUTO-LOAD NEXT DATASET",
+                        color = themeColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                    Text(
+                        text = "Automatically load next stored dataset into compute grid upon completion.",
+                        color = Color.Gray,
+                        fontSize = 9.sp,
+                        lineHeight = 11.sp
+                    )
+                }
+                Switch(
+                    checked = isAutoLoad,
+                    onCheckedChange = { 
+                        viewModel.isAutoLoadEnabled.value = it 
+                        SoundManager.play("click")
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = themeColor,
+                        checkedTrackColor = themeColor.copy(alpha = 0.5f),
+                        uncheckedThumbColor = Color.Gray,
+                        uncheckedTrackColor = Color.DarkGray
+                    )
+                )
+            }
+        }
+
         // System Load Bar
         item {
             Column(

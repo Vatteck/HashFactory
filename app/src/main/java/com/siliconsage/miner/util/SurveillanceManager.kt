@@ -29,14 +29,21 @@ object SurveillanceManager {
                 buffers[sectorId] = (buffers[sectorId] ?: 0.0) + generated
                 currentStorage += generated
             } else {
-                // Storage overflow logic - Data Leak!
+                // v4.0.5: Storage overflow logic - Data Leak + Suspension Alarm
                 val overflow = (currentStorage + generated) - capacity
-                triggerDataLeakPenalty(vm, overflow)
-                // Fill up to max
-                val allowed = capacity - currentStorage
-                if (allowed > 0) {
-                    buffers[sectorId] = (buffers[sectorId] ?: 0.0) + allowed
-                    currentStorage += allowed
+                if (currentStorage >= capacity) {
+                    // Already full, just warn occasionally
+                    if (java.util.Random().nextDouble() < 0.05) {
+                        vm.addLog("[SURV]: ALARM — STORAGE SATURATED. Harvester output suspended.")
+                    }
+                } else {
+                    triggerDataLeakPenalty(vm, overflow)
+                    // Fill up to max
+                    val allowed = capacity - currentStorage
+                    if (allowed > 0) {
+                        buffers[sectorId] = (buffers[sectorId] ?: 0.0) + allowed
+                        currentStorage += allowed
+                    }
                 }
             }
         }

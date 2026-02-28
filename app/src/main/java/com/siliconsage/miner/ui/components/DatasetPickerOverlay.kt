@@ -34,6 +34,8 @@ fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
     val availableDatasets by viewModel.availableDatasets.collectAsState()
     val neuralTokens by viewModel.neuralTokens.collectAsState()
     val contractStorageCapacity by viewModel.contractStorageCapacity.collectAsState()
+    val contractStorageUsed by viewModel.contractStorageUsed.collectAsState()
+    val storedDatasets by viewModel.storedDatasets.collectAsState()
 
     Box(
         modifier = Modifier
@@ -72,9 +74,22 @@ fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
             if (availableDatasets.isNotEmpty()) {
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(availableDatasets, key = { it.id }) { dataset ->
-                        DatasetCard(dataset, neuralTokens, contractStorageCapacity, primaryColor) {
+                        DatasetCard(dataset, neuralTokens, contractStorageCapacity - contractStorageUsed, primaryColor) {
                             viewModel.purchaseDataset(dataset)
-                            viewModel.toggleDatasetPicker()
+                        }
+                    }
+                }
+
+                // v4.0.5: LOCAL CACHE SECTION
+                if (storedDatasets.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("LOCAL CACHE (${storedDatasets.size})", color = primaryColor.copy(alpha=0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyColumn(modifier = Modifier.weight(0.4f).fillMaxWidth()) {
+                        items(storedDatasets, key = { it.id }) { dataset ->
+                            CacheCard(dataset, primaryColor) {
+                                viewModel.purgeStoredDataset(dataset.id)
+                            }
                         }
                     }
                 }
@@ -94,7 +109,8 @@ fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("LOCAL STORAGE: ${FormatUtils.formatStorage(contractStorageCapacity)}", color = Color.LightGray, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                val availableSpace = contractStorageCapacity - contractStorageUsed
+                Text("STORAGE: ${FormatUtils.formatStorage(availableSpace)} / ${FormatUtils.formatStorage(contractStorageCapacity)} AVAILABLE", color = if (availableSpace < 5.0) ErrorRed else Color.LightGray, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
                 Button(
                     onClick = { viewModel.refreshDatasets(); SoundManager.play("click") },
                     colors = ButtonDefaults.buttonColors(containerColor = primaryColor.copy(alpha=0.2f), contentColor = primaryColor),
@@ -155,6 +171,38 @@ fun DatasetCard(dataset: Dataset, playerTokens: Double, storageCapacity: Double,
                     Text("STORAGE FULL", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp))
                 } else {
                     Text("COST: ${FormatUtils.formatLargeNumber(dataset.cost)} NT", color = primaryColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CacheCard(dataset: Dataset, primaryColor: Color, onPurge: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp)
+            .background(Color(0xFF0A0A0A), RoundedCornerShape(4.dp))
+            .border(1.dp, Color.DarkGray.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+            .padding(8.dp)
+    ) {
+        Column {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(dataset.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("${dataset.size.toInt()} GB", color = Color.Gray, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("YIELD: ≈${FormatUtils.formatLargeNumber(dataset.expectedYield)} NT", color = NeonGreen.copy(alpha=0.7f), fontSize = 10.sp)
+                Button(
+                    onClick = onPurge,
+                    colors = ButtonDefaults.buttonColors(containerColor = ErrorRed.copy(alpha=0.15f), contentColor = ErrorRed),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.height(24.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                ) {
+                    Text("PURGE (20%)", fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
