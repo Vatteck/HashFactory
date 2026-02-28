@@ -27,6 +27,9 @@ object AutoClickerEngine {
         val speedLevel = vm.upgrades.value[UpgradeType.AUTO_HARVEST_SPEED] ?: 0
         if (speedLevel <= 0) return
 
+        // Power Shutoff — unpaid utility bills hard-stop all automation
+        if (vm.powerBill.value > 0.0 && vm.missedBillingPeriods >= 1) return
+
         // SystemLoadEngine bottleneck — overloaded system = hard shutdown
         val snapshot = vm.systemLoadSnapshot.value
         if (snapshot.isLocked) return

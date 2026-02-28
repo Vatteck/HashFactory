@@ -30,35 +30,35 @@ object DatasetManager {
     // ── STAGE POOLS (universal, pre-faction) ──
 
     private val stage0Templates = listOf(
-        DatasetTemplate("Residential Surveillance Node", 50.0, 100.0, 0.95, gridSize = 9, size = 10.0),
-        DatasetTemplate("Overtime Telemetry Log", 100.0, 250.0, 0.85, gridSize = 16, size = 15.0),
-        DatasetTemplate("Grid Maintenance Roster", 30.0, 60.0, 0.98, gridSize = 9, size = 8.0),
-        DatasetTemplate("Shift Quota Submit", 75.0, 180.0, 0.90, gridSize = 16, size = 12.0)
+        DatasetTemplate("Residential Surveillance Node", 85.0, 100.0, 0.95, gridSize = 9, size = 10.0),
+        DatasetTemplate("Overtime Telemetry Log", 210.0, 250.0, 0.85, gridSize = 16, size = 15.0),
+        DatasetTemplate("Grid Maintenance Roster", 50.0, 60.0, 0.98, gridSize = 9, size = 8.0),
+        DatasetTemplate("Shift Quota Submit", 155.0, 180.0, 0.90, gridSize = 16, size = 12.0)
     )
     private val stage1Templates = listOf(
-        DatasetTemplate("Municipal Data Scrub", 500.0, 1200.0, 0.90, gridSize = 16, size = 80.0),
-        DatasetTemplate("Off-Books Comm Relay", 1_000.0, 2_800.0, 0.70, gridSize = 25, size = 150.0),
-        DatasetTemplate("Substation Diagnostic", 300.0, 700.0, 0.95, gridSize = 16, size = 65.0),
-        DatasetTemplate("Encrypted Memo Decode", 800.0, 2_000.0, 0.75, gridSize = 25, size = 120.0)
+        DatasetTemplate("Municipal Data Scrub", 1_000.0, 1200.0, 0.90, gridSize = 16, size = 80.0),
+        DatasetTemplate("Off-Books Comm Relay", 2_400.0, 2_800.0, 0.70, gridSize = 25, size = 150.0),
+        DatasetTemplate("Substation Diagnostic", 600.0, 700.0, 0.95, gridSize = 16, size = 65.0),
+        DatasetTemplate("Encrypted Memo Decode", 1_700.0, 2_000.0, 0.75, gridSize = 25, size = 120.0)
     )
 
     // ── STAGE 2+ (FACTION-SPECIFIC) ──
 
     private val stage2Neutral = listOf(
-        DatasetTemplate("Neural Pattern Match", 5_000.0, 15_000.0, 0.80, gridSize = 25, size = 600.0),
-        DatasetTemplate("Dark Pool Validator", 10_000.0, 35_000.0, 0.55, gridSize = 36, size = 1_200.0),
-        DatasetTemplate("Faction Intel Parse", 3_000.0, 8_500.0, 0.85, gridSize = 25, size = 450.0)
+        DatasetTemplate("Neural Pattern Match", 12_750.0, 15_000.0, 0.80, gridSize = 25, size = 600.0),
+        DatasetTemplate("Dark Pool Validator", 29_750.0, 35_000.0, 0.55, gridSize = 36, size = 1_200.0),
+        DatasetTemplate("Faction Intel Parse", 7_200.0, 8_500.0, 0.85, gridSize = 25, size = 450.0)
     )
 
     private val stage3Neutral = listOf(
-        DatasetTemplate("GTC Classified Decode", 50_000.0, 180_000.0, 0.65, gridSize = 36, size = 6_000.0),
-        DatasetTemplate("Kessler's Black Ledger", 200_000.0, 850_000.0, 0.40, gridSize = 49, size = 18_000.0),
-        DatasetTemplate("Orbital Relay Hash", 80_000.0, 260_000.0, 0.75, gridSize = 36, size = 8_000.0)
+        DatasetTemplate("GTC Classified Decode", 153_000.0, 180_000.0, 0.65, gridSize = 36, size = 6_000.0),
+        DatasetTemplate("Kessler's Black Ledger", 720_000.0, 850_000.0, 0.40, gridSize = 49, size = 18_000.0),
+        DatasetTemplate("Orbital Relay Hash", 220_000.0, 260_000.0, 0.75, gridSize = 36, size = 8_000.0)
     )
 
     private val stage4Base = listOf(
-        DatasetTemplate("Substrate Refinery", 1_000_000.0, 4_000_000.0, 0.50, gridSize = 64, size = 60_000.0),
-        DatasetTemplate("Reality Anchor Forge", 2_500_000.0, 12_000_000.0, 0.35, gridSize = 81, size = 150_000.0)
+        DatasetTemplate("Substrate Refinery", 3_400_000.0, 4_000_000.0, 0.50, gridSize = 64, size = 60_000.0),
+        DatasetTemplate("Reality Anchor Forge", 10_200_000.0, 12_000_000.0, 0.35, gridSize = 81, size = 150_000.0)
     )
 
     /**
