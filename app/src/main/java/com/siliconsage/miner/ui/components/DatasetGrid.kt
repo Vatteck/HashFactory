@@ -68,19 +68,9 @@ fun DatasetGrid(viewModel: GameViewModel, primaryColor: Color) {
                 )
             }
             
-            // Determine columns based on size
-            val cols = when {
-                ds.totalRecords <= 9 -> 3
-                ds.totalRecords <= 16 -> 4
-                ds.totalRecords <= 25 -> 5
-                ds.totalRecords <= 36 -> 6
-                ds.totalRecords <= 49 -> 7
-                ds.totalRecords <= 64 -> 8
-                else -> 9
-            }
-            
+            // v4.0.2: Adaptive grid — scales to display, no scrolling
             LazyVerticalGrid(
-                columns = GridCells.Fixed(cols),
+                columns = GridCells.Adaptive(minSize = 32.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.weight(1f).fillMaxWidth()

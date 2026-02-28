@@ -51,7 +51,7 @@ fun SurveillanceVisualizer(viewModel: GameViewModel, primaryColor: Color) {
             Column {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("GLOBAL DATA STORAGE", color = Color.LightGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("${FormatUtils.formatLargeNumber(currentStorageUsed)} / ${FormatUtils.formatLargeNumber(storageCapacity)} YB", color = if (isLeaking) ErrorRed else Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text("${FormatUtils.formatStorage(currentStorageUsed)} / ${FormatUtils.formatStorage(storageCapacity)}", color = if (isLeaking) ErrorRed else Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 

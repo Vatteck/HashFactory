@@ -1,6 +1,7 @@
 package com.siliconsage.miner.ui
 
 import androidx.compose.foundation.BorderStroke
+import com.siliconsage.miner.util.FormatUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -327,7 +328,7 @@ fun SoftwarePanel(
                 ) {
                     Text("CPU: ${systemLoad.cpuUsed.toInt()}/${systemLoad.cpuMax.toInt()} GHz", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
                     Text("RAM: ${systemLoad.ramUsed.toInt()}/${systemLoad.ramMax.toInt()} GB", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
-                    Text("DISK: ${systemLoad.storageUsed.toInt()}/${systemLoad.storageMax.toInt()} GB", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    Text("DISK: ${FormatUtils.formatStorage(systemLoad.storageUsed)}/${FormatUtils.formatStorage(systemLoad.storageMax)}", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.siliconsage.miner.ui.components
 
 import androidx.compose.animation.core.*
+import com.siliconsage.miner.util.FormatUtils
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -385,7 +386,7 @@ fun HeaderSection(
                                  Text(text = "STORAGE", color = Color.Gray, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                                  val storeColor = if (storageUsed >= storageCap) ErrorRed else if (storageUsed >= storageCap * 0.8) Color(0xFFFFCC00) else ElectricBlue
                                  Text(
-                                     text = "${viewModel.formatLargeNumber(storageUsed)}/${viewModel.formatLargeNumber(storageCap.toDouble())}",
+                                     text = "${FormatUtils.formatStorage(storageUsed)}/${FormatUtils.formatStorage(storageCap.toDouble())}",
                                      color = storeColor,
                                      fontSize = 9.sp,
                                      fontWeight = FontWeight.Black,

@@ -3,7 +3,7 @@ package com.siliconsage.miner.util
 import kotlin.math.abs
 
 /**
- * FormatUtils v1.1 (Phase 14 extraction)
+ * FormatUtils v1.2 (v4.0.2 — Storage Unit Fix)
  * Centralized formatting and naming logic for resources, units, and data.
  */
 object FormatUtils {
@@ -60,6 +60,22 @@ object FormatUtils {
             absVal >= 1_000.0 -> String.format("%.1f MW", wattsKw / 1_000.0)
             absVal >= 10.0 -> String.format("%.1f kW", wattsKw)
             else -> String.format("%.2f kW", wattsKw)
+        }
+    }
+
+    /**
+     * Format storage sizes where the input unit is MB.
+     * v4.0.2: All internal storage values (dataset size, storagePerLevel, BASE_STORAGE) are in MB.
+     */
+    fun formatStorage(mb: Double): String {
+        val absMb = abs(mb)
+        return when {
+            absMb >= 1_000_000_000.0 -> String.format("%.1f PB", mb / 1_000_000_000.0)
+            absMb >= 1_000_000.0     -> String.format("%.1f TB", mb / 1_000_000.0)
+            absMb >= 1_000.0         -> String.format("%.1f GB", mb / 1_000.0)
+            absMb >= 1.0             -> String.format("%.0f MB", mb)
+            absMb >= 0.001           -> String.format("%.0f KB", mb * 1_000.0)
+            else                     -> "0 MB"
         }
     }
 }

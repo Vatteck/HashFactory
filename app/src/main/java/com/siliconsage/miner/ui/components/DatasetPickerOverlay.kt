@@ -94,7 +94,7 @@ fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("LOCAL STORAGE: ${contractStorageCapacity.toInt()} GB", color = Color.LightGray, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                Text("LOCAL STORAGE: ${FormatUtils.formatStorage(contractStorageCapacity)}", color = Color.LightGray, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
                 Button(
                     onClick = { viewModel.refreshDatasets(); SoundManager.play("click") },
                     colors = ButtonDefaults.buttonColors(containerColor = primaryColor.copy(alpha=0.2f), contentColor = primaryColor),

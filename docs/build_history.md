@@ -87,3 +87,6 @@
 ## 2026-02-25 21:57 — v3.35.0 (Build 439)
 - Summary: Contract Integration
 
+## 2026-02-27 18:55 — v4.0.1 (Build 442)
+- Summary: FACEMINER Pressure Loop Phase 2
+

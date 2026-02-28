@@ -106,6 +106,7 @@ object SystemLoadEngine {
      */
     private const val BASE_CPU = 1.0   // 1 GHz equivalent
     private const val BASE_RAM = 2.0   // 2 GB
+    private const val BASE_STORAGE = 10.0 // 10 MB base (tiny boot disk)
     
     /**
      * Calculate the full system load snapshot.
@@ -120,7 +121,7 @@ object SystemLoadEngine {
         // ── CAPACITY (hardware provides) ──
         var totalCpu = BASE_CPU
         var totalRam = BASE_RAM
-        var totalStorage = 0.0
+        var totalStorage = BASE_STORAGE
 
         for ((type, count) in upgrades) {
             totalCpu += (cpuCapacity[type] ?: 0.0) * count
