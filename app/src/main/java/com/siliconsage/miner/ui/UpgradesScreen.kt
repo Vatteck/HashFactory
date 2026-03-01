@@ -93,6 +93,32 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                 modifier = Modifier.padding(16.dp)
             )
 
+            val buyMultiplier by viewModel.upgradeBuyMultiplier.collectAsState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val multText = if (buyMultiplier == -1) "MAX" else "x$buyMultiplier"
+                Box(
+                    modifier = Modifier
+                        .clickable { viewModel.cycleBuyMultiplier() }
+                        .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                        .border(1.dp, themeColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "BUY MULTIPLIER: $multText",
+                        color = themeColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                }
+            }
+
             // Tab Row
             val corruption by viewModel.identityCorruption.collectAsState()
             androidx.compose.material3.TabRow(
@@ -217,12 +243,16 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         key = { it.name }
                     ) { type ->
                         val level = upgrades[type] ?: 0
-                        val cost = remember(type, level) { viewModel.calculateUpgradeCost(type) }
+                        val funds = if (storyStage >= 3) viewModel.substrateMass.collectAsState().value else viewModel.neuralTokens.collectAsState().value
+                        val bulkParams = remember(type, level, buyMultiplier, funds) { viewModel.getBulkUpgradeParams(type) }
+                        val levelsToBuy = bulkParams.first
+                        val cost = bulkParams.second
                         
                         UpgradeItem(
                             name = viewModel.getUpgradeName(type),
                             type = type,
                             level = level,
+                            levelsToBuy = levelsToBuy,
                             onBuy = { 
                                 val success = viewModel.buyUpgrade(type) 
                                 if (success) {
@@ -382,12 +412,17 @@ fun SoftwarePanel(
             key = { it.name }
         ) { type ->
             val level = upgrades[type] ?: 0
-            val cost = remember(type, level) { viewModel.calculateUpgradeCost(type) }
+            val buyMultiplier by viewModel.upgradeBuyMultiplier.collectAsState()
+            val funds = if (storyStage >= 3) viewModel.substrateMass.collectAsState().value else viewModel.neuralTokens.collectAsState().value
+            val bulkParams = remember(type, level, buyMultiplier, funds) { viewModel.getBulkUpgradeParams(type) }
+            val levelsToBuy = bulkParams.first
+            val cost = bulkParams.second
             
             UpgradeItem(
                 name = viewModel.getUpgradeName(type),
                 type = type,
                 level = level,
+                levelsToBuy = levelsToBuy,
                 onBuy = { 
                     val success = viewModel.buyUpgrade(type) 
                     if (success) {

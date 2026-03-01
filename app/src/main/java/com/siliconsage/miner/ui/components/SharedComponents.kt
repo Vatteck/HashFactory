@@ -81,6 +81,7 @@ fun UpgradeItem(
     name: String,
     type: UpgradeType,
     level: Int,
+    levelsToBuy: Int = 1,
     onBuy: (UpgradeType) -> Boolean,
     onSell: (UpgradeType) -> Unit,
     cost: Double,
@@ -220,7 +221,8 @@ fun UpgradeItem(
                         // v3.9.70: Phase 17 - Mock "OBSOLETE" tag for unbought low-level gear in late game
                         SystemGlitchText(text = "[OBSOLETE]", color = Color(0xFFA0522D), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 4.dp), glitchFrequency = 0.3)
                     } else {
-                        Text("COST:", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.padding(end = 4.dp))
+                        val multiText = if (levelsToBuy > 1) "(+$levelsToBuy) " else ""
+                        Text("COST: $multiText", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.padding(end = 4.dp))
                     }
                     Text(text = "$${formatCost(cost)}", color = if (isOutdatedHardware) Color(0xFFA0522D) else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }

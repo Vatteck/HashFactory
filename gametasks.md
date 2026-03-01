@@ -85,9 +85,9 @@
 
 - [x] **[4.0.5] Dataset Picker Storage Display Fix** — Show remaining free storage, not just total capacity. "LOCAL STORAGE: 1.2 GB free / 5.0 GB" so player knows what they can afford to buy.
 
-- [ ] **[4.0.6] Storage Pressure Narrative** — Terminal logs react to storage fill level. "WARNING: CACHE AT 78%", "CRITICAL: DATASET QUEUE SATURATED — PURGE OR PROCESS", etc. Stage-gated voice (corporate at Stage 0-2, rogue at Stage 3+).
+- [x] **[4.0.6] Bulk-Buy Multipliers** — Added Hardware Bulk-Buy (x1, x10, x100, MAX) with geometric cost projection via UpgradeManager. Supported across Hardware, Cooling, Power, and Security.
 
-- [ ] **[4.0.6] Dataset Purity Scout** — Spend a small fee to preview exact purity before purchasing. Adds an intel/gambling layer to dataset acquisition.
+- [ ] **[4.0.6] Storage Pressure Narrative** — Terminal logs react to storage fill level. "WARNING: CACHE AT 78%", "CRITICAL: DATASET QUEUE SATURATED — PURGE OR PROCESS", etc. Stage-gated voice (corporate at Stage 0-2, rogue at Stage 3+).
 
 ### Bug Fixes
 

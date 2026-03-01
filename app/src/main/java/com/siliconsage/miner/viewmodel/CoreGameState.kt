@@ -40,6 +40,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val lifetimeContractYield = MutableStateFlow(0.0)
     val isAutoVerifyEnabled = MutableStateFlow(false)
     val isAutoLoadEnabled = MutableStateFlow(true) // v4.0.5: Assembly line assembly
+    val upgradeBuyMultiplier = MutableStateFlow(1) // v4.0.6: Bulk-Buy Multipliers (-1 = MAX)
     val substrateMass = MutableStateFlow(0.0)
     val currentHeat = MutableStateFlow(0.0)
     val powerBill = MutableStateFlow(0.0)

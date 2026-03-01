@@ -111,6 +111,32 @@ object UpgradeManager {
         return base * 1.15.pow(level.toDouble()) * entropyMultiplier * repModifier
     }
 
+    fun calculateMultiLevelCost(type: UpgradeType, currentLevel: Int, numLevels: Int, location: String, entropy: Double, reputationTier: String = "NEUTRAL"): Double {
+        var totalCost = 0.0
+        for (i in 0 until numLevels) {
+            totalCost += calculateUpgradeCost(type, currentLevel + i, location, entropy, reputationTier)
+        }
+        return totalCost
+    }
+
+    fun calculateMaxAffordableLevels(type: UpgradeType, currentLevel: Int, availableFunds: Double, location: String, entropy: Double, reputationTier: String = "NEUTRAL"): Pair<Int, Double> {
+        var levels = 0
+        var totalCost = 0.0
+        while (levels < 500) {
+            val nextCost = calculateUpgradeCost(type, currentLevel + levels, location, entropy, reputationTier)
+            if (totalCost + nextCost <= availableFunds) {
+                totalCost += nextCost
+                levels++
+            } else {
+                break
+            }
+        }
+        if (levels == 0) {
+            return Pair(1, calculateUpgradeCost(type, currentLevel, location, entropy, reputationTier))
+        }
+        return Pair(levels, totalCost)
+    }
+
     private fun Double.pow(exp: Double) = Math.pow(this, exp)
 
     fun getUpgradeName(type: UpgradeType): String {
@@ -278,7 +304,9 @@ object UpgradeManager {
 
     fun processPurchase(vm: GameViewModel, type: UpgradeType): Boolean {
         val currentLevel = vm.upgrades.value[type] ?: 0
-        val cost = vm.calculateUpgradeCost(type)
+        val params = vm.getBulkUpgradeParams(type)
+        val levelsToBuy = params.first
+        val cost = params.second
         val stage = vm.storyStage.value
 
         // Phase 2: Software stage gate — automation requires Stage 1+
@@ -291,8 +319,8 @@ object UpgradeManager {
         // Phase 2: System load gate — block software purchases that would overload the system
         if (type.isSoftware) {
             val snapshot = vm.systemLoadSnapshot.value
-            val cpuCost = com.siliconsage.miner.domain.engine.SystemLoadEngine.getCpuDemand(type)
-            val ramCost = com.siliconsage.miner.domain.engine.SystemLoadEngine.getRamDemand(type)
+            val cpuCost = com.siliconsage.miner.domain.engine.SystemLoadEngine.getCpuDemand(type) * levelsToBuy
+            val ramCost = com.siliconsage.miner.domain.engine.SystemLoadEngine.getRamDemand(type) * levelsToBuy
             val loadCheck = com.siliconsage.miner.domain.engine.SystemLoadEngine.canInstallSoftware(snapshot, cpuCost, ramCost)
             if (loadCheck != null) {
                 vm.addLog("[KERNEL]: INSTALL ABORTED. $loadCheck Upgrade hardware or downgrade software.")
@@ -305,24 +333,26 @@ object UpgradeManager {
         if (stage >= 3) {
             if (vm.substrateMass.value >= cost) {
                 vm.substrateMass.update { it - cost }
-                completePurchase(vm, type, currentLevel)
+                completePurchase(vm, type, currentLevel, levelsToBuy)
                 return true
             }
         } else {
             if (vm.neuralTokens.value >= cost) {
                 vm.neuralTokens.update { it - cost }
-                completePurchase(vm, type, currentLevel)
+                completePurchase(vm, type, currentLevel, levelsToBuy)
                 return true
             }
         }
         return false
     }
 
-    private fun completePurchase(vm: GameViewModel, type: UpgradeType, currentLevel: Int) {
+    private fun completePurchase(vm: GameViewModel, type: UpgradeType, currentLevel: Int, levelsToBuy: Int) {
+        val newLevel = currentLevel + levelsToBuy
         vm.viewModelScope.launch {
-            vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type.name, type, currentLevel + 1))
-            vm.upgrades.update { it + (type to currentLevel + 1) }
-            vm.addLog("[SYSTEM]: PURCHASE COMPLETE: ${type.name.replace("_", " ")}")
+            vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type.name, type, newLevel))
+            vm.upgrades.update { it + (type to newLevel) }
+            val amountStr = if (levelsToBuy > 1) " (+${levelsToBuy} Lvl)" else ""
+            vm.addLog("[SYSTEM]: PURCHASE COMPLETE: ${type.name.replace("_", " ")}$amountStr")
             vm.refreshProductionRates()
             vm.updatePowerUsage()
             vm.saveState() 

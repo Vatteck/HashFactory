@@ -1,6 +1,28 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [v4.0.7] - 2026-02-28
+### Added
+- **Storage Pressure Narrative**: The local terminal now reacts to local cache utilization.
+- **Stage-Gated Dialogue**: Tone of storage warnings shifts from Corporate (Foreman Thorne) to Rogue AI/GTC Panic based on `storyStage`.
+- Dynamic threshold triggers at 80%, 95%, and 100% saturation.
+
+## [4.0.6] - 2026-02-28
+### Added
+- **Bulk-Buy Multipliers:** Players can now toggle upgrade purchases in x1, x10, x100, and MAX quantities.
+- **Geometric Scaling:** True geometric geometric cost projection allows buying up to 500 levels instantly.
+- **Hardware UI Revisions:** Upgrades screen surfaces `BUY MULTIPLIER` toggle dynamically calculating level costs, with software installations appropriately factoring into CPU/RAM constraints linearly per install.
+
+## [4.0.5] - 2026-02-28
+### Processing & Storage Hygiene
+**Refining the dataset system with auto-queueing and storage pressure.**
+
+- **Auto-Queue Processing**: Added `isAutoLoadEnabled` toggle to the Software Panel. When enabled, completed datasets automatically load the next stored dataset from the cache for a seamless assembly-line experience.
+- **Dataset Purge**: Players can now purge stored datasets from the "LOCAL CACHE" in the Dataset Picker for a 20% Neural Token refund, providing an escape valve for over-purchasing.
+- **Storage Overflow Consequences**: Surveillance Harvesters now actively monitor storage capacity. If storage reaches 100%, harvesters suspend operation and log an "ALARM — STORAGE SATURATED" warning to the terminal to prevent silent data loss.
+- **Storage UI Fix**: The Dataset Picker now explicitly displays the remaining free storage instead of just total capacity, helping players know what they can afford to hold.
+- **GameViewModel & State Sync**: Synced new toggle flags (`isAutoLoadEnabled`) to `CoreGameState` and wired the purge wrapper appropriately to `DatasetManager`.
+
 ## [4.0.3] - 2026-02-27
 ### Dataset Inventory & Storage Pressure Loop
 

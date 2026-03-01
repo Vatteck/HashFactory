@@ -253,6 +253,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 // v3.12.6: GTC Billing Cycle
                 BillingService.processUtilityBilling(this@GameViewModel)
 
+                // v4.0.7: Storage Pressure Narrative checks (tick is 1.0s)
+                StorageNarrativeEngine.tick(this@GameViewModel, 1.0)
+
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
                 addSubnetChatter()
                 NarrativeService.deliverNextNarrativeItem(this@GameViewModel)
@@ -532,6 +535,32 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
 
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value, computeHeadroomBonus.value)
+    
+    fun cycleBuyMultiplier() {
+        upgradeBuyMultiplier.update { current ->
+            when (current) {
+                1 -> 10
+                10 -> 100
+                100 -> -1
+                else -> 1
+            }
+        }
+        SoundManager.play("click")
+    }
+
+    fun getBulkUpgradeParams(type: UpgradeType): Pair<Int, Double> {
+        val currentLevel = upgrades.value[type] ?: 0
+        val mult = upgradeBuyMultiplier.value
+        val funds = if (storyStage.value >= 3) substrateMass.value else neuralTokens.value
+
+        return if (mult > 0) {
+            val totalCost = UpgradeManager.calculateMultiLevelCost(type, currentLevel, mult, currentLocation.value, entropyLevel.value, reputationTier.value)
+            Pair(mult, totalCost)
+        } else {
+            UpgradeManager.calculateMaxAffordableLevels(type, currentLevel, funds, currentLocation.value, entropyLevel.value, reputationTier.value)
+        }
+    }
+
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
 
     fun toggleOverclock() {
