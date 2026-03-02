@@ -1,11 +1,10 @@
 {
-  "version": "3.29.0",
-  "build": 434,
-  "date": "2026-02-24",
+  "version": "4.0.4",
+  "build": 435,
+  "date": "2026-03-01",
   "changelog": [
-    "6855c14 feat: Add changelog entries for rebalanced narrative choices, scaled raid consequences, and adjusted aquifer depletion mechanics.",
-    "0281dc3 refactor: Decouple aquifer depletion from water draw and adjust resource gains/costs in narrative choices to be percentage-based or reduced."
+    "340bdc2 Update README.md"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v3.29.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v3.29.0/MINER_3.29.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v4.0.4",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v4.0.4/MINER_4.0.4.apk"
 }
