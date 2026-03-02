@@ -81,3 +81,6 @@
 
 ## 2026-02-24 14:48 — v3.26.1 (Build 429)
 - Summary: UI Polish Hotfix
+## 2026-03-01 23:11 — v4.0.4 (Build 435)
+- Summary: Rollback to pre-contracts stable baseline
+
