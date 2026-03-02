@@ -7,3 +7,9 @@ ship:
 
 smoke:
 	./scripts/release-smoke.sh
+
+verify:
+	./scripts/release-verify.sh $(VERSION)
+
+rollback:
+	./scripts/release-rollback.sh $(TAG)

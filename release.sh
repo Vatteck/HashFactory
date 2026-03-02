@@ -18,12 +18,14 @@ DRY_RUN=false
 FORCE_BRANCH=false
 ALLOW_DIRTY=false
 YES_PURGE=false
+CI_MODE=false
 KEEP_RELEASES=2
 for arg in "$@"; do
     [[ "$arg" == "--dry-run" ]] && DRY_RUN=true
     [[ "$arg" == "--force-branch" ]] && FORCE_BRANCH=true
     [[ "$arg" == "--allow-dirty" ]] && ALLOW_DIRTY=true
     [[ "$arg" == "--yes-purge" ]] && YES_PURGE=true
+    [[ "$arg" == "--ci" ]] && CI_MODE=true
     if [[ "$arg" =~ ^--keep=([0-9]+)$ ]]; then
         KEEP_RELEASES="${BASH_REMATCH[1]}"
     fi
@@ -34,7 +36,7 @@ SUMMARY="${2:-}"
 
 if [ -z "$VERSION" ]; then
     echo -e "${RED}Error: Version required${NC}"
-    echo "Usage: ./release.sh <version> [summary] [--dry-run] [--force-branch] [--keep=N] [--allow-dirty] [--yes-purge]"
+    echo "Usage: ./release.sh <version> [summary] [--dry-run] [--force-branch] [--keep=N] [--allow-dirty] [--yes-purge] [--ci]"
     exit 1
 fi
 
@@ -42,6 +44,14 @@ VERSION="${VERSION#v}"
 
 if [ "$DRY_RUN" = true ]; then
     echo -e "${YELLOW}[DRY RUN] No commits, tags, or pushes will be made.${NC}"
+fi
+
+if [ "$CI_MODE" = true ]; then
+    YES_PURGE=true
+    if [ "$ALLOW_DIRTY" = true ]; then
+        echo -e "${RED}Error: --ci cannot be used with --allow-dirty.${NC}"
+        exit 1
+    fi
 fi
 
 # --- Environment ---
