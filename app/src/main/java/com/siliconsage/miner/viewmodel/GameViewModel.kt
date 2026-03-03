@@ -39,7 +39,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (msg == lastNotificationContent && (now - lastNotificationTime) < 1000) return
         lastNotificationTime = now
         lastNotificationContent = msg
-        dispatchNotification(msg)
+        viewModelScope.launch {
+            terminalNotification.emit(msg)
+        }
     }
 
     val subnetService = SubnetService(
@@ -1011,12 +1013,26 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         saveState()
     }
 
+    fun loadStoredDataset(datasetId: String) {
+        if (activeDataset.value != null) {
+            addLogPublic("[DATASET]: ACTIVE DATASET DETECTED. Complete or abort current batch first.")
+            SoundManager.play("error")
+            return
+        }
+
+        val dataset = storedDatasets.value.firstOrNull { it.id == datasetId } ?: return
+        storedDatasets.value = storedDatasets.value.filterNot { it.id == datasetId }
+        DatasetManager.loadDataset(this, dataset)
+        saveState()
+    }
+
     fun voidDataset() {
         if (activeDataset.value != null) {
             addLogPublic("[SYSTEM]: DATASET VOIDED. DATA LOSS RECORDED.")
             SoundManager.play("error")
             activeDataset.value = null
             activeDatasetNodes.value = emptyList()
+            AutoClickerEngine.reset()
             com.siliconsage.miner.util.DatasetManager.recalcStorageUsed(this)
         }
     }
