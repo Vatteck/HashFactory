@@ -2,6 +2,7 @@ package com.siliconsage.miner.util
 
 import com.siliconsage.miner.data.Dataset
 import com.siliconsage.miner.data.DatasetNode
+import com.siliconsage.miner.domain.engine.AutoClickerEngine
 import com.siliconsage.miner.util.FormatUtils
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.flow.update
@@ -243,6 +244,7 @@ object DatasetManager {
 
         vm.activeDatasetNodes.value = nodes
         vm.activeDataset.value = dataset.copy(isActive = true, progress = 0.0)
+        AutoClickerEngine.reset()
         recalcStorageUsed(vm)
 
         vm.addLogPublic("[DATASET]: ▶ ${dataset.name} LOADED. Grid initialized. (Purity: ${(dataset.purity * 100).toInt()}% | Size: ${FormatUtils.formatStorage(dataset.size)})")
@@ -291,8 +293,7 @@ object DatasetManager {
     private fun completeDataset(vm: GameViewModel, dataset: Dataset) {
         vm.activeDataset.value = null
         vm.activeDatasetNodes.value = emptyList()
-        vm.activeDataset.value = null
-        vm.activeDatasetNodes.value = emptyList()
+        AutoClickerEngine.reset()
         vm.contractsCompleted.update { it + 1 }
         recalcStorageUsed(vm)
 

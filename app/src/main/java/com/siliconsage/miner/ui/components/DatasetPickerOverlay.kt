@@ -87,9 +87,12 @@ fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
                     Spacer(modifier = Modifier.height(8.dp))
                     LazyColumn(modifier = Modifier.weight(0.4f).fillMaxWidth()) {
                         items(storedDatasets, key = { it.id }) { dataset ->
-                            CacheCard(dataset, primaryColor) {
-                                viewModel.purgeStoredDataset(dataset.id)
-                            }
+                            CacheCard(
+                                dataset = dataset,
+                                primaryColor = primaryColor,
+                                onLoad = { viewModel.loadStoredDataset(dataset.id) },
+                                onPurge = { viewModel.purgeStoredDataset(dataset.id) }
+                            )
                         }
                     }
                 }
@@ -178,7 +181,12 @@ fun DatasetCard(dataset: Dataset, playerTokens: Double, storageCapacity: Double,
 }
 
 @Composable
-fun CacheCard(dataset: Dataset, primaryColor: Color, onPurge: () -> Unit) {
+fun CacheCard(
+    dataset: Dataset,
+    primaryColor: Color,
+    onLoad: () -> Unit,
+    onPurge: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -195,14 +203,25 @@ fun CacheCard(dataset: Dataset, primaryColor: Color, onPurge: () -> Unit) {
             Spacer(modifier = Modifier.height(6.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("YIELD: ≈${FormatUtils.formatLargeNumber(dataset.expectedYield)} NT", color = NeonGreen.copy(alpha=0.7f), fontSize = 10.sp)
-                Button(
-                    onClick = onPurge,
-                    colors = ButtonDefaults.buttonColors(containerColor = ErrorRed.copy(alpha=0.15f), contentColor = ErrorRed),
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.height(24.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
-                ) {
-                    Text("PURGE (20%)", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Button(
+                        onClick = onLoad,
+                        colors = ButtonDefaults.buttonColors(containerColor = primaryColor.copy(alpha = 0.15f), contentColor = primaryColor),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.height(24.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                    ) {
+                        Text("LOAD", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Button(
+                        onClick = onPurge,
+                        colors = ButtonDefaults.buttonColors(containerColor = ErrorRed.copy(alpha=0.15f), contentColor = ErrorRed),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.height(24.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                    ) {
+                        Text("PURGE (20%)", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
