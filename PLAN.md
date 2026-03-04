@@ -89,17 +89,24 @@ The manual compute button becomes a "mine the current dataset" button. If no dat
 - **Corruption Spread**: When a corrupt node is tapped, adjacent nodes have a 20% chance of also corrupting. Creates minesweeper-like risk assessment.
 - **Dataset Modifiers**: Random modifiers on higher-tier datasets: "ENCRYPTED" (nodes hidden until adjacent node harvested), "VOLATILE" (2x payout but 2x penalty), "COMPRESSED" (half grid size, double density).
 
-#### Change 5: Auto-Clicker as Throughput, Not Replacement
+#### Change 5: Auto-Clicker as the Endgame Fantasy
 
-**Current:** Auto-clicker speed + accuracy fully replaces manual play.
+**Current:** Auto-clicker speed + accuracy scales linearly. It replaces manual play too early and without fanfare.
 
-**New:** Auto-clicker processes nodes but:
-- Cannot earn chain bonuses (only sequential manual taps chain)
-- Runs at fixed accuracy (no improvement beyond base) — manual play is always 100% accurate
-- Speed scales with hardware tier, not its own upgrade track
-- Auto-clicker is the "baseline income" while manual play is the "active multiplier"
+**New:** The auto-clicker is the *graduation mechanic*. It should feel like building a machine that eventually surpasses you:
 
-This means: auto-clicker keeps datasets flowing when you're idle, but active play is always 2-3x more profitable. The game rewards engagement without punishing absence.
+- **Early game (Speed 1-3):** Slow, dumb. 50-65% accuracy. Player is faster and smarter. Auto-clicker is supplemental — it picks off nodes while you do the real work.
+- **Mid game (Speed 4-7):** Catching up. 70-85% accuracy. Auto-clicker handles routine datasets while you focus on the hard/modified ones. Manual chain bonuses still give you an edge.
+- **Late game (Speed 8-12):** Faster than human. 90-99% accuracy. Processing multiple nodes per second. The player watches their automation *rip* through datasets and feels the payoff of their investment. Manual play literally can't keep up.
+- **Endgame (Speed 13+):** Absurd throughput. Auto-loads and chews through dataset queues. The player's role shifts from "miner" to "operations manager" — choosing which datasets to buy, managing storage, optimizing the pipeline. You built something that outgrew you.
+
+**Mechanical progression:**
+- Speed still scales at 0.5 taps/sec per level, but accuracy curve steepens: `50% + 4% per level` (reaches 98% at level 12)
+- Chain bonuses apply to auto-clicker too at Speed 8+ (it's gotten smart enough to sequence nodes)
+- At Speed 10+, auto-clicker can handle dataset modifiers (ENCRYPTED, VOLATILE) that previously required manual attention
+- **Cost curve is steep** — Speed 8+ upgrades cost as much as a tier of hardware. This is a late-game investment, not an early skip.
+
+The emotional arc: "I have to do everything myself" → "my automation is helping" → "holy shit it's faster than me" → "I built something that doesn't need me anymore" (narratively resonant for a game about a rogue AI).
 
 #### Change 6: The Conversion Rate Becomes "Market Price"
 
@@ -156,7 +163,7 @@ The `MarketManager` news events now feel consequential: "GTC DATA EMBARGO — DA
 ### Phase 2: Dataset Loop Tightening
 6. Add chain bonus mechanic to `DatasetManager.processNodeTap()`
 7. Add decay nodes (timer-based corruption) to dataset generation
-8. Nerf auto-clicker: remove chain bonus eligibility, cap accuracy scaling
+8. Rework auto-clicker progression curve: steep cost scaling, accuracy steepening, chain bonus eligibility at Speed 8+, modifier handling at Speed 10+
 9. Add dataset modifiers system (ENCRYPTED, VOLATILE, COMPRESSED)
 
 ### Phase 3: Market Integration
@@ -183,7 +190,7 @@ The `MarketManager` news events now feel consequential: "GTC DATA EMBARGO — DA
 
 2. **Clear mental model.** "I mine data to earn tokens. I spend tokens on hardware. Hardware produces computing power. More power unlocks harder data. Harder data pays more tokens." A 5-year-old could understand this loop.
 
-3. **Active play rewarded, not required.** Auto-clicker keeps the baseline flowing. Manual play with chain bonuses earns 2-3x. The game respects your time either way.
+3. **Automation as the endgame fantasy.** Early: you grind manually. Mid: auto-clicker helps. Late: it surpasses you. The emotional payoff of watching your machine outpace your own hands is the reward for investing in it — and narratively perfect for a rogue AI story.
 
 4. **Narrative alignment.** You're literally a rogue AI mining data for survival resources. The "Faceminer" name makes sense now — you're mining faces/data as your primary activity, not as a side hustle.
 
