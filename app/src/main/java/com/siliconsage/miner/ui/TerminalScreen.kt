@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.siliconsage.miner.ui.components.ActiveCommandBuffer
 import com.siliconsage.miner.ui.components.TerminalControls
 import com.siliconsage.miner.ui.components.TerminalHeader
 import com.siliconsage.miner.ui.components.TerminalLogs
@@ -91,16 +92,22 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             }
 
             if (mode == "DATAMINER") {
-                Box(modifier = Modifier.weight(0.82f).fillMaxWidth()) {
+                // Grid takes maximum space
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     com.siliconsage.miner.ui.components.DatasetGrid(viewModel, primaryColor)
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                // Thin log strip — latest messages only
                 Box(
-                    modifier = Modifier.weight(0.18f).fillMaxWidth()
-                        .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-                        .border(BorderStroke(1.5.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.85f)), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                    modifier = Modifier.height(44.dp).fillMaxWidth()
+                        .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
+                        .border(BorderStroke(1.dp, if (currentHeat > 90.0) ErrorRed else primaryColor.copy(alpha = 0.5f)), RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
                 ) {
                     TerminalLogs(viewModel, primaryColor, showCursor)
+                }
+                // Pacman buffer — tracks dataset harvest progress
+                val cmdShape = RoundedCornerShape(8.dp)
+                Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f), cmdShape).border(BorderStroke(1.dp, primaryColor.copy(alpha = 0.55f)), cmdShape)) {
+                    ActiveCommandBuffer(viewModel, primaryColor)
                 }
             } else {
                 Box(
