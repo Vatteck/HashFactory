@@ -366,6 +366,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
     }
 
+    // v5.0: Legacy click handler — kept for I/O and SUBNET tabs only.
+    // No longer generates NT. Generates FLOPS (computational throughput) + heat + risk.
+    // Dataset node taps are the primary gameplay loop and income source.
     fun onManualClick() {
         val now = System.currentTimeMillis()
         if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
@@ -375,11 +378,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
         val p = calculateClickPower()
-        // v4.0.0: Faceminer Phase 1 - Passive micro-drip generation
+        // FLOPS = computational throughput, not currency
         flops.update { it + p }
-        val microNeur = p * conversionRate.value * 0.10 // 10% of what an exchanged rate would be
-        if (microNeur > 0) updateNeuralTokens(microNeur)
-        
+
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         if (storyStage.value >= 3) substrateMass.update { it + (p * 0.01) }
         val cur = clickBufferProgress.value + 0.025f
@@ -744,6 +745,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun tapDatasetNode(nodeId: Int) {
         DatasetManager.processNodeTap(this, nodeId)
     }
+    // v5.0: Public accessors for DatasetManager to drive UI events and story gates
+    fun emitManualClickEvent() { viewModelScope.launch { manualClickEvent.emit(Unit) } }
+    fun triggerAwakeningPublic() { triggerAwakeningSequence() }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }

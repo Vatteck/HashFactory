@@ -257,10 +257,10 @@ object DatasetManager {
         val nodes = vm.activeDatasetNodes.value.toMutableList()
         val nodeIndex = nodes.indexOfFirst { it.id == nodeId }
         if (nodeIndex == -1) return
-        
+
         val node = nodes[nodeIndex]
         if (node.isHarvested || node.isCorruptTapped) return
-        
+
         if (node.isValid) {
             nodes[nodeIndex] = node.copy(isHarvested = true)
             // Grant payout
@@ -276,15 +276,55 @@ object DatasetManager {
             SoundManager.play("error")
             HapticManager.vibrateError()
         }
-        
+
         vm.activeDatasetNodes.value = nodes
-        
+
+        // ── Computational side effects (v5.0 — node taps ARE the work) ──
+
+        // Heat: processing data heats hardware (+0.3 per tap, same as 1 level of auto-harvest)
+        vm.currentHeat.update { (it + 0.3).coerceAtMost(100.0) }
+
+        // FLOPS: each tap is computation (feeds quota system, not currency)
+        val computePower = vm.calculateClickPower()
+        vm.flops.update { it + computePower }
+
+        // Substrate mass accrual (Stage 3+)
+        if (vm.storyStage.value >= 3) {
+            vm.substrateMass.update { it + (computePower * 0.01) }
+        }
+
+        // Detection risk (Stage 2+ — accessing data draws attention)
+        if (vm.storyStage.value >= 2) {
+            val riskDelta = if (vm.isFalseHeartbeatActive.value) 0.0 else 0.1
+            vm.detectionRisk.update { (it + riskDelta).coerceIn(0.0, 100.0) }
+        }
+
+        // Click interval tracking (drives clickSpeedLevel for quota system)
+        val now = System.currentTimeMillis()
+        if (vm.lastClickTime > 0) vm.clickIntervals.add(now - vm.lastClickTime)
+        vm.lastClickTime = now
+
+        // Hex display update
+        vm.activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase()
+
+        // Subnet chatter chance
+        if (Random.nextFloat() < 0.05f) vm.addSubnetChatter()
+
+        // UI pulse event (drives header jolt, HUD animations)
+        vm.emitManualClickEvent()
+
+        // Story gate: Stage 1→2 awakening trigger
+        if (vm.substrateSaturation.value >= 1.0 && vm.storyStage.value == 1) {
+            vm.triggerAwakeningPublic()
+            return
+        }
+
         // Check for completion
         val validNodesTarget = nodes.count { it.isValid }
         val harvestedCount = nodes.count { it.isHarvested }
-        
+
         vm.activeDataset.value = dataset.copy(progress = harvestedCount.toDouble() / validNodesTarget.coerceAtLeast(1))
-        
+
         if (harvestedCount >= validNodesTarget) {
             completeDataset(vm, dataset)
         }
