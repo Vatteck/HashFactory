@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.siliconsage.miner.ui.components.ActiveCommandBuffer
 import com.siliconsage.miner.ui.components.ManualComputeButton
 import com.siliconsage.miner.ui.components.TerminalControls
 import com.siliconsage.miner.ui.components.TerminalHeader
@@ -104,8 +105,11 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                 ) {
                     TerminalLogs(viewModel, primaryColor, showCursor)
                 }
-                // Compute button on DATAMINER tab
-                Spacer(modifier = Modifier.height(2.dp))
+                // Pacman buffer + compute button on DATAMINER tab
+                val cmdShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f), cmdShape).border(BorderStroke(1.dp, primaryColor.copy(alpha = 0.55f)), cmdShape)) {
+                    ActiveCommandBuffer(viewModel, primaryColor)
+                }
                 ManualComputeButton(viewModel, primaryColor)
             } else {
                 Box(

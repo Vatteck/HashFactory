@@ -107,27 +107,6 @@ fun DatasetGrid(viewModel: GameViewModel, primaryColor: Color) {
                 }
             }
 
-            // Progress bar — thin, shows harvest completion
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(3.dp)
-                    .background(Color.DarkGray.copy(alpha = 0.4f), RoundedCornerShape(1.dp))
-            ) {
-                val progressFraction = ds.progress.toFloat().coerceIn(0f, 1f)
-                val progressColor = when {
-                    progressFraction >= 0.9f -> NeonGreen
-                    progressFraction >= 0.5f -> primaryColor
-                    else -> primaryColor.copy(alpha = 0.7f)
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(progressFraction)
-                        .background(progressColor, RoundedCornerShape(1.dp))
-                )
-            }
-
             Spacer(modifier = Modifier.height(4.dp))
 
             // Dynamic grid — compute columns based on available space and node count
