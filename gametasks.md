@@ -1,4 +1,4 @@
-# gametasks.md — SUBSTRATE:Miner Development Backlog
+# gametasks.md — Hash Factory / SUBSTRATE:Miner Development Backlog
 
 ## 🔴 Critical (blocking)
 - [ ] **Pixel Fold ADB** — Currently stable on `192.168.50.116:34175`. Check for drift.
@@ -97,6 +97,10 @@ Operating rule: read the plan before economy work, do one phase at a time, compi
 
 ### v4.1.x Economy Rail Status
 - [x] **100% complete** — Geometric bulk-buy, milestone multipliers, FLOPS label decision, header storage ratio, buffer review, dataset sidecar reward, and no-prestige-change gate are locked.
+
+### Branding
+- [x] **[4.1.x] Public title mask** — Android launcher title is now `Hash Factory`; `SUBSTRATE:Miner` remains the protocol/reveal identity.
+- [x] **[4.1.x] Main action label** — Default manual compute action is now `> COMPUTE HASH.exe`.
 
 ### Parking lot — do not implement unless explicitly promoted
 - [ ] Derivative daemon/process/thread generator chain.
