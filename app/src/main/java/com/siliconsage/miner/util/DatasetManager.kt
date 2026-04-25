@@ -337,7 +337,12 @@ object DatasetManager {
         vm.contractsCompleted.update { it + 1 }
         recalcStorageUsed(vm)
 
-        vm.addLogPublic("[SYSTEM]: ✓ ${dataset.name} DATABLOCK RESOLVED.")
+        val burstFlops = (vm.flopsProductionRate.value * 60.0).coerceAtLeast(0.0)
+        if (burstFlops > 0.0) {
+            vm.debugAddFlops(burstFlops)
+        }
+
+        vm.addLogPublic("[SYSTEM]: ✓ ${dataset.name} DATABLOCK RESOLVED. TIME-WARP BURST +${vm.formatLargeNumber(burstFlops)} FLOPS.")
         SoundManager.play("success")
         HapticManager.vibrateClick()
 

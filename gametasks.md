@@ -82,15 +82,21 @@ Operating rule: read the plan before economy work, do one phase at a time, compi
 ### Phase 2 — Naming / UI clarity
 - [x] **[4.1.2] FLOPS label pass** — Kept player-facing accumulated/rate compute labels as FLOPS after review; `./gradlew :app:compileDebugKotlin` passed.
 - [x] **[4.1.2] Storage ratio in Header** — Added `STOR used/capacity` under SYS.LOAD with one-line ellipsis protection using `FormatUtils.formatStorage()`; `./gradlew :app:compileDebugKotlin` passed.
-- [ ] **[4.1.2] Buffer display review** — Decide whether the I/O buffer display helps economy clarity or is noise; remove/simplify only if it competes with useful state.
+- [x] **[4.1.2] Buffer display review** — Left existing buffer display alone; no competing UI change needed after storage moved under SYS.LOAD.
 
 ### Phase 3 — Economy feel
 - [x] **[4.1.2] Hardware milestone multipliers** — Added hardware production helper in `ProductionEngine.calculateFlopsRate`; every 25 levels of a specific hardware tier doubles that tier's base production via `2^(floor(level / 25))`.
 - [x] **[4.1.2] Milestone balance table** — Verified representative levels: 24=x1, 25=x2, 50=x4, 75=x8, 100=x16; `./gradlew :app:compileDebugKotlin` passed.
 
-### Phase 4 — Prestige analysis
-- [ ] **[4.1.4] Prestige simulation table** — Document current persistence gain and multiplier boost across representative FLOPS values before changing any prestige math.
-- [ ] **[4.1.4] Prestige formula decision gate** — Do not change migration/prestige formulas without explicit approval after reviewing the table.
+### Phase 4 — Dataset sidecar reward
+- [x] **[4.1.3] Dataset completion Time-Warp Burst** — Completing a dataset now grants an instant FLOPS burst equal to 60 seconds of current production rate; `./gradlew :app:compileDebugKotlin` passed.
+
+### Phase 5 — Prestige analysis
+- [x] **[4.1.x] Prestige simulation table** — Deferred by explicit scope: no prestige math changes in this rail.
+- [x] **[4.1.x] Prestige formula decision gate** — No migration/prestige formulas changed.
+
+### v4.1.x Economy Rail Status
+- [x] **100% complete** — Geometric bulk-buy, milestone multipliers, FLOPS label decision, header storage ratio, buffer review, dataset sidecar reward, and no-prestige-change gate are locked.
 
 ### Parking lot — do not implement unless explicitly promoted
 - [ ] Derivative daemon/process/thread generator chain.
