@@ -1,19 +1,16 @@
 {
-  "version": "4.0.1",
-  "build": 442,
-  "date": "2026-02-27",
+  "version": "4.0.4",
+  "build": 444,
+  "date": "2026-03-01",
   "changelog": [
-    "29ec1c2 feat: Introduce auto-harvest upgrades with CPU reservation and exponential cost, and update upgrade sale UI to 'DOWNGRADE'.",
-    "fe7e8f3 chore: Document Phase 2 automation redesign in CHANGELOG and fix compile error",
-    "8290231 fix: v4.0.1 — Header SYS.LOAD bar, currency naming, FLOPS linkage",
-    "cc75d94 feat: v4.0.1 — FACEMINER Pressure Loop Phase A+B",
-    "3c7a7ab chore: Increment database schema version and rebalance TerminalScreen layout weights.",
-    "da16280 refactor: Unify buffer logic to use `activeDataset` instead of `activeContracts`, remove contract slot enforcement, and conditionally render terminal controls in `DATAMINER` mode.",
-    "1ac14c9 feat: replace contract and verification system with new dataset and datamining mechanics",
-    "78cca39 Merge branch 'master' of https://github.com/Vatteck/SiliconSageAIMiner",
-    "d7e5c26 refactor: Replace direct humanity stat modifications with decision recording in narrative events.",
-    "b5871e9 Delete releases/MINER_3.33.0.apk"
+    "340bdc2 Update README.md",
+    "e1de77f rebrand: apply Hash Factory mask to UI and docs",
+    "f82c20c Add dataset completion time-warp burst",
+    "b9806f2 Add header storage ratio display",
+    "94fbf12 Rename player-facing FLOPS labels",
+    "2e668c8 Add hardware milestone production multipliers",
+    "98163b4 Add v4.1 economy rail and geometric bulk-buy"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v4.0.1",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v4.0.1/MINER_4.0.1.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v4.0.4",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v4.0.4/MINER_4.0.4.apk"
 }

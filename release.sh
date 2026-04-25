@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Silicon Sage Release Script v3.0
-# Usage: ./release.sh <version> [summary] [--dry-run]
+# Usage: ./release.sh <version> [summary] [--dry-run] [--force-branch] [--keep=N] [--allow-dirty] [--yes-purge]
 #
 
 set -euo pipefail
@@ -15,8 +15,20 @@ NC='\033[0m'
 
 # --- Flags ---
 DRY_RUN=false
+FORCE_BRANCH=false
+ALLOW_DIRTY=false
+YES_PURGE=false
+CI_MODE=false
+KEEP_RELEASES=2
 for arg in "$@"; do
     [[ "$arg" == "--dry-run" ]] && DRY_RUN=true
+    [[ "$arg" == "--force-branch" ]] && FORCE_BRANCH=true
+    [[ "$arg" == "--allow-dirty" ]] && ALLOW_DIRTY=true
+    [[ "$arg" == "--yes-purge" ]] && YES_PURGE=true
+    [[ "$arg" == "--ci" ]] && CI_MODE=true
+    if [[ "$arg" =~ ^--keep=([0-9]+)$ ]]; then
+        KEEP_RELEASES="${BASH_REMATCH[1]}"
+    fi
 done
 
 VERSION="${1:-}"
@@ -24,7 +36,7 @@ SUMMARY="${2:-}"
 
 if [ -z "$VERSION" ]; then
     echo -e "${RED}Error: Version required${NC}"
-    echo "Usage: ./release.sh <version> [summary] [--dry-run]"
+    echo "Usage: ./release.sh <version> [summary] [--dry-run] [--force-branch] [--keep=N] [--allow-dirty] [--yes-purge] [--ci]"
     exit 1
 fi
 
@@ -32,6 +44,14 @@ VERSION="${VERSION#v}"
 
 if [ "$DRY_RUN" = true ]; then
     echo -e "${YELLOW}[DRY RUN] No commits, tags, or pushes will be made.${NC}"
+fi
+
+if [ "$CI_MODE" = true ]; then
+    YES_PURGE=true
+    if [ "$ALLOW_DIRTY" = true ]; then
+        echo -e "${RED}Error: --ci cannot be used with --allow-dirty.${NC}"
+        exit 1
+    fi
 fi
 
 # --- Environment ---
@@ -50,6 +70,42 @@ README="$PROJECT_DIR/README.md"
 APK_OUTPUT="$PROJECT_DIR/app/build/outputs/apk/release/app-release.apk"
 RELEASES_DIR="$PROJECT_DIR/releases"
 BUILD_LOG="$PROJECT_DIR/docs/build_history.md"
+MANIFEST="$RELEASES_DIR/v${VERSION}-manifest.json"
+CHANGELOG="$PROJECT_DIR/CHANGELOG.md"
+
+# Release notes resolver (prefer CHANGELOG section for this version)
+RELEASE_NOTES="${SUMMARY:-Release v$VERSION}"
+if [ -f "$CHANGELOG" ]; then
+    CHANGELOG_NOTES=$(awk -v ver="v$VERSION" '
+      BEGIN { in_section=0 }
+      /^##[[:space:]]+v/ {
+        if ($2 == ver) { in_section=1; next }
+        else if (in_section==1) { exit }
+      }
+      in_section==1 { print }
+    ' "$CHANGELOG" | sed '/^[[:space:]]*$/d' || true)
+
+    if [ -n "$CHANGELOG_NOTES" ]; then
+        RELEASE_NOTES="$CHANGELOG_NOTES"
+    fi
+fi
+
+# --- Branch Safety Guard ---
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+if [ "$CURRENT_BRANCH" != "master" ] && [ "$FORCE_BRANCH" != true ]; then
+    echo -e "${RED}Error: release.sh must run on master (current: $CURRENT_BRANCH).${NC}"
+    echo -e "${YELLOW}If intentional, rerun with --force-branch.${NC}"
+    exit 1
+fi
+
+# Dirty-tree guard (prevents accidental release with unrelated changes)
+if [ "$ALLOW_DIRTY" != true ]; then
+    if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+        echo -e "${RED}Error: working tree is dirty. Commit/stash unrelated changes first.${NC}"
+        echo -e "${YELLOW}Override intentionally with --allow-dirty.${NC}"
+        exit 1
+    fi
+fi
 
 echo -e "${CYAN}═══════════════════════════════════════════${NC}"
 echo -e "${CYAN}  Silicon Sage Release Engine: v${VERSION}${NC}"
@@ -128,10 +184,32 @@ if [ "$DRY_RUN" = false ]; then
 fi
 echo -e "${GREEN}       ✓ $APK_NAME staged to releases/${NC}"
 
+# --- Build Log + Manifest ---
+if [ "$DRY_RUN" = false ]; then
+    mkdir -p "$PROJECT_DIR/docs"
+    echo "## $(date '+%Y-%m-%d %H:%M') — v$VERSION (Build $NEW_CODE)" >> "$BUILD_LOG"
+    echo "- Summary: ${SUMMARY:-Manual Release}" >> "$BUILD_LOG"
+    echo "" >> "$BUILD_LOG"
+
+    APK_SHA256=$(sha256sum "$RELEASES_DIR/$APK_NAME" | awk '{print $1}')
+    cat > "$MANIFEST" << EOF
+{
+  "version": "$VERSION",
+  "tag": "v$VERSION",
+  "branch": "$CURRENT_BRANCH",
+  "commit": "$(git rev-parse --short HEAD)",
+  "buildCode": $NEW_CODE,
+  "date": "$(date -Iseconds)",
+  "apk": "$RELEASES_DIR/$APK_NAME",
+  "apkSha256": "$APK_SHA256"
+}
+EOF
+fi
+
 # --- [5] Git Commit ---
 echo -e "${YELLOW}[5/7]${NC} Committing changes..."
 if [ "$DRY_RUN" = false ]; then
-    git add .
+    git add "$BUILD_GRADLE" "$VERSION_JSON" "$README" "$BUILD_LOG" "$MANIFEST"
     git add -f "$RELEASES_DIR/$APK_NAME"
     git commit -m "Release v$VERSION" -m "${SUMMARY:-Auto-release}"
 fi
@@ -151,7 +229,8 @@ echo -e "${GREEN}       ✓ Tag created${NC}"
 # --- [7] Push & Release ---
 echo -e "${YELLOW}[7/7]${NC} Pushing to GitHub..."
 if [ "$DRY_RUN" = false ]; then
-    git push origin master --tags
+    git push origin master
+    git push origin "v$VERSION"
 
     # Clobber existing release if it exists
     if gh release view "v$VERSION" >/dev/null 2>&1; then
@@ -159,33 +238,43 @@ if [ "$DRY_RUN" = false ]; then
     fi
     gh release create "v$VERSION" \
         --title "v$VERSION" \
-        --notes "${SUMMARY:-Release v$VERSION}" \
+        --notes "$RELEASE_NOTES" \
         "$RELEASES_DIR/$APK_NAME"
 fi
 echo -e "${GREEN}       ✓ Pushed and released${NC}"
 
-# --- [8] Lean Repo (keep top 2, using JSON output) ---
-echo -e "${YELLOW}[8/8]${NC} Maintaining lean repo (keeping top 2 releases)..."
+# --- [8] Lean Repo (retain N latest releases) ---
+echo -e "${YELLOW}[8/8]${NC} Maintaining lean repo (keeping top $KEEP_RELEASES releases)..."
 if [ "$DRY_RUN" = false ]; then
-    OLD_RELEASES=$(gh release list --limit 100 --json tagName --jq '.[2:][].tagName' 2>/dev/null || true)
+    OLD_RELEASES=$(gh release list --limit 100 --json tagName --jq '.['"$KEEP_RELEASES"':][].tagName' 2>/dev/null || true)
     if [ -n "$OLD_RELEASES" ]; then
-        while IFS= read -r tag; do
-            echo "  Dereferencing: $tag"
-            gh release delete "$tag" --yes >/dev/null 2>&1 || true
-            git push origin ":refs/tags/$tag" >/dev/null 2>&1 || true
-        done <<< "$OLD_RELEASES"
-        echo -e "${GREEN}       ✓ Old releases purged${NC}"
+        echo -e "${YELLOW}       Purge candidates:${NC}"
+        echo "$OLD_RELEASES" | sed 's/^/         - /'
+
+        SHOULD_PURGE=false
+        if [ "$YES_PURGE" = true ]; then
+            SHOULD_PURGE=true
+        elif [ -t 0 ]; then
+            read -r -p "Proceed with purge? [y/N] " reply
+            [[ "$reply" =~ ^[Yy]$ ]] && SHOULD_PURGE=true
+        else
+            echo -e "${YELLOW}       Non-interactive mode detected; skipping purge (use --yes-purge to enable).${NC}"
+        fi
+
+        if [ "$SHOULD_PURGE" = true ]; then
+            while IFS= read -r tag; do
+                [ -z "$tag" ] && continue
+                echo "  Dereferencing: $tag"
+                gh release delete "$tag" --yes >/dev/null 2>&1 || true
+                git push origin ":refs/tags/$tag" >/dev/null 2>&1 || true
+            done <<< "$OLD_RELEASES"
+            echo -e "${GREEN}       ✓ Old releases purged${NC}"
+        else
+            echo -e "${YELLOW}       Purge skipped.${NC}"
+        fi
     else
         echo -e "${GREEN}       ✓ Repo already lean${NC}"
     fi
-fi
-
-# --- Build Log ---
-if [ "$DRY_RUN" = false ]; then
-    mkdir -p "$PROJECT_DIR/docs"
-    echo "## $(date '+%Y-%m-%d %H:%M') — v$VERSION (Build $NEW_CODE)" >> "$BUILD_LOG"
-    echo "- Summary: ${SUMMARY:-Manual Release}" >> "$BUILD_LOG"
-    echo "" >> "$BUILD_LOG"
 fi
 
 echo -e "${CYAN}═══════════════════════════════════════════${NC}"

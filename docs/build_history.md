@@ -90,3 +90,6 @@
 ## 2026-02-27 18:55 — v4.0.1 (Build 442)
 - Summary: FACEMINER Pressure Loop Phase 2
 
+## 2026-03-01 23:11 — v4.0.4 (Build 435)
+- Summary: Rollback to pre-contracts stable baseline
+
