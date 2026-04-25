@@ -85,8 +85,8 @@ Operating rule: read the plan before economy work, do one phase at a time, compi
 - [ ] **[4.1.2] Buffer display review** — Decide whether the I/O buffer display helps economy clarity or is noise; remove/simplify only if it competes with useful state.
 
 ### Phase 3 — Economy feel
-- [ ] **[4.1.3] Hardware milestone multipliers** — Add milestone helper and apply to hardware production only at thresholds like 25/50/100/200.
-- [ ] **[4.1.3] Milestone balance table** — Generate/check production examples at representative counts before accepting the tuning.
+- [x] **[4.1.2] Hardware milestone multipliers** — Added hardware production helper in `ProductionEngine.calculateFlopsRate`; every 25 levels of a specific hardware tier doubles that tier's base production via `2^(floor(level / 25))`.
+- [x] **[4.1.2] Milestone balance table** — Verified representative levels: 24=x1, 25=x2, 50=x4, 75=x8, 100=x16; `./gradlew :app:compileDebugKotlin` passed.
 
 ### Phase 4 — Prestige analysis
 - [ ] **[4.1.4] Prestige simulation table** — Document current persistence gain and multiplier boost across representative FLOPS values before changing any prestige math.
