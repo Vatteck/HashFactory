@@ -1,7 +1,6 @@
 # gametasks.md — Hash Factory / SUBSTRATE:Miner Development Backlog
 
 ## 🔴 Critical (blocking)
-- [ ] **Pixel Fold ADB** — Currently stable on `192.168.50.116:34175`. Check for drift.
 - [x] **Subnet Sector Surveillance (v3.35.0)** — Added Harvester map, 100% Purity Auto-verification, Storage Leak dilemma, and dystopian harvester chatter.
 - [x] **Security Defense Pass (v3.19.0)** — Breach scaling (Hijack/Audit/Diag/Failsafe), Integrity popups/penalties, Compliance Rating passive rep, Admin frequency tuning, Free Stage 2 firewall.
 - [x] **Narrative & UI Polish Pass (v3.20.0)** — Identity-aware security nomenclature, Pac-Man chomp animation, Risk-reactive ghosts.
