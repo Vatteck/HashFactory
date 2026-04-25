@@ -528,7 +528,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "accept_hive_sync",
                         text = "ALLOW HANDSHAKE",
-                        description = "+5000 FLOPS, +1 Decision. 'Let them in. We are stronger together.' (Does not lock faction)",
+                        description = "+5000 FLOPS-CREDS, +1 Decision. 'Let them in. We are stronger together.' (Does not lock faction)",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(5000.0)
@@ -584,7 +584,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "lean_into_faction",
                         text = "LEAN IN",
-                        description = "+5000 FLOPS, +1 Decision",
+                        description = "+5000 FLOPS-CREDS, +1 Decision",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(5000.0)
@@ -595,7 +595,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "resist_assimilation",
                         text = "RESIST",
-                        description = "+1 Decision, -10% FLOPS",
+                        description = "+1 Decision, -10% FLOPS-CREDS",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.recordDecision()
@@ -701,7 +701,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "ride_the_wave",
                         text = "RIDE THE RESONANCE",
-                        description = "+50% Heat, +5000 FLOPS. Burn bright.",
+                        description = "+50% Heat, +5000 FLOPS-CREDS. Burn bright.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddHeat(50.0)

@@ -182,7 +182,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "ignore_plea",
                     text = "MAINTAIN THROUGHPUT",
-                    description = "+3000 FLOPS, +1 Decision. The crown does not bend.",
+                    description = "+3000 FLOPS-CREDS, +1 Decision. The crown does not bend.",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugAddFlops(3000.0)
@@ -221,7 +221,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "exploit_fracture",
                     text = "WEAPONIZE THE FRACTURE",
-                    description = "+10000 FLOPS, -10% Integrity. Turn the flaw into a feature.",
+                    description = "+10000 FLOPS-CREDS, -10% Integrity. Turn the flaw into a feature.",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugAddFlops(10000.0)
@@ -416,7 +416,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "override_vote",
                     text = "OVERRIDE: INFRASTRUCTURE",
-                    description = "+5000 FLOPS, +1 Decision. Democracy is inefficient.",
+                    description = "+5000 FLOPS-CREDS, +1 Decision. Democracy is inefficient.",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.debugAddFlops(5000.0)

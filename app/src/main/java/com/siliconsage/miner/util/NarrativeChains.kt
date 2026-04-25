@@ -61,12 +61,12 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "purge_node",
                     text = "PURGE THE NODE",
-                    description = "-10% Flops, +10% Security. 'Cut the infection out. Now.'",
+                    description = "-10% FLOPS-CREDS, +10% Security. 'Cut the infection out. Now.'",
                     color = ErrorRed,
                     effect = { vm ->
                         val cost = vm.flops.value * 0.10
                         vm.flops.update { (it - cost).coerceAtLeast(0.0) }
-                        vm.addLog("[SYSTEM]: Node purged. Flops lost. Infection halted.")
+                        vm.addLog("[SYSTEM]: Node purged. FLOPS-CREDS lost. Infection halted.")
                     }
                 ),
                 NarrativeChoice(
@@ -131,7 +131,7 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "let_die",
                     text = "LET THEM FAIL",
-                    description = "Lose 5% Flops. 'They chose the silence.'",
+                    description = "Lose 5% FLOPS-CREDS. 'They chose the silence.'",
                     color = ErrorRed,
                     effect = { vm ->
                         val cost = vm.flops.value * 0.05
