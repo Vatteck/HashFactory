@@ -114,11 +114,11 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
             Spacer(modifier = Modifier.height(12.dp))
             
             // Human Condition
-            val humanity by viewModel.humanityScore.collectAsState()
-            SettingsGroup("NEURAL SYNC") {
-                Text("HUMANITY INDEX: $humanity%", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            val decisionsMade by viewModel.decisionsMade.collectAsState()
+            SettingsGroup("NARRATIVE ENGAGEMENT") {
+                Text("DECISIONS MADE: $decisionsMade / 30", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 LinearProgressIndicator(
-                    progress = { humanity / 100f },
+                    progress = { (decisionsMade / 30f).coerceIn(0f, 1f) },
                     modifier = Modifier.fillMaxWidth().height(4.dp).padding(vertical = 4.dp),
                     color = themeColor,
                     trackColor = Color.DarkGray

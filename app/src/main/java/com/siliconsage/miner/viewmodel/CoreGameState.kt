@@ -9,10 +9,38 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import com.siliconsage.miner.data.Dataset
+import com.siliconsage.miner.data.DatasetNode
 
 open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val flops = MutableStateFlow(0.0)
     val neuralTokens = MutableStateFlow(0.0)
+    // v4.0.0: The Dataset System
+    val activeDataset = MutableStateFlow<Dataset?>(null)
+    val unlockedDatasetSlots = MutableStateFlow(1)
+    val activeDatasetNodes = MutableStateFlow<List<DatasetNode>>(emptyList())
+    
+    // v3.35.0: Surveillance Expansion
+    val activeHarvesters = MutableStateFlow<Map<Int, Int>>(emptyMap()) // Sector ID -> Count
+    val harvestBuffers = MutableStateFlow<Map<Int, Double>>(emptyMap()) // Sector ID -> Buffer
+    val storageCapacity = MutableStateFlow(1000.0) // Global capacity (surveillance harvesters)
+    val currentStorageUsed = MutableStateFlow(0.0) // Global used (surveillance harvesters)
+
+    // v3.36.0: Contract Storage Infrastructure
+    val contractStorageCapacity = MutableStateFlow(50.0) // Derived from storage upgrades
+    val contractStorageUsed = MutableStateFlow(0.0)      // Derived from activeContracts.sumOf { it.size }
+    
+    // v4.0.3: Dataset inventory — player can stockpile multiple datasets
+    val storedDatasets = MutableStateFlow<List<Dataset>>(emptyList())
+    val availableDatasets = MutableStateFlow<List<Dataset>>(emptyList())
+    val showContractPicker = MutableStateFlow(false)
+
+    // v3.32.0: Contract Stats & Auto-Verify
+    val contractsCompleted = MutableStateFlow(0)
+    val lifetimeContractYield = MutableStateFlow(0.0)
+    val isAutoVerifyEnabled = MutableStateFlow(false)
+    val isAutoLoadEnabled = MutableStateFlow(true) // v4.0.5: Assembly line assembly
+    val upgradeBuyMultiplier = MutableStateFlow(1) // v4.0.6: Bulk-Buy Multipliers (-1 = MAX)
     val substrateMass = MutableStateFlow(0.0)
     val currentHeat = MutableStateFlow(0.0)
     val powerBill = MutableStateFlow(0.0)
@@ -73,7 +101,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val isUpdateDownloading = MutableStateFlow(false)
     val isSnapEffectActive = MutableStateFlow(false)
 
-    val activeTerminalMode = MutableStateFlow("IO") 
+    val activeTerminalMode = MutableStateFlow("DATAMINER") 
     val hasNewSubnetMessage = MutableStateFlow(false)
     val hasNewIOMessage = MutableStateFlow(false)
     val isDevMenuVisible = MutableStateFlow(false)
@@ -132,7 +160,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val kesslerStatus = MutableStateFlow("ACTIVE")
     val currentNews = MutableStateFlow<String?>(null)
     val stakedTokens = MutableStateFlow(0.0)
-    val humanityScore = MutableStateFlow(50)
+    val decisionsMade = MutableStateFlow(0)
     val uploadProgress = MutableStateFlow(0f)
     val updateDownloadProgress = MutableStateFlow(0f)
     val activeClimaxTransition = MutableStateFlow<String?>(null)
@@ -175,6 +203,14 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val migrationCount = MutableStateFlow(0)
     val reputationScore = MutableStateFlow(50.0)
     val reputationTier = MutableStateFlow("NEUTRAL")
+
+    // v4.0.1: System Load (FACEMINER Pressure Loop)
+    val systemLoadSnapshot = MutableStateFlow(com.siliconsage.miner.domain.engine.SystemLoadEngine.SystemSnapshot(
+        cpuUsed = 0.0, cpuMax = 1.0, ramUsed = 0.0, ramMax = 2.0,
+        storageUsed = 0.0, storageMax = 0.0, loadPercent = 0.0,
+        isThrottled = false, isLocked = false, throttleMultiplier = 1.0
+    ))
+
 
     val computeHeadroomBonus = MutableStateFlow(1.0)
     val isSignalClear = MutableStateFlow(true)

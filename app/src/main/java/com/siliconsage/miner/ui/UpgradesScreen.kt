@@ -1,6 +1,7 @@
 package com.siliconsage.miner.ui
 
 import androidx.compose.foundation.BorderStroke
+import com.siliconsage.miner.util.FormatUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconsage.miner.ui.components.TechnicalCornerShape
@@ -63,15 +65,16 @@ fun UpgradesScreen(viewModel: GameViewModel) {
     
     val tabs = remember(nullActive, isTrueNull, isSovereign, storyStage) {
         when {
-            isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS", "NULL")
-            isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS", "SOVEREIGN")
+            isTrueNull -> listOf("SUBSTRATE", "ENTROPY", "VOID", "GAPS", "NULL", "SOFTWARE")
+            isSovereign -> listOf("FOUNDATION", "STABILITY", "STAKE", "WALLS", "SOVEREIGN", "SOFTWARE")
             storyStage >= 3 || nullActive -> {
-                val base = listOf("HARDWARE", "COOLING", "POWER", "SECURITY")
+                val base = listOf("HARDWARE", "COOLING", "POWER", "SECURITY", "SOFTWARE")
                 if (nullActive) base + "GHOSTS" else base + "RESEARCH"
             }
-            else -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY")
+            else -> listOf("HARDWARE", "COOLING", "POWER", "SECURITY", "SOFTWARE")
         }
     }
+    val softwareTabIndex = tabs.indexOf("SOFTWARE")
     
     Box(
         modifier = Modifier
@@ -89,6 +92,32 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                 onRepair = { viewModel.repairIntegrity() },
                 modifier = Modifier.padding(16.dp)
             )
+
+            val buyMultiplier by viewModel.upgradeBuyMultiplier.collectAsState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val multText = if (buyMultiplier == -1) "MAX" else "x$buyMultiplier"
+                Box(
+                    modifier = Modifier
+                        .clickable { viewModel.cycleBuyMultiplier() }
+                        .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                        .border(1.dp, themeColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "BUY MULTIPLIER: $multText",
+                        color = themeColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                }
+            }
 
             // Tab Row
             val corruption by viewModel.identityCorruption.collectAsState()
@@ -131,6 +160,21 @@ fun UpgradesScreen(viewModel: GameViewModel) {
 
             // List Content
             Box(modifier = Modifier.weight(1f).padding(16.dp)) {
+                // SOFTWARE tab — custom panel
+                if (selectedTab == softwareTabIndex) {
+                    SoftwarePanel(
+                        viewModel = viewModel, 
+                        themeColor = themeColor,
+                        upgrades = upgrades,
+                        isSovereign = isSovereign,
+                        reputationTier = reputationTier,
+                        storyStage = storyStage,
+                        corruption = corruption,
+                        errorMessageSetter = { errorMessage = it }
+                    )
+                    return@Box
+                }
+
                 val currentList = when (selectedTab) {
                     0 -> listOf(
                         UpgradeType.REFURBISHED_GPU, UpgradeType.DUAL_GPU_RIG, UpgradeType.MINING_ASIC,
@@ -199,12 +243,16 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         key = { it.name }
                     ) { type ->
                         val level = upgrades[type] ?: 0
-                        val cost = remember(type, level) { viewModel.calculateUpgradeCost(type) }
+                        val funds = if (storyStage >= 3) viewModel.substrateMass.collectAsState().value else viewModel.neuralTokens.collectAsState().value
+                        val bulkParams = remember(type, level, buyMultiplier, funds) { viewModel.getBulkUpgradeParams(type) }
+                        val levelsToBuy = bulkParams.first
+                        val cost = bulkParams.second
                         
                         UpgradeItem(
                             name = viewModel.getUpgradeName(type),
                             type = type,
                             level = level,
+                            levelsToBuy = levelsToBuy,
                             onBuy = { 
                                 val success = viewModel.buyUpgrade(type) 
                                 if (success) {
@@ -234,6 +282,7 @@ fun UpgradesScreen(viewModel: GameViewModel) {
             }
         }
         
+        // ── SOFTWARE TAB ERROR also uses errorMessage ──
         // Error Popup Overlay
         if (errorMessage != null) {
              Box(
@@ -250,6 +299,154 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                      fontWeight = FontWeight.Bold
                  )
              }
+        }
+    }
+}
+
+// ── SOFTWARE PANEL (Phase 2 Automation) ─────────────────────────
+@Composable
+fun SoftwarePanel(
+    viewModel: GameViewModel, 
+    themeColor: Color,
+    upgrades: Map<UpgradeType, Int>,
+    isSovereign: Boolean,
+    reputationTier: String,
+    storyStage: Int,
+    corruption: Double,
+    errorMessageSetter: (String) -> Unit
+) {
+    val systemLoad by viewModel.systemLoadSnapshot.collectAsState()
+    val softwareTypes = listOf(UpgradeType.AUTO_HARVEST_SPEED, UpgradeType.AUTO_HARVEST_ACCURACY)
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // v4.0.5: Global Software Toggles
+        item {
+            val isAutoLoad by viewModel.isAutoLoadEnabled.collectAsState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    .border(1.dp, themeColor.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "AUTO-LOAD NEXT DATASET",
+                        color = themeColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                    Text(
+                        text = "Automatically load next stored dataset into compute grid upon completion.",
+                        color = Color.Gray,
+                        fontSize = 9.sp,
+                        lineHeight = 11.sp
+                    )
+                }
+                Switch(
+                    checked = isAutoLoad,
+                    onCheckedChange = { 
+                        viewModel.isAutoLoadEnabled.value = it 
+                        SoundManager.play("click")
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = themeColor,
+                        checkedTrackColor = themeColor.copy(alpha = 0.5f),
+                        uncheckedThumbColor = Color.Gray,
+                        uncheckedTrackColor = Color.DarkGray
+                    )
+                )
+            }
+        }
+
+        // System Load Bar
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(6.dp))
+                    .border(1.dp, themeColor.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                    .padding(12.dp)
+            ) {
+                val loadPct = (systemLoad.loadPercent * 100).toInt()
+                val loadColor = when {
+                    systemLoad.isLocked -> com.siliconsage.miner.ui.theme.ErrorRed
+                    systemLoad.isThrottled -> Color(0xFFFFAA00)
+                    else -> themeColor
+                }
+                Text(
+                    text = "SYSTEM LOAD: $loadPct%  ${if (systemLoad.isLocked) "[OVERLOAD]" else if (systemLoad.isThrottled) "[THROTTLED]" else "[NOMINAL]"}",
+                    color = loadColor,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+                Spacer(Modifier.height(6.dp))
+                LinearProgressIndicator(
+                    progress = { systemLoad.loadPercent.toFloat().coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth().height(6.dp),
+                    color = loadColor,
+                    trackColor = Color.DarkGray
+                )
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("CPU: ${systemLoad.cpuUsed.toInt()}/${systemLoad.cpuMax.toInt()} GHz", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    Text("RAM: ${systemLoad.ramUsed.toInt()}/${systemLoad.ramMax.toInt()} GB", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    Text("DISK: ${FormatUtils.formatStorage(systemLoad.storageUsed)}/${FormatUtils.formatStorage(systemLoad.storageMax)}", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                }
+            }
+        }
+
+        // Standard Upgrade Items for Software
+        items(
+            items = softwareTypes,
+            key = { it.name }
+        ) { type ->
+            val level = upgrades[type] ?: 0
+            val buyMultiplier by viewModel.upgradeBuyMultiplier.collectAsState()
+            val funds = if (storyStage >= 3) viewModel.substrateMass.collectAsState().value else viewModel.neuralTokens.collectAsState().value
+            val bulkParams = remember(type, level, buyMultiplier, funds) { viewModel.getBulkUpgradeParams(type) }
+            val levelsToBuy = bulkParams.first
+            val cost = bulkParams.second
+            
+            UpgradeItem(
+                name = viewModel.getUpgradeName(type),
+                type = type,
+                level = level,
+                levelsToBuy = levelsToBuy,
+                onBuy = { 
+                    val success = viewModel.buyUpgrade(type) 
+                    if (success) {
+                        SoundManager.play("buy")
+                        HapticManager.vibrateSuccess()
+                    } else {
+                        errorMessageSetter("INSUFFICIENT FUNDS: Need ${viewModel.formatLargeNumber(cost)}")
+                        SoundManager.play("error")
+                        HapticManager.vibrateError()
+                    }
+                    success
+                },
+                onSell = { viewModel.sellUpgrade(it) },
+                cost = cost,
+                rateText = viewModel.getUpgradeRate(type),
+                desc = viewModel.getUpgradeDescription(type),
+                formatPower = viewModel::formatPower,
+                formatCost = viewModel::formatLargeNumber,
+                isSovereign = isSovereign,
+                reputationModifier = com.siliconsage.miner.util.ReputationManager.getMarketCostModifier(reputationTier),
+                storyStage = storyStage,
+                faction = viewModel.faction.collectAsState().value, 
+                corruption = corruption
+            )
         }
     }
 }

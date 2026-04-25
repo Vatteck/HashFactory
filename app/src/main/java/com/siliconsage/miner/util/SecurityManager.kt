@@ -52,9 +52,9 @@ object SecurityManager {
                 }
                 "UNITY" -> {
                     // UNITY: Drift scales inversely with balance. Perfect balance = 60% drift. Off-balance = 120%.
-                    val humanityDist = kotlin.math.abs(vm.humanityScore.value / 100.0 - 0.5) * 2.0
+                    val narrativeEngagement = (vm.decisionsMade.value / 30.0).coerceAtMost(1.0)
                     val corruptionDist = kotlin.math.abs(vm.identityCorruption.value - 0.5) * 2.0
-                    val imbalance = ((humanityDist + corruptionDist) / 2.0).coerceIn(0.0, 1.0)
+                    val imbalance = (( (1.0 - narrativeEngagement) + corruptionDist) / 2.0).coerceIn(0.0, 1.0)
                     baseDrift * (0.6 + imbalance * 0.6)
                 }
                 else -> baseDrift

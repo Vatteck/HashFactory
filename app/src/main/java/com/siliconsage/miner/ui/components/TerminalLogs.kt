@@ -49,7 +49,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
 
     LaunchedEffect(logs.size, subnetMessages.size, mode) {
         if (!isPaused) {
-            if (mode == "IO" && logs.isNotEmpty()) listState.scrollToItem(logs.size - 1)
+            if ((mode == "IO" || mode == "DATAMINER") && logs.isNotEmpty()) listState.scrollToItem(logs.size - 1)
             else if (mode == "SUBNET" && subnetMessages.isNotEmpty()) listState.scrollToItem(subnetMessages.size - 1)
         }
     }
@@ -114,7 +114,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                 state = listState,
                 modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
-                if (mode == "IO") {
+                if (mode == "IO" || mode == "DATAMINER") {
                     itemsIndexed(items = logs, key = { _, entry -> entry.id }) { index, entry ->
                         val displayMessage = if (isRaid && Random.nextFloat() > 0.7f) {
                             "0x" + Random.nextInt(0xDEADBC).toString(16).uppercase() + " // [CORRUPTED]"
@@ -131,7 +131,7 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                             timestamp = entry.timestamp
                         )
                     }
-                } else {
+                } else if (mode == "SUBNET") {
                     itemsIndexed(items = subnetMessages, key = { _, message -> message.id }) { _, message ->
                         SubnetMessageLine(message, primaryColor, viewModel)
                     }
@@ -149,14 +149,20 @@ fun TerminalLogs(viewModel: GameViewModel, primaryColor: Color, showCursor: Bool
                             Text(text = typingText, color = primaryColor.copy(alpha = 0.5f), fontSize = 10.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp))
                         }
                     }
+                } else if (mode == "SURVEILLANCE") {
+                    item {
+                        SurveillanceVisualizer(viewModel = viewModel, primaryColor = primaryColor)
+                    }
                 }
             }
 
-            val cmdShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
-            Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f), cmdShape).border(BorderStroke(1.dp, primaryColor.copy(alpha = 0.55f)), cmdShape)) {
-                ActiveCommandBuffer(viewModel, primaryColor)
+            if (mode != "DATAMINER") {
+                val cmdShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                Box(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f), cmdShape).border(BorderStroke(1.dp, primaryColor.copy(alpha = 0.55f)), cmdShape)) {
+                    ActiveCommandBuffer(viewModel, primaryColor)
+                }
+                ManualComputeButton(viewModel, primaryColor)
             }
-            ManualComputeButton(viewModel, primaryColor)
         }
     }
 }

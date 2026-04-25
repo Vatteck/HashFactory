@@ -81,6 +81,7 @@ fun UpgradeItem(
     name: String,
     type: UpgradeType,
     level: Int,
+    levelsToBuy: Int = 1,
     onBuy: (UpgradeType) -> Boolean,
     onSell: (UpgradeType) -> Unit,
     cost: Double,
@@ -205,8 +206,8 @@ fun UpgradeItem(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 val canSell = level > 0 && type != UpgradeType.RESIDENTIAL_TAP
                 if (canSell) {
-                     Box(modifier = Modifier.clickable { onSell(type) }.background(ErrorRed.copy(alpha=0.1f), RoundedCornerShape(4.dp)).border(1.dp, ErrorRed.copy(alpha=0.5f), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                         Text("SELL", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                     Box(modifier = Modifier.clickable { onSell(type) }.background(ErrorRed.copy(alpha=0.15f), RoundedCornerShape(4.dp)).border(1.dp, ErrorRed.copy(alpha=0.6f), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                         Text("[-] DOWNGRADE", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Black)
                      }
                 } else { Spacer(modifier = Modifier.width(1.dp)) }
                 
@@ -220,7 +221,8 @@ fun UpgradeItem(
                         // v3.9.70: Phase 17 - Mock "OBSOLETE" tag for unbought low-level gear in late game
                         SystemGlitchText(text = "[OBSOLETE]", color = Color(0xFFA0522D), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 4.dp), glitchFrequency = 0.3)
                     } else {
-                        Text("COST:", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.padding(end = 4.dp))
+                        val multiText = if (levelsToBuy > 1) "(+$levelsToBuy) " else ""
+                        Text("COST: $multiText", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.padding(end = 4.dp))
                     }
                     Text(text = "$${formatCost(cost)}", color = if (isOutdatedHardware) Color(0xFFA0522D) else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
@@ -229,70 +231,6 @@ fun UpgradeItem(
     }
 }
 
-@Composable
-fun ExchangeSection(
-    rate: Double, 
-    color: Color, 
-    unitName: String, 
-    currencyName: String, 
-    corruption: Double = 0.0, 
-    storyStage: Int = 1,
-    onExchange: () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "sellScale")
-
-    // v3.10.1: Phase 18 Paranoia Market Crash Hallucination
-    var isCrashGlitch by remember { mutableStateOf(false) }
-    LaunchedEffect(storyStage) {
-        if (storyStage >= 4) {
-            while (true) {
-                // Rare event: 1% chance every 10-30 seconds
-                delay(Random.nextLong(10000, 30000))
-                if (Random.nextDouble() < 0.01) {
-                    isCrashGlitch = true
-                    com.siliconsage.miner.util.SoundManager.play("error")
-                    com.siliconsage.miner.util.HapticManager.vibrateError()
-                    delay(2500) // Jump-scare duration
-                    isCrashGlitch = false
-                }
-            }
-        }
-    }
-
-    val displayRate = if (isCrashGlitch) - (rate * (5 + Random.nextDouble() * 10)) else rate
-    val displayColor = if (isCrashGlitch) com.siliconsage.miner.ui.theme.ErrorRed else color
-
-    Button(
-        onClick = onExchange,
-        interactionSource = interactionSource,
-        modifier = Modifier.fillMaxWidth().graphicsLayer { scaleX = scale; scaleY = scale }.background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp)).border(BorderStroke(1.dp, displayColor), RoundedCornerShape(4.dp)),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = displayColor),
-        shape = RoundedCornerShape(4.dp)
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            if (isCrashGlitch) {
-                val infiniteTransition = rememberInfiniteTransition(label = "crash_blink")
-                val flashAlpha by infiniteTransition.animateFloat(
-                    initialValue = 1f, targetValue = 0.2f,
-                    animationSpec = infiniteRepeatable(tween(100, easing = LinearEasing), RepeatMode.Reverse),
-                    label = "flash"
-                )
-                Text(
-                    text = "[LIQUIDATING ALL ASSETS...]", 
-                    color = com.siliconsage.miner.ui.theme.ErrorRed, 
-                    fontSize = 12.sp, 
-                    fontWeight = FontWeight.Black,
-                    modifier = Modifier.graphicsLayer { alpha = flashAlpha }
-                )
-            } else {
-                Text("SELL $unitName", fontSize = 12.sp)
-                Text("1 = ${String.format("%.4f", displayRate)} $currencyName", color = Color.LightGray, fontSize = 10.sp)
-            }
-        }
-    }
-}
 
 @Composable
 fun StakingSection(color: Color, currencyName: String, onStake: () -> Unit) {

@@ -7,9 +7,6 @@ package com.siliconsage.miner.util
 object ResourceRepository {
 
     /**
-     * Get the compute unit name (HASH, TELEM, FLOPS, CD, VF)
-     */
-    /**
      * Get the compute unit name (HASH, FLOPS, CD, VF, SYN)
      */
     fun getComputeUnitName(

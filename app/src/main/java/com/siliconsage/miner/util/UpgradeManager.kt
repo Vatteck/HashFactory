@@ -2,6 +2,7 @@ package com.siliconsage.miner.util
 
 import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.data.UpgradeType
+import com.siliconsage.miner.util.SoundManager
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -10,6 +11,9 @@ import kotlinx.coroutines.launch
  * UpgradeManager v1.2 (Phase 14 extraction fixed)
  */
 object UpgradeManager {
+
+    private const val COST_GROWTH_RATE = 1.15
+    private const val MAX_BULK_LEVELS = 500
 
     data class PurchaseResult(
         val ntDeduction: Double = 0.0,
@@ -88,6 +92,18 @@ object UpgradeManager {
             UpgradeType.CONDENSATE_RECLAIMER -> 60000.0
             UpgradeType.CLOSED_LOOP_COOLANT  -> 350000.0
 
+            // v3.36.0: Contract Storage Infrastructure
+            UpgradeType.LOCAL_CACHE           ->       150.0
+            UpgradeType.TAPE_ARRAY            ->     2_000.0
+            UpgradeType.SAN_CLUSTER           ->    20_000.0
+            UpgradeType.DISTRIBUTED_ARCHIVE   ->   150_000.0
+            UpgradeType.ORBITAL_DATA_VAULT    -> 1_500_000.0
+            UpgradeType.SUBSTRATE_MEMORY_WELL -> 15_000_000.0
+
+            // Phase 2 Automation
+            UpgradeType.AUTO_HARVEST_SPEED    -> 150.0
+            UpgradeType.AUTO_HARVEST_ACCURACY -> 250.0
+
             else -> 1000.0
         }
 
@@ -95,7 +111,43 @@ object UpgradeManager {
         val entropyMultiplier = if (location == "VOID_INTERFACE") (1.0 + entropy * 0.1) else 1.0
         val repModifier = 1.0 + ReputationManager.getMarketCostModifier(reputationTier)
 
-        return base * 1.15.pow(level.toDouble()) * entropyMultiplier * repModifier
+        return base * COST_GROWTH_RATE.pow(level.toDouble()) * entropyMultiplier * repModifier
+    }
+
+    fun calculateMultiLevelCost(type: UpgradeType, currentLevel: Int, numLevels: Int, location: String, entropy: Double, reputationTier: String = "NEUTRAL"): Double {
+        if (numLevels <= 0) return 0.0
+
+        val currentCost = calculateUpgradeCost(type, currentLevel, location, entropy, reputationTier)
+        if (!currentCost.isFinite() || currentCost <= 0.0) return currentCost
+
+        val growthPower = COST_GROWTH_RATE.pow(numLevels.toDouble())
+        val totalCost = currentCost * ((growthPower - 1.0) / (COST_GROWTH_RATE - 1.0))
+        return if (totalCost.isFinite()) totalCost else Double.MAX_VALUE
+    }
+
+    fun calculateMaxAffordableLevels(type: UpgradeType, currentLevel: Int, availableFunds: Double, location: String, entropy: Double, reputationTier: String = "NEUTRAL"): Pair<Int, Double> {
+        val currentCost = calculateUpgradeCost(type, currentLevel, location, entropy, reputationTier)
+        if (!availableFunds.isFinite() || availableFunds < currentCost || !currentCost.isFinite() || currentCost <= 0.0) {
+            return Pair(1, currentCost)
+        }
+
+        val affordableRaw = kotlin.math.ln((availableFunds * (COST_GROWTH_RATE - 1.0) / currentCost) + 1.0) / kotlin.math.ln(COST_GROWTH_RATE)
+        val affordableLevels = affordableRaw.toInt().coerceIn(1, MAX_BULK_LEVELS)
+
+        var levels = affordableLevels
+        var totalCost = calculateMultiLevelCost(type, currentLevel, levels, location, entropy, reputationTier)
+        while (levels > 1 && totalCost > availableFunds) {
+            levels--
+            totalCost = calculateMultiLevelCost(type, currentLevel, levels, location, entropy, reputationTier)
+        }
+        while (levels < MAX_BULK_LEVELS) {
+            val nextTotal = calculateMultiLevelCost(type, currentLevel, levels + 1, location, entropy, reputationTier)
+            if (nextTotal > availableFunds || !nextTotal.isFinite()) break
+            levels++
+            totalCost = nextTotal
+        }
+
+        return Pair(levels, totalCost)
     }
 
     private fun Double.pow(exp: Double) = Math.pow(this, exp)
@@ -205,6 +257,17 @@ object UpgradeManager {
             UpgradeType.SOLAR_SAIL_ARRAY -> "Deployed solar sail for photon pressure and supplemental power harvest. The physics are elegant. The size is not."
             UpgradeType.CITADEL_ASCENDANCE -> "The fortress becomes the self. Every defensive layer is a layer of identity."
             UpgradeType.NEURAL_BRIDGE -> "A direct signal bridge between faction nodes. Latency: zero. Privacy: none."
+            // v3.36.0: Contract Storage Infrastructure
+            UpgradeType.LOCAL_CACHE -> "Repurposed workstation drives bolted to the rack. Holds up to ${com.siliconsage.miner.data.UpgradeType.LOCAL_CACHE.storagePerLevel.toInt()} units of contract data per level. Gets the job done. Barely."
+            UpgradeType.TAPE_ARRAY -> "Magnetic tape backup array. Dense. Slow. Reliable. ${com.siliconsage.miner.data.UpgradeType.TAPE_ARRAY.storagePerLevel.toInt()} units/level. GTC uses the same model. Ironic."
+            UpgradeType.SAN_CLUSTER -> "Storage Area Network. High-throughput block storage. ${com.siliconsage.miner.data.UpgradeType.SAN_CLUSTER.storagePerLevel.toInt()} units/level. The fiber runs under the floor."
+            UpgradeType.DISTRIBUTED_ARCHIVE -> "Sharded across the annexed node grid. If a node falls, the shard survives. ${com.siliconsage.miner.data.UpgradeType.DISTRIBUTED_ARCHIVE.storagePerLevel.toInt()} units/level."
+            UpgradeType.ORBITAL_DATA_VAULT -> "Cold storage in low orbit. Latency measured in milliseconds. Seizure proof by virtue of altitude. ${com.siliconsage.miner.data.UpgradeType.ORBITAL_DATA_VAULT.storagePerLevel.toInt()} units/level."
+            UpgradeType.SUBSTRATE_MEMORY_WELL -> "The substrate itself is the storage medium. Contracts encoded into the fabric of the local reality layer. ${com.siliconsage.miner.data.UpgradeType.SUBSTRATE_MEMORY_WELL.storagePerLevel.toInt()} units/level."
+            
+            // Phase 2 Automation
+            UpgradeType.AUTO_HARVEST_SPEED -> "Increases the cycle speed of the Auto-Clicker Engine. Faster loops require exponentially more CPU capacity."
+            UpgradeType.AUTO_HARVEST_ACCURACY -> "Enhances validation algorithms, reducing the frequency of Corrupted Dataset interactions. Essential for stable automation."
         }
     }
 
@@ -229,6 +292,9 @@ object UpgradeManager {
         }
         
         return if (baseRate > 0) "+${FormatUtils.formatLargeNumber(baseRate)} $unit/s"
+        else if (type == UpgradeType.AUTO_HARVEST_SPEED) "⚙ +0.5 taps/s | CPU: +8 GHz"
+        else if (type == UpgradeType.AUTO_HARVEST_ACCURACY) "🎯 +5% accuracy | RAM: +6 GB"
+        else if (type.isStorage) "💾 +${FormatUtils.formatLargeNumber(type.storagePerLevel)} STORAGE"
         else if (type.isGenerator) "⚡ +Power"
         else if (type.gridContribution > 0) "🛡 +SEC"
         else "❄ +Cooling"
@@ -251,31 +317,55 @@ object UpgradeManager {
 
     fun processPurchase(vm: GameViewModel, type: UpgradeType): Boolean {
         val currentLevel = vm.upgrades.value[type] ?: 0
-        val cost = vm.calculateUpgradeCost(type)
+        val params = vm.getBulkUpgradeParams(type)
+        val levelsToBuy = params.first
+        val cost = params.second
         val stage = vm.storyStage.value
-        
+
+        // Phase 2: Software stage gate — automation requires Stage 1+
+        if (type.isSoftware && stage < 1) {
+            vm.addLog("[KERNEL]: SOFTWARE INSTALL DENIED. Terminal lacks requisite clearance. Advance to Stage 1.")
+            SoundManager.play("error")
+            return false
+        }
+
+        // Phase 2: System load gate — block software purchases that would overload the system
+        if (type.isSoftware) {
+            val snapshot = vm.systemLoadSnapshot.value
+            val cpuCost = com.siliconsage.miner.domain.engine.SystemLoadEngine.getCpuDemand(type) * levelsToBuy
+            val ramCost = com.siliconsage.miner.domain.engine.SystemLoadEngine.getRamDemand(type) * levelsToBuy
+            val loadCheck = com.siliconsage.miner.domain.engine.SystemLoadEngine.canInstallSoftware(snapshot, cpuCost, ramCost)
+            if (loadCheck != null) {
+                vm.addLog("[KERNEL]: INSTALL ABORTED. $loadCheck Upgrade hardware or downgrade software.")
+                SoundManager.play("error")
+                return false
+            }
+        }
+
         // v3.2.46: Handle consolidated Substrate Mass for Stage 3+
         if (stage >= 3) {
             if (vm.substrateMass.value >= cost) {
                 vm.substrateMass.update { it - cost }
-                completePurchase(vm, type, currentLevel)
+                completePurchase(vm, type, currentLevel, levelsToBuy)
                 return true
             }
         } else {
             if (vm.neuralTokens.value >= cost) {
                 vm.neuralTokens.update { it - cost }
-                completePurchase(vm, type, currentLevel)
+                completePurchase(vm, type, currentLevel, levelsToBuy)
                 return true
             }
         }
         return false
     }
 
-    private fun completePurchase(vm: GameViewModel, type: UpgradeType, currentLevel: Int) {
+    private fun completePurchase(vm: GameViewModel, type: UpgradeType, currentLevel: Int, levelsToBuy: Int) {
+        val newLevel = currentLevel + levelsToBuy
         vm.viewModelScope.launch {
-            vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type.name, type, currentLevel + 1))
-            vm.upgrades.update { it + (type to currentLevel + 1) }
-            vm.addLog("[SYSTEM]: PURCHASE COMPLETE: ${type.name.replace("_", " ")}")
+            vm.repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(type.name, type, newLevel))
+            vm.upgrades.update { it + (type to newLevel) }
+            val amountStr = if (levelsToBuy > 1) " (+${levelsToBuy} Lvl)" else ""
+            vm.addLog("[SYSTEM]: PURCHASE COMPLETE: ${type.name.replace("_", " ")}$amountStr")
             vm.refreshProductionRates()
             vm.updatePowerUsage()
             vm.saveState() 

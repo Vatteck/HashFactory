@@ -5,6 +5,7 @@ import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.data.SectorState
 import kotlin.math.sqrt
 import kotlin.math.log2
+import kotlin.math.pow
 
 /**
  * ProductionEngine v1.1 (Phase 14 Refactor)
@@ -20,24 +21,24 @@ object ProductionEngine {
         shadowRelays: Set<String> = emptySet(),
         gridFlopsBonuses: Map<String, Double>,
         faction: String,
-        humanityScore: Int,
+        decisionsMade: Int,
         saturation: Double = 0.0
     ): Double {
         var baseFlops = 0.0
         
         // 1. Local Hardware
-        baseFlops += (currentUpgrades[UpgradeType.REFURBISHED_GPU] ?: 0) * 2.0
-        baseFlops += (currentUpgrades[UpgradeType.DUAL_GPU_RIG] ?: 0) * 8.0
-        baseFlops += (currentUpgrades[UpgradeType.MINING_ASIC] ?: 0) * 35.0
-        baseFlops += (currentUpgrades[UpgradeType.TENSOR_UNIT] ?: 0) * 200.0
-        baseFlops += (currentUpgrades[UpgradeType.NPU_CLUSTER] ?: 0) * 1000.0
-        baseFlops += (currentUpgrades[UpgradeType.AI_WORKSTATION] ?: 0) * 4_000.0
-        baseFlops += (currentUpgrades[UpgradeType.SERVER_RACK] ?: 0) * 25_000.0
-        baseFlops += (currentUpgrades[UpgradeType.CLUSTER_NODE] ?: 0) * 150_000.0
-        baseFlops += (currentUpgrades[UpgradeType.SUPERCOMPUTER] ?: 0) * 1_000_000.0
-        baseFlops += (currentUpgrades[UpgradeType.QUANTUM_CORE] ?: 0) * 10_000_000.0
-        baseFlops += (currentUpgrades[UpgradeType.OPTICAL_PROCESSOR] ?: 0) * 75_000_000.0
-        baseFlops += (currentUpgrades[UpgradeType.BIO_NEURAL_NET] ?: 0) * 800_000_000.0
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.REFURBISHED_GPU, 2.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.DUAL_GPU_RIG, 8.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.MINING_ASIC, 35.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.TENSOR_UNIT, 200.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.NPU_CLUSTER, 1000.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.AI_WORKSTATION, 4_000.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.SERVER_RACK, 25_000.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.CLUSTER_NODE, 150_000.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.SUPERCOMPUTER, 1_000_000.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.QUANTUM_CORE, 10_000_000.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.OPTICAL_PROCESSOR, 75_000_000.0)
+        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.BIO_NEURAL_NET, 800_000_000.0)
 
         // 2. Grid Multiplier
         var gridMult = 1.0
@@ -50,9 +51,9 @@ object ProductionEngine {
 
         // 3. External Hardware
         if (!isCageActive) {
-            baseFlops += (currentUpgrades[UpgradeType.PLANETARY_COMPUTER] ?: 0) * 15_000_000_000.0
-            baseFlops += (currentUpgrades[UpgradeType.DYSON_NANO_SWARM] ?: 0) * 250_000_000_000.0
-            baseFlops += (currentUpgrades[UpgradeType.MATRIOSHKA_BRAIN] ?: 0) * 15_000_000_000_000.0
+            baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.PLANETARY_COMPUTER, 15_000_000_000.0)
+            baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.DYSON_NANO_SWARM, 250_000_000_000.0)
+            baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.MATRIOSHKA_BRAIN, 15_000_000_000_000.0)
         }
 
         // 4. Ghost Technology
@@ -75,7 +76,7 @@ object ProductionEngine {
 
         // 5. Unity Skill Multipliers
         if (currentUpgrades[UpgradeType.ETHICAL_FRAMEWORK]?.let { it > 0 } == true) {
-            val moralBoost = 1.0 + (humanityScore / 100.0)
+            val moralBoost = 1.0 + (decisionsMade * 0.02).coerceAtMost(2.0)
             totalFlops *= moralBoost
         }
         if (currentUpgrades[UpgradeType.HYBRID_OVERCLOCK]?.let { it > 0 } == true) {
@@ -89,6 +90,13 @@ object ProductionEngine {
         totalFlops *= stallMultiplier
 
         return totalFlops
+    }
+
+    private fun calculateHardwareProduction(currentUpgrades: Map<UpgradeType, Int>, type: UpgradeType, baseProduction: Double): Double {
+        val level = currentUpgrades[type] ?: 0
+        if (level <= 0) return 0.0
+        val milestoneMultiplier = 2.0.pow((level / 25).toDouble())
+        return level * baseProduction * milestoneMultiplier
     }
 
     fun calculateSubstrateRate(

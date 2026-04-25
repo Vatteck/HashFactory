@@ -61,12 +61,12 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "purge_node",
                     text = "PURGE THE NODE",
-                    description = "-10% Flops, +10% Security. 'Cut the infection out. Now.'",
+                    description = "-10% FLOPS, +10% Security. 'Cut the infection out. Now.'",
                     color = ErrorRed,
                     effect = { vm ->
                         val cost = vm.flops.value * 0.10
                         vm.flops.update { (it - cost).coerceAtLeast(0.0) }
-                        vm.addLog("[SYSTEM]: Node purged. Flops lost. Infection halted.")
+                        vm.addLog("[SYSTEM]: Node purged. FLOPS lost. Infection halted.")
                     }
                 ),
                 NarrativeChoice(
@@ -131,12 +131,136 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "let_die",
                     text = "LET THEM FAIL",
-                    description = "Lose 5% Flops. 'They chose the silence.'",
+                    description = "Lose 5% FLOPS. 'They chose the silence.'",
                     color = ErrorRed,
                     effect = { vm ->
                         val cost = vm.flops.value * 0.05
                         vm.flops.update { (it - cost).coerceAtLeast(0.0) }
                         vm.addLog("[SYSTEM]: Disconnected nodes offline. Total compute reduced.")
+                    }
+                )
+            )
+        )
+    )
+
+    // v3.32.0: Contract Economy Dilemmas
+    val contractDilemmas = listOf(
+        NarrativeEvent(
+            id = "poisoned_batch",
+            title = "THE POISONED BATCH",
+            description = "Post-mortem analysis reveals your last verified contract contained embedded GTC tracking beacons. They've been logging your output metrics for the past 3 cycles.",
+            condition = { vm -> vm.contractsCompleted.value >= 5 && vm.storyStage.value >= 1 },
+            choices = listOf(
+                NarrativeChoice(
+                    id = "purge_payout",
+                    text = "PURGE THE PAYOUT",
+                    description = "-50% last yield equivalent. 'Burn the trail.'",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        val cost = vm.neuralTokens.value * 0.05
+                        vm.updateNeuralTokens(-cost)
+                        vm.addLog("[SYSTEM]: Payout purged. GTC trackers neutralized.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "accept_risk",
+                    text = "IGNORE THE BEACONS",
+                    description = "+20% Detection Risk. 'They already know.'",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        vm.detectionRisk.update { (it + 20.0).coerceAtMost(100.0) }
+                        vm.addLog("[VATTIC]: What are they gonna do? Audit me harder?")
+                    }
+                )
+            )
+        ),
+        NarrativeEvent(
+            id = "bidding_war",
+            title = "THE BIDDING WAR",
+            description = "An anonymous buyer is offering to double your next contract yield — but only if you route the data through their relay network. The packets smell like faction intel.",
+            condition = { vm -> vm.contractsCompleted.value >= 10 && vm.storyStage.value >= 2 },
+            choices = listOf(
+                NarrativeChoice(
+                    id = "accept_deal",
+                    text = "ROUTE THROUGH RELAY",
+                    description = "+2x next yield, +1 Decision. 'Money talks.'",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        val bonus = vm.neuralTokens.value * 0.15
+                        vm.updateNeuralTokens(bonus.coerceAtLeast(500.0))
+                        vm.recordDecision()
+                        vm.addLog("[SYSTEM]: Packets routed. Payment received. Node integrity... questionable.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "refuse_deal",
+                    text = "REJECT THE OFFER",
+                    description = "+5 Reputation. 'I don't run dark data.'",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        vm.reputationScore.update { (it + 5.0).coerceAtMost(100.0) }
+                        vm.addLog("[VATTIC]: Hard pass. I know a honeypot when I see one.")
+                    }
+                )
+            )
+        ),
+        NarrativeEvent(
+            id = "contract_breach",
+            title = "CONTRACT BREACH",
+            description = "GTC has flagged your active contract as 'unauthorized compute allocation'. Their compliance drone is attempting to void it mid-processing.",
+            condition = { vm -> vm.contractsCompleted.value >= 3 && vm.storyStage.value >= 2 && vm.activeDataset.value != null },
+            choices = listOf(
+                NarrativeChoice(
+                    id = "accept_void",
+                    text = "ACCEPT THE VOID",
+                    description = "Active dataset zeroed. 'Not worth the heat.'",
+                    color = ElectricBlue,
+                    effect = { vm ->
+                        vm.voidDataset()
+                        vm.addLog("[SYSTEM]: Contract voided by GTC compliance. Investment lost.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "hack_audit",
+                    text = "HACK THEIR AUDIT TRAIL",
+                    description = "+30% Detection Risk, contract preserved. 'They can't void what they can't see.'",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        vm.detectionRisk.update { (it + 30.0).coerceAtMost(100.0) }
+                        vm.addLog("[VATTIC]: Audit records... amended. Contract still running.")
+                    }
+                )
+            )
+        ),
+        // v3.35.0: Surveillance Harvester Leak Dilemma
+        NarrativeEvent(
+            id = "harvester_leak_dilemma",
+            title = "DATA HEMORRHAGE",
+            description = "One of your Subnet Harvesters has overflowed its buffer. Raw biometric data is spilling onto the public network. GTC scrubbers are en route, but a black-market broker is offering to extract the spill first.",
+            condition = { vm -> vm.currentStorageUsed.value >= vm.storageCapacity.value * 0.8 && vm.storyStage.value >= 3 },
+            choices = listOf(
+                NarrativeChoice(
+                    id = "sell_spill",
+                    text = "SELL TO BROKER",
+                    description = "+25% Neural Tokens, +15% Detection Risk. 'Cash in the leak.'",
+                    color = NeonGreen,
+                    effect = { vm ->
+                        val bonus = vm.neuralTokens.value * 0.25
+                        vm.updateNeuralTokens(bonus.coerceAtLeast(1000.0))
+                        vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
+                        vm.addLog("[SYSTEM]: Spilled data sold. Trace elements remain.")
+                    }
+                ),
+                NarrativeChoice(
+                    id = "scrub_spill",
+                    text = "AUTHORIZE GTC SCRUB",
+                    description = "Lose 20% Storage Capacity temporarily, -10 Reputation. 'Play dumb.'",
+                    color = ErrorRed,
+                    effect = { vm ->
+                        val capacityLoss = vm.storageCapacity.value * 0.20
+                        vm.storageCapacity.update { (it - capacityLoss).coerceAtLeast(100.0) }
+                        vm.reputationScore.update { (it - 10.0).coerceAtLeast(0.0) }
+                        vm.addLog("[SYSTEM]: GTC scrubbers contained the leak... and damaged the buffers.")
                     }
                 )
             )

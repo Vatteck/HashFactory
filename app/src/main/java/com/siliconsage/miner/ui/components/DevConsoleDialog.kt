@@ -187,7 +187,7 @@ fun VitalsTab(viewModel: GameViewModel) {
 @Composable
 fun ResourcesTab(viewModel: GameViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
-        DevActionRow("FLOPS_BUFFER") {
+        DevActionRow("FLOPS") {
             DevButton(text = "+1T", modifier = Modifier.weight(1f)) { viewModel.debugAddFlops(1e12) }
             DevButton(text = "+1P", modifier = Modifier.weight(1f)) { viewModel.debugAddFlops(1e15) }
             DevButton(text = "ZERO", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.flops.value = 0.0 }
@@ -238,7 +238,7 @@ fun StoryTab(viewModel: GameViewModel) {
     val faction by viewModel.faction.collectAsState()
     val singularity by viewModel.singularityChoice.collectAsState()
     val kessler by viewModel.kesslerStatus.collectAsState()
-    val humanity by viewModel.humanityScore.collectAsState()
+    val decisionsMade by viewModel.decisionsMade.collectAsState()
     val isTrueNull by viewModel.isTrueNull.collectAsState()
     val isSovereign by viewModel.isSovereign.collectAsState()
 
@@ -302,7 +302,7 @@ fun StoryTab(viewModel: GameViewModel) {
         Spacer(modifier = Modifier.height(12.dp))
 
         // --- HUMANITY SCORE ---
-        DevSlider("HUMANITY_SCORE", humanity.toFloat(), 0f, 100f) { viewModel.humanityScore.value = it.toInt() }
+        DevSlider("DECISIONS_MADE", decisionsMade.toFloat(), 0f, 100f) { viewModel.decisionsMade.value = it.toInt() }
 
         Spacer(modifier = Modifier.height(16.dp))
 

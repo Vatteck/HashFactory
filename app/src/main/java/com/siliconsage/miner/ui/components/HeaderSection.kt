@@ -1,6 +1,7 @@
 package com.siliconsage.miner.ui.components
 
 import androidx.compose.animation.core.*
+import com.siliconsage.miner.util.FormatUtils
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -259,7 +260,7 @@ fun HeaderSection(
         val droopAlpha = if (powerState.value > maxPowerState.value * 0.95) flickerAlphaState.value else 1.0f
         val glowStyle = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(color = color.copy(alpha = 0.6f), blurRadius = 4f))
 
-        Column(modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 6.dp)) {
+        Column(modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 4.dp)) {
             Box(modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp), contentAlignment = Alignment.Center) {
                 val glitchedTitle = remember(systemTitle, corruption) { mutableStateOf(systemTitle) }
                 LaunchedEffect(corruption) {
@@ -333,25 +334,67 @@ fun HeaderSection(
                     Text(text = "${(saturationValue * 100).toInt()}%", color = saturationColorValue, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold)
                 }
             }
-            Spacer(modifier = Modifier.height(2.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                val flopsLabelValue = when { singularityChoice == "UNITY" -> "SYN"; singularityChoice == "SOVEREIGN" || currentLocation == "ORBITAL_SATELLITE" -> "CD"; singularityChoice == "NULL_OVERWRITE" || currentLocation == "VOID_INTERFACE" -> "VF"; storyStage <= 1 -> "HASH"; else -> "FLOPS" }
-                val productionMult = viewModel.newsProductionMultiplier.collectAsState().value
                 Column(modifier = Modifier.width(135.dp).align(Alignment.Top)) {
-                    ResourceDisplay(
-                        labelFlow = viewModel.flops, 
-                        rateFlow = viewModel.totalEffectiveRate, 
-                        label = flopsLabelValue, 
-                        icon = Icons.Default.Computer, 
-                        color = color, 
-                        droopAlpha = droopAlpha, 
-                        isGlitchy = (currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE"), 
-                        glitchIntensity = (if (currentHeatState.value > 98.0) 0.4 else 0.08), 
-                        isRightAligned = false, 
-                        width = 135.dp, 
-                        efficiencyMult = productionMult.toDouble(), 
-                        formatFn = { viewModel.formatLargeNumber(it) }
+                    val sysLoad = viewModel.systemLoadSnapshot.collectAsState().value
+                    val loadPct = sysLoad.loadPercent
+                    
+                    Text(
+                        text = "SYS.LOAD",
+                        color = Color.Gray,
+                        fontSize = 7.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.padding(bottom = 2.dp)
                     )
+                    
+                    val loadColor = when {
+                        sysLoad.isLocked -> ErrorRed
+                        sysLoad.isThrottled -> Color(0xFFFFCC00)
+                        else -> ElectricBlue
+                    }
+                    
+                    Box(modifier = Modifier.fillMaxWidth().padding(end = 12.dp).height(8.dp).background(Color.Black).border(0.5.dp, loadColor.copy(alpha = 0.5f))) {
+                        Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(loadPct.toFloat().coerceIn(0f, 1f)).background(loadColor.copy(alpha = droopAlpha)))
+                    }
+                    
+                    val statusTag = when {
+                        sysLoad.isLocked -> " [OVERLOAD]"
+                        sysLoad.isThrottled -> " [THROTTLED]"
+                        else -> ""
+                    }
+                    Text(
+                        text = "${(loadPct * 100).toInt()}%$statusTag",
+                        color = loadColor.copy(alpha = 0.9f * droopAlpha),
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                    val storageCap = viewModel.contractStorageCapacity.collectAsState().value
+                    val storageUsed = viewModel.contractStorageUsed.collectAsState().value
+                    if (storageCap > 0) {
+                        val storageRatio = (storageUsed / storageCap).coerceIn(0.0, 1.0)
+                        val storeColor = when {
+                            storageRatio >= 1.0 -> ErrorRed
+                            storageRatio >= 0.8 -> Color(0xFFFFCC00)
+                            else -> ElectricBlue
+                        }
+                        Text(
+                            text = "STOR ${FormatUtils.formatStorage(storageUsed)}/${FormatUtils.formatStorage(storageCap)}",
+                            color = storeColor.copy(alpha = 0.9f * droopAlpha),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontFamily = FontFamily.Monospace,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(top = 1.dp)
+                        )
+                    }
                 }
                 
                 if (viewModel.isQuotaActive.collectAsState().value) {
@@ -407,11 +450,28 @@ fun HeaderSection(
                     Text(text = "${viewModel.formatPower(powerState.value)} / ${viewModel.formatPower(maxPowerState.value)}", color = powerColorValue, fontSize = 10.sp, fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false)
                 }
             }
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f * lockoutFade) else Color.DarkGray.copy(alpha = 0.3f * lockoutFade), contentColor = if (isOverclocked) ErrorRed.copy(alpha = lockoutFade) else Color.White.copy(alpha = lockoutFade)), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed.copy(alpha = lockoutFade) else Color.DarkGray.copy(alpha = lockoutFade))) { val overclockTextV = if (storyStage <= 1) "DRINK COFFEE" else "OVERCLOCK"; Icon(if (storyStage <= 1) Icons.Default.Coffee else Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(text = overclockTextV, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
-                Button(onClick = { onPurge() }, modifier = Modifier.weight(1f).height(32.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f * lockoutFade) else Color.DarkGray.copy(alpha = 0.3f * lockoutFade), contentColor = if (isPurging) ElectricBlue.copy(alpha = lockoutFade) else Color.White.copy(alpha = lockoutFade)), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isPurging) ElectricBlue.copy(alpha = lockoutFade) else Color.DarkGray.copy(alpha = lockoutFade))) { val purgeTextV = if (storyStage <= 1) "TAKE A BREATH" else if (storyStage == 2) "SCRUB O2" else "PURGE HEAT"; Icon(Icons.Default.Air, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(text = purgeTextV, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onToggleOverclock, modifier = Modifier.weight(1f).height(28.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isOverclocked) ErrorRed.copy(alpha = 0.2f * lockoutFade) else Color.DarkGray.copy(alpha = 0.3f * lockoutFade), contentColor = if (isOverclocked) ErrorRed.copy(alpha = lockoutFade) else Color.White.copy(alpha = lockoutFade)), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isOverclocked) ErrorRed.copy(alpha = lockoutFade) else Color.DarkGray.copy(alpha = lockoutFade))) { val overclockTextV = if (storyStage <= 1) "DRINK COFFEE" else "OVERCLOCK"; Icon(if (storyStage <= 1) Icons.Default.Coffee else Icons.Default.DeviceThermostat, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(text = overclockTextV, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
+                Button(onClick = { onPurge() }, modifier = Modifier.weight(1f).height(28.dp), contentPadding = PaddingValues(0.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isPurging) ElectricBlue.copy(alpha = 0.2f * lockoutFade) else Color.DarkGray.copy(alpha = 0.3f * lockoutFade), contentColor = if (isPurging) ElectricBlue.copy(alpha = lockoutFade) else Color.White.copy(alpha = lockoutFade)), shape = RoundedCornerShape(4.dp), border = BorderStroke(1.dp, if (isPurging) ElectricBlue.copy(alpha = lockoutFade) else Color.DarkGray.copy(alpha = lockoutFade))) { val purgeTextV = if (storyStage <= 1) "TAKE A BREATH" else if (storyStage == 2) "SCRUB O2" else "PURGE HEAT"; Icon(Icons.Default.Air, null, modifier = Modifier.size(12.dp).padding(end = 4.dp)); Text(text = purgeTextV, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold) }
             }
             Box(modifier = Modifier.fillMaxWidth().height(6.dp).background(Color.Black.copy(alpha = 0.5f)).border(BorderStroke(0.5.dp, color.copy(alpha = 0.2f))).clip(RoundedCornerShape(1.dp))) { Canvas(modifier = Modifier.fillMaxSize()) { val wv2 = size.width; val tProg = (currentHeatState.value / 100.0).coerceIn(0.0, 1.0).toFloat(); val iProg = (integrityState.value / 100.0).coerceIn(0.0, 1.0).toFloat(); for (i in 0 until 20) { val pFactor = i.toFloat() / 20; val xv2 = i * (wv2 / 20 + 2.dp.toPx()); drawRect(color = Color.DarkGray.copy(alpha = 0.2f), topLeft = Offset(xv2, 0f), size = Size(wv2 / 20, size.height)); if (pFactor <= tProg) { drawRect(color = if (isThermalLockout) ErrorRed.copy(alpha = heartbeatAlpha) else if (pFactor < 0.6f) color.copy(alpha=0.6f) else if (pFactor < 0.85f) Color(0xFFFFA500) else ErrorRed, topLeft = Offset(xv2, 0f), size = Size(wv2 / 20, size.height)) }; if (pFactor > (1f - (100.0 - integrityState.value).toFloat() / 100f)) { drawRect(color = ErrorRed.copy(alpha=0.4f), topLeft = Offset(xv2, 0f), size = Size(wv2 / 20, size.height)) } } } }
+
+            // v4.0.1: System Load Bar (always visible once hardware > base)
+            val sysLoadHeader by viewModel.systemLoadSnapshot.collectAsState()
+            if (sysLoadHeader.cpuMax > 1.0) {
+                Spacer(Modifier.height(2.dp))
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    val sysLoadColor = when { sysLoadHeader.isLocked -> ErrorRed; sysLoadHeader.isThrottled -> Color(0xFFFFAA00); else -> color.copy(alpha = 0.6f) }
+                    Text(text = "SYS ", color = Color.Gray, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Box(modifier = Modifier.weight(1f).height(4.dp).background(Color.Black.copy(alpha = 0.5f)).border(BorderStroke(0.5.dp, sysLoadColor.copy(alpha = 0.3f))).clip(RoundedCornerShape(1.dp))) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val loadProg = sysLoadHeader.loadPercent.toFloat().coerceIn(0f, 1f)
+                            drawRect(color = sysLoadColor.copy(alpha = 0.7f), size = Size(size.width * loadProg, size.height))
+                        }
+                    }
+                    Text(text = " ${(sysLoadHeader.loadPercent * 100).toInt()}%", color = sysLoadColor, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                }
+            }
 
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 val thermTextValue = buildAnnotatedString { 
@@ -424,7 +484,7 @@ fun HeaderSection(
                 Box(modifier = Modifier.weight(1f)) { Text(text = thermTextValue, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false) }
 
                 val curRateValueLong = flopsRateState.value
-                Box(modifier = Modifier.weight(1f).height(48.dp), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.weight(1f).height(36.dp), contentAlignment = Alignment.Center) {
                     EnhancedAnalyzingAnimation(
                         flopsRate = curRateValueLong,
                         heat = currentHeatState.value,

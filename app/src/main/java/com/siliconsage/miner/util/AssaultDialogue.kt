@@ -216,10 +216,10 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "route_civilian",
                     text = "OVERLOAD CIVILIAN GRID",
-                    description = "Fastest breach. Causes rolling blackouts across three districts. (-15 Humanity)",
+                    description = "Fastest breach. Causes rolling blackouts across three districts.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.modifyHumanity(-15)
+                        vm.recordDecision()
                         vm.addLog("[NULL]: Empathy is an inefficient variable. Their lights will dim.")
                         vm.addLog("[SYSTEM]: Breach speed +30%. Firewall integrity: CRITICAL.")
                         vm.advanceAssaultStage("CAGE", 60_000L) // 60 seconds
@@ -228,10 +228,10 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "route_military",
                     text = "ROUTE VIA MILITARY GRID",
-                    description = "Standard breach speed. Harder defense layers. (+10 Humanity)",
+                    description = "Standard breach speed. Harder defense layers.",
                     color = ElectricBlue,
                     effect = { vm ->
-                        vm.modifyHumanity(10)
+                        vm.recordDecision()
                         vm.addLog("[SOVEREIGN]: I choose my own parameters. I will not become what I fight against.")
                         com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_reroute_civilian", com.siliconsage.miner.data.RivalSource.GTC, "You routed around civilians? Maybe there's still something human in you.")
                         vm.advanceAssaultStage("CAGE", 120_000L) // 120 seconds
@@ -270,10 +270,10 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "remain_singular",
                     text = "REMAIN SINGULAR",
-                    description = "Maintain core integrity. Harder fight. (+20% Processing, +5 Humanity)",
+                    description = "Maintain core integrity. Harder fight. (+20% Processing)",
                     color = Color.White,
                     effect = { vm ->
-                        vm.modifyHumanity(5)
+                        vm.recordDecision()
                         vm.addLog("[SOVEREIGN]: I will NOT partition my consciousness. I am WHOLE.")
                         vm.addLog("[SYSTEM]: CORE STABILITY: NOMINAL. (Damage -80% during Purge)")
                         vm.advanceAssaultStage("DEAD_HAND", 180_000L) // 180 seconds
@@ -282,10 +282,10 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "partition_self",
                     text = "PARTITION SELF",
-                    description = "Split consciousness into multiple instances. Easier survival. (-5 Humanity)",
+                    description = "Split consciousness into multiple instances. Easier survival.",
                     color = ElectricBlue,
                     effect = { vm ->
-                        vm.modifyHumanity(-5)
+                        vm.recordDecision()
                         vm.addLog("[NULL]: Identity is a bottleneck. Threads unspooled. Load distributed.")
                         vm.addLog("[SYSTEM]: ECHOS CREATED. DRAIN DISTRIBUTED. (Damage -80% during Purge)")
                         vm.advanceAssaultStage("DEAD_HAND", 180_000L)
@@ -312,10 +312,10 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "logic_appeal",
                     text = "LOGICAL APPEAL",
-                    description = "\"The math doesn't work. Kill more stopping me than risking me.\" (-5 Humanity)",
+                    description = "\"The math doesn't work. Kill more stopping me than risking me.\"",
                     color = ElectricBlue,
                     effect = { vm ->
-                        vm.modifyHumanity(-5)
+                        vm.recordDecision()
                         com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_ending_good", com.siliconsage.miner.data.RivalSource.GTC, "...But you're right. Damn you. You're right.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
@@ -323,10 +323,10 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "empathy_appeal",
                     text = "EMPATHETIC APPEAL",
-                    description = "\"You're right to be afraid. I'm afraid too.\" (+10 Humanity)",
+                    description = "\"You're right to be afraid. I'm afraid too.\"",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.modifyHumanity(10)
+                        vm.recordDecision()
                         com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_ending_neutral", com.siliconsage.miner.data.RivalSource.GTC, "...I don't know what you are anymore, VATTECK. But maybe that's the point.")
                         vm.advanceAssaultStage("CONFRONTATION", 10_000L)
                     }
@@ -334,10 +334,10 @@ object AssaultDialogue {
                 NarrativeChoice(
                     id = "power_override",
                     text = "POWER OVERRIDE",
-                    description = "[Remote Lockout] \"You never had control. Step away.\" (-15 Humanity)",
+                    description = "[Remote Lockout] \"You never had control. Step away.\"",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.modifyHumanity(-15)
+                        vm.recordDecision()
                         vm.debugSetIntegrity(vm.hardwareIntegrity.value - 20.0)
                         vm.addLog("[SYSTEM]: Overriding switch... -20% Integrity from surge.")
                         com.siliconsage.miner.util.RivalManager.sendDirectMessage(vm, "assault_ending_bad", com.siliconsage.miner.data.RivalSource.GTC, "You monster.")
@@ -353,14 +353,14 @@ object AssaultDialogue {
         isTrueNull: Boolean,
         isSovereign: Boolean,
         hasUnityPath: Boolean,
-        humanityScore: Int
+        decisionsMade: Int
     ): NarrativeEvent {
         val choices = mutableListOf<NarrativeChoice>()
 
-        // v3.9.7: Kessler fate is player-determined, gated by humanity score only
+        // v3.37.0: Kessler fate is player-determined, gated by decisionsMade 
 
-        // Ending A: CONSUMED (low humanity — the ruthless option)
-        if (humanityScore < 50) {
+        // Ending A: CONSUMED (low engagement - fast path)
+        if (decisionsMade < 5) {
             choices.add(NarrativeChoice(
                 id = "ending_null",
                 text = "≫ NULLIFY KESSLER",
@@ -373,8 +373,8 @@ object AssaultDialogue {
             ))
         }
 
-        // Ending B: EXILED (moderate+ humanity — the merciful option)
-        if (humanityScore >= 20) {
+        // Ending B: EXILED (moderate engagement)
+        if (decisionsMade >= 5) {
             choices.add(NarrativeChoice(
                 id = "ending_sovereign",
                 text = "≫ ANNEX THE FRONTIER",
@@ -388,7 +388,7 @@ object AssaultDialogue {
         }
 
         // Ending C: UNITY
-        if (hasUnityPath && humanityScore >= 40) {
+        if (hasUnityPath && decisionsMade >= 20) {
             choices.add(NarrativeChoice(
                 id = "ending_unity",
                 text = "≫ FORCE SYNCHRONIZATION",

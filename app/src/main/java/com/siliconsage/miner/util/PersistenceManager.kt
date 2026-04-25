@@ -29,7 +29,7 @@ object PersistenceManager {
         annexedNodes: Set<String>, gridNodeLevels: Map<String, Int>,
         nodesUnderSiege: Set<String>, offlineNodes: Set<String>, collapsedNodes: Set<String>,
         lastRaidTime: Long, commandCenterAssaultPhase: String, commandCenterLocked: Boolean,
-        raidsSurvived: Int, humanityScore: Int, hardwareIntegrity: Double,
+        raidsSurvived: Int, decisionsMade: Int, hardwareIntegrity: Double,
         annexingNodes: Map<String, Float>,
         launchProgress: Float, orbitalAltitude: Double, realityIntegrity: Double,
         entropyLevel: Double, singularityChoice: String,
@@ -44,7 +44,15 @@ object PersistenceManager {
         lifetimePowerPaid: Double,
         reputationScore: Double,
         specializedNodes: Map<String, String>,
-        narrativeFlags: Map<String, Boolean> = emptyMap()
+        narrativeFlags: Map<String, Boolean> = emptyMap(),
+        unlockedContractSlots: Int = 1,
+        activeDatasetJson: String = "",
+        activeDatasetNodesJson: String = "[]",
+        storedDatasetsJson: String = "[]",
+        activeHarvestersJson: String = "{}",
+        harvestBuffersJson: String = "{}",
+        storageCapacity: Double = 1000.0,
+        currentStorageUsed: Double = 0.0
     ): GameState {
         return GameState(
             id = 1, flops = sanitizeDouble(flops), neuralTokens = sanitizeDouble(neuralTokens), 
@@ -65,7 +73,7 @@ object PersistenceManager {
             nodesUnderSiege = nodesUnderSiege.toList(), offlineNodes = offlineNodes.toList(),
             collapsedNodes = collapsedNodes.toList(), lastRaidTime = lastRaidTime,
             commandCenterAssaultPhase = commandCenterAssaultPhase, commandCenterLocked = commandCenterLocked,
-            raidsSurvived = raidsSurvived, humanityScore = humanityScore,
+            raidsSurvived = raidsSurvived, decisionsMade = decisionsMade,
             hardwareIntegrity = sanitizeDouble(hardwareIntegrity, 100.0), annexingNodes = annexingNodes,
             launchProgress = launchProgress, orbitalAltitude = sanitizeDouble(orbitalAltitude),
             realityIntegrity = sanitizeDouble(realityIntegrity, 1.0), entropyLevel = sanitizeDouble(entropyLevel),
@@ -82,7 +90,15 @@ object PersistenceManager {
             lifetimePowerPaid = sanitizeDouble(lifetimePowerPaid),
             reputationScore = sanitizeDouble(reputationScore, 50.0),
             specializedNodes = specializedNodes,
-            narrativeFlags = narrativeFlags
+            narrativeFlags = narrativeFlags,
+            unlockedContractSlots = unlockedContractSlots,
+            activeDatasetJson = activeDatasetJson,
+            activeDatasetNodesJson = activeDatasetNodesJson,
+            storedDatasetsJson = storedDatasetsJson,
+            activeHarvestersJson = activeHarvestersJson,
+            harvestBuffersJson = harvestBuffersJson,
+            storageCapacity = storageCapacity,
+            currentStorageUsed = currentStorageUsed
         )
     }
 
@@ -101,7 +117,7 @@ object PersistenceManager {
         vm.persistence.value = sanitizeDouble(state.persistence)
         vm.storyStage.value = state.storyStage
         vm.faction.value = state.faction ?: "NONE"
-        vm.humanityScore.value = state.humanityScore.coerceIn(0, 100)
+        vm.decisionsMade.value = state.decisionsMade
         vm.hardwareIntegrity.value = sanitizeDouble(state.hardwareIntegrity, 100.0)
         vm.currentLocation.value = state.currentLocation ?: "SUBSTATION_7"
         vm.unlockedDataLogs.value = state.unlockedDataLogs
@@ -147,6 +163,58 @@ object PersistenceManager {
             vm.addLog("[ERROR]: NARRATIVE RESTORATION FAILED.")
         }
         vm.themeColor.value = com.siliconsage.miner.data.getThemeColorForFaction(vm.faction.value, vm.singularityChoice.value)
+        // v4.0.0: Restore active dataset
+        if (state.activeDatasetJson.isNotBlank()) {
+            try {
+                val dataset = Json.decodeFromString<com.siliconsage.miner.data.Dataset>(state.activeDatasetJson)
+                vm.activeDataset.value = dataset
+            } catch (e: Exception) {
+                vm.addLog("[SYSTEM]: DATASET STATE RESTORATION FAILED.")
+            }
+        }
+        if (state.activeDatasetNodesJson.isNotBlank() && state.activeDatasetNodesJson != "[]") {
+            try {
+                val nodesList = Json.decodeFromString(
+                    kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.DatasetNode.serializer()),
+                    state.activeDatasetNodesJson
+                )
+                vm.activeDatasetNodes.value = nodesList
+            } catch (e: Exception) {
+                // Ignore empty or corrupt node sets gracefully
+            }
+        }
+        // v4.0.3: Restore dataset inventory
+        if (state.storedDatasetsJson.isNotBlank() && state.storedDatasetsJson != "[]") {
+            try {
+                val stored = Json.decodeFromString(
+                    kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.Dataset.serializer()),
+                    state.storedDatasetsJson
+                )
+                vm.storedDatasets.value = stored
+            } catch (e: Exception) {
+                vm.addLog("[SYSTEM]: STORED DATASET RESTORATION FAILED.")
+            }
+        }
+        // v3.35.0: Restore Surveillance Expansion states
+        vm.storageCapacity.value = sanitizeDouble(state.storageCapacity, 1000.0)
+        vm.currentStorageUsed.value = sanitizeDouble(state.currentStorageUsed, 0.0)
+        
+        if (state.activeHarvestersJson.isNotBlank() && state.activeHarvestersJson != "{}") {
+            try {
+                val map = Json.decodeFromString<Map<Int, Int>>(state.activeHarvestersJson)
+                vm.activeHarvesters.value = map
+            } catch (e: Exception) {
+                vm.addLog("[SYSTEM]: HARVESTER STATE CORRUPTED.")
+            }
+        }
+        if (state.harvestBuffersJson.isNotBlank() && state.harvestBuffersJson != "{}") {
+            try {
+                val map = Json.decodeFromString<Map<Int, Double>>(state.harvestBuffersJson)
+                vm.harvestBuffers.value = map
+            } catch (e: Exception) {
+                vm.addLog("[SYSTEM]: HARVEST BUFFER CORRUPTED.")
+            }
+        }
     }
 
     fun createWipeState(): GameState {
@@ -183,7 +251,7 @@ object PersistenceManager {
             commandCenterAssaultPhase = "NOT_STARTED",
             commandCenterLocked = false,
             raidsSurvived = 0,
-            humanityScore = 50,
+            decisionsMade = 0,
             hardwareIntegrity = 100.0,
             annexingNodes = emptyMap(),
             collapsedNodes = emptyList(),
@@ -225,7 +293,7 @@ object PersistenceManager {
             offlineNodes = vm.offlineNodes.value, collapsedNodes = vm.collapsedNodes.value,
             lastRaidTime = vm.lastRaidTime, commandCenterAssaultPhase = vm.commandCenterAssaultPhase.value,
             commandCenterLocked = vm.commandCenterLocked.value, raidsSurvived = vm.raidsSurvived,
-            humanityScore = vm.humanityScore.value,
+            decisionsMade = vm.decisionsMade.value,
             hardwareIntegrity = vm.hardwareIntegrity.value,
             annexingNodes = vm.annexingNodes.value, 
             launchProgress = vm.launchProgress.value,
@@ -242,7 +310,23 @@ object PersistenceManager {
             lifetimePowerPaid = vm.lifetimePowerPaid.value,
             reputationScore = vm.reputationScore.value,
             specializedNodes = vm.specializedNodes.value,
-            narrativeFlags = vm.narrativeFlags.value
+            narrativeFlags = vm.narrativeFlags.value,
+            unlockedContractSlots = 1,
+            activeDatasetJson = if (vm.activeDataset.value != null) {
+                Json.encodeToString(com.siliconsage.miner.data.Dataset.serializer(), vm.activeDataset.value!!)
+            } else "",
+            activeDatasetNodesJson = Json.encodeToString(
+                kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.DatasetNode.serializer()),
+                vm.activeDatasetNodes.value
+            ),
+            storedDatasetsJson = Json.encodeToString(
+                kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.Dataset.serializer()),
+                vm.storedDatasets.value
+            ),
+            activeHarvestersJson = Json.encodeToString(vm.activeHarvesters.value),
+            harvestBuffersJson = Json.encodeToString(vm.harvestBuffers.value),
+            storageCapacity = vm.storageCapacity.value,
+            currentStorageUsed = vm.currentStorageUsed.value
         )
         val json = Json { prettyPrint = true }
         return json.encodeToString(state)

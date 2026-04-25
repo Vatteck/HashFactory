@@ -30,7 +30,8 @@ object MarketManager {
             corruption = vm.identityCorruption.value,
             playerRank = vm.playerRank.value,
             aquiferLevel = vm.aquiferLevel.value,
-            isQuotaActive = vm.isQuotaActive.value // v3.16.0
+            isQuotaActive = vm.isQuotaActive.value,
+            contractsCompleted = vm.contractsCompleted.value // v3.32.0
         )
         
         vm.updateNews(headline)
@@ -80,6 +81,9 @@ object MarketManager {
             newsProdMult = result.newsProductionMultiplier,
             convRate = convRate
         )
+
+        // v4.0.0: Refresh available datasets each market tick
+        vm.refreshDatasets()
         
         if (result.marketMultiplier > 1.0) SoundManager.play("market_up")
         else if (result.marketMultiplier < 1.0) SoundManager.play("market_down")

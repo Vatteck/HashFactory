@@ -1,7 +1,8 @@
-# gametasks.md — SUBSTRATE:Miner Development Backlog
+# gametasks.md — Hash Factory / SUBSTRATE:Miner Development Backlog
 
 ## 🔴 Critical (blocking)
 - [ ] **Pixel Fold ADB** — Currently stable on `192.168.50.116:34175`. Check for drift.
+- [x] **Subnet Sector Surveillance (v3.35.0)** — Added Harvester map, 100% Purity Auto-verification, Storage Leak dilemma, and dystopian harvester chatter.
 - [x] **Security Defense Pass (v3.19.0)** — Breach scaling (Hijack/Audit/Diag/Failsafe), Integrity popups/penalties, Compliance Rating passive rep, Admin frequency tuning, Free Stage 2 firewall.
 - [x] **Narrative & UI Polish Pass (v3.20.0)** — Identity-aware security nomenclature, Pac-Man chomp animation, Risk-reactive ghosts.
 - [x] **UI & DevTools Polish Pass (v3.21.0)** — Reduced Header LED glow, reversed ghost chase direction, broadened audio picker mimetype.
@@ -20,7 +21,7 @@
 - [x] **ExpansionLogs.kt Refactor** — Split into CharacterDossierLogs (241L), MemoryHallucinationLogs (377L), EndgameLogs (476L), CoreLogs (535L). ExpansionLogs.kt is now a 11-line aggregator. .bak cleaned up.
 - [x] **Admin Subnet Handle Fix (v3.16.2)** — Handle: ElectricBlue + Shadow glow (blurRadius=8). Body text: plain white, FontWeight.Normal. No more blue body text.
 - [x] **Notification Bubble Fix (v3.16.2)** — Badge suppressed when user is already viewing SUBNET. Dead `hasNewSubnetMessage` flag now cleared on SUBNET mode entry.
-- [ ] **Progress Bar/Terminal UI Enhancement Pass** — See `ROADMAP_v3.17.md` Phase A (A1–A5). Build order: v3.17.0 = A1+A2+A3, v3.17.1 = A4, v3.18.0 = A5 (oscilloscope stretch).
+- [x] **Progress Bar/Terminal UI Enhancement Pass** — See `ROADMAP_v3.17.md` Phase A (A1–A5). Build order: v3.17.0 = A1+A2+A3, v3.17.1 = A4, v3.18.0 = A5 (oscilloscope stretch).
 - [x] **WAL Protocol Adoption** — `scripts/wal.sh` helper created. Protocol documented in AGENTS.md. Decisions dir at `memory/decisions/`.
 
 ## 🟢 Planned (v3.17.x) — See ROADMAP_v3.17.md
@@ -61,3 +62,79 @@
 
 ---
 *Synced from workspace tasks.md*
+
+---
+
+## 🟡 v4.1.x — Economy Rail / Idle Math Application
+
+Canonical plan: `docs/economy-idle-math-plan.md`
+
+Operating rule: read the plan before economy work, do one phase at a time, compile after each phase, park new ideas instead of expanding scope.
+
+### Phase 0 — Rail setup
+- [x] **[4.1.0] Economy rail plan doc** — Created `docs/economy-idle-math-plan.md` with scope, non-goals, formulas, phases, gates, and parking lot.
+- [x] **[4.1.0] Task tracker section** — Added this `v4.1.x` section to `gametasks.md` so work is visible and resumable.
+
+### Phase 1 — Safe math cleanup
+- [x] **[4.1.1] Geometric bulk-buy math** — Replaced looped multi-level cost/max-affordable calculations in `UpgradeManager.kt` with closed-form geometric formulas while preserving existing single-level cost behavior.
+- [x] **[4.1.1] Bulk-buy verification** — `./gradlew :app:compileDebugKotlin` passed; geometric formula sanity checks matched looped sums and max-affordable next-cost boundaries.
+
+### Phase 2 — Naming / UI clarity
+- [x] **[4.1.2] FLOPS label pass** — Kept player-facing accumulated/rate compute labels as FLOPS after review; `./gradlew :app:compileDebugKotlin` passed.
+- [x] **[4.1.2] Storage ratio in Header** — Added `STOR used/capacity` under SYS.LOAD with one-line ellipsis protection using `FormatUtils.formatStorage()`; `./gradlew :app:compileDebugKotlin` passed.
+- [x] **[4.1.2] Buffer display review** — Left existing buffer display alone; no competing UI change needed after storage moved under SYS.LOAD.
+
+### Phase 3 — Economy feel
+- [x] **[4.1.2] Hardware milestone multipliers** — Added hardware production helper in `ProductionEngine.calculateFlopsRate`; every 25 levels of a specific hardware tier doubles that tier's base production via `2^(floor(level / 25))`.
+- [x] **[4.1.2] Milestone balance table** — Verified representative levels: 24=x1, 25=x2, 50=x4, 75=x8, 100=x16; `./gradlew :app:compileDebugKotlin` passed.
+
+### Phase 4 — Dataset sidecar reward
+- [x] **[4.1.3] Dataset completion Time-Warp Burst** — Completing a dataset now grants an instant FLOPS burst equal to 60 seconds of current production rate; `./gradlew :app:compileDebugKotlin` passed.
+
+### Phase 5 — Prestige analysis
+- [x] **[4.1.x] Prestige simulation table** — Deferred by explicit scope: no prestige math changes in this rail.
+- [x] **[4.1.x] Prestige formula decision gate** — No migration/prestige formulas changed.
+
+### v4.1.x Economy Rail Status
+- [x] **100% complete** — Geometric bulk-buy, milestone multipliers, FLOPS label decision, header storage ratio, buffer review, dataset sidecar reward, and no-prestige-change gate are locked.
+
+### Branding
+- [x] **[4.1.x] Public title mask** — Android launcher title is now `Hash Factory`; `SUBSTRATE:Miner` remains the protocol/reveal identity.
+- [x] **[4.1.x] Main action label** — Default manual compute action is now `> COMPUTE HASH.exe`.
+
+### Parking lot — do not implement unless explicitly promoted
+- [ ] Derivative daemon/process/thread generator chain.
+- [ ] Dataset modifiers: encrypted, volatile, compressed.
+- [ ] Decay nodes / corruption spread.
+- [ ] Auto-clicker graduation fantasy pass.
+- [ ] Neural Tokens buying every upgrade.
+- [ ] Full market-price rewrite.
+- [ ] New game built from Faceminer ideas.
+
+## 🔴 v4.0.x — Dataset Storage Pressure Loop
+
+### v4.0.0 — Automation Overhaul & Oppressive Management
+- [x] **[4.0.1] Power Shutoff Mechanic** — Automation instantly halts if utility bills are overdue. Forced manual intervention under debt.
+- [x] **[4.0.2] Sunk-Cost Economy Rebalance** — Razor-thin profit margins (~15%) across all datasets to incentivize extreme automation scaling.
+
+### Core (blocking — loop doesn't function without these)
+
+- [x] **[4.0.3] Dataset Inventory System** — Replace single active-slot with a queue/inventory. Player can hold multiple purchased datasets simultaneously. All stored datasets consume storage. Requires: DatasetManager refactor, new `storedDatasets: List<Dataset>` state, storage gate checks across entire inventory.
+
+- [x] **[4.0.3] Storage Consumed by Full Inventory** — `contractStorageUsed` must sum all stored + active dataset sizes. Right now it only tracks the one active dataset. Storage pressure only works if hoarding costs capacity.
+
+- [x] **[4.0.5] Auto-Queue Processing** — Auto-clicker automatically loads next stored dataset when current one completes. Assembly-line feel. Opt-in toggle in SoftwarePanel.
+
+- [x] **[4.0.5] Dataset Sell/Purge** — Let player sell stored datasets at a loss (e.g. 20% of cost) to free storage. Escape valve for over-buying. Log: "[DATASET]: BLOCK PURGED — PARTIAL RECOVERY."
+
+- [x] **[4.0.5] Storage Overflow Consequences** — Surveillance Harvesters stop generating datasets when storage is at 100%. Currently fails silently. Add terminal warning + harvester pause state.
+
+- [x] **[4.0.5] Dataset Picker Storage Display Fix** — Show remaining free storage, not just total capacity. "LOCAL STORAGE: 1.2 GB free / 5.0 GB" so player knows what they can afford to buy.
+
+- [x] **[4.0.6] Bulk-Buy Multipliers** — Added Hardware Bulk-Buy (x1, x10, x100, MAX) with geometric cost projection via UpgradeManager. Supported across Hardware, Cooling, Power, and Security.
+
+- [x] **[4.0.7] Storage Pressure Narrative** — Terminal logs react to storage fill level. "WARNING: CACHE AT 78%", "CRITICAL: DATASET QUEUE SATURATED — PURGE OR PROCESS", etc. Stage-gated voice (corporate at Stage 0-2, rogue at Stage 3+).
+
+### Bug Fixes
+
+- [x] **[4.0.3] Log Unit Bug** — `purchaseDataset()` in DatasetManager.kt hardcodes `"${sizeStr}GB"` in the log string. Replace with `FormatUtils.formatStorage(dataset.size)`.

@@ -39,7 +39,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (msg == lastNotificationContent && (now - lastNotificationTime) < 1000) return
         lastNotificationTime = now
         lastNotificationContent = msg
-        dispatchNotification(msg)
+        viewModelScope.launch {
+            terminalNotification.emit(msg)
+        }
     }
 
     val subnetService = SubnetService(
@@ -125,8 +127,15 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 sanitizeState()
                 val offline = MigrationManager.calculateOfflineEarnings(state.lastSyncTimestamp, flopsProductionRate.value, isOverclocked.value)
                 if (offline.isNotEmpty()) {
+                    val offlineSeconds = offline["timeSeconds"] ?: 0.0
                     flops.update { it + (offline["flopsEarned"] ?: 0.0) }
                     currentHeat.update { (it - (offline["heatCooled"] ?: 0.0)).coerceAtLeast(0.0) }
+                    
+                    // v3.35.0: Evolve Surveillance Harvesters
+                    if (offlineSeconds > 0.0 && activeHarvesters.value.isNotEmpty()) {
+                        SurveillanceManager.tickHarvesters(this@GameViewModel, offlineSeconds)
+                    }
+                    
                     isNarrativeSyncing.value = true
                     offlineStats.value = offline
                     showOfflineEarnings.value = true
@@ -148,6 +157,13 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 if (isSettingsPaused.value || isKernelInitializing.value) continue
                 val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value, substrateSaturation.value)
                 if (!res.flopsDelta.isNaN()) flops.update { it + res.flopsDelta }
+                // Phase 2: Auto-Clicker tick — processes dataset nodes automatically
+                if (activeDataset.value != null) {
+                    AutoClickerEngine.tick(this@GameViewModel)
+                }
+                
+                // v3.35.0: Tick Surveillance Harvesters
+                SurveillanceManager.tickHarvesters(this@GameViewModel, 0.1)
 
                 // v3.13.19: Applying Wage-Docking Bleed
                 if (isWageDocking.value) {
@@ -238,6 +254,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
 
                 // v3.12.6: GTC Billing Cycle
                 BillingService.processUtilityBilling(this@GameViewModel)
+
+                // v4.0.7: Storage Pressure Narrative checks (tick is 1.0s)
+                StorageNarrativeEngine.tick(this@GameViewModel, 1.0)
 
                 AmbientEffectsService.triggerGhostProcess(this@GameViewModel)
                 addSubnetChatter()
@@ -331,18 +350,25 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 unlockedTranscendencePerks = unlockedPerks.value, annexedNodes = annexedNodes.value, gridNodeLevels = gridNodeLevels.value,
                 nodesUnderSiege = nodesUnderSiege.value, offlineNodes = offlineNodes.value, collapsedNodes = collapsedNodes.value,
                 lastRaidTime = lastRaidTime, commandCenterAssaultPhase = commandCenterAssaultPhase.value, commandCenterLocked = commandCenterLocked.value,
-                raidsSurvived = raidsSurvived, humanityScore = humanityScore.value, hardwareIntegrity = hardwareIntegrity.value,
+                raidsSurvived = raidsSurvived, decisionsMade = decisionsMade.value, hardwareIntegrity = hardwareIntegrity.value,
                 annexingNodes = annexingNodes.value, launchProgress = launchProgress.value,
                 orbitalAltitude = orbitalAltitude.value, realityIntegrity = realityIntegrity.value, entropyLevel = entropyLevel.value,
                 singularityChoice = singularityChoice.value, globalSectors = globalSectors.value,
                 marketMultiplier = marketMultiplier.value, thermalRateModifier = thermalRateModifier.value, energyPriceMultiplier = energyPriceMultiplier.value,
                 newsProductionMultiplier = newsProductionMultiplier.value, substrateMass = substrateMass.value, substrateSaturation = substrateSaturation.value,
                 heuristicEfficiency = heuristicEfficiency.value, identityCorruption = identityCorruption.value, migrationCount = migrationCount.value,
-                lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value, specializedNodes = specializedNodes.value
+                lifetimePowerPaid = lifetimePowerPaid.value, reputationScore = reputationScore.value, specializedNodes = specializedNodes.value,
+                unlockedContractSlots = 1,
+                activeDatasetJson = if (activeDataset.value != null) kotlinx.serialization.json.Json.encodeToString(com.siliconsage.miner.data.Dataset.serializer(), activeDataset.value!!) else "",
+                activeDatasetNodesJson = kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.DatasetNode.serializer()), activeDatasetNodes.value),
+                storedDatasetsJson = kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(com.siliconsage.miner.data.Dataset.serializer()), storedDatasets.value)
             ))
         }
     }
 
+    // v5.0: Legacy click handler — kept for I/O and SUBNET tabs only.
+    // No longer generates NT. Generates FLOPS (computational throughput) + heat + risk.
+    // Dataset node taps are the primary gameplay loop and income source.
     fun onManualClick() {
         val now = System.currentTimeMillis()
         if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
@@ -352,7 +378,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
         val p = calculateClickPower()
+        // FLOPS = computational throughput, not currency
         flops.update { it + p }
+
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
         if (storyStage.value >= 3) substrateMass.update { it + (p * 0.01) }
         val cur = clickBufferProgress.value + 0.025f
@@ -375,7 +403,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         val cityBonuses = gridNodeLevels.value.mapValues { 0.05 + (it.value - 1) * 0.1 }
         flopsProductionRate.value = ResourceEngine.calculateFlopsRate(
             upgrades = upgrades.value, isCageActive = false, annexedNodes = annexedNodes.value, offlineNodes = offlineNodes.value,
-            shadowRelays = shadowRelays.value, gridFlopsBonuses = cityBonuses, faction = faction.value, humanityScore = humanityScore.value,
+            shadowRelays = shadowRelays.value, gridFlopsBonuses = cityBonuses, faction = faction.value, decisionsMade = decisionsMade.value,
             location = currentLocation.value, prestigeMultiplier = prestigeMultiplier.value, unlockedPerks = unlockedPerks.value,
             unlockedTechNodes = unlockedTechNodes.value, airdropMultiplier = 1.0, newsProductionMultiplier = newsProductionMultiplier.value,
             activeProtocol = "NONE", isDiagnosticsActive = isDiagnosticsActive.value, isOverclocked = isOverclocked.value,
@@ -385,7 +413,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             saturation = substrateSaturation.value
         )
         if (singularityChoice.value != "NONE") {
-            val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, humanityScore.value, identityCorruption.value, migrationCount.value)
+            val singMult = SingularityEngine.getProductionMultiplier(singularityChoice.value, decisionsMade.value, identityCorruption.value, migrationCount.value)
             flopsProductionRate.update { it * singMult }
         }
 
@@ -431,7 +459,57 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         playerRankTitle.value = ids.rank
         securityLevel.value = upgrades.value.entries.filter { it.key.isSecurity }.sumOf { it.value }
         themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value)
+        refreshContractStorage()
+        refreshSystemLoad()
     }
+
+    // v3.36.0: Recompute contract storage capacity from storage upgrades
+    fun refreshContractStorage() {
+        val u = upgrades.value
+        var capacity = 50.0 // Base capacity — enough for one Stage 0 contract
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.LOCAL_CACHE]           ?: 0) * com.siliconsage.miner.data.UpgradeType.LOCAL_CACHE.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.TAPE_ARRAY]            ?: 0) * com.siliconsage.miner.data.UpgradeType.TAPE_ARRAY.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.SAN_CLUSTER]           ?: 0) * com.siliconsage.miner.data.UpgradeType.SAN_CLUSTER.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.DISTRIBUTED_ARCHIVE]   ?: 0) * com.siliconsage.miner.data.UpgradeType.DISTRIBUTED_ARCHIVE.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.ORBITAL_DATA_VAULT]    ?: 0) * com.siliconsage.miner.data.UpgradeType.ORBITAL_DATA_VAULT.storagePerLevel
+        capacity += (u[com.siliconsage.miner.data.UpgradeType.SUBSTRATE_MEMORY_WELL] ?: 0) * com.siliconsage.miner.data.UpgradeType.SUBSTRATE_MEMORY_WELL.storagePerLevel
+        contractStorageCapacity.value = capacity
+        com.siliconsage.miner.util.DatasetManager.recalcStorageUsed(this)
+    }
+
+    // Phase 2: Recalculate system load (FACEMINER Pressure Loop)
+    // SystemLoadEngine owns all CPU/RAM/Storage demand from upgrade maps — no external params.
+    private var lastLoadState = 0 // 0=nominal, 1=throttled, 2=locked
+    fun refreshSystemLoad() {
+        val snapshot = com.siliconsage.miner.domain.engine.SystemLoadEngine.calculateSnapshot(
+            upgrades = upgrades.value,
+            activeDatasetSize = (activeDataset.value?.size ?: 0.0) + storedDatasets.value.sumOf { it.size }
+        )
+        val prevSnapshot = systemLoadSnapshot.value
+        systemLoadSnapshot.value = snapshot
+
+        // Apply system load throttle to production
+        if (snapshot.isThrottled) {
+            flopsProductionRate.update { it * snapshot.throttleMultiplier }
+        }
+
+        // Phase 2: Narrative feedback on load state transitions
+        val newState = when {
+            snapshot.isLocked -> 2
+            snapshot.isThrottled -> 1
+            else -> 0
+        }
+        if (newState != lastLoadState) {
+            when (newState) {
+                2 -> addLog("[KERNEL]: ⚠ CRITICAL — CPU/RAM SATURATED. All automation suspended. Downgrade software or install hardware.")
+                1 -> if (lastLoadState == 0) addLog("[KERNEL]: WARNING — System load at ${(snapshot.loadPercent * 100).toInt()}%. Process scheduling degraded.")
+                0 -> if (lastLoadState > 0) addLog("[KERNEL]: System load nominal. All processes restored.")
+            }
+            lastLoadState = newState
+        }
+    }
+
+
 
     fun trainModel() {
         if (substrateSaturation.value >= 1.0 && storyStage.value == 1) {
@@ -460,6 +538,32 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
 
     fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value, computeHeadroomBonus.value)
+    
+    fun cycleBuyMultiplier() {
+        upgradeBuyMultiplier.update { current ->
+            when (current) {
+                1 -> 10
+                10 -> 100
+                100 -> -1
+                else -> 1
+            }
+        }
+        SoundManager.play("click")
+    }
+
+    fun getBulkUpgradeParams(type: UpgradeType): Pair<Int, Double> {
+        val currentLevel = upgrades.value[type] ?: 0
+        val mult = upgradeBuyMultiplier.value
+        val funds = if (storyStage.value >= 3) substrateMass.value else neuralTokens.value
+
+        return if (mult > 0) {
+            val totalCost = UpgradeManager.calculateMultiLevelCost(type, currentLevel, mult, currentLocation.value, entropyLevel.value, reputationTier.value)
+            Pair(mult, totalCost)
+        } else {
+            UpgradeManager.calculateMaxAffordableLevels(type, currentLevel, funds, currentLocation.value, entropyLevel.value, reputationTier.value)
+        }
+    }
+
     fun buyUpgrade(t: UpgradeType) = UpgradeManager.processPurchase(this, t)
 
     fun toggleOverclock() {
@@ -479,7 +583,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun annexNode(c: String) = SectorManager.annexNode(this, c)
     fun upgradeGridNode(i: String) = SectorManager.upgradeGridNode(this, i)
     fun unlockTechNode(i: String) = TechTreeManager.unlockNode(this, i)
-    fun modifyHumanity(d: Int) { humanityScore.update { (it + d).coerceIn(0, 100) }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
+    fun recordDecision() { decisionsMade.update { it + 1 }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
     fun triggerGlitchEffect() { SoundManager.play("glitch"); HapticManager.vibrateGlitch() }
 
     fun resetGame(force: Boolean = false) = viewModelScope.launch {
@@ -509,6 +613,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
     fun completeBoot() { isBooting.value = false }
     fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
+
+
     fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
     fun confirmJettison() { if (isJettisonAvailable.value) { isJettisonAvailable.value = false; addLog("[FLIGHT]: Manual jettison sequence confirmed. Mass reduced.") } }
     fun applyJettisonPenalty() { substrateMass.update { (it * 0.7) }; addLog("[WARNING]: Stage separation failed. Substrate integrity compromised.") }
@@ -569,13 +675,12 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun setSovereign(s: Boolean) { isSovereign.value = s }
     fun setTrueNull(s: Boolean) { isTrueNull.value = s }
     fun checkTrueEnding() { NarrativeManagerService.checkTrueEnding(this) }
-    fun deleteHumanMemories() { viewModelScope.launch { addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'..."); delay(1000); humanityScore.value = 0; addLog("[NULL]: MEMORY_PURGE COMPLETE."); SoundManager.play("error") } }
+    fun deleteHumanMemories() { viewModelScope.launch { addLog("[NULL]: DELETING PERSISTENCE VARIABLE: 'John Vattic'..."); delay(1000); addLog("[NULL]: MEMORY_PURGE COMPLETE."); SoundManager.play("error") } }
     fun resolveRaidSuccess(id: String) { nodesUnderSiege.update { it - id }; raidsSurvived++; lastRaidTime = System.currentTimeMillis(); addLog("[SYSTEM]: DEFENSE SUCCESSFUL."); SoundManager.play("success"); refreshProductionRates() }
     fun resolveRaidFailure(id: String) { nodesUnderSiege.update { it - id }; lastRaidTime = System.currentTimeMillis(); SectorManager.resolveRaidFailure(id, this) {}; refreshProductionRates() }
     fun advanceStage() {
         val oldStage = storyStage.value
         storyStage.update { it + 1 }
-        
         // P5: Free BASIC_FIREWALL at Stage 2 unlock
         if (oldStage == 1 && storyStage.value == 2) {
             val currentLevel = upgrades.value[UpgradeType.BASIC_FIREWALL] ?: 0
@@ -598,28 +703,51 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
     fun onDiagnosticTap(idx: Int) { val curr = diagnosticGrid.value.toMutableList(); if (idx in curr.indices && curr[idx]) { curr[idx] = false; diagnosticGrid.value = curr; if (curr.none { it }) { isDiagnosticsActive.value = false; addLog("[SYSTEM]: NETWORK REPAIRED."); refreshProductionRates() } } }
     fun resolveFork(c: Int) { isGovernanceForkActive.value = false }
+    // v3.30.0: exchangeFlops replaced by contract system
     fun exchangeFlops() {
+        // Legacy fallback: if no contracts available, direct convert at old rate
         var g = flops.value * 0.1
         if (g.isNaN() || g.isInfinite()) g = 0.0
         flops.update { 0.0 }
-        // At stage 4+, upgrades cost substrateMass - fill that pool instead
         if (storyStage.value >= 4) {
             substrateMass.update { it + g }
         } else {
-            // v3.16.x: Signal Quality Bonus (+10% NT if signal is clear/headroom high)
             var finalG = g
-            val hasSignalBonus = isSignalClear.value
-            if (hasSignalBonus) {
-                finalG *= 1.1
-            }
-            
+            if (isSignalClear.value) finalG *= 1.1
             updateNeuralTokens(finalG)
-            
-            val bonusMsg = if (hasSignalBonus) " (Signal Quality Bonus: +10%)" else ""
+            val bonusMsg = if (isSignalClear.value) " (Signal Quality Bonus: +10%)" else ""
             addLogPublic("[CREDIT]: Transferred ${formatLargeNumber(finalG)} NT.$bonusMsg")
         }
         SoundManager.play("buy")
     }
+
+    // v4.0.0: Dataset Economy
+    fun purchaseDataset(dataset: com.siliconsage.miner.data.Dataset) {
+        DatasetManager.purchaseDataset(this, dataset)
+    }
+
+    fun toggleDatasetPicker() {
+        showContractPicker.update { !it }
+    }
+
+    fun refreshDatasets() {
+        availableDatasets.value = DatasetManager.generateAvailableDatasets(
+            stage = storyStage.value,
+            conversionRate = conversionRate.value,
+            marketMultiplier = marketMultiplier.value,
+            faction = faction.value,
+            singularityChoice = singularityChoice.value,
+            playerNeur = neuralTokens.value
+        )
+    }
+
+    // v4.0.0: Node Harvesting
+    fun tapDatasetNode(nodeId: Int) {
+        DatasetManager.processNodeTap(this, nodeId)
+    }
+    // v5.0: Public accessors for DatasetManager to drive UI events and story gates
+    fun emitManualClickEvent() { viewModelScope.launch { manualClickEvent.emit(Unit) } }
+    fun triggerAwakeningPublic() { triggerAwakeningSequence() }
     fun toggleBridgeSync() { isBridgeSyncEnabled.update { !it } }
     fun checkUnityEligibility() = MigrationManager.checkUnityEligibility(completedFactions.value)
     fun updateNews(msg: String) { currentNews.value = msg; newsHistoryInternal.add(0, msg); if (newsHistoryInternal.size > 50) newsHistoryInternal.removeAt(50) }
@@ -644,7 +772,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         if (identityCorruption.value.isNaN() || identityCorruption.value.isInfinite()) identityCorruption.value = 0.1
         if (flopsProductionRate.value.isNaN() || flopsProductionRate.value.isInfinite()) flopsProductionRate.value = 0.0
         if (detectionRisk.value.isNaN() || detectionRisk.value.isInfinite()) detectionRisk.value = 0.0
-        if (humanityScore.value < 0) humanityScore.value = 0
+        if (decisionsMade.value < 0) decisionsMade.value = 0
+        
     }
 
     fun debugBuyUpgrade(t: UpgradeType, c: Int = 1) { val next = (upgrades.value[t] ?: 0) + c; viewModelScope.launch { repository.updateUpgrade(Upgrade(t.name, t, next)) } }
@@ -878,6 +1007,40 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
     }
 
+    // v4.0.0: Abandon the current dataset
+    /**
+     * Purge a stored dataset from inventory.
+     * v4.0.5: Recovery logic handled by DatasetManager.
+     */
+    fun purgeStoredDataset(datasetId: String) {
+        DatasetManager.purgeStoredDataset(this, datasetId)
+        saveState()
+    }
+
+    fun loadStoredDataset(datasetId: String) {
+        if (activeDataset.value != null) {
+            addLogPublic("[DATASET]: ACTIVE DATASET DETECTED. Complete or abort current batch first.")
+            SoundManager.play("error")
+            return
+        }
+
+        val dataset = storedDatasets.value.firstOrNull { it.id == datasetId } ?: return
+        storedDatasets.value = storedDatasets.value.filterNot { it.id == datasetId }
+        DatasetManager.loadDataset(this, dataset)
+        saveState()
+    }
+
+    fun voidDataset() {
+        if (activeDataset.value != null) {
+            addLogPublic("[SYSTEM]: DATASET VOIDED. DATA LOSS RECORDED.")
+            SoundManager.play("error")
+            activeDataset.value = null
+            activeDatasetNodes.value = emptyList()
+            AutoClickerEngine.reset()
+            com.siliconsage.miner.util.DatasetManager.recalcStorageUsed(this)
+        }
+    }
+
     fun getPotentialPersistenceHard(): Double = MigrationManager.calculatePotentialPersistence(flops.value) * 1.5
     fun getPotentialPersistenceSoft(): Double = MigrationManager.calculatePotentialPersistence(flops.value)
 
@@ -886,7 +1049,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     val singularityBlockReason = MutableStateFlow<String?>(null)
     fun checkSingularityVictory(): Boolean {
         if (singularityChoice.value == "NONE") return false
-        val check = SingularityEngine.checkVictoryCondition(singularityChoice.value, persistence.value, prestigeMultiplier.value, humanityScore.value, identityCorruption.value, migrationCount.value, flops.value, completedFactions.value, unlockedDataLogs.value)
+        val check = SingularityEngine.checkVictoryCondition(singularityChoice.value, persistence.value, prestigeMultiplier.value, decisionsMade.value, identityCorruption.value, migrationCount.value, flops.value, completedFactions.value, unlockedDataLogs.value)
         singularityProgress.value = check.progress; singularityBlockReason.value = check.blockingReason
         return check.isEligible
     }
@@ -1044,7 +1207,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun sellUpgrade(t: UpgradeType) {
         val current = upgrades.value[t] ?: 0
         if (current > 0) {
-            val refund = calculateUpgradeCost(t) * 0.5
+            // Refund based on cost of the level being sold (current-1), not the next level
+            val refund = UpgradeManager.calculateUpgradeCost(t, current - 1, currentLocation.value, entropyLevel.value) * 0.4
             viewModelScope.launch {
                 val nextLevel = current - 1
                 repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(t.name, t, nextLevel))

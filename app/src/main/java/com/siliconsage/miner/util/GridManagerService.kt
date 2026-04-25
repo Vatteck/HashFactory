@@ -61,10 +61,10 @@ object GridManagerService {
             }
 
             vm.substrateMass.update { it + 5.0 }
-            vm.humanityScore.update { (it - 1).coerceAtLeast(0) }
+            vm.decisionsMade.update { it + 1 }
             
             vm.addLogPublic("[SYSTEM]: TERMINAL REDACTION SUCCESSFUL. NODE $id DEREFERENCED.")
-            vm.addLogPublic("[VATTIC]: Shadow Relay established. Identity corrupted (-1 Humanity).")
+            vm.addLogPublic("[VATTIC]: Shadow Relay established. Identity corrupted (+1 Decision).")
             
             android.util.Log.d("GridManager", "REDACT triggered for $id")
             vm.triggerGlitchEffect()

@@ -81,6 +81,15 @@
 
 ## 2026-02-24 14:48 — v3.26.1 (Build 429)
 - Summary: UI Polish Hotfix
+## 2026-02-24 22:29 — v3.29.0 (Build 434)
+- Summary: Narrative Balance & Environmental Fixes
+
+## 2026-02-25 21:57 — v3.35.0 (Build 439)
+- Summary: Contract Integration
+
+## 2026-02-27 18:55 — v4.0.1 (Build 442)
+- Summary: FACEMINER Pressure Loop Phase 2
+
 ## 2026-03-01 23:11 — v4.0.4 (Build 435)
 - Summary: Rollback to pre-contracts stable baseline
 

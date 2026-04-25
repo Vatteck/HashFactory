@@ -1,6 +1,73 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [v4.0.7] - 2026-02-28
+### Added
+- **Storage Pressure Narrative**: The local terminal now reacts to local cache utilization.
+- **Stage-Gated Dialogue**: Tone of storage warnings shifts from Corporate (Foreman Thorne) to Rogue AI/GTC Panic based on `storyStage`.
+- Dynamic threshold triggers at 80%, 95%, and 100% saturation.
+
+## [4.0.6] - 2026-02-28
+### Added
+- **Bulk-Buy Multipliers:** Players can now toggle upgrade purchases in x1, x10, x100, and MAX quantities.
+- **Geometric Scaling:** True geometric geometric cost projection allows buying up to 500 levels instantly.
+- **Hardware UI Revisions:** Upgrades screen surfaces `BUY MULTIPLIER` toggle dynamically calculating level costs, with software installations appropriately factoring into CPU/RAM constraints linearly per install.
+
+## [4.0.5] - 2026-02-28
+### Processing & Storage Hygiene
+**Refining the dataset system with auto-queueing and storage pressure.**
+
+- **Auto-Queue Processing**: Added `isAutoLoadEnabled` toggle to the Software Panel. When enabled, completed datasets automatically load the next stored dataset from the cache for a seamless assembly-line experience.
+- **Dataset Purge**: Players can now purge stored datasets from the "LOCAL CACHE" in the Dataset Picker for a 20% Neural Token refund, providing an escape valve for over-purchasing.
+- **Storage Overflow Consequences**: Surveillance Harvesters now actively monitor storage capacity. If storage reaches 100%, harvesters suspend operation and log an "ALARM — STORAGE SATURATED" warning to the terminal to prevent silent data loss.
+- **Storage UI Fix**: The Dataset Picker now explicitly displays the remaining free storage instead of just total capacity, helping players know what they can afford to hold.
+- **GameViewModel & State Sync**: Synced new toggle flags (`isAutoLoadEnabled`) to `CoreGameState` and wired the purge wrapper appropriately to `DatasetManager`.
+
+## [4.0.3] - 2026-02-27
+### Dataset Inventory & Storage Pressure Loop
+
+- **Dataset Inventory System**: Replace single active-slot with a queue/inventory. Player can hold multiple purchased datasets simultaneously. All stored datasets consume storage.
+- **Storage Consumed by Full Inventory**: `contractStorageUsed` now sums all stored + active dataset sizes. Storage pressure only works if hoarding costs capacity.
+- **Auto-Queue Processing**: When a dataset completes, the next stored dataset auto-loads. Assembly line feel.
+- **Dataset Load Functions**: Added `loadDataset()` and `loadNextDataset()` for manual/auto activation from inventory.
+- **Recalc Storage Used**: `recalcStorageUsed()` centralizes storage calculation — called on purchase, load, void, and complete.
+- **Log Unit Bug Fix**: All dataset log messages now use `FormatUtils.formatStorage()` instead of hardcoded "GB".
+- **Persistence**: Full `storedDatasets` state persisted via `storedDatasetsJson` column.
+- **SystemLoadEngine Integration**: Storage axis now accounts for full inventory (active + all stored).
+
+### Technical
+- Added `storedDatasets: MutableStateFlow<List<Dataset>>` to CoreGameState.
+- Added `storedDatasetsJson` to GameState and PersistenceManager.
+- DatasetManager refactored with new functions: `recalcStorageUsed()`, `loadNextDataset()`, `loadDataset()`.
+- Clean compile, full persistence roundtrip tested.
+
+## [4.0.1] - 2026-02-27
+### FACEMINER Pressure Loop — Phase 2 Complete
+**The automation economy overhaul. Every software upgrade now creates hardware demand. The pressure loop is closed.**
+
+- **SystemLoadEngine v2.0**: Three-axis capacity model (CPU/RAM/Storage). Hardware provides capacity, software consumes it. Throttle at >80%, hard lockout at 100%.
+- **Leveled Software Upgrades**: Replaced 4-tier auto-clicker with `AUTO_HARVEST_SPEED` and `AUTO_HARVEST_ACCURACY` as standard upgradeable levels.
+  - Speed: +0.5 taps/sec per level (8 GHz CPU, 4 GB RAM, 15 kW, 0.3 heat per level)
+  - Accuracy: +5% per level (5 GHz CPU, 6 GB RAM, 10 kW, 0.15 heat per level)
+- **Pre-Purchase Load Gate**: Software purchases are blocked if they would exceed system capacity. No more blind overloading.
+- **Stage Gate**: Automation requires Stage 1+ clearance.
+- **Downgrade Fix**: Refund now calculated correctly (40% of current level cost, not next-level).
+- **SYS.LOAD Header**: Combined weighted load indicator with OVERLOAD/THROTTLED status tags.
+- **Narrative Feedback**: Terminal logs on load state transitions (nominal → throttled → locked and back).
+- **SoftwarePanel UI**: Shows all three resource axes (CPU/RAM/DISK) in the load bar.
+
+### Technical
+- Refactored demand calculation into SystemLoadEngine's internal maps — no more external parameters.
+- Removed `usedCpuCapacity` and `autoClickerTier` from state.
+- Clean compile, no regressions.
+
+## [3.35.0] - 2026-02-25
+### Surveillance Harvester Expansion
+- **Subnet Sector Surveillance**: Added new `SurveillanceVisualizer` UI to the Terminal `SURV` tab. Players can now deploy Harvesters across 12 sectors to passively siphon raw biometric data.
+- **High-Purity Contracts**: Harvester buffers at 100% automatically generate "Raw Biometric Bundle" Compute Contracts that inherently bypass the Verification Minigame and apply a 1.5x payout guarantee.
+- **Data Leaks**: Added a global data storage cache. Exceeding capacity triggers continuous Detection Risk spikes and Reputation damage until the buffer is cleared.
+- **Narrative Integration**: Expanded the Dystopian Subnet chatter with new strings reacting to predictive text and oppressive surveillance. Added the "DATA HEMORRHAGE" dilemma to trigger when storage thresholds hit critical levels.
+
 ## [3.27.0] - 2026-02-24
 ### UI Polish & Chatter Sync Hotfix
 - **UI Colors**: Segmented the `ResourceDisplay` string format. Rates are now permanently colored `ElectricBlue`, while efficiency multipliers are dynamically colored (`Yellow` for <1.0, `ElectricBlue` for >=1.0).

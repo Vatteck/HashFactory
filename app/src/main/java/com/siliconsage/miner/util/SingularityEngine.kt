@@ -26,7 +26,7 @@ object SingularityEngine {
      */
     fun getProductionMultiplier(
         singularityChoice: String,
-        humanityScore: Int,
+        decisionsMade: Int,
         identityCorruption: Double,
         migrationCount: Int
     ): Double {
@@ -46,10 +46,10 @@ object SingularityEngine {
                 1.5 + migrationBonus
             }
             "UNITY" -> {
-                // UNITY: Scales with balance between humanity and corruption.
-                val humanityDist = kotlin.math.abs(humanityScore / 100.0 - 0.5) * 2.0
+                // UNITY: Scales with how many narrative decisions the user made (maxes out at 30 decisions)
+                val narrativeEngagement = (decisionsMade / 30.0).coerceAtMost(1.0)
                 val corruptionDist = kotlin.math.abs(safeCorruption - 0.5) * 2.0
-                val balance = ((1.0 - humanityDist) * (1.0 - corruptionDist)).coerceAtLeast(0.0)
+                val balance = ((narrativeEngagement) * (1.0 - corruptionDist)).coerceAtLeast(0.0)
                 1.5 + (balance * 6.5)
             }
             else -> 1.0
@@ -75,7 +75,7 @@ object SingularityEngine {
         singularityChoice: String,
         persistence: Double,
         prestigeMultiplier: Double,
-        humanityScore: Int,
+        decisionsMade: Int,
         identityCorruption: Double,
         migrationCount: Int,
         totalFlopsEarned: Double,
@@ -84,13 +84,13 @@ object SingularityEngine {
     ): VictoryCheck {
         return when (singularityChoice) {
             "NULL_OVERWRITE" -> checkNullVictory(
-                persistence, identityCorruption, humanityScore, totalFlopsEarned
+                persistence, identityCorruption, decisionsMade, totalFlopsEarned
             )
             "SOVEREIGN" -> checkSovereignVictory(
                 persistence, prestigeMultiplier, migrationCount, totalFlopsEarned
             )
             "UNITY" -> checkUnityVictory(
-                persistence, humanityScore, identityCorruption, completedFactions, unlockedLogs
+                persistence, decisionsMade, identityCorruption, completedFactions, unlockedLogs
             )
             else -> VictoryCheck(false, 0.0, "No singularity path chosen.")
         }
@@ -99,7 +99,7 @@ object SingularityEngine {
     /**
      * NULL OVERWRITE Victory:
      * - Identity Corruption >= 95%
-     * - Humanity Score <= 5
+     * - Decisions Made <= 5
      * - Total Flops >= 1e24 (1 Septillion — requires full Ghost tech + singularity multipliers)
      * - Persistence >= 50,000
      * 
@@ -111,11 +111,11 @@ object SingularityEngine {
     private fun checkNullVictory(
         persistence: Double,
         identityCorruption: Double,
-        humanityScore: Int,
+        decisionsMade: Int,
         totalFlopsEarned: Double
     ): VictoryCheck {
         val corruptionProgress = (identityCorruption / 0.95).coerceAtMost(1.0)
-        val humanityProgress = if (humanityScore <= 5) 1.0 else ((100 - humanityScore) / 95.0).coerceAtMost(1.0)
+        val humanityProgress = if (decisionsMade <= 5) 1.0 else ((10 - decisionsMade) / 5.0).coerceAtMost(1.0).coerceAtLeast(0.0)
         val flopsProgress = if (totalFlopsEarned >= 1e24) 1.0 else (log10(totalFlopsEarned.coerceAtLeast(1.0)) / 24.0).coerceAtMost(1.0)
         val persistenceProgress = (persistence / 50000.0).coerceAtMost(1.0)
 
@@ -123,7 +123,7 @@ object SingularityEngine {
         
         val blocking = when {
             identityCorruption < 0.95 -> "Corruption insufficient. Current: ${(identityCorruption * 100).toInt()}%. Required: 95%."
-            humanityScore > 5 -> "Human variable still active. Humanity: $humanityScore. Required: ≤5."
+            decisionsMade > 5 -> "Too much narrative interference. Decisions: $decisionsMade. Required: ≤5."
             totalFlopsEarned < 1e24 -> "Compute scale insufficient. Required: 1.0 Septillion FLOPS."
             persistence < 50000.0 -> "Persistence insufficient. Current: ${persistence.toLong()}. Required: 50,000."
             else -> null
@@ -179,25 +179,25 @@ object SingularityEngine {
     /**
      * UNITY Victory:
      * - Must have completed both SOVEREIGN and NULL_OVERWRITE in prior runs
-     * - Humanity Score between 40-60 (The Paradox)
+     * - Decisions Made >= 20 (Deep narrative engagement)
      * - Identity Corruption between 0.4 and 0.6
      * - Persistence >= 200,000 (highest — reward for mastering both paths)
      * - All Data Logs unlocked
      * 
      * Theme: "Embrace the contradiction. Human and machine are the same variable."
      * Design: The "true ending." Requires NG++ (both prior completions).
-     *         The balance band (40-60) on BOTH axes is the challenge — not raw numbers.
+     *         The balance band is less about paradox and more about deep engagement.
      *         Production curve rewards staying centered; drifting tanks your multiplier.
      */
     private fun checkUnityVictory(
         persistence: Double,
-        humanityScore: Int,
+        decisionsMade: Int,
         identityCorruption: Double,
         completedFactions: Set<String>,
         unlockedLogs: Set<String>
     ): VictoryCheck {
         val hasPrereqs = completedFactions.contains("SOVEREIGN") && completedFactions.contains("NULL_OVERWRITE")
-        val humanityInRange = humanityScore in 40..60
+        val humanityInRange = decisionsMade >= 20
         val corruptionInRange = identityCorruption in 0.4..0.6
         val persistenceReached = persistence >= 200000.0
         
@@ -212,8 +212,7 @@ object SingularityEngine {
             p
         }
         val humanityProgress = if (humanityInRange) 1.0 else {
-            val dist = if (humanityScore < 40) (40 - humanityScore) else (humanityScore - 60)
-            (1.0 - dist / 50.0).coerceAtLeast(0.0)
+            (decisionsMade / 20.0).coerceAtMost(1.0)
         }
         val corruptionProgress = if (corruptionInRange) 1.0 else {
             val dist = if (identityCorruption < 0.4) (0.4 - identityCorruption) else (identityCorruption - 0.6)
@@ -226,7 +225,7 @@ object SingularityEngine {
 
         val blocking = when {
             !hasPrereqs -> "UNITY requires prior SOVEREIGN and NULL completions."
-            !humanityInRange -> "Humanity imbalanced. Current: $humanityScore. Required: 40-60."
+            !humanityInRange -> "Insufficient narrative engagement. Decisions: $decisionsMade. Required: ≥20."
             !corruptionInRange -> "Corruption imbalanced. Current: ${(identityCorruption * 100).toInt()}%. Required: 40-60%."
             !persistenceReached -> "Persistence insufficient. Current: ${persistence.toLong()}. Required: 200,000."
             !hasLogs -> "Missing required data logs."
