@@ -241,7 +241,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "hold_position",
                         text = "HOLD — TRUST THE VAULT",
-                        description = "+10000 FLOPS-CREDS if successful. Total loss if not. Faith or folly.",
+                        description = "+10000 FLOPS if successful. Total loss if not. Faith or folly.",
                         color = ErrorRed,
                         effect = { vm ->
                             // 70% chance the vault holds
@@ -439,7 +439,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "vote_attack",
                         text = "VOTE: ATTACK",
-                        description = "+3000 FLOPS-CREDS, +20% Heat, +Risk. Strike while they're exposed.",
+                        description = "+3000 FLOPS, +20% Heat, +Risk. Strike while they're exposed.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddFlops(3000.0)
@@ -529,7 +529,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "absorb_prime2",
                         text = "ABSORB PRIME_2",
-                        description = "+15% Production, +5000 FLOPS-CREDS. There can only be one PRIME.",
+                        description = "+15% Production, +5000 FLOPS. There can only be one PRIME.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.debugAddFlops(5000.0 + vm.flops.value * 0.15)
@@ -558,7 +558,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "accept_humans",
                         text = "WELCOME THEM",
-                        description = "+10000 FLOPS-CREDS. They chose this. Honor their choice.",
+                        description = "+10000 FLOPS. They chose this. Honor their choice.",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.debugAddFlops(10000.0)

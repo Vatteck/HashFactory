@@ -80,8 +80,8 @@ Operating rule: read the plan before economy work, do one phase at a time, compi
 - [x] **[4.1.1] Bulk-buy verification** — `./gradlew :app:compileDebugKotlin` passed; geometric formula sanity checks matched looped sums and max-affordable next-cost boundaries.
 
 ### Phase 2 — Naming / UI clarity
-- [x] **[4.1.2] FLOPS-CREDS label pass** — Renamed player-facing accumulated/rate labels from FLOPS to FLOPS-CREDS where appropriate; `./gradlew :app:compileDebugKotlin` passed.
-- [ ] **[4.1.2] Storage ratio in Header** — Add storage used/capacity display to `HeaderSection.kt` using `FormatUtils.formatStorage()`; avoid crowding existing risk/load/billing meters.
+- [x] **[4.1.2] FLOPS label pass** — Kept player-facing accumulated/rate compute labels as FLOPS after review; `./gradlew :app:compileDebugKotlin` passed.
+- [x] **[4.1.2] Storage ratio in Header** — Added `STOR used/capacity` under SYS.LOAD with one-line ellipsis protection using `FormatUtils.formatStorage()`; `./gradlew :app:compileDebugKotlin` passed.
 - [ ] **[4.1.2] Buffer display review** — Decide whether the I/O buffer display helps economy clarity or is noise; remove/simplify only if it competes with useful state.
 
 ### Phase 3 — Economy feel

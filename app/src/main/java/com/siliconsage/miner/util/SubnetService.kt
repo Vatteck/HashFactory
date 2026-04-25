@@ -206,7 +206,7 @@ class SubnetService(
                 val msg = SubnetMessage(
                     id = java.util.UUID.randomUUID().toString(),
                     handle = SocialManager.getHandle(stage, faction, false),
-                    content = "Local relay is collapsing under load. Need external FLOPS-CREDS or we fry. Anyone?",
+                    content = "Local relay is collapsing under load. Need external FLOPS or we fry. Anyone?",
                     interactionType = InteractionType.STABILIZE_NODE,
                     availableResponses = listOf(
                         SubnetResponse("STABILIZE_NODE [$costStr NT]", cost = dynamicCost)

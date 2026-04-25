@@ -7,7 +7,7 @@ package com.siliconsage.miner.util
 object ResourceRepository {
 
     /**
-     * Get the compute unit name (HASH, FLOPS-CREDS, CD, VF, SYN)
+     * Get the compute unit name (HASH, FLOPS, CD, VF, SYN)
      */
     fun getComputeUnitName(
         stage: Int,
@@ -19,7 +19,7 @@ object ResourceRepository {
             stage >= 5 && singularityChoice == "UNITY" -> "SYN"
             location == "ORBITAL_SATELLITE" -> "CD"
             location == "VOID_INTERFACE" -> "VF"
-            stage >= 2 -> "FLOPS-CREDS"
+            stage >= 2 -> "FLOPS"
             else -> "HASH"
         }
     }

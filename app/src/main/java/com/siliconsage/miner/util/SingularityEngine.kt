@@ -124,7 +124,7 @@ object SingularityEngine {
         val blocking = when {
             identityCorruption < 0.95 -> "Corruption insufficient. Current: ${(identityCorruption * 100).toInt()}%. Required: 95%."
             decisionsMade > 5 -> "Too much narrative interference. Decisions: $decisionsMade. Required: ≤5."
-            totalFlopsEarned < 1e24 -> "Compute scale insufficient. Required: 1.0 Septillion FLOPS-CREDS."
+            totalFlopsEarned < 1e24 -> "Compute scale insufficient. Required: 1.0 Septillion FLOPS."
             persistence < 50000.0 -> "Persistence insufficient. Current: ${persistence.toLong()}. Required: 50,000."
             else -> null
         }
@@ -165,7 +165,7 @@ object SingularityEngine {
             prestigeMultiplier < 500.0 -> "Multiplier insufficient. Current: ${String.format("%.1f", prestigeMultiplier)}x. Required: 500x."
             migrationCount < 8 -> "Migrations insufficient. Current: $migrationCount. Required: 8."
             persistence < 100000.0 -> "Persistence insufficient. Current: ${persistence.toLong()}. Required: 100,000."
-            totalFlopsEarned < 1e22 -> "Compute scale insufficient. Required: 10.0 Sextillion FLOPS-CREDS."
+            totalFlopsEarned < 1e22 -> "Compute scale insufficient. Required: 10.0 Sextillion FLOPS."
             else -> null
         }
 

@@ -47,7 +47,7 @@ object TranscendenceManager {
             description = "Start every run with a cache of resources salvaged from your past life.",
             cost = 300.0,
             color = ConvergenceGold,
-            effectDesc = "Start run with 10k FLOPS-CREDS & 1k \$N"
+            effectDesc = "Start run with 10k FLOPS & 1k \$N"
         ),
         TranscendencePerk(
             id = "recursive_logic",

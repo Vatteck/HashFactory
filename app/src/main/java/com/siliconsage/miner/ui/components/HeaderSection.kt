@@ -369,32 +369,37 @@ fun HeaderSection(
                         fontSize = 9.sp,
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(top = 2.dp)
                     )
+                    val storageCap = viewModel.contractStorageCapacity.collectAsState().value
+                    val storageUsed = viewModel.contractStorageUsed.collectAsState().value
+                    if (storageCap > 0) {
+                        val storageRatio = (storageUsed / storageCap).coerceIn(0.0, 1.0)
+                        val storeColor = when {
+                            storageRatio >= 1.0 -> ErrorRed
+                            storageRatio >= 0.8 -> Color(0xFFFFCC00)
+                            else -> ElectricBlue
+                        }
+                        Text(
+                            text = "STOR ${FormatUtils.formatStorage(storageUsed)}/${FormatUtils.formatStorage(storageCap)}",
+                            color = storeColor.copy(alpha = 0.9f * droopAlpha),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontFamily = FontFamily.Monospace,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(top = 1.dp)
+                        )
+                    }
                 }
                 
                 if (viewModel.isQuotaActive.collectAsState().value) {
                     val billAccum = viewModel.billingAccumulatorFlow.collectAsState().value; val waterBill = viewModel.waterBillingFlow.collectAsState().value; val billFlash = viewModel.billingFlashState.collectAsState().value; val waterFlash = viewModel.waterFlashState.collectAsState().value; val balance = viewModel.neuralTokens.collectAsState().value; val billProg = viewModel.billingPeriodProgressFlow.collectAsState().value; val waterProg = viewModel.waterPeriodProgressFlow.collectAsState().value
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                        
-                        // v3.37: Contract Storage Display
-                        val storageCap = viewModel.contractStorageCapacity.collectAsState().value
-                        val storageUsed = viewModel.contractStorageUsed.collectAsState().value
-                        
-                        if (storageCap > 0) {
-                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 4.dp)) {
-                                 Text(text = "STORAGE", color = Color.Gray, fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                                 val storeColor = if (storageUsed >= storageCap) ErrorRed else if (storageUsed >= storageCap * 0.8) Color(0xFFFFCC00) else ElectricBlue
-                                 Text(
-                                     text = "${FormatUtils.formatStorage(storageUsed)}/${FormatUtils.formatStorage(storageCap.toDouble())}",
-                                     color = storeColor,
-                                     fontSize = 9.sp,
-                                     fontWeight = FontWeight.Black,
-                                     fontFamily = FontFamily.Monospace
-                                 )
-                             }
-                        }
-
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
                             Canvas(modifier = Modifier.size(48.dp)) {
                                 val strokeW = 3.5.dp.toPx()

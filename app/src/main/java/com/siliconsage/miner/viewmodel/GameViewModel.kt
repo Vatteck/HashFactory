@@ -367,7 +367,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
 
     // v5.0: Legacy click handler — kept for I/O and SUBNET tabs only.
-    // No longer generates NT. Generates FLOPS-CREDS (computational throughput) + heat + risk.
+    // No longer generates NT. Generates FLOPS (computational throughput) + heat + risk.
     // Dataset node taps are the primary gameplay loop and income source.
     fun onManualClick() {
         val now = System.currentTimeMillis()
@@ -378,7 +378,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
         val p = calculateClickPower()
-        // FLOPS-CREDS = computational throughput, not currency
+        // FLOPS = computational throughput, not currency
         flops.update { it + p }
 
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
