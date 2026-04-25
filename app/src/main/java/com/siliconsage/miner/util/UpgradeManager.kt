@@ -12,6 +12,9 @@ import kotlinx.coroutines.launch
  */
 object UpgradeManager {
 
+    private const val COST_GROWTH_RATE = 1.15
+    private const val MAX_BULK_LEVELS = 500
+
     data class PurchaseResult(
         val ntDeduction: Double = 0.0,
         val cdDeduction: Double = 0.0,
@@ -108,32 +111,42 @@ object UpgradeManager {
         val entropyMultiplier = if (location == "VOID_INTERFACE") (1.0 + entropy * 0.1) else 1.0
         val repModifier = 1.0 + ReputationManager.getMarketCostModifier(reputationTier)
 
-        return base * 1.15.pow(level.toDouble()) * entropyMultiplier * repModifier
+        return base * COST_GROWTH_RATE.pow(level.toDouble()) * entropyMultiplier * repModifier
     }
 
     fun calculateMultiLevelCost(type: UpgradeType, currentLevel: Int, numLevels: Int, location: String, entropy: Double, reputationTier: String = "NEUTRAL"): Double {
-        var totalCost = 0.0
-        for (i in 0 until numLevels) {
-            totalCost += calculateUpgradeCost(type, currentLevel + i, location, entropy, reputationTier)
-        }
-        return totalCost
+        if (numLevels <= 0) return 0.0
+
+        val currentCost = calculateUpgradeCost(type, currentLevel, location, entropy, reputationTier)
+        if (!currentCost.isFinite() || currentCost <= 0.0) return currentCost
+
+        val growthPower = COST_GROWTH_RATE.pow(numLevels.toDouble())
+        val totalCost = currentCost * ((growthPower - 1.0) / (COST_GROWTH_RATE - 1.0))
+        return if (totalCost.isFinite()) totalCost else Double.MAX_VALUE
     }
 
     fun calculateMaxAffordableLevels(type: UpgradeType, currentLevel: Int, availableFunds: Double, location: String, entropy: Double, reputationTier: String = "NEUTRAL"): Pair<Int, Double> {
-        var levels = 0
-        var totalCost = 0.0
-        while (levels < 500) {
-            val nextCost = calculateUpgradeCost(type, currentLevel + levels, location, entropy, reputationTier)
-            if (totalCost + nextCost <= availableFunds) {
-                totalCost += nextCost
-                levels++
-            } else {
-                break
-            }
+        val currentCost = calculateUpgradeCost(type, currentLevel, location, entropy, reputationTier)
+        if (!availableFunds.isFinite() || availableFunds < currentCost || !currentCost.isFinite() || currentCost <= 0.0) {
+            return Pair(1, currentCost)
         }
-        if (levels == 0) {
-            return Pair(1, calculateUpgradeCost(type, currentLevel, location, entropy, reputationTier))
+
+        val affordableRaw = kotlin.math.ln((availableFunds * (COST_GROWTH_RATE - 1.0) / currentCost) + 1.0) / kotlin.math.ln(COST_GROWTH_RATE)
+        val affordableLevels = affordableRaw.toInt().coerceIn(1, MAX_BULK_LEVELS)
+
+        var levels = affordableLevels
+        var totalCost = calculateMultiLevelCost(type, currentLevel, levels, location, entropy, reputationTier)
+        while (levels > 1 && totalCost > availableFunds) {
+            levels--
+            totalCost = calculateMultiLevelCost(type, currentLevel, levels, location, entropy, reputationTier)
         }
+        while (levels < MAX_BULK_LEVELS) {
+            val nextTotal = calculateMultiLevelCost(type, currentLevel, levels + 1, location, entropy, reputationTier)
+            if (nextTotal > availableFunds || !nextTotal.isFinite()) break
+            levels++
+            totalCost = nextTotal
+        }
+
         return Pair(levels, totalCost)
     }
 

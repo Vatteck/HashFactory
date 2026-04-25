@@ -65,6 +65,42 @@
 
 ---
 
+## 🟡 v4.1.x — Economy Rail / Idle Math Application
+
+Canonical plan: `docs/economy-idle-math-plan.md`
+
+Operating rule: read the plan before economy work, do one phase at a time, compile after each phase, park new ideas instead of expanding scope.
+
+### Phase 0 — Rail setup
+- [x] **[4.1.0] Economy rail plan doc** — Created `docs/economy-idle-math-plan.md` with scope, non-goals, formulas, phases, gates, and parking lot.
+- [x] **[4.1.0] Task tracker section** — Added this `v4.1.x` section to `gametasks.md` so work is visible and resumable.
+
+### Phase 1 — Safe math cleanup
+- [x] **[4.1.1] Geometric bulk-buy math** — Replaced looped multi-level cost/max-affordable calculations in `UpgradeManager.kt` with closed-form geometric formulas while preserving existing single-level cost behavior.
+- [x] **[4.1.1] Bulk-buy verification** — `./gradlew :app:compileDebugKotlin` passed; geometric formula sanity checks matched looped sums and max-affordable next-cost boundaries.
+
+### Phase 2 — Naming / UI clarity
+- [ ] **[4.1.2] FLOPS-CREDS label pass** — Rename player-facing accumulated/rate labels from FLOPS to FLOPS-CREDS where appropriate, keeping rate labels readable.
+- [ ] **[4.1.2] Storage ratio in Header** — Add storage used/capacity display to `HeaderSection.kt` using `FormatUtils.formatStorage()`; avoid crowding existing risk/load/billing meters.
+- [ ] **[4.1.2] Buffer display review** — Decide whether the I/O buffer display helps economy clarity or is noise; remove/simplify only if it competes with useful state.
+
+### Phase 3 — Economy feel
+- [ ] **[4.1.3] Hardware milestone multipliers** — Add milestone helper and apply to hardware production only at thresholds like 25/50/100/200.
+- [ ] **[4.1.3] Milestone balance table** — Generate/check production examples at representative counts before accepting the tuning.
+
+### Phase 4 — Prestige analysis
+- [ ] **[4.1.4] Prestige simulation table** — Document current persistence gain and multiplier boost across representative FLOPS values before changing any prestige math.
+- [ ] **[4.1.4] Prestige formula decision gate** — Do not change migration/prestige formulas without explicit approval after reviewing the table.
+
+### Parking lot — do not implement unless explicitly promoted
+- [ ] Derivative daemon/process/thread generator chain.
+- [ ] Dataset modifiers: encrypted, volatile, compressed.
+- [ ] Decay nodes / corruption spread.
+- [ ] Auto-clicker graduation fantasy pass.
+- [ ] Neural Tokens buying every upgrade.
+- [ ] Full market-price rewrite.
+- [ ] New game built from Faceminer ideas.
+
 ## 🔴 v4.0.x — Dataset Storage Pressure Loop
 
 ### v4.0.0 — Automation Overhaul & Oppressive Management
