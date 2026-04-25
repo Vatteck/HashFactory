@@ -11,17 +11,17 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '25'
           distribution: 'temurin'
-      
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
@@ -32,10 +32,10 @@ jobs:
           echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> local.properties
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> local.properties
-      
+
       - name: Build APK
         run: ./gradlew assembleRelease
-      
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -45,32 +45,30 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for changelog extraction
-      
+          fetch-depth: 0
+
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
           name: apk
-      
+
       - name: Get version from tag
         id: version
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
+
       - name: Extract changelog for this version
         id: changelog
         run: |
-          # Extract the changelog section for this version
           VERSION="${{ steps.version.outputs.version }}"
-          
-          # Get content between this version header and the next version header
+
           CHANGELOG=$(awk -v ver="$VERSION" '
             /^## \[/ {
               if (found) exit
@@ -79,20 +77,17 @@ jobs:
             }
             found { print }
           ' CHANGELOG.md)
-          
-          # If no changelog found, use a default message
+
           if [ -z "$CHANGELOG" ]; then
             CHANGELOG="See CHANGELOG.md for details."
           fi
-          
-          # Write to file to preserve multiline
+
           echo "$CHANGELOG" > changelog_extract.txt
-      
+
       - name: Find and rename APK
         id: apk
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          # The download-artifact step drops the APK in the workspace root
           RAW=$(find . -maxdepth 2 -name "app-release.apk" | head -n 1)
           if [ -z "$RAW" ] || [ ! -f "$RAW" ]; then
             echo "app-release.apk not found — contents:"
@@ -108,7 +103,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: "SUBSTRATE: MINER v${{ steps.version.outputs.version }}"
+          name: "Hash Factory v${{ steps.version.outputs.version }}"
           body_path: changelog_extract.txt
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, 'dev') || contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'beta') }}
@@ -116,9 +111,30 @@ jobs:
             ${{ steps.apk.outputs.path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Release summary
+
+      - name: Update version.json
         run: |
-          echo "✅ Released SUBSTRATE: MINER v${{ steps.version.outputs.version }}"
-          echo "📦 APK: ${{ steps.apk.outputs.path }}"
-          echo "🔗 https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          APK="${{ steps.apk.outputs.path }}"
+          REPO="${{ github.repository }}"
+          DATE=$(date -u +%Y-%m-%d)
+          BUILD=${{ github.run_number }}
+
+          jq -n \
+            --arg version "$VERSION" \
+            --argjson build "$BUILD" \
+            --arg date "$DATE" \
+            --argjson changelog "$(git log --oneline -7 | jq -R . | jq -s .)" \
+            --arg url "https://github.com/$REPO/releases/tag/$TAG" \
+            --arg downloadUrl "https://github.com/$REPO/releases/download/$TAG/$APK" \
+            '{version: $version, build: $build, date: $date, changelog: $changelog, url: $url, downloadUrl: $downloadUrl}' \
+            > version.json
+
+      - name: Commit version.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add version.json
+          git diff --staged --quiet || git commit -m "chore: update version.json for ${{ steps.version.outputs.tag }}"
+          git push origin HEAD:refs/heads/master

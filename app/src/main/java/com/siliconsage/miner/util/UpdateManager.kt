@@ -27,7 +27,7 @@ data class UpdateInfo(
 )
 
 object UpdateManager {
-    private const val UPDATE_URL = "https://raw.githubusercontent.com/Vatteck/SiliconSageAIMiner/master/version.json"
+    private const val UPDATE_URL = "https://raw.githubusercontent.com/Vatteck/HashFactory/master/version.json"
     private val client = OkHttpClient()
     private val jsonConfig = Json { ignoreUnknownKeys = true }
 

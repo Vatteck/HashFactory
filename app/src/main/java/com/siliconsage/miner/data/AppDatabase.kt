@@ -23,7 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "silicon_sage_db"
                     )
-                    .fallbackToDestructiveMigration(true) // v2.8.0: Auto-reset on schema mismatch
+                    .addMigrations(MIGRATION_31_34)
                     .build()
                     INSTANCE = instance
                     instance
@@ -35,7 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "silicon_sage_db"
                     )
-                    .fallbackToDestructiveMigration(true)
+                    .addMigrations(MIGRATION_31_34)
                     .build()
                     INSTANCE = instance
                     instance
