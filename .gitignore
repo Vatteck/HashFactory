@@ -27,3 +27,4 @@ skills/
 .learnings/
 hooks/
 *.jks
+.hermes/

@@ -266,9 +266,10 @@ fun RepairSection(integrity: Double, cost: Double, color: Color, storyStage: Int
             .height(72.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
-            .border(BorderStroke(1.dp, if (integrity < 50) com.siliconsage.miner.ui.theme.ErrorRed else color), RoundedCornerShape(4.dp)),
+            .border(BorderStroke(1.dp, if (integrity < 50) com.siliconsage.miner.ui.theme.ErrorRed else color), RoundedCornerShape(8.dp)),
         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = if (integrity < 50) com.siliconsage.miner.ui.theme.ErrorRed else color),
-        shape = RoundedCornerShape(4.dp)
+        contentPadding = PaddingValues(0.dp),
+        shape = RoundedCornerShape(8.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(if (storyStage < 1) "REPAIR HARDWARE" else "REPAIR CORE", fontSize = 12.sp)

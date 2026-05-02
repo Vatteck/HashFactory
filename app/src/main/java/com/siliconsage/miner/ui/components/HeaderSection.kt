@@ -340,40 +340,58 @@ fun HeaderSection(
                     val sysLoad = viewModel.systemLoadSnapshot.collectAsState().value
                     val loadPct = sysLoad.loadPercent
 
-                    Text(
-                        text = "SYS.LOAD",
-                        color = Color.Gray,
-                        fontSize = 7.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        modifier = Modifier.padding(bottom = 2.dp)
-                    )
-
                     val loadColor = when {
                         sysLoad.isLocked -> ErrorRed
                         sysLoad.isThrottled -> Color(0xFFFFCC00)
                         else -> ElectricBlue
                     }
-
-                    Box(modifier = Modifier.fillMaxWidth().padding(end = 12.dp).height(8.dp).background(Color.Black).border(0.5.dp, loadColor.copy(alpha = 0.5f))) {
-                        Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(loadPct.toFloat().coerceIn(0f, 1f)).background(loadColor.copy(alpha = droopAlpha)))
-                    }
-
                     val statusTag = when {
-                        sysLoad.isLocked -> " [OVERLOAD]"
-                        sysLoad.isThrottled -> " [THROTTLED]"
-                        else -> ""
+                        sysLoad.isLocked -> "OVERLOAD"
+                        sysLoad.isThrottled -> "THROTTLED"
+                        else -> "NOMINAL"
                     }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Computer,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = droopAlpha),
+                            modifier = Modifier.size(11.dp).padding(end = 2.dp)
+                        )
+                        Text(
+                            text = "SYS.LOAD",
+                            color = loadColor.copy(alpha = 0.9f * droopAlpha),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.Monospace,
+                            style = androidx.compose.ui.text.TextStyle(
+                                shadow = androidx.compose.ui.graphics.Shadow(color = loadColor.copy(alpha = 0.5f), blurRadius = 8f)
+                            )
+                        )
+                    }
+
                     Text(
-                        text = "${(loadPct * 100).toInt()}%$statusTag",
+                        text = "${(loadPct * 100).toInt()}%",
+                        color = Color.White.copy(alpha = droopAlpha),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.Monospace,
+                        maxLines = 1,
+                        softWrap = false,
+                        style = androidx.compose.ui.text.TextStyle(
+                            shadow = androidx.compose.ui.graphics.Shadow(color = loadColor.copy(alpha = 0.4f * droopAlpha), blurRadius = 18f)
+                        )
+                    )
+
+                    Text(
+                        text = statusTag,
                         color = loadColor.copy(alpha = 0.9f * droopAlpha),
                         fontSize = 9.sp,
-                        fontWeight = FontWeight.ExtraBold,
+                        fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace,
                         maxLines = 1,
                         softWrap = false,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 2.dp)
                     )
                     val storageCap = viewModel.contractStorageCapacity.collectAsState().value
                     val storageUsed = viewModel.contractStorageUsed.collectAsState().value
