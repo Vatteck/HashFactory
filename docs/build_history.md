@@ -96,3 +96,6 @@
 ## 2026-05-01 22:10 — v5.0.0 (Build 445)
 - Summary: One-wallet FLOPS economy migration
 
+## 2026-05-02 00:14 — v5.0.1 (Build 446)
+- Summary: Hide DATAMINER until post-airgap contract access
+
