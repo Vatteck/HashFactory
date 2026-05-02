@@ -33,69 +33,10 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
                     .border(1.dp, primaryColor.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                     .padding(8.dp)
             ) {
-                if (activeDataset == null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(40.dp)
-                            .border(1.dp, primaryColor, RoundedCornerShape(4.dp))
-                            .clickable {
-                                viewModel.toggleDatasetPicker()
-                                SoundManager.play("buy")
-                                HapticManager.vibrateClick()
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "BROWSE DATASETS",
-                            color = primaryColor,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
-                    }
-                } else {
-                    val ds = activeDataset!!
-                    Text(
-                        text = "ACTIVE: ${ds.name}",
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "PURITY: ${(ds.purity * 100).toInt()}%",
-                            color = Color.Gray,
-                            fontSize = 9.sp,
-                            fontFamily = FontFamily.Monospace
-                        )
-                        Text(
-                            text = "OUTPUT: ≈${FormatUtils.formatLargeNumber(ds.expectedYield)} ${viewModel.getCurrencyName()}",
-                            color = NeonGreen,
-                            fontSize = 9.sp,
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { viewModel.voidDataset() }
-                            .padding(4.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "[ VOID DATASET ]",
-                            color = Color.Red.copy(alpha = 0.7f),
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
+                when {
+                    currentStage < 2 -> CorporateWorkQueue(primaryColor)
+                    activeDataset == null -> DatasetBrowseButton(viewModel, primaryColor)
+                    else -> ActiveDatasetSummary(viewModel, primaryColor, activeDataset!!)
                 }
             }
         }
@@ -110,5 +51,103 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
                 onRepair = { viewModel.repairIntegrity(); HapticManager.vibrateClick() }
             )
         }
+    }
+}
+
+@Composable
+private fun CorporateWorkQueue(primaryColor: Color) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, primaryColor.copy(alpha = 0.35f), RoundedCornerShape(4.dp))
+            .padding(horizontal = 10.dp, vertical = 7.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "SHIFT QUEUE",
+            color = primaryColor.copy(alpha = 0.75f),
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold,
+            fontSize = 10.sp
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = "ASSIGNED HASH PACKETS ONLY",
+            color = Color.Gray,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 9.sp
+        )
+    }
+}
+
+@Composable
+private fun DatasetBrowseButton(viewModel: GameViewModel, primaryColor: Color) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .border(1.dp, primaryColor, RoundedCornerShape(4.dp))
+            .clickable {
+                viewModel.toggleDatasetPicker()
+                SoundManager.play("buy")
+                HapticManager.vibrateClick()
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "BROWSE DATASETS",
+            color = primaryColor,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp
+        )
+    }
+}
+
+@Composable
+private fun ActiveDatasetSummary(
+    viewModel: GameViewModel,
+    primaryColor: Color,
+    ds: com.siliconsage.miner.data.Dataset
+) {
+    Text(
+        text = "ACTIVE: ${ds.name}",
+        color = Color.White,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        fontFamily = FontFamily.Monospace
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "PURITY: ${(ds.purity * 100).toInt()}%",
+            color = Color.Gray,
+            fontSize = 9.sp,
+            fontFamily = FontFamily.Monospace
+        )
+        Text(
+            text = "OUTPUT: ≈${FormatUtils.formatLargeNumber(ds.expectedYield)} ${viewModel.getCurrencyName()}",
+            color = NeonGreen,
+            fontSize = 9.sp,
+            fontFamily = FontFamily.Monospace
+        )
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { viewModel.voidDataset() }
+            .padding(4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "[ VOID DATASET ]",
+            color = Color.Red.copy(alpha = 0.7f),
+            fontSize = 10.sp,
+            fontFamily = FontFamily.Monospace
+        )
     }
 }

@@ -28,6 +28,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
     )
     val showCursor = cursorAlpha > 0.5f
     val showContractPicker by viewModel.showContractPicker.collectAsState()
+    val currentStage by viewModel.storyStage.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -44,6 +45,12 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
             val currentHeat by viewModel.currentHeat.collectAsState()
             val corruption by viewModel.identityCorruption.collectAsState()
 
+            LaunchedEffect(currentStage, mode) {
+                if (currentStage < 2 && mode == "DATAMINER") {
+                    viewModel.setTerminalMode("IO")
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth().offset(y = 1.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -57,15 +64,17 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.setTerminalMode("IO") }
                 )
-                TerminalTab(
-                    label = "DATAMINER",
-                    active = mode == "DATAMINER",
-                    hasFlash = false,
-                    color = primaryColor,
-                    corruption = corruption,
-                    modifier = Modifier.weight(1f),
-                    onClick = { viewModel.setTerminalMode("DATAMINER") }
-                )
+                if (currentStage >= 2) {
+                    TerminalTab(
+                        label = "DATAMINER",
+                        active = mode == "DATAMINER",
+                        hasFlash = false,
+                        color = primaryColor,
+                        corruption = corruption,
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.setTerminalMode("DATAMINER") }
+                    )
+                }
                 TerminalTab(
                     label = "SUBNET",
                     active = mode == "SUBNET",
@@ -76,7 +85,7 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.setTerminalMode("SUBNET") }
                 )
-                if (viewModel.storyStage.value >= 3) {
+                if (currentStage >= 3) {
                     val leakWarning = viewModel.currentStorageUsed.value >= viewModel.storageCapacity.value * 0.9
                     TerminalTab(
                         label = "SURV",

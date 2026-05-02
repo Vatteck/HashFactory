@@ -78,6 +78,8 @@ object DatasetManager {
         faction: String = "NONE",
         singularityChoice: String = "NONE"
     ): List<Dataset> {
+        if (stage < 2) return emptyList()
+
         val templates = when {
             stage >= 4 -> stage4Base
             stage == 3 -> stage3Neutral

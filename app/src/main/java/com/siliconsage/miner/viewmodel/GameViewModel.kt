@@ -726,6 +726,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 addLog("[SYSTEM]: SECURITY_GIFT: GTC Standard Firewall initialized. Detection active.")
                 refreshProductionRates()
             }
+            refreshDatasets()
+            addLog("[GTC]: CONTRACT ACCESS GRANTED. DATAMINER queue online through airgap bridge.")
         }
 
         lastStageChangeTime = System.currentTimeMillis()
