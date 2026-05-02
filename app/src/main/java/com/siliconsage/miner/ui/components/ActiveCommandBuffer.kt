@@ -28,7 +28,10 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val activeDataset by viewModel.activeDataset.collectAsState()
     
     val baseProgress by viewModel.clickBufferProgress.collectAsState()
-    val progress = if (activeDataset != null) activeDataset!!.progress.toFloat() else baseProgress
+    // Manual compute owns the terminal buffer while a hash packet is in flight.
+    // Dataset progress can still render when idle, but it must not mask COMPUTE HASH clicks.
+    val showDatasetBuffer = activeDataset != null && baseProgress <= 0f
+    val progress = if (showDatasetBuffer) activeDataset!!.progress.toFloat() else baseProgress
     val pellets by viewModel.clickBufferPellets.collectAsState()
 
     val currentHeat by viewModel.currentHeat.collectAsState()
@@ -79,7 +82,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
 
         Text(
             text = buildAnnotatedString {
-                if (activeDataset != null) {
+                if (showDatasetBuffer) {
                     withStyle(SpanStyle(color = promptUserColor, fontWeight = FontWeight.ExtraBold)) { append(user) }
                     withStyle(SpanStyle(color = Color.White.copy(alpha = 0.8f))) { append("@") }
                     withStyle(SpanStyle(color = promptHostColor, fontWeight = FontWeight.Bold)) { append(host) }
@@ -93,7 +96,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
                 }
 
                 // v3.12.0: High-integrity/heat bracket glitching
-                if (activeDataset == null) {
+                if (!showDatasetBuffer) {
                     val promptToken = if (globalGlitchIntensity > 0.8 && Random.nextDouble() < 0.2) {
                         listOf("{", "<", "§", "Ø").random()
                     } else "$"
@@ -123,7 +126,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         }
         
         // v3.38.0 Purity visual
-        val bufferHeatColor = if (activeDataset != null && activeDataset!!.purity < 0.8) ErrorRed.copy(alpha = 0.8f) else baseBufferColor
+        val bufferHeatColor = if (showDatasetBuffer && activeDataset!!.purity < 0.8) ErrorRed.copy(alpha = 0.8f) else baseBufferColor
 
         // A2: Pellet ghost trail — track last 3 positions
         val pelletHistory = remember { androidx.compose.runtime.snapshots.SnapshotStateList<Int>() }

@@ -76,8 +76,7 @@ object DatasetManager {
         conversionRate: Double,
         marketMultiplier: Double,
         faction: String = "NONE",
-        singularityChoice: String = "NONE",
-        playerFunds: Double = 0.0
+        singularityChoice: String = "NONE"
     ): List<Dataset> {
         val templates = when {
             stage >= 4 -> stage4Base
@@ -111,37 +110,6 @@ object DatasetManager {
                 tier = stage,
                 size = t.size
             )
-        }
-
-        // Bootstrap fix — inject free GTC-assigned task when player can't afford anything
-        val canAffordAny = datasets.any { it.cost <= playerFunds }
-        if (!canAffordAny) {
-            val freeYield = when {
-                stage >= 3 -> 25_000.0
-                stage >= 2 -> 1_000.0
-                stage >= 1 -> 100.0
-                else -> 20.0
-            } * marketMultiplier.coerceAtLeast(0.5)
-
-            val freeName = when {
-                stage >= 3 -> "GTC Mandatory Audit"
-                stage >= 2 -> "Grid Maintenance Requisition"
-                stage >= 1 -> "Substation Work Order"
-                else -> "GTC Assigned Task"
-            }
-
-            val validNodes = (9 * 0.95).toInt().coerceAtLeast(1)
-            datasets = listOf(Dataset(
-                id = "gtc_assigned_${System.currentTimeMillis()}",
-                name = freeName,
-                cost = 0.0,
-                expectedYield = freeYield,
-                payoutPerValidRecord = freeYield / validNodes,
-                purity = 0.95,
-                totalRecords = 9,
-                tier = stage,
-                size = 5.0
-            )) + datasets
         }
 
         return datasets

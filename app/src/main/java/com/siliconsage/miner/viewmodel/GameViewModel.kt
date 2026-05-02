@@ -773,8 +773,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             conversionRate = conversionRate.value,
             marketMultiplier = marketMultiplier.value,
             faction = faction.value,
-            singularityChoice = singularityChoice.value,
-            playerFunds = flops.value
+            singularityChoice = singularityChoice.value
         )
     }
 
