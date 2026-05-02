@@ -93,3 +93,6 @@
 ## 2026-03-01 23:11 — v4.0.4 (Build 435)
 - Summary: Rollback to pre-contracts stable baseline
 
+## 2026-05-01 22:10 — v5.0.0 (Build 445)
+- Summary: One-wallet FLOPS economy migration
+

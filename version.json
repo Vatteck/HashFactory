@@ -1,16 +1,19 @@
 {
-  "version": "4.0.4",
-  "build": 444,
-  "date": "2026-03-01",
+  "version": "5.0.0",
+  "build": 445,
+  "date": "2026-05-01",
   "changelog": [
-    "340bdc2 Update README.md",
+    "39517b5 fix: harden release changelog generation",
+    "4b81446 balance: complete one-wallet FLOPS migration",
+    "94f80ae Update Hash Factory release icon",
+    "69ba0db Remove ADB from active game backlog",
+    "baac91f Merge pull request #4 from Vatteck/refactor/gameplay-loop-wip-2026-03-01",
+    "f5211e9 merge master into Hash Factory rebrand",
     "e1de77f rebrand: apply Hash Factory mask to UI and docs",
     "f82c20c Add dataset completion time-warp burst",
     "b9806f2 Add header storage ratio display",
-    "94fbf12 Rename player-facing FLOPS labels",
-    "2e668c8 Add hardware milestone production multipliers",
-    "98163b4 Add v4.1 economy rail and geometric bulk-buy"
+    "94fbf12 Rename player-facing FLOPS labels"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v4.0.4",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v4.0.4/MINER_4.0.4.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.0.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.0.0/MINER_5.0.0.apk"
 }
