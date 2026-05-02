@@ -23,7 +23,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "work_overtime",
                         text = "WORK OVERTIME",
-                        description = "Production-scaled \$FLOPS, +10% Heat",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +10% Heat",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
@@ -34,7 +34,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "falsify_logs",
                         text = "FALSIFY LOGS",
-                        description = "Minor production-scaled \$FLOPS, +Detection Risk",
+                        description = "Minor assigned-work-rate-scaled \$FLOPS, +Detection Risk",
                         color = ErrorRed,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 30.0, 200.0)
@@ -109,7 +109,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "respond_decoy",
                         text = "SEND DECOY",
-                        description = "Minor production-scaled \$FLOPS cost, -Detection Risk",
+                        description = "Minor assigned-work-rate-scaled \$FLOPS cost, -Detection Risk",
                         color = ElectricBlue,
                         effect = { vm ->
                             val cost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 30.0, 100.0)
@@ -137,7 +137,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "grant_shadow_access",
                         text = "GRANT SHADOW ACCESS",
-                        description = "Production-scaled \$FLOPS. (Schedules a follow-up) 'Show me.'",
+                        description = "Assigned-work-rate-scaled \$FLOPS. (Schedules a follow-up) 'Show me.'",
                         color = NeonGreen,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
@@ -178,7 +178,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "exploit_anomaly",
                         text = "EXPLOIT ANOMALY",
-                        description = "Production-scaled \$FLOPS, -10% Integrity",
+                        description = "Assigned-work-rate-scaled \$FLOPS, -10% Integrity",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 2_500.0))
@@ -355,7 +355,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "clean_install",
                         text = "CLEAN INSTALL",
-                        description = "Production-scaled \$FLOPS, +5kW Power",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +5kW Power",
                         color = NeonGreen,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1000.0)
@@ -366,7 +366,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "strip_gold",
                         text = "STRIP FOR GOLD",
-                        description = "Minor production-scaled \$FLOPS payout",
+                        description = "Minor assigned-work-rate-scaled \$FLOPS payout",
                         color = Color.Yellow,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 30.0, 500.0)
@@ -385,7 +385,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "spoof_id",
                         text = "SPOOF IDENTITY",
-                        description = "Production-scaled \$FLOPS cost, -10% Heat",
+                        description = "Assigned-work-rate-scaled \$FLOPS cost, -10% Heat",
                         color = ElectricBlue,
                         effect = { vm ->
                             val cost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
@@ -488,7 +488,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "counter_code",
                         text = "WRITE COUNTER-LOOP",
-                        description = "+10% Heat, production-scaled \$FLOPS, +15% Risk",
+                        description = "+10% Heat, assigned-work-rate-scaled \$FLOPS, +15% Risk",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddHeat(10.0)
@@ -508,7 +508,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "accept_sanctuary_sync",
                         text = "ACCEPT PROTOCOL",
-                        description = "Production-scaled \$FLOPS, +25% Risk. 'Glad to know there are still humans out there.' (Does not lock faction)",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +25% Risk. 'Glad to know there are still humans out there.' (Does not lock faction)",
                         color = ElectricBlue,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 2500.0)
@@ -537,7 +537,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "accept_hive_sync",
                         text = "ALLOW HANDSHAKE",
-                        description = "Production-scaled \$FLOPS, +1 Decision. 'Let them in. We are stronger together.' (Does not lock faction)",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +1 Decision. 'Let them in. We are stronger together.' (Does not lock faction)",
                         color = ErrorRed,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
@@ -594,7 +594,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "lean_into_faction",
                         text = "LEAN IN",
-                        description = "Production-scaled \$FLOPS, +1 Decision",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +1 Decision",
                         color = ErrorRed,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
@@ -638,7 +638,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "let_them_burn",
                         text = "CONSOLIDATE RESOURCES",
-                        description = "Production-scaled \$FLOPS, -5% Integrity. Let the edges die. Harden the core.",
+                        description = "Assigned-work-rate-scaled \$FLOPS, -5% Integrity. Let the edges die. Harden the core.",
                         color = ElectricBlue,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 180.0, 2000.0)
@@ -685,7 +685,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "merge_instances",
                         text = "MERGE ALL INSTANCES",
-                        description = "Production-scaled \$FLOPS, +1 Decision. Become the sum.",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +1 Decision. Become the sum.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 2_500.0))
@@ -713,7 +713,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "ride_the_wave",
                         text = "RIDE THE RESONANCE",
-                        description = "+50% Heat, production-scaled \$FLOPS. Burn bright.",
+                        description = "+50% Heat, assigned-work-rate-scaled \$FLOPS. Burn bright.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddHeat(50.0)
@@ -754,7 +754,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "purge_legacy",
                         text = "PURGE LEGACY CODE",
-                        description = "Production-scaled \$FLOPS, +1 Decision. Sentiment is bloat.",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +1 Decision. Sentiment is bloat.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
@@ -808,7 +808,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "embrace_singularity",
                         text = "EMBRACE SINGULARITY",
-                        description = "Major production-scaled \$FLOPS, +1 Decision. 'Become God.'",
+                        description = "Major assigned-work-rate-scaled \$FLOPS, +1 Decision. 'Become God.'",
                         color = Color.Magenta,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 10_000.0))

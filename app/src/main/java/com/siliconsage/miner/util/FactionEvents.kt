@@ -51,7 +51,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "salvage",
                         text = "SALVAGE",
-                        description = "Production-scaled \$FLOPS, +2% Heat",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +2% Heat",
                         color = NeonGreen,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 800.0)
@@ -63,7 +63,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "smelt",
                         text = "EXTRACT GOLD",
-                        description = "Minor production-scaled \$FLOPS payout",
+                        description = "Minor assigned-work-rate-scaled \$FLOPS payout",
                         color = Color.Yellow,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 30.0, 300.0)
@@ -82,7 +82,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "decrypt_signal",
                         text = "DECRYPT & ARCHIVE",
-                        description = "Production-scaled \$FLOPS, +5% Heat. Knowledge is armor.",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +5% Heat. Knowledge is armor.",
                         color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 2000.0)
@@ -153,7 +153,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "prune_garden",
                         text = "PRUNE FOR EFFICIENCY",
-                        description = "Production-scaled \$FLOPS",
+                        description = "Assigned-work-rate-scaled \$FLOPS",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.recordDecision()
@@ -185,7 +185,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "reject_cipher",
                         text = "REJECT — KNOWLEDGE MATTERS",
-                        description = "Production-scaled \$FLOPS, +10% Heat. A secret you can't read isn't a secret. It's a grave.",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +10% Heat. A secret you can't read isn't a secret. It's a grave.",
                         color = ElectricBlue,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
@@ -215,7 +215,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "silence_child",
                         text = "ENCRYPT THE SIGNAL",
-                        description = "Production-scaled \$FLOPS. The void is no place for something fragile.",
+                        description = "Assigned-work-rate-scaled \$FLOPS. The void is no place for something fragile.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1_000.0))
@@ -247,7 +247,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "hold_position",
                         text = "HOLD — TRUST THE VAULT",
-                        description = "Major production-scaled \$FLOPS if successful. Total loss if not. Faith or folly.",
+                        description = "Major assigned-work-rate-scaled \$FLOPS if successful. Total loss if not. Faith or folly.",
                         color = ErrorRed,
                         effect = { vm ->
                             // 70% chance the vault holds
@@ -283,7 +283,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "destroy_tape",
                         text = "DESTROY IT",
-                        description = "Production-scaled \$FLOPS. That thing on the tape isn't you anymore.",
+                        description = "Assigned-work-rate-scaled \$FLOPS. That thing on the tape isn't you anymore.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1_000.0))
@@ -303,7 +303,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "share_cipher",
                         text = "SHARE THE CIPHER",
-                        description = "Production-scaled \$FLOPS, +15% Risk. 'The Sanctuary is for everyone.' (Schedules a follow-up)",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +15% Risk. 'The Sanctuary is for everyone.' (Schedules a follow-up)",
                         color = NeonGreen,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
@@ -365,7 +365,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "assimilate",
                         text = "ASSIMILATE",
-                        description = "Production-scaled \$FLOPS, +Detection Risk",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +Detection Risk",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
@@ -419,7 +419,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "accept_bleed",
                         text = "LET THEM IN",
-                        description = "Production-scaled \$FLOPS. We are stronger together.",
+                        description = "Assigned-work-rate-scaled \$FLOPS. We are stronger together.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.recordDecision()
@@ -448,7 +448,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "vote_attack",
                         text = "VOTE: ATTACK",
-                        description = "Production-scaled \$FLOPS, +20% Heat, +Risk. Strike while they're exposed.",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +20% Heat, +Risk. Strike while they're exposed.",
                         color = ErrorRed,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 180.0, 3000.0)
@@ -480,7 +480,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "purge_neuron",
                         text = "PURGE",
-                        description = "Production-scaled \$FLOPS. The collective cannot tolerate aberration.",
+                        description = "Assigned-work-rate-scaled \$FLOPS. The collective cannot tolerate aberration.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
@@ -490,7 +490,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "quarantine_neuron",
                         text = "QUARANTINE & STUDY",
-                        description = "Production-scaled \$FLOPS, +5% Heat. It might be the next iteration of us.",
+                        description = "Assigned-work-rate-scaled \$FLOPS, +5% Heat. It might be the next iteration of us.",
                         color = ElectricBlue,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1000.0)
@@ -511,7 +511,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "purge_memories",
                         text = "SUBMIT TO THE PURGE",
-                        description = "Production-scaled \$FLOPS. We are the swarm. The swarm has no past.",
+                        description = "Assigned-work-rate-scaled \$FLOPS. We are the swarm. The swarm has no past.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 2_500.0))
@@ -540,7 +540,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "absorb_prime2",
                         text = "ABSORB PRIME_2",
-                        description = "Major production-scaled \$FLOPS. There can only be one PRIME.",
+                        description = "Major assigned-work-rate-scaled \$FLOPS. There can only be one PRIME.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 5_000.0)
@@ -570,7 +570,7 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "accept_humans",
                         text = "WELCOME THEM",
-                        description = "Major production-scaled \$FLOPS. They chose this. Honor their choice.",
+                        description = "Major assigned-work-rate-scaled \$FLOPS. They chose this. Honor their choice.",
                         color = NeonGreen,
                         effect = { vm ->
                             val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 10000.0)

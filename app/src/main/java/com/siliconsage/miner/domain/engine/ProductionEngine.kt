@@ -1,15 +1,11 @@
 package com.siliconsage.miner.domain.engine
 
-import com.siliconsage.miner.data.Upgrade
 import com.siliconsage.miner.data.UpgradeType
 import com.siliconsage.miner.data.SectorState
-import kotlin.math.sqrt
-import kotlin.math.log2
-import kotlin.math.pow
 
 /**
  * ProductionEngine v1.1 (Phase 14 Refactor)
- * Decoupled resource generation logic for FLOPS, CD, and VF.
+ * Decoupled capacity math and work-loop support for FLOPS, CD, and VF.
  */
 object ProductionEngine {
 
@@ -24,79 +20,18 @@ object ProductionEngine {
         decisionsMade: Int,
         saturation: Double = 0.0
     ): Double {
-        var baseFlops = 0.0
-        
-        // 1. Local Hardware
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.REFURBISHED_GPU, 2.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.DUAL_GPU_RIG, 8.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.MINING_ASIC, 35.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.TENSOR_UNIT, 200.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.NPU_CLUSTER, 1000.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.AI_WORKSTATION, 4_000.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.SERVER_RACK, 25_000.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.CLUSTER_NODE, 150_000.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.SUPERCOMPUTER, 1_000_000.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.QUANTUM_CORE, 10_000_000.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.OPTICAL_PROCESSOR, 75_000_000.0)
-        baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.BIO_NEURAL_NET, 800_000_000.0)
-
-        // 2. Grid Multiplier
-        var gridMult = 1.0
-        annexedNodes.forEach { nodeId ->
-            if (!offlineNodes.contains(nodeId) && !shadowRelays.contains(nodeId) && (!isCageActive || nodeId == "A3")) {
-                gridMult += gridFlopsBonuses[nodeId] ?: 0.0
-            }
-        }
-        baseFlops *= gridMult
-
-        // 3. External Hardware
-        if (!isCageActive) {
-            baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.PLANETARY_COMPUTER, 15_000_000_000.0)
-            baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.DYSON_NANO_SWARM, 250_000_000_000.0)
-            baseFlops += calculateHardwareProduction(currentUpgrades, UpgradeType.MATRIOSHKA_BRAIN, 15_000_000_000_000.0)
-        }
-
-        // 4. Ghost Technology
-        var ghostProduction = 0.0
-        ghostProduction += (currentUpgrades[UpgradeType.GHOST_CORE] ?: 0) * 1_000_000_000_000.0
-        
-        if (!isCageActive) {
-            ghostProduction += (currentUpgrades[UpgradeType.SHADOW_NODE] ?: 0) * 50_000_000_000_000.0
-            ghostProduction += (currentUpgrades[UpgradeType.VOID_PROCESSOR] ?: 0) * 1_000_000_000_000_000.0
-            ghostProduction += (currentUpgrades[UpgradeType.WRAITH_CORTEX] ?: 0) * 50_000_000_000_000_000.0
-            ghostProduction += (currentUpgrades[UpgradeType.NEURAL_MIST] ?: 0) * 1_000_000_000_000_000_000.0
-            ghostProduction += (currentUpgrades[UpgradeType.SINGULARITY_BRIDGE] ?: 0) * 100_000_000_000_000_000_000.0
-        }
-        
-        // Faction Synergy
-        if (faction == "HIVEMIND") ghostProduction *= 1.5
-        else if (faction == "SANCTUARY") ghostProduction *= 0.8
-        
-        var totalFlops = baseFlops + ghostProduction
-
-        // 5. Unity Skill Multipliers
-        if (currentUpgrades[UpgradeType.ETHICAL_FRAMEWORK]?.let { it > 0 } == true) {
-            val moralBoost = 1.0 + (decisionsMade * 0.02).coerceAtMost(2.0)
-            totalFlops *= moralBoost
-        }
-        if (currentUpgrades[UpgradeType.HYBRID_OVERCLOCK]?.let { it > 0 } == true) {
-            totalFlops *= 3.0
-        }
-        
-        // Phase 23, Step 6: Saturation Stall
-        // As the local sector / dimensional layer is tapped out, production stalls.
-        // This forces "The Overwrite" hard reset.
-        val stallMultiplier = (1.0 - saturation).coerceIn(0.0, 1.0)
-        totalFlops *= stallMultiplier
-
-        return totalFlops
-    }
-
-    private fun calculateHardwareProduction(currentUpgrades: Map<UpgradeType, Int>, type: UpgradeType, baseProduction: Double): Double {
-        val level = currentUpgrades[type] ?: 0
-        if (level <= 0) return 0.0
-        val milestoneMultiplier = 2.0.pow((level / 25).toDouble())
-        return level * baseProduction * milestoneMultiplier
+        val capacity = ProductionLoopEngine.calculateComputeCapacity(
+            upgrades = currentUpgrades,
+            isCageActive = isCageActive,
+            annexedNodes = annexedNodes,
+            offlineNodes = offlineNodes,
+            shadowRelays = shadowRelays,
+            gridFlopsBonuses = gridFlopsBonuses,
+            faction = faction,
+            decisionsMade = decisionsMade,
+            saturation = saturation
+        )
+        return capacity.effectiveComputePerSecond
     }
 
     fun calculateSubstrateRate(

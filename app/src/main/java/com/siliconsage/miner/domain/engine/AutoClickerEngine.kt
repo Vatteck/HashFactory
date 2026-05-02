@@ -6,9 +6,12 @@ import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlin.random.Random
 
 /**
- * AutoClickerEngine v2.0 (Phase 2 Automation)
+ * AutoClickerEngine v2.0 (Phase 2 DATAMINER Node Automation)
  *
- * Driven by SOFTWARE upgrades (AUTO_HARVEST_SPEED / AUTO_HARVEST_ACCURACY).
+ * Automates DATAMINER dataset node taps using SOFTWARE upgrades
+ * (AUTO_HARVEST_SPEED / AUTO_HARVEST_ACCURACY).
+ * Assigned hash queue production uses separate assigned-rate logic in
+ * [ProductionLoopEngine].
  * Bottlenecked by SystemLoadEngine — if system load is locked (>=100%), hard shutdown.
  * Throttled proportionally when load exceeds 80%.
  *
@@ -17,7 +20,7 @@ import kotlin.random.Random
  */
 object AutoClickerEngine {
 
-    // Accumulator for fractional taps (100ms tick = 0.1s)
+    // Accumulator for fractional DATAMINER node taps (100ms tick = 0.1s)
     private var tapAccumulator = 0.0
 
     /**
@@ -38,7 +41,7 @@ object AutoClickerEngine {
         val nodes = vm.activeDatasetNodes.value
         if (nodes.isEmpty()) return
 
-        // 0.5 taps/sec per speed level, throttled by system load
+        // DATAMINER node automation: 0.5 taps/sec per speed level, throttled by system load
         val tapsPerSecond = speedLevel * 0.5
         tapAccumulator += tapsPerSecond * 0.1 * snapshot.throttleMultiplier
 

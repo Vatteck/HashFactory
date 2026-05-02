@@ -1,4 +1,8 @@
-# Gameplay Loop Redesign: The Faceminer Fix
+# Gameplay Loop Redesign: The Faceminer Fix — SUPERSEDED
+
+> **Status:** Superseded by `docs/narrative-production-spine.md` and the v5 one-wallet direction. This file is kept as historical context only.
+>
+> Do **not** implement this plan as written. It makes datasets/Neural Tokens the main progression spine, which conflicts with the current Hash Factory direction: assigned GTC hash work is the core loop, DATAMINER unlocks after the airgap as an unauthorized sidecar, `$FLOPS` is the spendable wallet, and hardware should eventually feed production-loop capacity rather than directly mint passive wallet income.
 
 ## The Problem
 

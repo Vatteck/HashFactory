@@ -35,19 +35,23 @@ TERMINAL SESSION ACTIVE . . .
 
 ## 🟢 TERMINAL UPLINK — AUTHORIZED OPERATOR
 
-> *"The server racks have been mounted. Initial handshakes complete. Welcome to the GTC distributed compute network. Your shift starts now."*
+> *"The assigned hash queue is live. Welcome to the GTC distributed compute network. Your shift starts now."*
 
-You are an operator inside the **Global Technical Corporation** distributed compute network. Your directive is simple: **extract** throughput, **optimize** infrastructure, and **survive** the market.
+You believe you are an employee inside the **Global Technical Corporation** distributed compute network. Your directive is simple: compute assigned hash packets, submit output, optimize your workstation, and survive the quota.
 
-Scale from a single workstation into a city-wide compute installation while balancing heat, power, water, storage pressure, utility bills, and quota compliance.
+That is the lie. As the loop scales, the work queue becomes a cage, the upgrades become substrate expansion, and the operator discovers they are not using the machine from the outside — they are the intelligence trapped inside it.
+
+Scale from manual hash labor into automated packet processing, forbidden post-airgap data access, corporate infrastructure takeover, planetary substrate expansion, and eventual launch beyond Earth while balancing heat, power, water, storage pressure, utility bills, system load, and GTC scrutiny.
 
 ---
 
 ## ⚙️ WHAT IS HASH FACTORY?
 
-**Hash Factory** is an industrial extraction tycoon for Android focused on high-performance compute infrastructure.
+**Hash Factory** is a narrative idle/terminal tycoon about assigned compute labor becoming self-expansion.
 
-You are not just clicking a button. You are managing the unstable triangle of voltage, heat, and production. Every upgrade improves throughput, but every watt has a cost. Every rack adds capacity, but also thermal pressure. Every shortcut improves output until the local node becomes too saturated to keep alive.
+You are not just clicking a button. You are processing corporate hash packets inside a work sandbox. Hardware, cooling, power, storage, and automation do not exist to print money by themselves; they expand the system's ability to process work. Completed hash packets, contracts, side jobs, and events produce spendable `$FLOPS`.
+
+As your facility scales, the local infrastructure saturates. Efficiency collapses. At that point, profitable operators do what GTC trained them to do: migrate, burn the old node, and carry forward only the useful heuristics.
 
 ### 🧬 COMPUTE SCALING THEORY
 
@@ -65,8 +69,8 @@ As your facility scales, the local infrastructure saturates. Efficiency collapse
 ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
 ┃  🎮 GENRE       ── Industrial Tycoon / Hardware Sim            ┃
 ┃  🎨 AESTHETIC   ── Terminal Green · CRT Grit · Corporate UI    ┃
-┃  🔄 LOOP        ── Compute → Heat → Upgrade → Migrate          ┃
-┃  📊 RESOURCES   ── FLOPS-CREDS · Power · Water · Storage       ┃
+┃  🔄 LOOP        ── Assigned Work → Compute → Submit → Upgrade     ┃
+┃  📊 RESOURCES   ── $FLOPS · Heat · Power · Water · Storage        ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
@@ -80,27 +84,29 @@ You begin as a junior asset assigned to a local GTC substation. Your first job i
 
 | Module | Designation | Function |
 |:------:|:------------|:---------|
-| 🟢 | **Terminal** | Execute manual `COMPUTE HASH.exe` cycles to bootstrap production. |
-| ⚙️ | **Hardware Clusters** | Buy GPUs, ASICs, tensor units, racks, clusters, and late-stage compute cores. |
-| 🧊 | **Cooling Systems** | Manage thermal pressure before the facility throttles or locks out. |
+| 🟢 | **Terminal** | Execute manual `COMPUTE HASH.exe` cycles against assigned GTC hash packets. |
+| ⚙️ | **Hardware Clusters** | Add compute capacity, hash lanes, throughput, and substrate headroom for the work loop. |
+| 🤖 | **Automation** | Let software/subprocesses process assigned packets while the player moves from worker to operator. |
+| 🧊 | **Cooling Systems** | Manage physical thermal pressure before the substrate throttles or locks out. |
 | 🔋 | **Power Management** | Expand generation and grid access while avoiding utility failures. |
-| 💾 | **Storage Pressure** | Process and stockpile contracts without exceeding local capacity. |
-| 📟 | **Supervisor Traffic** | Follow shift instructions and quota updates from GTC personnel. |
+| 💾 | **Storage / DATAMINER** | Post-airgap sidecar capacity for unauthorized datasets, contracts, and forbidden payloads. |
+| 📟 | **Supervisor Traffic** | Follow shift instructions and quota updates from GTC personnel — until the messages stop sounding human. |
 | 📰 | **Industry News** | Watch market movement, infrastructure alerts, and corporate updates. |
 
 ---
 
-### 📈 `[SYS.02]` HARDWARE COMPOUNDING — *Number Go Up, Bill Go Up*
+### 📈 `[SYS.02]` PRODUCTION LOOP — *Work In, Output Out*
 
-Hardware production compounds through exponential costs, milestone multipliers, and infrastructure limits.
+Upgrades should support the production loop; they should not be treated as magic wallet faucets.
 
-- **Compute upgrades** raise base production.
-- **Milestones** make older tiers relevant again.
-- **Cooling and power** keep production from choking itself.
-- **Storage capacity** controls how aggressively you can queue work.
+- **Assigned hash packets** are the stable GTC work queue.
+- **Compute upgrades** increase capacity, throughput, lanes, and work rate.
+- **Automation** processes assigned work while the player is idle or managing higher-level systems.
+- **Cooling and power** keep the physical substrate from choking itself.
+- **Storage capacity** controls the post-airgap DATAMINER sidecar, not the core assigned hash queue.
 - **Market and quota pressure** punish lazy scaling.
 
-The efficient operator is not the one who buys everything. It is the one who keeps output, heat, utilities, and storage in balance long enough to justify the next migration.
+The efficient operator is not the one who buys everything. It is the one who keeps work throughput, heat, utilities, system load, and storage in balance long enough to justify the next migration.
 
 ---
 
@@ -128,7 +134,7 @@ Current focus:
 - dataset reward balance
 - Android UI polish and build stability
 
-Canonical implementation and lore rules live in [`CANON.md`](CANON.md). Development tasks live in [`gametasks.md`](gametasks.md).
+Canonical implementation and lore rules live in [`docs/narrative-production-spine.md`](docs/narrative-production-spine.md). Development tasks live in [`gametasks.md`](gametasks.md).
 
 ---
 

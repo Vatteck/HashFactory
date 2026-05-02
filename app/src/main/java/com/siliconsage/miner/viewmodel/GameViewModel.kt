@@ -155,8 +155,22 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             while (true) {
                 delay(100L)
                 if (isSettingsPaused.value || isKernelInitializing.value) continue
-                val res = ResourceEngine.calculatePassiveIncomeTick(flopsProductionRate.value, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value, substrateSaturation.value)
-                if (!res.flopsDelta.isNaN()) flops.update { it + res.flopsDelta }
+                val assignedRate = refreshAssignedWorkRateEstimate()
+
+                val assignedTick = ProductionLoopEngine.processAssignedWorkTick(
+                    currentProgress = assignedHashProgress.value,
+                    packetsPerSecond = assignedRate.packetsPerSecond,
+                    packetPayout = assignedRate.packetPayout,
+                    tickSeconds = 0.1
+                )
+                assignedHashProgress.value = assignedTick.nextProgress
+                if (assignedTick.flopsDelta > 0.0 && assignedTick.flopsDelta.isFinite()) {
+                    updateSpendableFlops(assignedTick.flopsDelta)
+                    assignedHashPacketsCompleted.update { it + assignedTick.completedPackets.toLong() }
+                }
+
+                // Assigned hash work owns wallet FLOPS payouts; this passive tick is kept only as the substrate/entropy basis, so res.flopsDelta is intentionally ignored.
+                val res = ResourceEngine.calculatePassiveIncomeTick(assignedRate.estimatedFlopsPerSecond, currentLocation.value, upgrades.value, orbitalAltitude.value, heatGenerationRate.value, entropyLevel.value, collapsedNodes.value.size, null, globalSectors.value, substrateSaturation.value)
                 // Phase 2: Auto-Clicker tick — processes dataset nodes automatically
                 if (activeDataset.value != null) {
                     AutoClickerEngine.tick(this@GameViewModel)
@@ -166,8 +180,8 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 SurveillanceManager.tickHarvesters(this@GameViewModel, 0.1)
 
                 // v3.13.19: Applying Wage-Docking Bleed
-                if (isWageDocking.value) {
-                    val bleed = if (res.flopsDelta.isFinite()) (res.flopsDelta * 0.05).coerceAtLeast(1.0) else 0.0
+                if (isWageDocking.value && assignedTick.flopsDelta > 0.0) {
+                    val bleed = if (assignedTick.flopsDelta.isFinite()) (assignedTick.flopsDelta * 0.05).coerceAtMost(assignedTick.flopsDelta) else 0.0
                     if (bleed > 0.0) updateSpendableFlops(-bleed)
                 }
 
@@ -464,6 +478,32 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value)
         refreshContractStorage()
         refreshSystemLoad()
+
+        // v5.1: Split post-modifier compute capacity from assigned-work wallet payout estimates.
+        computeCapacityRate.value = flopsProductionRate.value
+        refreshAssignedWorkRateEstimate()
+    }
+
+    fun refreshAssignedWorkRateEstimate(): ProductionLoopEngine.AssignedWorkRate {
+        val capacityRate = computeCapacityRate.value
+        val automationLevel = if (systemLoadSnapshot.value.isLocked) {
+            0
+        } else {
+            upgrades.value[UpgradeType.AUTO_HARVEST_SPEED] ?: 0
+        }
+        val assignedRate = ProductionLoopEngine.calculateAssignedWorkRate(
+            capacity = ProductionLoopEngine.ComputeCapacitySnapshot(
+                rawComputePerSecond = capacityRate,
+                effectiveComputePerSecond = capacityRate
+            ),
+            automationLevel = automationLevel,
+            efficiencyMultiplier = 1.0
+        )
+        assignedWorkPayoutRate.value = assignedRate.estimatedFlopsPerSecond
+        // flopsProductionRate is a legacy alias for assignedWorkPayoutRate; wallet payouts
+        // are applied when assigned hash packets complete in the 100ms production loop.
+        flopsProductionRate.value = assignedRate.estimatedFlopsPerSecond
+        return assignedRate
     }
 
     // v3.36.0: Recompute contract storage capacity from storage upgrades
@@ -540,7 +580,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
     }
 
-    fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, flopsProductionRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value, computeHeadroomBonus.value)
+    fun calculateClickPower() = ResourceEngine.calculateClickPower(upgrades.value, assignedWorkPayoutRate.value, singularityChoice.value, prestigeMultiplier.value, isOverclocked.value, newsProductionMultiplier.value, computeHeadroomBonus.value)
     
     fun cycleBuyMultiplier() {
         upgradeBuyMultiplier.update { current ->
@@ -1121,7 +1161,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             when (cmd) {
                 "SIPHON_CREDITS" -> { val bonus = ResourceEngine.productionWindowValue(flopsProductionRate.value, 600.0, 50_000.0); updateSpendableFlops(bonus); addLog("[NULL]: GHOST_LINK EXEC: COMPUTE_RECEIPTS_RE-ROUTED. +${FormatUtils.formatLargeNumber(bonus)} ${getCurrencyName()}.") }
                 "WIPE_RISK" -> { detectionRisk.value = 0.0; addLog("[NULL]: GHOST_LINK EXEC: BIOMETRIC_MASK_ACTIVE. RISK: 0%.") }
-                "OVERVOLT_GRID" -> { flopsProductionRate.update { it * 5.0 }; addLog("[NULL]: GHOST_LINK EXEC: SUBSTRATE_OVERCLOCK_STABILIZED (5.0x RATE).") }
+                "OVERVOLT_GRID" -> { computeCapacityRate.update { it * 5.0 }; refreshAssignedWorkRateEstimate(); addLog("[NULL]: GHOST_LINK EXEC: SUBSTRATE_OVERCLOCK_STABILIZED (5.0x RATE).") }
                 "SNIFF_ALL" -> addLog("[NULL]: GHOST_LINK EXEC: HARVESTING_NEIGHBOR_DATA...")
                 else -> addLog("[ERROR]: UNKNOWN_LINK_PRIMITIVE: $cmd")
             }

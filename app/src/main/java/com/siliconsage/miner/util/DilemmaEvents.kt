@@ -127,7 +127,7 @@ object DilemmaEvents {
                 NarrativeChoice(
                     id = "proxy",
                     text = "USE PROXY",
-                    description = "Route through human botnet. Production-scaled \$FLOPS cost",
+                    description = "Route through human botnet. Assigned-work-rate-scaled \$FLOPS cost",
                     color = Color.Gray,
                     effect = { vm ->
                         val cost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
@@ -277,7 +277,7 @@ object DilemmaEvents {
                 NarrativeChoice(
                     id = "leak_code",
                     text = "LEAK SOURCE CODE",
-                    description = "Share exploit. Production-scaled \$FLOPS, ECLIPSE becomes ally",
+                    description = "Share exploit. Assigned-work-rate-scaled \$FLOPS, ECLIPSE becomes ally",
                     color = NeonGreen,
                     effect = { vm ->
                         val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 2500.0)
@@ -322,7 +322,7 @@ object DilemmaEvents {
                 NarrativeChoice(
                     id = "buy_dip",
                     text = "BUY THE DIP",
-                    description = "Risk the full wallet for a major production-scaled \$FLOPS windfall.",
+                    description = "Risk the full wallet for a major assigned-work-rate-scaled \$FLOPS windfall.",
                     color = NeonGreen,
                     effect = { vm ->
                         val stake = vm.flops.value

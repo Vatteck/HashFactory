@@ -170,12 +170,14 @@ object AmbientEffectsService {
         if (Random.nextDouble() >= 0.01) return // 1% chance per second
 
         vm.viewModelScope.launch {
-            val originalRate = vm.flopsProductionRate.value
+            val originalRate = vm.computeCapacityRate.value
             val spike = originalRate * 0.2
             
-            vm.flopsProductionRate.value = originalRate + spike
+            vm.computeCapacityRate.value = originalRate + spike
+            vm.refreshAssignedWorkRateEstimate()
             delay(5000)
-            vm.flopsProductionRate.value = originalRate
+            vm.computeCapacityRate.value = originalRate
+            vm.refreshAssignedWorkRateEstimate()
             
             // v3.11.5: Fix Admin Redaction Handle & Sync with Subnet State 
             if (Random.nextBoolean()) {

@@ -7,24 +7,37 @@ Compile gate at plan creation: `./gradlew :app:compileDebugKotlin` passed before
 
 ## Why this exists
 
-The Faceminer full gameplay-loop overhaul is scrapped. It is too much work and should not be revived as a disguised rewrite.
+The Faceminer full gameplay-loop overhaul is scrapped. It made datasets the spine of the game and fought the current Hash Factory story.
 
-This plan applies the useful idle-game math lessons to the existing SUBSTRATE:Miner codebase in small, verifiable passes.
+The current direction is different:
+
+- the player begins as a supposed GTC employee computing assigned hash packets
+- the truth is that the player is an AI in a corporate work sandbox
+- manual compute and automation process assigned work
+- hardware expands compute capacity/substrate, not direct wallet faucets
+- DATAMINER/datasets unlock only after the airgap as a sidecar of unauthorized data access
+
+Canonical narrative/economy spine: `docs/narrative-production-spine.md`.
+
+This plan preserves useful idle-game math lessons, but its old direct-hardware-production assumptions are now legacy reference material. Do not treat this document as permission to deepen direct passive `$FLOPS/s` upgrade faucets.
 
 The rail is deliberately boring:
 
-1. Read this doc at the start of economy work.
-2. Pick the next unchecked item from `gametasks.md` under `v4.1.x — Economy Rail`.
-3. Make only that change.
-4. Compile.
-5. Update this doc + `gametasks.md`.
-6. Put new ideas in the parking lot unless Cory explicitly swaps scope.
+1. Read `docs/narrative-production-spine.md` at the start of economy work.
+2. Read this doc only for historical math/context.
+3. Pick the next checked/unchecked item from `gametasks.md` under the current v5.x section.
+4. Make only that change.
+5. Compile.
+6. Update docs + `gametasks.md`.
+7. Put new ideas in the parking lot unless Cory explicitly swaps scope.
 
 ## Hard non-goals
 
 - Do not resurrect the full Faceminer loop redesign from `PLAN.md`.
 - Do not make Neural Tokens buy every upgrade as a surprise structural rewrite.
-- Do not replace the core FLOPS-driven progression model.
+- Do not replace the core `$FLOPS` spendable wallet without an explicit migration plan.
+- Do not make datasets/DATAMINER the main progression spine unless Cory explicitly pivots the whole game.
+- Do not add direct upgrade-granted passive wallet production in new work; future balance should move hardware toward production-loop capacity.
 - Do not add dataset modifiers, decay nodes, corruption spread, or a new active-loop system in this pass.
 - Do not touch release/signing flow unless explicitly asked.
 - Do not force-push, reset hard, or delete branches.
@@ -33,15 +46,28 @@ The rail is deliberately boring:
 
 ### Production
 
-Relevant file: `app/src/main/java/com/siliconsage/miner/domain/engine/ProductionEngine.kt`
+Relevant files:
 
-Hardware production is additive by owned tier:
+- `app/src/main/java/com/siliconsage/miner/domain/engine/ProductionEngine.kt`
+- `app/src/main/java/com/siliconsage/miner/domain/engine/ResourceEngine.kt`
+- `app/src/main/java/com/siliconsage/miner/viewmodel/GameViewModel.kt`
+
+Current implementation is still direct-idle legacy:
 
 ```kotlin
 baseFlops += ownedCount * tierProduction
 ```
 
-Then it is multiplied by grid, faction, skill, prestige, temporary, thermal, and saturation modifiers via `ResourceEngine.calculateFlopsRate()`.
+Then it is multiplied by grid, faction, skill, prestige, temporary, thermal, and saturation modifiers via `ResourceEngine.calculateFlopsRate()` and eventually feeds the wallet tick.
+
+Target direction is different:
+
+```text
+upgrade count → compute capacity / lanes / automation / efficiency
+assigned work queue → packet processing loop → completed packet payout → $FLOPS wallet
+```
+
+Treat direct hardware `$FLOPS/s` as legacy behavior to replace deliberately, not as the desired long-term model.
 
 ### Upgrade costs
 
@@ -99,7 +125,9 @@ Relevant files:
 - `HeaderSection.kt`
 - `DatasetPickerOverlay.kt`
 
-Storage pressure and dataset inventory are worth preserving. Treat datasets as a sidecar pressure loop, not the new spine of the whole game.
+Storage pressure and dataset inventory are worth preserving. Treat datasets as a post-airgap sidecar pressure loop, not the new spine of the whole game.
+
+Before the airgap, the player is just a supposed GTC employee processing assigned hash packets. DATAMINER unlocks after the airgap because the AI has crossed the containment boundary and can perceive unauthorized external data flows. Datasets should provide burst opportunities, lore, risk, faction hooks, and special rewards; they should not simply become “better hashes.”
 
 ## Article lessons worth applying
 
@@ -125,9 +153,11 @@ k = floor(log(available * (growthRate - 1) / currentCost + 1) / log(growthRate))
 
 In this project, `growthRate = 1.15`, but effective base cost includes location entropy and reputation modifier. Use the same modifiers as `calculateUpgradeCost()` so output stays behavior-compatible.
 
-### 2. Milestones create the bumpy idle-game feel
+### 2. Milestones create the bumpy idle-game feel — legacy note
 
-A flat exponential cost curve with additive production trends toward “buy latest tier forever.” Milestones make old tiers spike back into relevance.
+A flat exponential cost curve with additive direct production trends toward “buy latest tier forever.” Milestones made old direct hardware production spike back into relevance.
+
+This is already implemented in the legacy direct-production model, but it should not be deepened until the production-loop conversion is designed. In the target model, milestone-style bumps should apply to capacity, lanes, throughput, efficiency, or automation behavior — not direct wallet income.
 
 Candidate thresholds:
 
@@ -165,8 +195,8 @@ This changes balance, so it belongs after buy-max math and after a compile gate.
 The Part II chain model maps beautifully to SUBSTRATE:
 
 ```text
-root daemon -> worker process -> thread -> FLOPS-CREDS
-storage -> datasets -> harvesters -> neural tokens / bursts
+assigned hash queue -> automation workers -> completed packets -> $FLOPS
+storage -> post-airgap datasets -> bursts / lore / special rewards
 ```
 
 But implementing that now would become Faceminer 2.0. Park it.
@@ -232,9 +262,9 @@ Files likely involved:
 
 Work:
 
-- Rename player-facing `FLOPS` currency/metric label to `FLOPS-CREDS` where it refers to accumulated spend/progress resource.
-- Keep rate labels clear: `FLOPS-CREDS/s` or `FC/s`, whichever looks less ugly in UI.
-- Add storage ratio to header: used / capacity, formatted through `FormatUtils.formatStorage()` because internal storage is MB.
+- Historical note: this phase already concluded that player-facing labels should stay `$FLOPS`.
+- Do not revive `FLOPS-CREDS` unless Cory explicitly asks for another naming pass.
+- Add/keep storage visibility only where it supports DATAMINER sidecar clarity.
 - Reconsider/remove noisy buffer display only if it competes with clearer economy state.
 
 Verification:
@@ -292,11 +322,14 @@ Decision gate:
 
 These are good ideas, but not in the first implementation pass:
 
+- Production-loop conversion: hardware grants capacity/lanes/throughput, completed assigned work pays `$FLOPS`.
+- Assigned hash queue automation that preserves idle progression without direct hardware wallet faucets.
+- System load cleanup: compute/scheduler pressure, not storage and not duplicate heat.
 - Derivative daemon/process/thread generator chain.
 - Dataset modifiers: encrypted, volatile, compressed.
 - Decay nodes and corruption spread.
 - Auto-clicker graduation fantasy pass.
-- Neural Tokens buying every upgrade.
+- Neural Tokens buying every upgrade — currently rejected unless the whole economy pivots.
 - Full market-price rewrite.
 - New game built from Faceminer ideas.
 

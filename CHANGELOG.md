@@ -1,6 +1,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [v5.1.0] - 2026-05-02
+### Added
+- **Assigned Work Production Loop**: Added `ProductionLoopEngine` to model compute capacity, assigned-work rates, packet progress, and completed-packet `$FLOPS` payouts.
+- **Assigned Queue HUD**: Active command buffer now surfaces `ASSIGNED QUEUE` progress so the core GTC work loop is visible without exposing DATAMINER language pre-airgap.
+- **Production Loop Tests**: Added unit coverage for legacy hardware parity, grid/cage/shadow/offline modifiers, ghost/faction multipliers, saturation, packet completion, automation utilization, and defensive input handling.
+- **Narrative/Economy Spine Docs**: Added canonical production-loop docs, golden-value baselines, implementation plan/review artifacts, and verification notes.
+
+### Changed
+- **Wallet Payout Routing**: The 100ms loop now pays spendable `$FLOPS` through completed assigned hash packets instead of directly adding passive tick deltas.
+- **Hardware Semantics**: Hardware production math now routes through compute capacity semantics while preserving legacy numeric behavior for existing callers.
+- **Automation Semantics**: `AUTO_HARVEST_SPEED` improves assigned hash queue throughput; DATAMINER auto-clicking remains separate dataset-node automation.
+- **Event/Reward Copy**: Event helper language now describes assigned-work-rate-scaled rewards/costs instead of generic production-scaled passive income.
+- **Manual Compute Scaling**: Manual click power now references assigned-work payout rate rather than stale passive-rate wording.
+
+### Fixed
+- **Rate Mutation Compatibility**: Legacy rate spikes such as `OVERVOLT_GRID` and ambient ghost-process boosts now update compute capacity / assigned-work estimates instead of being overwritten on the next tick.
+- **Wage Docking Packet Edge Case**: Wage docking now takes a percentage of actual assigned packet payout and no longer applies a flat minimum that could erase low-value packets.
+- **Substrate/Entropy Preservation**: The legacy passive tick is retained as a non-wallet substrate/entropy basis, preventing orbital/void progression from being zeroed during the payout reroute.
+
 ## [v4.0.7] - 2026-02-28
 ### Added
 - **Storage Pressure Narrative**: The local terminal now reacts to local cache utilization.

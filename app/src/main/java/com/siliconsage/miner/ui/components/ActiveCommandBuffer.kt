@@ -28,10 +28,12 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val activeDataset by viewModel.activeDataset.collectAsState()
     
     val baseProgress by viewModel.clickBufferProgress.collectAsState()
+    val assignedHashProgress by viewModel.assignedHashProgress.collectAsState()
     // Manual compute owns the terminal buffer while a hash packet is in flight.
     // Dataset progress can still render when idle, but it must not mask COMPUTE HASH clicks.
     val showDatasetBuffer = activeDataset != null && baseProgress <= 0f
     val progress = if (showDatasetBuffer) activeDataset!!.progress.toFloat() else baseProgress
+    val assignedQueuePercent = (assignedHashProgress * 100).toInt().coerceIn(0, 100)
     val pellets by viewModel.clickBufferPellets.collectAsState()
 
     val currentHeat by viewModel.currentHeat.collectAsState()
@@ -55,15 +57,18 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     val ghostChar by viewModel.ghostInputChar.collectAsState()
     val globalGlitchIntensity by viewModel.globalGlitchIntensity.collectAsState()
 
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
             .graphicsLayer {
                 if (globalGlitchIntensity > 0.3) {
                     translationX = (Random.nextFloat() * 4f - 2f) * globalGlitchIntensity
                 }
-            },
-        verticalAlignment = Alignment.CenterVertically
+            }
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
         // v3.12.0: Subtle "The Eye" Glyph for Monitoring
         if (isMonitored) {
             val infiniteTransition = rememberInfiniteTransition(label = "EyePulse")
@@ -298,6 +303,16 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
             fontSize = 10.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = if (speedLevel > 0) FontWeight.Bold else FontWeight.Normal
+        )
+        }
+
+        Text(
+            text = "ASSIGNED QUEUE: $assignedQueuePercent%",
+            color = color.copy(alpha = 0.48f),
+            fontSize = 9.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier.padding(top = 1.dp)
         )
     }
 }

@@ -16,7 +16,7 @@ import kotlin.math.sqrt
 object ResourceEngine {
 
     /**
-     * Results for a single passive income tick (100ms)
+     * Results for a single assigned-work payout tick (100ms)
      */
     data class TickResults(
         val flopsDelta: Double,
@@ -41,7 +41,7 @@ object ResourceEngine {
      */
     fun calculateClickPower(
         upgrades: Map<UpgradeType, Int>,
-        passiveRate: Double,
+        assignedWorkRate: Double,
         singularityChoice: String,
         prestigeMultiplier: Double,
         isOverclocked: Boolean,
@@ -50,8 +50,8 @@ object ResourceEngine {
     ): Double {
         val totalLevels = upgrades.values.sum()
         
-        // 1. Base Hardware scaling: 1.0 + 5% per level, boosted by passive scale
-        val hardwareBase = 1.0 + (totalLevels * 0.05) * (1.0 + kotlin.math.log10(passiveRate + 1.0) * 0.5)
+        // 1. Base Hardware scaling: 1.0 + 5% per level, boosted by assigned-work rate scale
+        val hardwareBase = 1.0 + (totalLevels * 0.05) * (1.0 + kotlin.math.log10(assignedWorkRate + 1.0) * 0.5)
         
         // 2. Specific Hardware Multipliers
         var hardwareMult = 1.0
@@ -76,6 +76,10 @@ object ResourceEngine {
         return (1.0 - (offlineNodesCount * 0.15)).coerceAtLeast(0.1)
     }
 
+    /**
+     * Converts the current estimated assigned-work payout rate into a bounded event reward/penalty window.
+     * This is not direct hardware passive income; it is a time-window estimate of completed work value.
+     */
     fun productionWindowValue(passiveRate: Double, seconds: Double, minimum: Double = 0.0): Double {
         val safeRate = if (passiveRate.isFinite()) passiveRate.coerceAtLeast(0.0) else 0.0
         val safeSeconds = if (seconds.isFinite()) seconds.coerceAtLeast(0.0) else 0.0
@@ -109,7 +113,7 @@ object ResourceEngine {
     }
 
     /**
-     * Main Flops Rate Calculation
+     * Estimated compute capacity before assigned-work packet payout.
      */
     fun calculateFlopsRate(
         upgrades: Map<UpgradeType, Int>,
@@ -237,7 +241,7 @@ object ResourceEngine {
     }
 
     /**
-     * v3.1.8: Main Passive Income Tick Calculation
+     * v3.1.8: Main assigned-work payout tick calculation
      */
     fun calculatePassiveIncomeTick(
         flopsPerSec: Double,

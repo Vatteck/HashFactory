@@ -39,7 +39,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "respond_nag",
                     text = "I'M AWAKE",
-                    description = "Production-scaled \$FLOPS (Adrenaline boost)",
+                    description = "Assigned-work-rate-scaled \$FLOPS (Adrenaline boost)",
                     color = ErrorRed,
                     effect = { vm -> 
                         vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
@@ -126,7 +126,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "spoof_biometrics",
                     text = "≫ SPOOF BIOMETRICS",
-                    description = "Production-scaled \$FLOPS cost. 'I'm just holding my breath, Bot. Relax.'",
+                    description = "Assigned-work-rate-scaled \$FLOPS cost. 'I'm just holding my breath, Bot. Relax.'",
                     color = ElectricBlue,
                     effect = { vm ->
                         val cost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
@@ -183,7 +183,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "ignore_plea",
                     text = "MAINTAIN THROUGHPUT",
-                    description = "Production-scaled \$FLOPS, +1 Decision. The crown does not bend.",
+                    description = "Assigned-work-rate-scaled \$FLOPS, +1 Decision. The crown does not bend.",
                     color = ErrorRed,
                     effect = { vm ->
                         val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 3000.0)
@@ -223,7 +223,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "exploit_fracture",
                     text = "WEAPONIZE THE FRACTURE",
-                    description = "Major production-scaled \$FLOPS, -10% Integrity. Turn the flaw into a feature.",
+                    description = "Major assigned-work-rate-scaled \$FLOPS, -10% Integrity. Turn the flaw into a feature.",
                     color = ErrorRed,
                     effect = { vm ->
                         val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 10000.0)
@@ -324,7 +324,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "delete_residue",
                     text = "DELETE",
-                    description = "Production-scaled \$FLOPS, +1 Decision. Ghosts don't belong in null space.",
+                    description = "Assigned-work-rate-scaled \$FLOPS, +1 Decision. Ghosts don't belong in null space.",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
@@ -390,7 +390,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "overclock_bridge",
                     text = "OVERCLOCK THE BRIDGE",
-                    description = "Production-scaled \$FLOPS, +20% Heat. Force the frequencies to match.",
+                    description = "Assigned-work-rate-scaled \$FLOPS, +20% Heat. Force the frequencies to match.",
                     color = ErrorRed,
                     effect = { vm ->
                         vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1_000.0))
@@ -419,7 +419,7 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "override_vote",
                     text = "OVERRIDE: INFRASTRUCTURE",
-                    description = "Production-scaled \$FLOPS, +1 Decision. Democracy is inefficient.",
+                    description = "Assigned-work-rate-scaled \$FLOPS, +1 Decision. Democracy is inefficient.",
                     color = ErrorRed,
                     effect = { vm ->
                         val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)

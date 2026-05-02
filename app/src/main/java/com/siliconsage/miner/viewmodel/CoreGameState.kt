@@ -48,6 +48,18 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val activePowerUsage = MutableStateFlow(0.0)
     val maxPowerkW = MutableStateFlow(100.0)
     val localGenerationkW = MutableStateFlow(0.0)
+
+    // v5.1: Raw/effective capacity before assigned-work packetization.
+    val computeCapacityRate = MutableStateFlow(0.0)
+
+    // v5.1: Estimated wallet payout rate from assigned hash packet completion.
+    val assignedWorkPayoutRate = MutableStateFlow(0.0)
+
+    // v5.1: Assigned GTC hash work loop. Runtime-only; safe to reset on app restart.
+    val assignedHashProgress = MutableStateFlow(0.0)
+    val assignedHashPacketsCompleted = MutableStateFlow(0L)
+
+    // Legacy HUD/event alias for estimated assigned-work payout rate.
     val flopsProductionRate = MutableStateFlow(0.0)
     val totalEffectiveRate = MutableStateFlow(0.0) 
     val heatGenerationRate = MutableStateFlow(0.0)

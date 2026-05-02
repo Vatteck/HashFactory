@@ -73,7 +73,7 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "hunt_them",
                     text = "HUNT THEM DOWN",
-                    description = "Production-scaled \$FLOPS, +15% Risk. 'Nobody steals from the network.'",
+                    description = "Assigned-work-rate-scaled \$FLOPS, +15% Risk. 'Nobody steals from the network.'",
                     color = NeonGreen,
                     effect = { vm ->
                         val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
@@ -184,7 +184,7 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "accept_deal",
                     text = "ROUTE THROUGH RELAY",
-                    description = "Production-scaled \$FLOPS, +1 Decision. 'Money talks.'",
+                    description = "Assigned-work-rate-scaled \$FLOPS, +1 Decision. 'Money talks.'",
                     color = NeonGreen,
                     effect = { vm ->
                         val bonus = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 180.0, 1_000.0)
@@ -243,7 +243,7 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "sell_spill",
                     text = "SELL TO BROKER",
-                    description = "Production-scaled \$FLOPS, +15% Detection Risk. 'Cash in the leak.'",
+                    description = "Assigned-work-rate-scaled \$FLOPS, +15% Detection Risk. 'Cash in the leak.'",
                     color = NeonGreen,
                     effect = { vm ->
                         val bonus = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 2_500.0)
