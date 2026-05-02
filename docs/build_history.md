@@ -105,3 +105,6 @@
 ## 2026-05-02 13:39 — v5.0.3 (Build 448)
 - Summary: Align terminal HUD cards
 
+## 2026-05-02 18:29 — v5.1.0 (Build 449)
+- Summary: Assigned work production loop
+
