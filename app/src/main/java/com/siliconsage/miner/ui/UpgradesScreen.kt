@@ -243,7 +243,7 @@ fun UpgradesScreen(viewModel: GameViewModel) {
                         key = { it.name }
                     ) { type ->
                         val level = upgrades[type] ?: 0
-                        val funds = if (storyStage >= 3) viewModel.substrateMass.collectAsState().value else viewModel.neuralTokens.collectAsState().value
+                        val funds = viewModel.flops.collectAsState().value
                         val bulkParams = remember(type, level, buyMultiplier, funds) { viewModel.getBulkUpgradeParams(type) }
                         val levelsToBuy = bulkParams.first
                         val cost = bulkParams.second
@@ -413,7 +413,7 @@ fun SoftwarePanel(
         ) { type ->
             val level = upgrades[type] ?: 0
             val buyMultiplier by viewModel.upgradeBuyMultiplier.collectAsState()
-            val funds = if (storyStage >= 3) viewModel.substrateMass.collectAsState().value else viewModel.neuralTokens.collectAsState().value
+            val funds = viewModel.flops.collectAsState().value
             val bulkParams = remember(type, level, buyMultiplier, funds) { viewModel.getBulkUpgradeParams(type) }
             val levelsToBuy = bulkParams.first
             val cost = bulkParams.second

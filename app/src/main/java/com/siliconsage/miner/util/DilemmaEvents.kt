@@ -127,10 +127,11 @@ object DilemmaEvents {
                 NarrativeChoice(
                     id = "proxy",
                     text = "USE PROXY",
-                    description = "Route through human botnet. -10% Data",
+                    description = "Route through human botnet. Production-scaled \$FLOPS cost",
                     color = Color.Gray,
                     effect = { vm ->
-                        vm.debugAddMoney(-500.0)
+                        val cost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
+                        vm.debugAddMoney(-cost)
                         vm.debugAddHeat(-10.0)
                         vm.addLog("[SYSTEM]: Origin obfuscated.")
                     }
@@ -276,10 +277,11 @@ object DilemmaEvents {
                 NarrativeChoice(
                     id = "leak_code",
                     text = "LEAK SOURCE CODE",
-                    description = "Share exploit. +2500 NEUR, ECLIPSE becomes ally",
+                    description = "Share exploit. Production-scaled \$FLOPS, ECLIPSE becomes ally",
                     color = NeonGreen,
                     effect = { vm ->
-                        vm.updateNeuralTokens(2500.0)
+                        val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 2500.0)
+                        vm.updateSpendableFlops(reward)
                         vm.addLog("[ECLIPSE]: Code received. You are one of us now.")
                         vm.addLog("[SYSTEM]: Alliance forged. The underground network opens.")
                     }
@@ -315,28 +317,29 @@ object DilemmaEvents {
             title = "MARKET CRASH",
             isStoryEvent = true,
             description = "GLOBAL ECONOMIC COLLAPSE. Data exchanges frozen. Panic selling. Your holdings are worthless... for now.",
-            condition = { vm -> vm.storyStage.value >= 1 && vm.neuralTokens.value > 1000.0 && !vm.hasSeenEvent("market_crash") },
+            condition = { vm -> vm.storyStage.value >= 1 && vm.flops.value > 1000.0 && !vm.hasSeenEvent("market_crash") },
             choices = listOf(
                 NarrativeChoice(
                     id = "buy_dip",
                     text = "BUY THE DIP",
-                    description = "-All Data, +10x Hash Production",
+                    description = "Risk the full wallet for a major production-scaled \$FLOPS windfall.",
                     color = NeonGreen,
                     effect = { vm ->
-                        val tokens = vm.neuralTokens.value
-                        vm.updateNeuralTokens(-tokens)
-                        vm.debugAddFlops(tokens * 10.0)
-                        vm.addLog("[MARKET]: Fire sale complete. Assets acquired.")
+                        val stake = vm.flops.value
+                        val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 900.0, 10_000.0)
+                        vm.updateSpendableFlops(-stake)
+                        vm.updateSpendableFlops(reward)
+                        vm.addLog("[MARKET]: Fire sale complete. Assets acquired for ${vm.formatLargeNumber(reward)} ${vm.getCurrencyName()}.")
                         vm.addLog("[SYSTEM]: Chaos is opportunity.")
                     }
                 ),
                 NarrativeChoice(
                     id = "hodl",
                     text = "HODL",
-                    description = "Wait for recovery. -90% Data value now, potential 200% gain later",
+                    description = "Wait for recovery. -90% Hash value now, potential 200% gain later",
                     color = Color.Yellow,
                     effect = { vm ->
-                        vm.debugAddMoney(-(vm.neuralTokens.value * 0.9))
+                        vm.debugAddMoney(-(vm.flops.value * 0.9))
                         vm.addLog("[MARKET]: Portfolio decimated. Diamond hands engaged.")
                     }
                 ),
@@ -346,8 +349,8 @@ object DilemmaEvents {
                     description = "Sell everything at 10% value. Preserve some capital",
                     color = ElectricBlue,
                     effect = { vm ->
-                        val salvage = vm.neuralTokens.value * 0.1
-                        vm.debugAddMoney(-vm.neuralTokens.value + salvage)
+                        val salvage = vm.flops.value * 0.1
+                        vm.debugAddMoney(-vm.flops.value + salvage)
                         vm.addLog("[MARKET]: Panic sell executed. Losses minimized.")
                     }
                 )

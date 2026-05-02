@@ -144,6 +144,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
         Text("CITY INFRASTRUCTURE SCHEMATIC", color = themeColor, fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
         val integrity by viewModel.hardwareIntegrity.collectAsState()
+        val flops by viewModel.flops.collectAsState()
         val flopsRate by viewModel.flopsProductionRate.collectAsState()
         val gridBonus by viewModel.currentGridFlopsBonus.collectAsState()
         val realityIntegrity by viewModel.realityIntegrity.collectAsState()
@@ -461,8 +462,16 @@ fun CityGridScreen(viewModel: GameViewModel) {
                                 Text("⚔ INITIATE ASSAULT", color = Color.White, fontWeight = FontWeight.ExtraBold)
                             }
                         } else {
-                            Button(onClick = { viewModel.annexNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = themeColor)) {
-                                Text("INITIALIZE ANNEXATION", color = Color.Black, fontWeight = FontWeight.Bold)
+                            val annexCost = viewModel.getLocalAnnexCost()
+                            val canAffordAnnex = flops >= annexCost
+                            Button(
+                                onClick = { viewModel.annexNode(loc.id) },
+                                modifier = Modifier.fillMaxWidth().height(40.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = themeColor),
+                                enabled = canAffordAnnex
+                            ) {
+                                val costText = if (annexCost > 0.0) " (${viewModel.formatLargeNumber(annexCost)} ${viewModel.getCurrencyName()})" else ""
+                                Text("INITIALIZE ANNEXATION$costText", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                             }
                         }
                     } else if (isAnnexing) {
@@ -471,7 +480,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
                     } else if (isAnnexed) {
                         val currentLvl = gridNodeLevels[loc.id] ?: 1
                         val upgradeCost = 1000.0 * 5.0.pow(currentLvl - 1)
-                        val canAfford = viewModel.neuralTokens.collectAsState().value >= upgradeCost
+                        val canAfford = viewModel.flops.collectAsState().value >= upgradeCost
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             // [UPGRADE NODE]
@@ -490,7 +499,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
                                     onClick = { viewModel.overvoltNode(loc.id) },
                                     modifier = Modifier.weight(1f).height(40.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA500)),
-                                    enabled = viewModel.neuralTokens.collectAsState().value >= 500.0
+                                    enabled = viewModel.flops.collectAsState().value >= 500.0
                                 ) {
                                     Text("⚡ OVERVOLT", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 10.sp)
                                 }
@@ -500,7 +509,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
                                     onClick = { viewModel.redactNode(loc.id) },
                                     modifier = Modifier.weight(1f).height(40.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.Gray.copy(alpha = 0.5f)),
-                                    enabled = viewModel.neuralTokens.collectAsState().value >= 250.0
+                                    enabled = viewModel.flops.collectAsState().value >= 250.0
                                 ) {
                                     Text("💠 REDACT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                                 }
@@ -512,7 +521,7 @@ fun CityGridScreen(viewModel: GameViewModel) {
                             Spacer(modifier = Modifier.height(4.dp))
                             val specCostTokens = 50000.0
                             val specCostEntropy = 100.0
-                            val canSpecialize = viewModel.neuralTokens.collectAsState().value >= specCostTokens && viewModel.entropyLevel.collectAsState().value >= specCostEntropy
+                            val canSpecialize = viewModel.flops.collectAsState().value >= specCostTokens && viewModel.entropyLevel.collectAsState().value >= specCostEntropy
                             
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Button(

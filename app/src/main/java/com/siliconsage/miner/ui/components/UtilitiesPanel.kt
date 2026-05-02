@@ -63,7 +63,7 @@ private fun UtilitiesPanelContent(
     val wPValue by viewModel.waterPeriodProgressFlow.collectAsState()
     val missedPeriodsValue = viewModel.missedBillingPeriods
     val powerBillValue by viewModel.powerBill.collectAsState()
-    val neuralTokensValue by viewModel.neuralTokens.collectAsState()
+    val flopsValue by viewModel.flops.collectAsState()
 
     val activePowerValue by viewModel.activePowerUsage.collectAsState()
     val maxPowerValue by viewModel.maxPowerkW.collectAsState()
@@ -93,7 +93,7 @@ private fun UtilitiesPanelContent(
             if (powerBillValue > 0.0) {
                 Column(horizontalAlignment = Alignment.End) {
                     Text(text = "TOTAL OVERDUE", color = ErrorRed.copy(0.6f), fontSize = 8.sp, fontFamily = FontFamily.Monospace)
-                    Text(text = "$${viewModel.formatLargeNumber(powerBillValue)}", color = ErrorRed, fontSize = 18.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace)
+                    Text(text = "${viewModel.formatLargeNumber(powerBillValue)} ${viewModel.getCurrencyName()}", color = ErrorRed, fontSize = 18.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace)
                 }
             }
         }
@@ -101,12 +101,12 @@ private fun UtilitiesPanelContent(
         Spacer(Modifier.height(16.dp))
         SectionHeader("CURRENT PERIOD", color)
         UtilPeriodBar("POWER CYCLE", pPValue, color)
-        UtilRow("EST. POWER BILL", viewModel.formatLargeNumber(billingAmountValue), "NEUR", if (billingAmountValue > neuralTokensValue * 0.9) ErrorRed else if (billingAmountValue > neuralTokensValue * 0.5) Color(0xFFFFCC00) else color)
+        UtilRow("EST. POWER BILL", viewModel.formatLargeNumber(billingAmountValue), viewModel.getCurrencyName(), if (billingAmountValue > flopsValue * 0.9) ErrorRed else if (billingAmountValue > flopsValue * 0.5) Color(0xFFFFCC00) else color)
         if (missedPeriodsValue > 0) UtilRow("DEMAND MULT", "×${missedPeriodsValue + 1}", "", ErrorRed)
         
         Spacer(Modifier.height(8.dp))
         UtilPeriodBar("WATER CYCLE", wPValue, ElectricBlue)
-        UtilRow("EST. WATER BILL", viewModel.formatLargeNumber(waterAmountValue), "NEUR", ElectricBlue)
+        UtilRow("EST. WATER BILL", viewModel.formatLargeNumber(waterAmountValue), viewModel.getCurrencyName(), ElectricBlue)
 
         Spacer(Modifier.height(16.dp))
         SectionHeader("POWER BREAKDOWN", color)

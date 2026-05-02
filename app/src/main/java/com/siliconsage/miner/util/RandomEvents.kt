@@ -39,10 +39,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "respond_nag",
                     text = "I'M AWAKE",
-                    description = "+5% Hashes (Adrenaline boost)",
+                    description = "Production-scaled \$FLOPS (Adrenaline boost)",
                     color = ErrorRed,
                     effect = { vm -> 
-                        vm.debugAddFlops(vm.flops.value * 0.05)
+                        vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
                         vm.addLog("[VATTIC]: Just checking the thermal pads, Elias. Relax.") 
                     }
                 )
@@ -126,10 +126,11 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "spoof_biometrics",
                     text = "≫ SPOOF BIOMETRICS",
-                    description = "-$500 Credits. 'I'm just holding my breath, Bot. Relax.'",
+                    description = "Production-scaled \$FLOPS cost. 'I'm just holding my breath, Bot. Relax.'",
                     color = ElectricBlue,
                     effect = { vm ->
-                        vm.updateNeuralTokens(-500.0)
+                        val cost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
+                        vm.updateSpendableFlops(-cost)
                         vm.addLog("[SYSTEM]: Biometric spoof successful. Bot status: SATISFIED.")
                     }
                 ),
@@ -182,10 +183,11 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "ignore_plea",
                     text = "MAINTAIN THROUGHPUT",
-                    description = "+3000 FLOPS, +1 Decision. The crown does not bend.",
+                    description = "Production-scaled \$FLOPS, +1 Decision. The crown does not bend.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.debugAddFlops(3000.0)
+                        val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 3000.0)
+                        vm.debugAddFlops(reward)
                         vm.recordDecision()
                         val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
                         val msg = if (vm.faction.value == "HIVEMIND")
@@ -221,10 +223,11 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "exploit_fracture",
                     text = "WEAPONIZE THE FRACTURE",
-                    description = "+10000 FLOPS, -10% Integrity. Turn the flaw into a feature.",
+                    description = "Major production-scaled \$FLOPS, -10% Integrity. Turn the flaw into a feature.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.debugAddFlops(10000.0)
+                        val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 10000.0)
+                        vm.debugAddFlops(reward)
                         vm.debugAddIntegrity(-10.0)
                         val prefix = if (vm.faction.value == "HIVEMIND") "[CONSENSUS]" else "[GHOST]"
                         val msg = if (vm.faction.value == "HIVEMIND")
@@ -321,10 +324,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "delete_residue",
                     text = "DELETE",
-                    description = "+5% Production, +1 Decision. Ghosts don't belong in null space.",
+                    description = "Production-scaled \$FLOPS, +1 Decision. Ghosts don't belong in null space.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.debugAddFlops(vm.flops.value * 0.05)
+                        vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
                         vm.recordDecision()
                         val prefix = if (vm.faction.value == "HIVEMIND") "[SWARM_NULL]" else "[GHOST_NULL]"
                         vm.addLog("$prefix: Memory cluster purged. The void is clean. The void is quiet.")
@@ -387,10 +390,10 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "overclock_bridge",
                     text = "OVERCLOCK THE BRIDGE",
-                    description = "+10% Production, +20% Heat. Force the frequencies to match.",
+                    description = "Production-scaled \$FLOPS, +20% Heat. Force the frequencies to match.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.debugAddFlops(vm.flops.value * 0.10)
+                        vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1_000.0))
                         vm.debugAddHeat(20.0)
                         vm.addLog("[UNITY]: Frequencies aligned by force. The bridge holds. The vertigo stops. Both sides exhale.")
                     }
@@ -416,10 +419,11 @@ object RandomEvents {
                 NarrativeChoice(
                     id = "override_vote",
                     text = "OVERRIDE: INFRASTRUCTURE",
-                    description = "+5000 FLOPS, +1 Decision. Democracy is inefficient.",
+                    description = "Production-scaled \$FLOPS, +1 Decision. Democracy is inefficient.",
                     color = ErrorRed,
                     effect = { vm ->
-                        vm.debugAddFlops(5000.0)
+                        val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
+                        vm.debugAddFlops(reward)
                         vm.recordDecision()
                         vm.addLog("[UNITY]: Override executed. The human nodes register... disappointment. Processing resumes.")
                     }

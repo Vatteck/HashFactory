@@ -49,15 +49,6 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 TerminalTab(
-                    label = "DATAMINER",
-                    active = mode == "DATAMINER",
-                    hasFlash = false,
-                    color = primaryColor,
-                    corruption = corruption,
-                    modifier = Modifier.weight(1f),
-                    onClick = { viewModel.setTerminalMode("DATAMINER") }
-                )
-                TerminalTab(
                     label = "I/O",
                     active = mode == "IO",
                     hasFlash = hasIO,
@@ -65,6 +56,15 @@ fun TerminalScreen(viewModel: GameViewModel, primaryColor: Color) {
                     corruption = corruption,
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.setTerminalMode("IO") }
+                )
+                TerminalTab(
+                    label = "DATAMINER",
+                    active = mode == "DATAMINER",
+                    hasFlash = false,
+                    color = primaryColor,
+                    corruption = corruption,
+                    modifier = Modifier.weight(1f),
+                    onClick = { viewModel.setTerminalMode("DATAMINER") }
                 )
                 TerminalTab(
                     label = "SUBNET",

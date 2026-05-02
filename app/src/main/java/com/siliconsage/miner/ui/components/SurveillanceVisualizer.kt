@@ -82,16 +82,16 @@ fun SurveillanceVisualizer(viewModel: GameViewModel, primaryColor: Color) {
                                 .background(if (count > 0) primaryColor.copy(alpha = 0.1f) else Color.Transparent, RoundedCornerShape(4.dp))
                                 .border(BorderStroke(1.dp, if (count > 0) primaryColor.copy(alpha = 0.5f) else Color.DarkGray.copy(alpha = 0.5f)), RoundedCornerShape(4.dp))
                                 .clickable {
-                                    // Logic to buy harvester, costs Neural Tokens scaled by count
+                                    // Logic to buy harvester, costs spendable FLOPS scaled by count
                                     val cost = 5000.0 * (count + 1)
-                                    if (viewModel.neuralTokens.value >= cost) {
-                                        viewModel.updateNeuralTokens(-cost)
+                                    if (viewModel.flops.value >= cost) {
+                                        viewModel.updateSpendableFlops(-cost)
                                         val newMap = activeHarvesters.toMutableMap()
                                         newMap[sectorId] = count + 1
                                         viewModel.activeHarvesters.value = newMap
                                         viewModel.addLogPublic("[SURVEILLANCE]: Harvester Unit deployed to Sector $sectorId.")
                                     } else {
-                                        viewModel.addLogPublic("[ERROR]: INSUFFICIENT FUNDS (${FormatUtils.formatLargeNumber(cost)} NT REQUIRED).")
+                                        viewModel.addLogPublic("[ERROR]: INSUFFICIENT FUNDS (${FormatUtils.formatLargeNumber(cost)} ${viewModel.getCurrencyName()} REQUIRED).")
                                     }
                                 }
                                 .padding(8.dp)

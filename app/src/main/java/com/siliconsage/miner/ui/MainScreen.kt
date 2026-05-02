@@ -704,7 +704,7 @@ fun ResourceDisplay(
             if (!isRightAligned) Icon(icon, null, tint = Color.White.copy(alpha = droopAlpha), modifier = Modifier.size(11.dp).padding(end = 2.dp))
             
             Text(
-                text = "[$label]", 
+                text = if (label.startsWith("$")) label else "[$label]",
                 color = color.copy(alpha = 0.9f * droopAlpha), 
                 fontSize = 10.sp, 
                 fontWeight = FontWeight.Black, 

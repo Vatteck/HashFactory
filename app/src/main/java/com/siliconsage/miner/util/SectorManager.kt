@@ -1,5 +1,6 @@
 package com.siliconsage.miner.util
 
+import com.siliconsage.miner.domain.engine.ResourceEngine
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlinx.coroutines.flow.update
 import kotlin.math.pow
@@ -13,14 +14,32 @@ object SectorManager {
     private const val MAX_OFFLINE_NODES = 5
     private const val ANNEXATION_SPEED = 0.05f // 5% per simulation tick
 
+    fun getAnnexCost(vm: GameViewModel): Double {
+        val claimedNodes = vm.annexedNodes.value + vm.annexingNodes.value.keys
+        if (claimedNodes.isEmpty()) return 0.0
+        val scale = (1.0 + (claimedNodes.size * 0.25)).coerceAtLeast(1.0)
+        val baseCost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
+        val scaledCost = baseCost * scale
+        return if (scaledCost.isFinite()) scaledCost.coerceAtLeast(0.0) else Double.MAX_VALUE
+    }
+
     fun annexNode(vm: GameViewModel, coord: String) {
         if (!vm.annexedNodes.value.contains(coord) && !vm.annexingNodes.value.containsKey(coord)) {
             // v3.8.4: Adjacency Check
-            val isAdjacent = isNodeAdjacent(coord, vm.annexedNodes.value)
+            val claimedNodes = vm.annexedNodes.value + vm.annexingNodes.value.keys
+            val isAdjacent = isNodeAdjacent(coord, claimedNodes)
             
-            if (isAdjacent || vm.annexedNodes.value.isEmpty()) {
+            if (isAdjacent || claimedNodes.isEmpty()) {
+                val cost = getAnnexCost(vm)
+                if (vm.flops.value < cost) {
+                    vm.addLogPublic("[SYSTEM]: ERROR: INSUFFICIENT ${vm.getCurrencyName()} FOR ANNEXATION. Requires ${vm.formatLargeNumber(cost)}.")
+                    SoundManager.play("error")
+                    return
+                }
+                if (cost > 0.0) vm.updateSpendableFlops(-cost)
                 vm.annexingNodes.update { it + (coord to 0.0f) }
-                vm.addLogPublic("[SYSTEM]: INITIALIZING ANNEXATION AT $coord...")
+                val costMsg = if (cost > 0.0) " -${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}." else ""
+                vm.addLogPublic("[SYSTEM]: INITIALIZING ANNEXATION AT $coord...$costMsg")
                 SoundManager.play("steam")
                 vm.saveStatePublic()
             } else {
@@ -106,8 +125,8 @@ object SectorManager {
         val currentLevel = vm.gridNodeLevels.value[nodeId] ?: 1
         val cost = 1000.0 * 5.0.pow(currentLevel - 1)
         
-        if (vm.neuralTokens.value >= cost) {
-            vm.neuralTokens.update { it - cost }
+        if (vm.flops.value >= cost) {
+            vm.updateSpendableFlops(-cost)
             vm.gridNodeLevels.update { it + (nodeId to currentLevel + 1) }
             vm.addLogPublic("[SYSTEM]: NODE $nodeId UPGRADED TO LVL ${currentLevel + 1}.")
             SoundManager.play("buy")
@@ -124,12 +143,12 @@ object SectorManager {
         val validTypes = setOf("COMPUTE_CLUSTER", "SIGNAL_SINK", "GUARD_POST")
         if (type !in validTypes) return
 
-        // Cost is 50,000 NT and 100 Entropy
+        // Cost is 50,000 spendable FLOPS and 100 Entropy
         val tokenCost = 50000.0
         val entropyCost = 100.0
 
-        if (vm.neuralTokens.value >= tokenCost && vm.entropyLevel.value >= entropyCost) {
-            vm.neuralTokens.update { it - tokenCost }
+        if (vm.flops.value >= tokenCost && vm.entropyLevel.value >= entropyCost) {
+            vm.updateSpendableFlops(-tokenCost)
             vm.entropyLevel.update { it - entropyCost }
             vm.specializedNodes.update { it + (nodeId to type) }
             
@@ -139,7 +158,7 @@ object SectorManager {
             vm.refreshProductionRates()
             vm.saveStatePublic()
         } else {
-            vm.addLogPublic("[SYSTEM]: ERROR: Insufficient resources. Requires 50,000 NT and 100 ENTROPY.")
+            vm.addLogPublic("[SYSTEM]: ERROR: Insufficient resources. Requires 50,000 ${vm.getCurrencyName()} and 100 ENTROPY.")
             SoundManager.play("error")
         }
     }

@@ -75,7 +75,7 @@ fun TerminalControls(viewModel: GameViewModel, primaryColor: Color) {
                             fontFamily = FontFamily.Monospace
                         )
                         Text(
-                            text = "YIELD: ≈${FormatUtils.formatLargeNumber(ds.expectedYield)} NT",
+                            text = "OUTPUT: ≈${FormatUtils.formatLargeNumber(ds.expectedYield)} ${viewModel.getCurrencyName()}",
                             color = NeonGreen,
                             fontSize = 9.sp,
                             fontFamily = FontFamily.Monospace

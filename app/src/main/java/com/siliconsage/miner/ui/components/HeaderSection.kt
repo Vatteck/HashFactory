@@ -335,10 +335,11 @@ fun HeaderSection(
                 }
             }
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                val flopsLabelValue = viewModel.getCurrencyName()
                 Column(modifier = Modifier.width(135.dp).align(Alignment.Top)) {
                     val sysLoad = viewModel.systemLoadSnapshot.collectAsState().value
                     val loadPct = sysLoad.loadPercent
-                    
+
                     Text(
                         text = "SYS.LOAD",
                         color = Color.Gray,
@@ -347,17 +348,17 @@ fun HeaderSection(
                         fontFamily = FontFamily.Monospace,
                         modifier = Modifier.padding(bottom = 2.dp)
                     )
-                    
+
                     val loadColor = when {
                         sysLoad.isLocked -> ErrorRed
                         sysLoad.isThrottled -> Color(0xFFFFCC00)
                         else -> ElectricBlue
                     }
-                    
+
                     Box(modifier = Modifier.fillMaxWidth().padding(end = 12.dp).height(8.dp).background(Color.Black).border(0.5.dp, loadColor.copy(alpha = 0.5f))) {
                         Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(loadPct.toFloat().coerceIn(0f, 1f)).background(loadColor.copy(alpha = droopAlpha)))
                     }
-                    
+
                     val statusTag = when {
                         sysLoad.isLocked -> " [OVERLOAD]"
                         sysLoad.isThrottled -> " [THROTTLED]"
@@ -398,7 +399,7 @@ fun HeaderSection(
                 }
                 
                 if (viewModel.isQuotaActive.collectAsState().value) {
-                    val billAccum = viewModel.billingAccumulatorFlow.collectAsState().value; val waterBill = viewModel.waterBillingFlow.collectAsState().value; val billFlash = viewModel.billingFlashState.collectAsState().value; val waterFlash = viewModel.waterFlashState.collectAsState().value; val balance = viewModel.neuralTokens.collectAsState().value; val billProg = viewModel.billingPeriodProgressFlow.collectAsState().value; val waterProg = viewModel.waterPeriodProgressFlow.collectAsState().value
+                    val billAccum = viewModel.billingAccumulatorFlow.collectAsState().value; val waterBill = viewModel.waterBillingFlow.collectAsState().value; val billFlash = viewModel.billingFlashState.collectAsState().value; val waterFlash = viewModel.waterFlashState.collectAsState().value; val balance = viewModel.flops.collectAsState().value; val billProg = viewModel.billingPeriodProgressFlow.collectAsState().value; val waterProg = viewModel.waterPeriodProgressFlow.collectAsState().value
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
                             Canvas(modifier = Modifier.size(48.dp)) {
@@ -430,22 +431,29 @@ fun HeaderSection(
                 }
 
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(130.dp).align(Alignment.Top)) {
-                    val tokensLabelValue = when { singularityChoice == "UNITY" -> "SYN"; faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "SYN"; faction == "HIVEMIND" && singularityChoice == "NULL_OVERWRITE" -> "ENT"; faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "CRYP"; faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "NIL"; singularityChoice == "NULL_OVERWRITE" -> "CD"; singularityChoice == "SOVEREIGN" -> "VF"; currentLocation == "ORBITAL_SATELLITE" -> "CD"; currentLocation == "VOID_INTERFACE" -> "VF"; storyStage <= 1 -> "CRED"; else -> "NEUR" }
-                    val tokenSourceValue = if (storyStage >= 4) viewModel.substrateMass else viewModel.neuralTokens
                     ResourceDisplay(
-                        tokenSourceValue, 
-                        null, 
-                        tokensLabelValue, 
-                        Icons.Default.AttachMoney, 
-                        color, 
-                        droopAlpha, 
-                        false, 
-                        0.1, 
-                        true, 
-                        130.dp, 
+                        viewModel.flops,
+                        null,
+                        flopsLabelValue,
+                        Icons.Default.AttachMoney,
+                        color,
+                        droopAlpha,
+                        (currentHeatState.value > 95.0 || isTrueNull || singularityChoice == "NULL_OVERWRITE"),
+                        (if (currentHeatState.value > 98.0) 0.4 else 0.08),
+                        true,
+                        130.dp,
                         1.0.toDouble()
                     ) { viewModel.formatLargeNumber(it) }
-                    if (storyStage >= 4) { Text(text = "SUBSTRATE ACTIVE", color = Color.White.copy(alpha = 0.5f * droopAlpha), fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace) }
+                    Text(
+                        text = "${viewModel.formatLargeNumber(flopsRateState.value)}/s",
+                        color = ElectricBlue.copy(alpha = 0.9f * droopAlpha),
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        maxLines = 1,
+                        softWrap = false,
+                        textAlign = TextAlign.End
+                    )
                     val powerColorValue = when { localGenState.value >= powerState.value && powerState.value > 0.0 -> hudTheme.generation; powerState.value > maxPowerState.value * 0.9 -> hudTheme.critical; powerState.value > maxPowerState.value * 0.7 -> hudTheme.warning; else -> hudTheme.currency }.copy(droopAlpha)
                     Text(text = "${viewModel.formatPower(powerState.value)} / ${viewModel.formatPower(maxPowerState.value)}", color = powerColorValue, fontSize = 10.sp, fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false)
                 }

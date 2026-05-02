@@ -90,7 +90,7 @@ fun AscensionConfirmationDialog(
                 ) {
                     Text("SYSTEM WILL PURGE:", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Text("• $unitName EARNINGS", color = Color.Gray, fontSize = 10.sp)
-                    Text("• $currencyName TOKENS", color = Color.Gray, fontSize = 10.sp)
+                    Text("• $currencyName WALLET BALANCE", color = Color.Gray, fontSize = 10.sp)
                     Text("• HARDWARE UPGRADES", color = Color.Gray, fontSize = 10.sp)
                 }
 

@@ -16,7 +16,7 @@ object DebugService {
     }
 
     fun injectMoney(vm: GameViewModel, amount: Double) {
-        vm.neuralTokens.update { (it + amount).coerceAtLeast(0.0) }
+        vm.flops.update { (it + amount).coerceAtLeast(0.0) }
     }
 
     // v3.9.7: Now sets Stage 5 endgame state for full-path testing

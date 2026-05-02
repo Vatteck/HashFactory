@@ -192,10 +192,10 @@ fun ResourcesTab(viewModel: GameViewModel) {
             DevButton(text = "+1P", modifier = Modifier.weight(1f)) { viewModel.debugAddFlops(1e15) }
             DevButton(text = "ZERO", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.flops.value = 0.0 }
         }
-        DevActionRow("NEURAL_TOKENS") {
+        DevActionRow("SPENDABLE_\$FLOPS") {
             DevButton(text = "+100K", modifier = Modifier.weight(1f)) { viewModel.debugAddMoney(100000.0) }
             DevButton(text = "+10M", modifier = Modifier.weight(1f)) { viewModel.debugAddMoney(10000000.0) }
-            DevButton(text = "ZERO", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.neuralTokens.value = 0.0 }
+            DevButton(text = "ZERO", color = ErrorRed, modifier = Modifier.weight(1f)) { viewModel.flops.value = 0.0 }
         }
         DevActionRow("SUBSTRATE_MASS") {
             DevButton(text = "+100.0", modifier = Modifier.weight(1f)) { viewModel.substrateMass.update { it + 100.0 } }
@@ -478,8 +478,8 @@ fun Phase14Tab(viewModel: GameViewModel) {
         }
         
         Spacer(modifier = Modifier.height(8.dp))
-        DevButton(text = "DUMP 10K TOKENS", color = Color.Cyan, modifier = Modifier.fillMaxWidth()) {
-            viewModel.neuralTokens.update { it + 10000.0 }
+        DevButton(text = "DUMP 10K \$FLOPS", color = Color.Cyan, modifier = Modifier.fillMaxWidth()) {
+            viewModel.flops.update { it + 10000.0 }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

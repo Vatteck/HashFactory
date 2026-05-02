@@ -113,7 +113,7 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
     val themeColorHex by viewModel.themeColor.collectAsState()
     val themeColor = try { Color(android.graphics.Color.parseColor(themeColorHex)) } catch (e: Exception) { com.siliconsage.miner.ui.theme.NeonGreen }
     val globalSectors by viewModel.globalSectors.collectAsState()
-    val substrateMass by viewModel.substrateMass.collectAsState()
+    val flops by viewModel.flops.collectAsState()
     
     val sectors = remember {
         listOf(
@@ -264,13 +264,9 @@ fun GlobalGridScreen(viewModel: GameViewModel) {
                         Text("Efficiency: x${String.format("%.2f", multiplier)} (Adjacency)", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         Text("Total Base Yield: ${viewModel.formatLargeNumber(state?.cdYield ?: 0.0)}/s", color = Color.Gray, fontSize = 10.sp)
                     } else {
-                        val cost = when(sector.id) {
-                            "NA_NODE" -> 5.0; "EURASIA" -> 8.0; "PACIFIC" -> 10.0
-                            "AFRICA" -> 15.0; "ARCTIC" -> 20.0; "ANTARCTIC" -> 30.0
-                            "ORBITAL_PRIME" -> 100.0; else -> 0.0
-                        }
+                        val cost = viewModel.getGlobalSectorAnnexCost(sector.id)
                         
-                        val canAfford = substrateMass >= cost
+                        val canAfford = flops >= cost
                         val currency = viewModel.getCurrencyName()
                         
                         Button(
@@ -487,6 +483,7 @@ fun NodeMeshScreen(
             if (loc != null) {
                 val isAnnexed = annexedNodes.contains(loc.id)
                 val isAnnexing = annexingNodes.containsKey(loc.id)
+                val flops by viewModel.flops.collectAsState()
 
                 Column {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -499,14 +496,22 @@ fun NodeMeshScreen(
                     Spacer(modifier = Modifier.weight(1f))
                     
                     if (!isAnnexed && !isAnnexing) {
-                        Button(onClick = { viewModel.annexNode(loc.id) }, modifier = Modifier.fillMaxWidth().height(40.dp), colors = ButtonDefaults.buttonColors(containerColor = themeColor)) {
-                            Text("INITIALIZE HARVEST", color = Color.Black, fontWeight = FontWeight.Bold)
+                        val annexCost = viewModel.getLocalAnnexCost()
+                        val canAffordAnnex = flops >= annexCost
+                        Button(
+                            onClick = { viewModel.annexNode(loc.id) },
+                            modifier = Modifier.fillMaxWidth().height(40.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = themeColor),
+                            enabled = canAffordAnnex
+                        ) {
+                            val costText = if (annexCost > 0.0) " (${viewModel.formatLargeNumber(annexCost)} ${viewModel.getCurrencyName()})" else ""
+                            Text("INITIALIZE ANNEXATION$costText", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                         }
                     } else if (isAnnexing) {
                          val prog = annexingNodes[loc.id] ?: 0f
                          LinearProgressIndicator(progress = { if (prog.isNaN()) 0f else prog }, modifier = Modifier.fillMaxWidth().height(8.dp), color = themeColor, trackColor = Color.DarkGray)
                     } else {
-                        Text("NODE_ACTIVE // HARVESTING_SUBSTRATE", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        Text("NODE_ACTIVE // ROUTING_COMPUTE", color = themeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
                 }
             } else {

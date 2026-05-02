@@ -133,12 +133,12 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
             SettingsGroup("UTILITY AUDIT") {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("LIFETIME POWER COST:", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("${viewModel.formatLargeNumber(lifetimePower)} \$N", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                    Text("${viewModel.formatLargeNumber(lifetimePower)} ${viewModel.getCurrencyName()}", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("CURRENT TARIFF:", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("${String.format("%.2f", energyPrice)} \$N/kW", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                    Text("${String.format("%.2f", energyPrice)} ${viewModel.getCurrencyName()}/kW", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
                 }
             }
 

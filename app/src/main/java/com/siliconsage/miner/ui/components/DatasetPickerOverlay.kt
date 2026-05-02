@@ -32,7 +32,7 @@ import com.siliconsage.miner.viewmodel.GameViewModel
 @Composable
 fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
     val availableDatasets by viewModel.availableDatasets.collectAsState()
-    val neuralTokens by viewModel.neuralTokens.collectAsState()
+    val flops by viewModel.flops.collectAsState()
     val contractStorageCapacity by viewModel.contractStorageCapacity.collectAsState()
     val contractStorageUsed by viewModel.contractStorageUsed.collectAsState()
     val storedDatasets by viewModel.storedDatasets.collectAsState()
@@ -74,7 +74,7 @@ fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
             if (availableDatasets.isNotEmpty()) {
                 LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     items(availableDatasets, key = { it.id }) { dataset ->
-                        DatasetCard(dataset, neuralTokens, contractStorageCapacity - contractStorageUsed, primaryColor) {
+                        DatasetCard(dataset, flops, contractStorageCapacity - contractStorageUsed, primaryColor) {
                             viewModel.purchaseDataset(dataset)
                         }
                     }
@@ -129,8 +129,8 @@ fun DatasetPickerOverlay(viewModel: GameViewModel, primaryColor: Color) {
 }
 
 @Composable
-fun DatasetCard(dataset: Dataset, playerTokens: Double, storageCapacity: Double, primaryColor: Color, onPurchase: () -> Unit) {
-    val canAfford = playerTokens >= dataset.cost
+fun DatasetCard(dataset: Dataset, playerFlops: Double, storageCapacity: Double, primaryColor: Color, onPurchase: () -> Unit) {
+    val canAfford = playerFlops >= dataset.cost
     val canStore = dataset.size <= storageCapacity
     val borderColor = if (canAfford && canStore) primaryColor else Color.DarkGray
     val contentColor = if (canAfford && canStore) Color.White else Color.Gray
@@ -155,7 +155,7 @@ fun DatasetCard(dataset: Dataset, playerTokens: Double, storageCapacity: Double,
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("SIZE: ${dataset.size.toInt()} GB", color = if (canStore) Color.LightGray else ErrorRed, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
-                Text("YIELD: ≈${FormatUtils.formatLargeNumber(dataset.expectedYield)} NT", color = NeonGreen.copy(alpha = if (canAfford) 1f else 0.5f), fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                Text("OUTPUT: ≈${FormatUtils.formatLargeNumber(dataset.expectedYield)} \$FLOPS", color = NeonGreen.copy(alpha = if (canAfford) 1f else 0.5f), fontSize = 10.sp, fontFamily = FontFamily.Monospace)
             }
             
             Spacer(modifier = Modifier.height(2.dp))
@@ -173,7 +173,7 @@ fun DatasetCard(dataset: Dataset, playerTokens: Double, storageCapacity: Double,
                 } else if (!canStore) {
                     Text("STORAGE FULL", color = ErrorRed, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp))
                 } else {
-                    Text("COST: ${FormatUtils.formatLargeNumber(dataset.cost)} NT", color = primaryColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("COST: ${FormatUtils.formatLargeNumber(dataset.cost)} \$FLOPS", color = primaryColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -202,7 +202,7 @@ fun CacheCard(
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("YIELD: ≈${FormatUtils.formatLargeNumber(dataset.expectedYield)} NT", color = NeonGreen.copy(alpha=0.7f), fontSize = 10.sp)
+                Text("OUTPUT: ≈${FormatUtils.formatLargeNumber(dataset.expectedYield)} \$FLOPS", color = NeonGreen.copy(alpha=0.7f), fontSize = 10.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Button(
                         onClick = onLoad,

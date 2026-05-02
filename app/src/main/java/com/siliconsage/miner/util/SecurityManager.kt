@@ -3,6 +3,7 @@ package com.siliconsage.miner.util
 import androidx.lifecycle.viewModelScope
 import com.siliconsage.miner.viewmodel.GameViewModel
 import com.siliconsage.miner.data.UpgradeType
+import com.siliconsage.miner.domain.engine.ResourceEngine
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
@@ -279,9 +280,9 @@ object SecurityManager {
             vm.addLogPublic("[GTC]: Audit passed. Efficiency profile within margins. Bonus PERSISTENCE: ${vm.formatBytes(reward)}")
             SoundManager.play("success")
         } else {
-            val fine = vm.neuralTokens.value * 0.15
-            vm.neuralTokens.update { it - fine }
-            vm.addLogPublic("[GTC]: AUDIT FAILURE. Environmental surcharge applied. Fine: ${vm.formatLargeNumber(fine)} Credits")
+            val fine = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.15, 600.0)
+            vm.updateSpendableFlops(-fine)
+            vm.addLogPublic("[GTC]: AUDIT FAILURE. Environmental surcharge applied. Fine: ${vm.formatLargeNumber(fine)} ${vm.getCurrencyName()}")
             SoundManager.play("error")
         }
     }
@@ -335,7 +336,7 @@ object SecurityManager {
                        (upgrades[UpgradeType.OFFGRID_BACKUP] ?: 0) * 10
                        
         vm.isBreachActive.value = true
-        val tokenScale = (log10(vm.neuralTokens.value.coerceAtLeast(1.0)) * 1).toInt()
+        val tokenScale = (log10(vm.flops.value.coerceAtLeast(1.0)) * 1).toInt()
         val clicksNeeded = (5 + tokenScale - (secLevel / 2)).coerceAtLeast(3)
         vm.breachClicksRemaining.value = clicksNeeded
         
@@ -362,9 +363,10 @@ object SecurityManager {
             if (vm.isBreachActive.value) {
                 vm.isBreachActive.value = false
                 if (!isGridKiller) {
-                    val penalty = vm.neuralTokens.value * 0.25 * 0.9.pow(secLevel)
-                    vm.neuralTokens.update { it - penalty }
-                    vm.addLogPublic("[SYSTEM]: FAILURE: Breach successful. Stolen: ${vm.formatLargeNumber(penalty)} \$Neural")
+                    val penaltyPercentage = 0.25 * 0.9.pow(secLevel)
+                    val penalty = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, penaltyPercentage, 600.0)
+                    vm.updateSpendableFlops(-penalty)
+                    vm.addLogPublic("[SYSTEM]: FAILURE: Breach successful. Stolen: ${vm.formatLargeNumber(penalty)} ${vm.getCurrencyName()}")
                 } else { 
                     // vm.isGridOverloaded.value = false // REMOVED v3.3.17: Force resolution via manual action
                     vm.addLogPublic("[SYSTEM]: BREACH FAILURE: Grid-killer payload deployed.") 
@@ -403,7 +405,7 @@ object SecurityManager {
                 SoundManager.stop("alarm")
                 val penalty = vm.stakedTokens.value * 0.5
                 vm.stakedTokens.update { it - penalty }
-                vm.addLogPublic("[SYSTEM]: HIJACK SUCCESSFUL. HOSTILE PID TOOK ${vm.formatLargeNumber(penalty)} STAKED \$Neural.")
+                vm.addLogPublic("[SYSTEM]: HIJACK SUCCESSFUL. HOSTILE PID TOOK ${vm.formatLargeNumber(penalty)} STAKED COLLATERAL.")
                 HapticManager.vibrateError()
             }
         }

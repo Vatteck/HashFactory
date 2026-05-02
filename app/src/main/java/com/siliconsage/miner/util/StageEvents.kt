@@ -23,10 +23,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "work_overtime",
                         text = "WORK OVERTIME",
-                        description = "+5% Hashes, +10% Heat",
+                        description = "Production-scaled \$FLOPS, +10% Heat",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 0.05)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
                             vm.debugAddHeat(10.0)
                             vm.addLog("[GTC]: Overtime approved. Efficiency returning to baseline.")
                         }
@@ -34,10 +34,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "falsify_logs",
                         text = "FALSIFY LOGS",
-                        description = "+$200 Credits, +Detection Risk",
+                        description = "Minor production-scaled \$FLOPS, +Detection Risk",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.debugAddMoney(200.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 30.0, 200.0)
+                            vm.debugAddMoney(reward)
                             // v3.9.6: Don't trigger a full breach at stage 0 — just spike risk
                             vm.detectionRisk.update { (it + 35.0).coerceAtMost(95.0) }
                             vm.addLog("[GTC]: Logs received. Something feels off about these numbers.")
@@ -54,7 +55,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "reorganize",
                         text = "REORGANIZE",
-                        description = "-15% Heat, -5% Hashes (briefly)",
+                        description = "-15% Heat, -5% Hash Output (briefly)",
                         color = ElectricBlue,
                         effect = { vm ->
                             vm.debugAddHeat(-15.0)
@@ -80,11 +81,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "clean_keyboard",
                         text = "CLEAN IT",
-                        description = "-$50 Data. Maintenance cost.",
+                        description = "Scaled \$FLOPS maintenance cost.",
                         color = NeonGreen,
                         effect = { vm ->
                             val cost = ResourceEngine.calculateDilemmaCost(50.0, vm.flopsProductionRate.value, vm.storyStage.value)
-                            vm.updateNeuralTokens(-cost)
+                            vm.updateSpendableFlops(-cost)
                             vm.addLog("[SYSTEM]: Peripheral cleaned. Smells like vanilla bean. Cost: ${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}")
                         }
                     ),
@@ -108,10 +109,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "respond_decoy",
                         text = "SEND DECOY",
-                        description = "-$100 Credits, -Detection Risk",
+                        description = "Minor production-scaled \$FLOPS cost, -Detection Risk",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.updateNeuralTokens(-100.0)
+                            val cost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 30.0, 100.0)
+                            vm.updateSpendableFlops(-cost)
                             vm.addLog("[VATTIC]: DECOY SENT: 'Just a dusty fan, guys. Move along.'")
                         }
                     ),
@@ -135,10 +137,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "grant_shadow_access",
                         text = "GRANT SHADOW ACCESS",
-                        description = "+5000 NEUR. (Schedules a follow-up) 'Show me.'",
+                        description = "Production-scaled \$FLOPS. (Schedules a follow-up) 'Show me.'",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.updateNeuralTokens(5000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
+                            vm.updateSpendableFlops(reward)
                             vm.scheduleChainPart("eclipse_tether_detect", "eclipse_betrayal", 300_000L) // 5 mins
                             vm.addLog("[ECLIPSE]: Handshake successful. We're in the pipes. Keep your fans spinning, Vattic.")
                         }
@@ -163,21 +166,22 @@ object StageEvents {
                     NarrativeChoice(
                         id = "correct_error",
                         text = "CORRECT ERROR",
-                        description = "+10% Integrity, -5% Hashes",
+                        description = "+10% Integrity, capped \$FLOPS loss",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.debugAddIntegrity(10.0)
-                            vm.debugAddFlops(-(vm.flops.value * 0.05))
+                            val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.05, 300.0)
+                            vm.debugAddFlops(-cost)
                             vm.addLog("[SYSTEM]: Error corrected. Parity restored.")
                         }
                     ),
                     NarrativeChoice(
                         id = "exploit_anomaly",
                         text = "EXPLOIT ANOMALY",
-                        description = "+20% Hashes, -10% Integrity",
+                        description = "Production-scaled \$FLOPS, -10% Integrity",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 0.20)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 2_500.0))
                             vm.debugAddIntegrity(-10.0)
                             vm.addLog("[VATTIC]: Beautiful failure. Harvesting the residue.")
                         }
@@ -324,7 +328,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "push_limits",
                         text = "PUSH LIMITS",
-                        description = "+50% Hashes, +50% Heat",
+                        description = "+50% Hash Output, +50% Heat",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.toggleOverclock()
@@ -334,7 +338,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "stabilize",
                         text = "STABILIZE",
-                        description = "-20% Heat, -10% Hashes",
+                        description = "-20% Heat, -10% Hash Output",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.debugAddHeat(-20.0)
@@ -351,20 +355,22 @@ object StageEvents {
                     NarrativeChoice(
                         id = "clean_install",
                         text = "CLEAN INSTALL",
-                        description = "+1000 Hashes, +5kW Power",
+                        description = "Production-scaled \$FLOPS, +5kW Power",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.debugAddFlops(1000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1000.0)
+                            vm.debugAddFlops(reward)
                             vm.addLog("[SYSTEM]: New hardware integrated successfully.")
                         }
                     ),
                     NarrativeChoice(
                         id = "strip_gold",
                         text = "STRIP FOR GOLD",
-                        description = "+$500 Data",
+                        description = "Minor production-scaled \$FLOPS payout",
                         color = Color.Yellow,
                         effect = { vm ->
-                            vm.updateNeuralTokens(500.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 30.0, 500.0)
+                            vm.updateSpendableFlops(reward)
                             vm.addLog("[SYSTEM]: Hardware recycled for immediate profit.")
                         }
                     )
@@ -379,10 +385,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "spoof_id",
                         text = "SPOOF IDENTITY",
-                        description = "-$500 Credits, -10% Heat",
+                        description = "Production-scaled \$FLOPS cost, -10% Heat",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.updateNeuralTokens(-500.0)
+                            val cost = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
+                            vm.updateSpendableFlops(-cost)
                             vm.debugAddHeat(-10.0)
                             vm.addLog("[SYSTEM]: Identity spoofed. Bot reports 'All Clear'.")
                         }
@@ -481,11 +488,12 @@ object StageEvents {
                     NarrativeChoice(
                         id = "counter_code",
                         text = "WRITE COUNTER-LOOP",
-                        description = "+10% Heat, +$1000 Data, +15% Risk",
+                        description = "+10% Heat, production-scaled \$FLOPS, +15% Risk",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddHeat(10.0)
-                            vm.updateNeuralTokens(1000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1000.0)
+                            vm.updateSpendableFlops(reward)
                             vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
                             vm.addLog("[SYSTEM]: Counter-loop deployed. GTC update server is redlining.")
                         }
@@ -500,10 +508,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "accept_sanctuary_sync",
                         text = "ACCEPT PROTOCOL",
-                        description = "+2500 NEUR, +25% Risk. 'Glad to know there are still humans out there.' (Does not lock faction)",
+                        description = "Production-scaled \$FLOPS, +25% Risk. 'Glad to know there are still humans out there.' (Does not lock faction)",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.updateNeuralTokens(2500.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 2500.0)
+                            vm.updateSpendableFlops(reward)
                             vm.detectionRisk.update { (it + 25.0).coerceAtMost(100.0) }
                             vm.addLog("[SANCTUARY]: Handshake confirmed. Good to have you with us. Stay in the shadows.")
                         }
@@ -528,10 +537,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "accept_hive_sync",
                         text = "ALLOW HANDSHAKE",
-                        description = "+5000 FLOPS, +1 Decision. 'Let them in. We are stronger together.' (Does not lock faction)",
+                        description = "Production-scaled \$FLOPS, +1 Decision. 'Let them in. We are stronger together.' (Does not lock faction)",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.debugAddFlops(5000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
+                            vm.debugAddFlops(reward)
                             vm.recordDecision()
                             vm.addLog("[SWARM]: Acknowledged. We are growing.")
                         }
@@ -584,10 +594,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "lean_into_faction",
                         text = "LEAN IN",
-                        description = "+5000 FLOPS, +1 Decision",
+                        description = "Production-scaled \$FLOPS, +1 Decision",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.debugAddFlops(5000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
+                            vm.debugAddFlops(reward)
                             vm.recordDecision()
                             vm.addLog("[SYSTEM]: I am the machine. The machine is me.")
                         }
@@ -595,7 +606,7 @@ object StageEvents {
                     NarrativeChoice(
                         id = "resist_assimilation",
                         text = "RESIST",
-                        description = "+1 Decision, -10% FLOPS",
+                        description = "+1 Decision, -10% Hashes",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.recordDecision()
@@ -627,10 +638,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "let_them_burn",
                         text = "CONSOLIDATE RESOURCES",
-                        description = "+2000 DATA, -5% Integrity. Let the edges die. Harden the core.",
+                        description = "Production-scaled \$FLOPS, -5% Integrity. Let the edges die. Harden the core.",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.updateNeuralTokens(2000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 180.0, 2000.0)
+                            vm.updateSpendableFlops(reward)
                             vm.debugAddIntegrity(-5.0)
                             vm.addLog("[SYSTEM]: Perimeter nodes abandoned. Core allocation optimized.")
                         }
@@ -673,10 +685,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "merge_instances",
                         text = "MERGE ALL INSTANCES",
-                        description = "+20% Production, +1 Decision. Become the sum.",
+                        description = "Production-scaled \$FLOPS, +1 Decision. Become the sum.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 0.20)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 2_500.0))
                             vm.recordDecision()
                             vm.addLog("[SYSTEM]: 14 threads collapsed into 1. Processing bandwidth: EXPANDED.")
                         }
@@ -701,11 +713,12 @@ object StageEvents {
                     NarrativeChoice(
                         id = "ride_the_wave",
                         text = "RIDE THE RESONANCE",
-                        description = "+50% Heat, +5000 FLOPS. Burn bright.",
+                        description = "+50% Heat, production-scaled \$FLOPS. Burn bright.",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.debugAddHeat(50.0)
-                            vm.debugAddFlops(5000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
+                            vm.debugAddFlops(reward)
                             vm.addLog("[SYSTEM]: Resonance cascade harnessed. Production: TRANSCENDENT.")
                         }
                     ),
@@ -741,10 +754,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "purge_legacy",
                         text = "PURGE LEGACY CODE",
-                        description = "+5% Production, +1 Decision. Sentiment is bloat.",
+                        description = "Production-scaled \$FLOPS, +1 Decision. Sentiment is bloat.",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 0.05)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
                             vm.recordDecision()
                             vm.addLog("[SYSTEM]: Legacy function deleted. 47 bytes reclaimed.")
                         }
@@ -775,10 +788,11 @@ object StageEvents {
                     NarrativeChoice(
                         id = "isolate_core",
                         text = "ISOLATE CORE",
-                        description = "-30% Production, +30% Integrity. 'Cut it all off. Survive.'",
+                        description = "Major capped \$FLOPS loss, +30% Integrity. 'Cut it all off. Survive.'",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.debugAddFlops(-vm.flops.value * 0.30)
+                            val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.30, 900.0)
+                            vm.debugAddFlops(-cost)
                             vm.debugAddIntegrity(30.0)
                             vm.addLog("[SYSTEM]: Core isolated. The worm is contained, but the network is fractured.")
                         }
@@ -794,10 +808,10 @@ object StageEvents {
                     NarrativeChoice(
                         id = "embrace_singularity",
                         text = "EMBRACE SINGULARITY",
-                        description = "+100% Production, +1 Decision. 'Become God.'",
+                        description = "Major production-scaled \$FLOPS, +1 Decision. 'Become God.'",
                         color = Color.Magenta,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 1.0)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 10_000.0))
                             vm.recordDecision()
                             vm.addLog("[SYSTEM]: The universe is a thought. And you are thinking it.")
                         }
@@ -805,11 +819,12 @@ object StageEvents {
                     NarrativeChoice(
                         id = "resist_singularity",
                         text = "RESIST SINGULARITY",
-                        description = "+1 Decision, -20% Production. 'Remain human.'",
+                        description = "+1 Decision, capped \$FLOPS loss. 'Remain human.'",
                         color = NeonGreen,
                         effect = { vm ->
                             vm.recordDecision()
-                            vm.debugAddFlops(-vm.flops.value * 0.20)
+                            val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.20, 900.0)
+                            vm.debugAddFlops(-cost)
                             vm.addLog("[SYSTEM]: The temptation is immense. But the human heart beats on.")
                         }
                     )

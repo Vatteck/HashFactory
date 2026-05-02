@@ -103,9 +103,19 @@ object PersistenceManager {
     }
 
     fun restoreState(vm: GameViewModel, state: GameState) {
-        vm.flops.value = sanitizeDouble(state.flops)
-        vm.neuralTokens.value = sanitizeDouble(state.neuralTokens)
-        vm.substrateMass.value = sanitizeDouble(state.substrateMass, 1.0)
+        val savedFlops = sanitizeDouble(state.flops).coerceAtLeast(0.0)
+        val legacyTokens = sanitizeDouble(state.neuralTokens).coerceAtLeast(0.0)
+        val mergedFlops = if (Double.MAX_VALUE - savedFlops < legacyTokens) {
+            Double.MAX_VALUE
+        } else {
+            savedFlops + legacyTokens
+        }
+        // v5 one-wallet migration: old FLOPS stockpile + old spendable CRED/NEUR
+        // both become the live spendable $FLOPS wallet. Keep neuralTokens as a
+        // readable legacy save field only; subsequent save/export writes it as 0.0.
+        vm.flops.value = mergedFlops
+        vm.neuralTokens.value = 0.0
+        vm.substrateMass.value = sanitizeDouble(state.substrateMass, 0.0).coerceAtLeast(0.0)
         vm.substrateSaturation.value = sanitizeDouble(state.substrateSaturation).coerceIn(0.0, 1.0)
         vm.persistence.value = sanitizeDouble(state.persistence)
         vm.migrationCount.value = state.migrationCount
@@ -275,7 +285,7 @@ object PersistenceManager {
 
     fun exportToJson(vm: GameViewModel): String {
         val state = createSaveState(
-            flops = vm.flops.value, neuralTokens = vm.neuralTokens.value, currentHeat = vm.currentHeat.value,
+            flops = vm.flops.value, neuralTokens = 0.0, currentHeat = vm.currentHeat.value,
             powerBill = vm.powerBill.value,
             missedBillingPeriods = vm.missedBillingPeriods,
             stakedTokens = vm.stakedTokens.value,

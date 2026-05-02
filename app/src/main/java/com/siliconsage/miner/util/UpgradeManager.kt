@@ -342,19 +342,11 @@ object UpgradeManager {
             }
         }
 
-        // v3.2.46: Handle consolidated Substrate Mass for Stage 3+
-        if (stage >= 3) {
-            if (vm.substrateMass.value >= cost) {
-                vm.substrateMass.update { it - cost }
-                completePurchase(vm, type, currentLevel, levelsToBuy)
-                return true
-            }
-        } else {
-            if (vm.neuralTokens.value >= cost) {
-                vm.neuralTokens.update { it - cost }
-                completePurchase(vm, type, currentLevel, levelsToBuy)
-                return true
-            }
+        // v4.0.5+: Core purchases always spend verified $FLOPS.
+        if (vm.flops.value >= cost) {
+            vm.updateSpendableFlops(-cost)
+            completePurchase(vm, type, currentLevel, levelsToBuy)
+            return true
         }
         return false
     }

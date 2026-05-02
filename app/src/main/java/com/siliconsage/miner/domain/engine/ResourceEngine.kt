@@ -76,6 +76,24 @@ object ResourceEngine {
         return (1.0 - (offlineNodesCount * 0.15)).coerceAtLeast(0.1)
     }
 
+    fun productionWindowValue(passiveRate: Double, seconds: Double, minimum: Double = 0.0): Double {
+        val safeRate = if (passiveRate.isFinite()) passiveRate.coerceAtLeast(0.0) else 0.0
+        val safeSeconds = if (seconds.isFinite()) seconds.coerceAtLeast(0.0) else 0.0
+        val safeMinimum = if (minimum.isFinite()) minimum.coerceAtLeast(0.0) else 0.0
+        val productionValue = safeRate * safeSeconds
+        val finiteProductionValue = if (productionValue.isFinite()) productionValue else Double.MAX_VALUE
+        return finiteProductionValue.coerceAtLeast(safeMinimum)
+    }
+
+    fun cappedWalletPenalty(wallet: Double, passiveRate: Double, percentage: Double, capSeconds: Double): Double {
+        val safeWallet = if (wallet.isFinite()) wallet.coerceAtLeast(0.0) else 0.0
+        val safePercentage = if (percentage.isFinite()) percentage.coerceIn(0.0, 1.0) else 0.0
+        val rawPenalty = safeWallet * safePercentage
+        val finiteRawPenalty = if (rawPenalty.isFinite()) rawPenalty else Double.MAX_VALUE
+        val productionCap = productionWindowValue(passiveRate, capSeconds)
+        return finiteRawPenalty.coerceAtMost(productionCap).coerceAtLeast(0.0)
+    }
+
     /**
      * v3.11.1: Calculate scaling cost for Dilemmas based on production power.
      * Added variance to prevent "fixed cost" feeling.

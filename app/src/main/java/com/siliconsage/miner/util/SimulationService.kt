@@ -311,7 +311,7 @@ object SimulationService {
                 vm.triggerGlitchEffect()
                 if (Random.nextDouble() < 0.05) {
                     vm.addLog("[VOID]: REALITY_DRIFT_DETECTED. SCRAMBLING BUFFER.")
-                    vm.substrateMass.update { (it * 0.95).coerceAtLeast(0.0) }
+                    vm.substrateMass.update { MigrationManager.finiteScaleDown(it, 0.95, Double.MAX_VALUE) }
                 }
             }
         }
@@ -338,7 +338,7 @@ object SimulationService {
                             vm.markEventChoice("cc_confrontation", "ending_bad")
                             vm.saveState()
                         } else if (vm.currentLocation.value == "ORBITAL_SATELLITE") {
-                            vm.substrateMass.update { it * 0.9 }
+                            vm.substrateMass.update { MigrationManager.finiteScaleDown(it, 0.9, Double.MAX_VALUE) }
                             vm.hardwareIntegrity.value = 50.0
                         } else if (vm.commandCenterAssaultPhase.value == "CAGE") {
                             vm.failAssault("CORE INTEGRITY ZERO.", 0L)

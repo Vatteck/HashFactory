@@ -209,7 +209,7 @@ class SubnetService(
                     content = "Local relay is collapsing under load. Need external FLOPS or we fry. Anyone?",
                     interactionType = InteractionType.STABILIZE_NODE,
                     availableResponses = listOf(
-                        SubnetResponse("STABILIZE_NODE [$costStr NT]", cost = dynamicCost)
+                        SubnetResponse("STABILIZE_NODE [$costStr \$FLOPS]", cost = dynamicCost)
                     )
                 )
                 scope.launch { deliverWithTyping(msg, mode) }
@@ -511,7 +511,7 @@ class SubnetService(
         when (type) {
             InteractionType.STABILIZE_NODE -> {
                 val costPaid = responseData?.cost ?: 10000.0
-                onLog("[SYSTEM]: ${com.siliconsage.miner.util.FormatUtils.formatLargeNumber(costPaid)} NT TRANSFERRED. NODE STABILIZED. REPUTATION +5.0")
+                onLog("[SYSTEM]: ${com.siliconsage.miner.util.FormatUtils.formatLargeNumber(costPaid)} \$FLOPS TRANSFERRED. NODE STABILIZED. REPUTATION +5.0")
                 onEffect(SubnetEffect.ReputationChange(5.0))
             }
             InteractionType.COMPLIANT -> {

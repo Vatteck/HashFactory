@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
  *   warning      — mid-threshold alerts (heat 60-85%, integrity 25-75%)
  *   critical     — always ErrorRed — some things are just red
  *   positiveDelta — cooling, recovering, good rates
- *   currency     — CRED, NT, billing values — always Gold
+ *   currency     — $FLOPS / current currency and billing values — always Gold
  *   generation   — local power gen on rails and text — always ElectricBlue
  *   repTrusted   — reputation tier TRUSTED
  *   repElite     — reputation tier ELITE

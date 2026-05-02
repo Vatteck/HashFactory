@@ -1,5 +1,6 @@
 package com.siliconsage.miner.util
 
+import com.siliconsage.miner.domain.engine.ResourceEngine
 import com.siliconsage.miner.viewmodel.GameViewModel
 import kotlin.random.Random
 
@@ -59,9 +60,9 @@ object MarketManager {
         if (vm.faction.value == "HIVEMIND") {
             energyPrice *= 0.7
             if (vm.activePowerUsage.value > vm.maxPowerkW.value * 0.5 && Random.nextDouble() < 0.05) {
-                val fines = vm.neuralTokens.value * 0.05
-                vm.updateNeuralTokens(-fines)
-                vm.addLog("[SYSTEM]: GRID SIPHON DETECTED by Utility Co. Fined ${vm.formatLargeNumber(fines)} \$N.")
+                val fines = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.05, 300.0)
+                vm.updateSpendableFlops(-fines)
+                vm.addLog("[SYSTEM]: GRID SIPHON DETECTED by Utility Co. Fined ${vm.formatLargeNumber(fines)} ${vm.getCurrencyName()}.")
             }
         } else if (vm.faction.value == "SANCTUARY") {
              if (energyPrice > 0.15) energyPrice = 0.15

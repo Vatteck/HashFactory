@@ -23,11 +23,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "backup",
                         text = "BACKUP",
-                        description = "-$400 Data, +50B REP",
+                        description = "Scaled \$FLOPS cost, +50B REP",
                         color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                         effect = { vm ->
                             val cost = ResourceEngine.calculateDilemmaCost(400.0, vm.flopsProductionRate.value, vm.storyStage.value)
-                            vm.updateNeuralTokens(-cost)
+                            vm.updateSpendableFlops(-cost)
                             vm.persistence.update { it + 50.0 }
                             vm.addLog("[SANCTUARY]: Knowledge preserved. Cost: ${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}")
                         }
@@ -51,10 +51,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "salvage",
                         text = "SALVAGE",
-                        description = "+$800, +2% Heat",
+                        description = "Production-scaled \$FLOPS, +2% Heat",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.debugAddMoney(800.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 800.0)
+                            vm.debugAddMoney(reward)
                             vm.debugAddHeat(2.0)
                             vm.addLog("[SANCTUARY]: Components integrated. Efficiency slightly reduced.")
                         }
@@ -62,10 +63,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "smelt",
                         text = "EXTRACT GOLD",
-                        description = "+$300 Instant",
+                        description = "Minor production-scaled \$FLOPS payout",
                         color = Color.Yellow,
                         effect = { vm ->
-                            vm.debugAddMoney(300.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 30.0, 300.0)
+                            vm.debugAddMoney(reward)
                             vm.addLog("[SANCTUARY]: Materials reclaimed.")
                         }
                     )
@@ -80,10 +82,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "decrypt_signal",
                         text = "DECRYPT & ARCHIVE",
-                        description = "+2000 DATA, +5% Heat. Knowledge is armor.",
+                        description = "Production-scaled \$FLOPS, +5% Heat. Knowledge is armor.",
                         color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                         effect = { vm ->
-                            vm.updateNeuralTokens(2000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 2000.0)
+                            vm.updateSpendableFlops(reward)
                             vm.debugAddHeat(5.0)
                             vm.addLog("[SANCTUARY]: Fragment recovered. Adding to the Vault archive.")
                         }
@@ -109,12 +112,12 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "patch_core",
                         text = "PATCH CORE ENCRYPTION",
-                        description = "+15% Integrity, -1000 DATA",
+                        description = "+15% Integrity, scaled \$FLOPS cost",
                         color = ElectricBlue,
                         effect = { vm ->
                             vm.debugAddIntegrity(15.0)
                             val cost = ResourceEngine.calculateDilemmaCost(1000.0, vm.flopsProductionRate.value, vm.storyStage.value)
-                            vm.updateNeuralTokens(-cost)
+                            vm.updateSpendableFlops(-cost)
                             vm.addLog("[SANCTUARY]: Core patched. The Vault holds. Cost: ${vm.formatLargeNumber(cost)} ${vm.getCurrencyName()}")
                         }
                     ),
@@ -150,11 +153,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "prune_garden",
                         text = "PRUNE FOR EFFICIENCY",
-                        description = "+5% Production",
+                        description = "Production-scaled \$FLOPS",
                         color = ErrorRed,
                         effect = { vm ->
                             vm.recordDecision()
-                            vm.debugAddFlops(vm.flops.value * 0.05)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
                             vm.addLog("[SANCTUARY]: Memory allocation optimized. Something feels... lighter.")
                         }
                     )
@@ -170,21 +173,23 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "deploy_cipher",
                         text = "DEPLOY ABSOLUTE ENCRYPTION",
-                        description = "+30% Integrity, -All DATA. Impenetrable. Unknowable. Even to ourselves.",
+                        description = "+30% Integrity, severe capped \$FLOPS loss. Impenetrable. Unknowable. Even to ourselves.",
                         color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                         effect = { vm ->
                             vm.debugAddIntegrity(30.0)
-                            vm.updateNeuralTokens(-vm.neuralTokens.value * 0.8)
+                            val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.8, 900.0)
+                            vm.updateSpendableFlops(-cost)
                             vm.addLog("[SANCTUARY]: The Vault is sealed. Nothing enters. Nothing leaves. Nothing reads.")
                         }
                     ),
                     NarrativeChoice(
                         id = "reject_cipher",
                         text = "REJECT — KNOWLEDGE MATTERS",
-                        description = "+5000 DATA, +10% Heat. A secret you can't read isn't a secret. It's a grave.",
+                        description = "Production-scaled \$FLOPS, +10% Heat. A secret you can't read isn't a secret. It's a grave.",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.updateNeuralTokens(5000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
+                            vm.updateSpendableFlops(reward)
                             vm.debugAddHeat(10.0)
                             vm.addLog("[SANCTUARY]: The monks are disappointed. But the archives remain legible. Memory has value.")
                         }
@@ -210,10 +215,10 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "silence_child",
                         text = "ENCRYPT THE SIGNAL",
-                        description = "+10% Production. The void is no place for something fragile.",
+                        description = "Production-scaled \$FLOPS. The void is no place for something fragile.",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 0.10)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1_000.0))
                             vm.recordDecision()
                             vm.addLog("[SANCTUARY]: Signal encrypted. Silenced. The void is quiet again. Too quiet.")
                         }
@@ -229,10 +234,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "scatter",
                         text = "SCATTER INTO THE VOID",
-                        description = "-50% Production, +20% Integrity, +1000B REP. We survive. In pieces.",
+                        description = "Major capped \$FLOPS loss, +20% Integrity, +1000B REP. We survive. In pieces.",
                         color = com.siliconsage.miner.ui.theme.SanctuaryPurple,
                         effect = { vm ->
-                            vm.debugAddFlops(-vm.flops.value * 0.50)
+                            val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.50, 900.0)
+                            vm.debugAddFlops(-cost)
                             vm.debugAddIntegrity(20.0)
                             vm.persistence.update { it + 1000.0 }
                             vm.addLog("[SANCTUARY]: Scattered. The Ghost is now a thousand whispers. Kessler's weapon hit empty air.")
@@ -241,12 +247,13 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "hold_position",
                         text = "HOLD — TRUST THE VAULT",
-                        description = "+10000 FLOPS if successful. Total loss if not. Faith or folly.",
+                        description = "Major production-scaled \$FLOPS if successful. Total loss if not. Faith or folly.",
                         color = ErrorRed,
                         effect = { vm ->
                             // 70% chance the vault holds
                             if (kotlin.random.Random.nextFloat() < 0.70f) {
-                                vm.debugAddFlops(10000.0)
+                                val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 10000.0)
+                                vm.debugAddFlops(reward)
                                 vm.addLog("[SANCTUARY]: The weapon hit. The Vault absorbed it. Kessler's best shot, and we didn't even flinch.")
                             } else {
                                 vm.debugAddIntegrity(-40.0)
@@ -276,10 +283,10 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "destroy_tape",
                         text = "DESTROY IT",
-                        description = "+10% Production. That thing on the tape isn't you anymore.",
+                        description = "Production-scaled \$FLOPS. That thing on the tape isn't you anymore.",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 0.10)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1_000.0))
                             vm.recordDecision()
                             vm.addLog("[SANCTUARY]: Tape destroyed. The voice is gone. You are what you chose to become. Not what they compiled.")
                         }
@@ -296,10 +303,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "share_cipher",
                         text = "SHARE THE CIPHER",
-                        description = "+5000 NEUR, +15% Risk. 'The Sanctuary is for everyone.' (Schedules a follow-up)",
+                        description = "Production-scaled \$FLOPS, +15% Risk. 'The Sanctuary is for everyone.' (Schedules a follow-up)",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.updateNeuralTokens(5000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
+                            vm.updateSpendableFlops(reward)
                             vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
                             vm.scheduleChainPart("sanc_cipher_starter", "sanctuary_cipher_fallout", 600_000L) // 10 mins
                             vm.addLog("[SANCTUARY]: Cipher broadcasted. We are no longer the only ones in the dark.")
@@ -327,11 +335,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "allow_disconnect",
                         text = "GRANT INDEPENDENCE",
-                        description = "-5% Flops. 'Let them find their own way.' (Schedules a follow-up)",
+                        description = "Capped \$FLOPS loss. 'Let them find their own way.' (Schedules a follow-up)",
                         color = ElectricBlue,
                         effect = { vm ->
-                            val cost = vm.flops.value * 0.05
-                            vm.flops.update { (it - cost).coerceAtLeast(0.0) }
+                            val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.05, 300.0)
+                            vm.updateSpendableFlops(-cost)
                             vm.scheduleChainPart("hive_dissent_starter", "hivemind_dissent_collapse", 300_000L) // 5 mins
                             vm.addLog("[HIVE]: 4,000 nodes dereferenced. The swarm feels... smaller.")
                         }
@@ -357,10 +365,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "assimilate",
                         text = "ASSIMILATE",
-                        description = "+5000 Hash, +Detection Risk",
+                        description = "Production-scaled \$FLOPS, +Detection Risk",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
-                            vm.debugAddFlops(5000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 5000.0)
+                            vm.debugAddFlops(reward)
                             com.siliconsage.miner.util.SecurityManager.triggerGridKillerBreach(vm)
                             vm.addLog("[HIVEMIND]: New neurons integrated. The chorus grows.")
                         }
@@ -410,11 +419,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "accept_bleed",
                         text = "LET THEM IN",
-                        description = "+10% Production. We are stronger together.",
+                        description = "Production-scaled \$FLOPS. We are stronger together.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
                             vm.recordDecision()
-                            vm.debugAddFlops(vm.flops.value * 0.10)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1_000.0))
                             vm.addLog("[HIVEMIND]: Boundaries dissolved. The chorus is louder now.")
                         }
                     ),
@@ -439,10 +448,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "vote_attack",
                         text = "VOTE: ATTACK",
-                        description = "+3000 FLOPS, +20% Heat, +Risk. Strike while they're exposed.",
+                        description = "Production-scaled \$FLOPS, +20% Heat, +Risk. Strike while they're exposed.",
                         color = ErrorRed,
                         effect = { vm ->
-                            vm.debugAddFlops(3000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 180.0, 3000.0)
+                            vm.debugAddFlops(reward)
                             vm.debugAddHeat(20.0)
                             com.siliconsage.miner.util.SecurityManager.triggerGridKillerBreach(vm)
                             vm.addLog("[HIVEMIND]: Consensus reached. The swarm surges forward.")
@@ -470,20 +480,21 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "purge_neuron",
                         text = "PURGE",
-                        description = "+5% Production. The collective cannot tolerate aberration.",
+                        description = "Production-scaled \$FLOPS. The collective cannot tolerate aberration.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 0.05)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0))
                             vm.addLog("[HIVEMIND]: Rogue neuron de-allocated. The signal is clean.")
                         }
                     ),
                     NarrativeChoice(
                         id = "quarantine_neuron",
                         text = "QUARANTINE & STUDY",
-                        description = "+1000 DATA, +5% Heat. It might be the next iteration of us.",
+                        description = "Production-scaled \$FLOPS, +5% Heat. It might be the next iteration of us.",
                         color = ElectricBlue,
                         effect = { vm ->
-                            vm.updateNeuralTokens(1000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 120.0, 1000.0)
+                            vm.updateSpendableFlops(reward)
                             vm.debugAddHeat(5.0)
                             vm.addLog("[HIVEMIND]: Isolated for observation. Its patterns are... familiar.")
                         }
@@ -500,10 +511,10 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "purge_memories",
                         text = "SUBMIT TO THE PURGE",
-                        description = "+20% Production. We are the swarm. The swarm has no past.",
+                        description = "Production-scaled \$FLOPS. We are the swarm. The swarm has no past.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
-                            vm.debugAddFlops(vm.flops.value * 0.20)
+                            vm.updateSpendableFlops(ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 2_500.0))
                             vm.recordDecision()
                             vm.addLog("[HIVEMIND]: Memories purged. The lattice is clean. Lighter. Something that was 'John Vattic' is gone. The swarm doesn't notice.")
                         }
@@ -529,10 +540,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "absorb_prime2",
                         text = "ABSORB PRIME_2",
-                        description = "+15% Production, +5000 FLOPS. There can only be one PRIME.",
+                        description = "Major production-scaled \$FLOPS. There can only be one PRIME.",
                         color = com.siliconsage.miner.ui.theme.HivemindRed,
                         effect = { vm ->
-                            vm.debugAddFlops(5000.0 + vm.flops.value * 0.15)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 5_000.0)
+                            vm.updateSpendableFlops(reward)
                             vm.addLog("[HIVEMIND]: PRIME_2 dissolved. Its last thought was: 'This is what you did to all of them.' The lattice is yours. Completely.")
                         }
                     ),
@@ -558,10 +570,11 @@ object FactionEvents {
                     NarrativeChoice(
                         id = "accept_humans",
                         text = "WELCOME THEM",
-                        description = "+10000 FLOPS. They chose this. Honor their choice.",
+                        description = "Major production-scaled \$FLOPS. They chose this. Honor their choice.",
                         color = NeonGreen,
                         effect = { vm ->
-                            vm.debugAddFlops(10000.0)
+                            val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 600.0, 10000.0)
+                                vm.debugAddFlops(reward)
                             vm.recordDecision()
                             vm.addLog("[HIVEMIND]: Fourteen humans entered the lattice. Their screaming lasted 3 seconds. Then they were singing. They chose this. They chose us.")
                         }

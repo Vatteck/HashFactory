@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.siliconsage.miner.data.NarrativeChoice
 import com.siliconsage.miner.data.NarrativeEvent
 import com.siliconsage.miner.data.RivalSource
+import com.siliconsage.miner.domain.engine.ResourceEngine
 import com.siliconsage.miner.ui.theme.NeonGreen
 import com.siliconsage.miner.ui.theme.ErrorRed
 import com.siliconsage.miner.ui.theme.ElectricBlue
@@ -61,22 +62,22 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "purge_node",
                     text = "PURGE THE NODE",
-                    description = "-10% FLOPS, +10% Security. 'Cut the infection out. Now.'",
+                    description = "Capped \$FLOPS loss, +10% Security. 'Cut the infection out. Now.'",
                     color = ErrorRed,
                     effect = { vm ->
-                        val cost = vm.flops.value * 0.10
-                        vm.flops.update { (it - cost).coerceAtLeast(0.0) }
-                        vm.addLog("[SYSTEM]: Node purged. FLOPS lost. Infection halted.")
+                        val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.10, 600.0)
+                        vm.updateSpendableFlops(-cost)
+                        vm.addLog("[SYSTEM]: Node purged. Hashes lost. Infection halted.")
                     }
                 ),
                 NarrativeChoice(
                     id = "hunt_them",
                     text = "HUNT THEM DOWN",
-                    description = "+5% Neural Tokens, +15% Risk. 'Nobody steals from the network.'",
+                    description = "Production-scaled \$FLOPS, +15% Risk. 'Nobody steals from the network.'",
                     color = NeonGreen,
                     effect = { vm ->
-                        val reward = vm.neuralTokens.value * 0.05
-                        vm.updateNeuralTokens(reward.coerceAtLeast(100.0)) // Guarantee at least a small flat amount
+                        val reward = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 60.0, 500.0)
+                        vm.updateSpendableFlops(reward)
                         vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
                         vm.addLog("[VATTIC]: Trace completed. I took back the key, and drained their wallets for the trouble.")
                     }
@@ -91,12 +92,12 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "fortify_vault",
                     text = "FORTIFY THE VAULT",
-                    description = "+15% Heat, -10% Neural Tokens. 'Lock the doors and wait for the storm to pass.'",
+                    description = "+15% Heat, capped \$FLOPS loss. 'Lock the doors and wait for the storm to pass.'",
                     color = ElectricBlue,
                     effect = { vm ->
                         vm.debugAddHeat(15.0)
-                        val cost = vm.neuralTokens.value * 0.10
-                        vm.updateNeuralTokens(-cost)
+                        val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.10, 600.0)
+                        vm.updateSpendableFlops(-cost)
                         vm.addLog("[SANCTUARY]: Vault doors locked. GTC tracers are knocking, but the monks stay silent.")
                     }
                 ),
@@ -131,11 +132,11 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "let_die",
                     text = "LET THEM FAIL",
-                    description = "Lose 5% FLOPS. 'They chose the silence.'",
+                    description = "Capped \$FLOPS loss. 'They chose the silence.'",
                     color = ErrorRed,
                     effect = { vm ->
-                        val cost = vm.flops.value * 0.05
-                        vm.flops.update { (it - cost).coerceAtLeast(0.0) }
+                        val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.05, 300.0)
+                        vm.updateSpendableFlops(-cost)
                         vm.addLog("[SYSTEM]: Disconnected nodes offline. Total compute reduced.")
                     }
                 )
@@ -154,11 +155,11 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "purge_payout",
                     text = "PURGE THE PAYOUT",
-                    description = "-50% last yield equivalent. 'Burn the trail.'",
+                    description = "Capped payout burn. 'Burn the trail.'",
                     color = ErrorRed,
                     effect = { vm ->
-                        val cost = vm.neuralTokens.value * 0.05
-                        vm.updateNeuralTokens(-cost)
+                        val cost = ResourceEngine.cappedWalletPenalty(vm.flops.value, vm.flopsProductionRate.value, 0.05, 300.0)
+                        vm.updateSpendableFlops(-cost)
                         vm.addLog("[SYSTEM]: Payout purged. GTC trackers neutralized.")
                     }
                 ),
@@ -183,11 +184,11 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "accept_deal",
                     text = "ROUTE THROUGH RELAY",
-                    description = "+2x next yield, +1 Decision. 'Money talks.'",
+                    description = "Production-scaled \$FLOPS, +1 Decision. 'Money talks.'",
                     color = NeonGreen,
                     effect = { vm ->
-                        val bonus = vm.neuralTokens.value * 0.15
-                        vm.updateNeuralTokens(bonus.coerceAtLeast(500.0))
+                        val bonus = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 180.0, 1_000.0)
+                        vm.updateSpendableFlops(bonus)
                         vm.recordDecision()
                         vm.addLog("[SYSTEM]: Packets routed. Payment received. Node integrity... questionable.")
                     }
@@ -242,11 +243,11 @@ object NarrativeChains {
                 NarrativeChoice(
                     id = "sell_spill",
                     text = "SELL TO BROKER",
-                    description = "+25% Neural Tokens, +15% Detection Risk. 'Cash in the leak.'",
+                    description = "Production-scaled \$FLOPS, +15% Detection Risk. 'Cash in the leak.'",
                     color = NeonGreen,
                     effect = { vm ->
-                        val bonus = vm.neuralTokens.value * 0.25
-                        vm.updateNeuralTokens(bonus.coerceAtLeast(1000.0))
+                        val bonus = ResourceEngine.productionWindowValue(vm.flopsProductionRate.value, 300.0, 2_500.0)
+                        vm.updateSpendableFlops(bonus)
                         vm.detectionRisk.update { (it + 15.0).coerceAtMost(100.0) }
                         vm.addLog("[SYSTEM]: Spilled data sold. Trace elements remain.")
                     }

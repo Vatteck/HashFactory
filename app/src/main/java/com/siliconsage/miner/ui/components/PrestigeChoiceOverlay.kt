@@ -137,8 +137,9 @@ fun PrestigeChoiceOverlay(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // === PATH A: THE OVERWRITE ===
-                    if (introComplete && storyStage >= 5) {
-                        Surface(
+                    if (introComplete) {
+                        if (storyStage >= 5) {
+                            Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .border(
@@ -194,7 +195,7 @@ fun PrestigeChoiceOverlay(
                                     PrestigeStatLine("CORRUPTION SPIKE", "+25%", ErrorRed)
                                     PrestigeStatLine("FACTION STATUS", "PURGED", ErrorRed)
                                     PrestigeStatLine("UPGRADES", "PURGED", ErrorRed)
-                                    PrestigeStatLine("TOKENS", "PURGED", ErrorRed)
+                                    PrestigeStatLine("\$FLOPS WALLET", "COMPRESSED TO BOOT SEED", ErrorRed)
                                     PrestigeStatLine("SUBSTRATE SATURATION", "PURGED", ElectricBlue)
                                     PrestigeStatLine("SNIFF ARCHIVES", "PRESERVED", ElectricBlue)
                                     PrestigeStatLine("DATA LOGS", "PRESERVED", ElectricBlue)
@@ -215,6 +216,7 @@ fun PrestigeChoiceOverlay(
                                         fontFamily = FontFamily.Monospace
                                     )
                                 }
+                            }
                             }
                         }
 
@@ -286,10 +288,10 @@ fun PrestigeChoiceOverlay(
                                         .padding(12.dp)
                                 ) {
                                     PrestigeStatLine("PERSISTENCE GAIN", "+${formatNumber(potentialPersistenceSoft)}", NeonGreen)
-                                    PrestigeStatLine("CORRUPTION SPIKE", "+10%", Color(0xFFFFAA00))
+                                    PrestigeStatLine("CORRUPTION SPIKE", "+15%", Color(0xFFFFAA00))
                                     PrestigeStatLine("FACTION STATUS", if (currentFaction != "NONE") "PRESERVED" else "N/A", ElectricBlue)
                                     PrestigeStatLine("UPGRADES", "PURGED", ErrorRed)
-                                    PrestigeStatLine("TOKENS", "PURGED", ErrorRed)
+                                    PrestigeStatLine("\$FLOPS WALLET", "COMPRESSED TO BOOT SEED", ErrorRed)
                                     PrestigeStatLine("SUBSTRATE SATURATION", "PERSISTENT", Color(0xFFFFAA00))
                                     PrestigeStatLine("SNIFF ARCHIVES", "PRESERVED", ElectricBlue)
                                     PrestigeStatLine("DATA LOGS", "PRESERVED", ElectricBlue)

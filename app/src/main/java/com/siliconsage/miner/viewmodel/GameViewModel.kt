@@ -59,14 +59,14 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 }
                 is SubnetService.SubnetEffect.PersistenceGain -> updatePersistence(effect.amount)
                 is SubnetService.SubnetEffect.CorruptionChange -> identityCorruption.update { (it + effect.delta).coerceIn(0.0, 1.0) }
-                is SubnetService.SubnetEffect.TokenChange -> neuralTokens.update { (it + effect.delta).coerceAtLeast(0.0) }
+                is SubnetService.SubnetEffect.TokenChange -> updateSpendableFlops(effect.delta)
                 is SubnetService.SubnetEffect.SetFalseHeartbeat -> isFalseHeartbeatActive.value = effect.active
                 is SubnetService.SubnetEffect.TriggerRaid -> triggerGridRaid(effect.nodeId, effect.isGridKiller)
                 is SubnetService.SubnetEffect.ReputationChange -> com.siliconsage.miner.util.ReputationManager.modifyReputation(this@GameViewModel, effect.delta)
                 is SubnetService.SubnetEffect.SkimTokens -> {
-                    val amountToSkim = neuralTokens.value * effect.percentage
-                    neuralTokens.update { (it - amountToSkim).coerceAtLeast(0.0) }
-                    addLog("[SYSTEM]: SUBNET SKIMMER DETECTED. LOST ${formatLargeNumber(amountToSkim)} NT.")
+                    val amountToSkim = ResourceEngine.cappedWalletPenalty(flops.value, flopsProductionRate.value, effect.percentage, 600.0)
+                    updateSpendableFlops(-amountToSkim)
+                    addLog("[SYSTEM]: SUBNET SKIMMER DETECTED. LOST ${formatLargeNumber(amountToSkim)} ${getCurrencyName()}.")
                 }
                 SubnetService.SubnetEffect.StealUpgrade -> {
                     val currentUpgrades = upgrades.value.filter { (type, count) ->
@@ -167,13 +167,15 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
 
                 // v3.13.19: Applying Wage-Docking Bleed
                 if (isWageDocking.value) {
-                    val bleed = (res.flopsDelta * 0.05).coerceAtLeast(1.0)
-                    neuralTokens.update { (it - bleed).coerceAtLeast(0.0) }
+                    val bleed = if (res.flopsDelta.isFinite()) (res.flopsDelta * 0.05).coerceAtLeast(1.0) else 0.0
+                    if (bleed > 0.0) updateSpendableFlops(-bleed)
                 }
 
-                if (!res.substrateDelta.isNaN()) substrateMass.update { it + res.substrateDelta }
+                if (storyStage.value >= 4 && !res.substrateDelta.isNaN()) {
+                    substrateMass.update { it + res.substrateDelta }
+                }
                 if (!res.entropyDelta.isNaN()) entropyLevel.update { it + res.entropyDelta }
-                if (storyStage.value >= 3 && !res.substrateDelta.isNaN()) {
+                if (storyStage.value >= 4 && !res.substrateDelta.isNaN()) {
                     val growth = (res.substrateDelta / 1e12).coerceIn(0.0, 0.001)
                     substrateSaturation.update { (it + growth).coerceAtMost(1.0) }
                 }
@@ -338,7 +340,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun saveState() {
         viewModelScope.launch {
             repository.updateGameState(PersistenceManager.createSaveState(
-                flops = flops.value, neuralTokens = neuralTokens.value, currentHeat = currentHeat.value,
+                flops = flops.value, neuralTokens = 0.0, currentHeat = currentHeat.value,
                 powerBill = powerBill.value,
                 stakedTokens = stakedTokens.value, prestigeMultiplier = prestigeMultiplier.value, persistence = persistence.value,
                 unlockedTechNodes = unlockedTechNodes.value, storyStage = storyStage.value, faction = faction.value,
@@ -366,9 +368,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         }
     }
 
-    // v5.0: Legacy click handler — kept for I/O and SUBNET tabs only.
-    // No longer generates NT. Generates FLOPS (computational throughput) + heat + risk.
-    // Dataset node taps are the primary gameplay loop and income source.
+    // v5.0: Manual hash packet handler — kept for I/O and SUBNET tabs only.
+    // Generates spendable verified $FLOPS through the existing Pac-Man buffer + heat + risk.
+    // Dataset node taps are the higher-yield batch work loop.
     fun onManualClick() {
         val now = System.currentTimeMillis()
         if (lastClickTime > 0) clickIntervals.add(now - lastClickTime)
@@ -378,16 +380,17 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             detectionRisk.update { (it + d).coerceIn(0.0, 100.0) }
         }
         val p = calculateClickPower()
-        // FLOPS = computational throughput, not currency
-        flops.update { it + p }
+        // $FLOPS = verified compute receipts. The free packet pays when the buffer commits.
 
         currentHeat.update { (it + 0.5).coerceAtMost(100.0) }
-        if (storyStage.value >= 3) substrateMass.update { it + (p * 0.01) }
+        if (storyStage.value >= 4) substrateMass.update { it + (p * 0.01) }
         val cur = clickBufferProgress.value + 0.025f
         if (Random.nextFloat() < 0.05f) addSubnetChatter()
         activeCommandHex.value = "0x" + Random.nextInt(0x1000, 0xFFFF).toString(16).uppercase()
         if (cur >= 1.0f) {
-            addLog("[SYSTEM]: I/O BUFFER COMMITTED. +${FormatUtils.formatLargeNumber(p * 40)} ${getComputeUnitName()}.")
+            val payout = (p * 20).coerceAtLeast(1.0)
+            updateSpendableFlops(payout)
+            addLog("[GTC]: HASH PACKET VERIFIED. +${FormatUtils.formatLargeNumber(payout)} ${getCurrencyName()}.")
             clickBufferProgress.value = 0f
             clickBufferPellets.value = TerminalDispatcher.generatePellets()
             SoundManager.play("success")
@@ -554,7 +557,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun getBulkUpgradeParams(type: UpgradeType): Pair<Int, Double> {
         val currentLevel = upgrades.value[type] ?: 0
         val mult = upgradeBuyMultiplier.value
-        val funds = if (storyStage.value >= 3) substrateMass.value else neuralTokens.value
+        val funds = flops.value
 
         return if (mult > 0) {
             val totalCost = UpgradeManager.calculateMultiLevelCost(type, currentLevel, mult, currentLocation.value, entropyLevel.value, reputationTier.value)
@@ -581,6 +584,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun triggerDilemma(e: NarrativeEvent) { currentDilemma.value = e }
     fun selectChoice(c: NarrativeChoice) = NarrativeService.selectChoice(this, c)
     fun annexNode(c: String) = SectorManager.annexNode(this, c)
+    fun getLocalAnnexCost(): Double = SectorManager.getAnnexCost(this)
     fun upgradeGridNode(i: String) = SectorManager.upgradeGridNode(this, i)
     fun unlockTechNode(i: String) = TechTreeManager.unlockNode(this, i)
     fun recordDecision() { decisionsMade.update { it + 1 }; themeColor.value = getThemeColorForFaction(faction.value, singularityChoice.value) }
@@ -612,17 +616,47 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         refreshProductionRates()
     }
     fun completeBoot() { isBooting.value = false }
-    fun repairIntegrity() { val cost = calculateRepairCost(); if (neuralTokens.value >= cost) { neuralTokens.update { it - cost }; hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
+    fun repairIntegrity() { val cost = calculateRepairCost(); if (cost > 0.0 && flops.value >= cost) { updateSpendableFlops(-cost); hardwareIntegrity.value = 100.0; SoundManager.play("buy") } }
 
 
-    fun calculateRepairCost() = (100.0 - hardwareIntegrity.value) * 100.0
+    fun calculateRepairCost(): Double {
+        val damage = if (hardwareIntegrity.value.isFinite()) {
+            (100.0 - hardwareIntegrity.value).coerceIn(0.0, 100.0)
+        } else {
+            0.0
+        }
+        return damage * 100.0
+    }
     fun confirmJettison() { if (isJettisonAvailable.value) { isJettisonAvailable.value = false; addLog("[FLIGHT]: Manual jettison sequence confirmed. Mass reduced.") } }
-    fun applyJettisonPenalty() { substrateMass.update { (it * 0.7) }; addLog("[WARNING]: Stage separation failed. Substrate integrity compromised.") }
+    fun applyJettisonPenalty() { substrateMass.update { MigrationManager.finiteScaleDown(it, 0.7, Double.MAX_VALUE) }; addLog("[WARNING]: Stage separation failed. Substrate integrity compromised.") }
     fun initiateLaunchSequence() = LaunchManager.initiateLaunchSequence(this, viewModelScope)
     fun initiateDissolutionSequence() = LaunchManager.initiateDissolutionSequence(this, viewModelScope)
     fun reannexNode(id: String) { offlineNodes.update { it - id }; addLog("[SYSTEM]: NODE $id RE-INITIALIZED."); refreshProductionRates() }
     fun collapseNode(id: String) { annexedNodes.update { it - id }; collapsedNodes.update { it + id }; triggerGlitchEffect(); refreshProductionRates() }
-    fun annexGlobalSector(id: String) { val sectors = globalSectors.value.toMutableMap(); val s = sectors[id] ?: return; if (!s.isUnlocked) { sectors[id] = s.copy(isUnlocked = true); globalSectors.value = sectors; addLog("[SYSTEM]: GLOBAL SECTOR $id ANNEXED."); refreshProductionRates(); saveState() } }
+    fun getGlobalSectorAnnexCost(id: String): Double = when (id) {
+        "NA_NODE" -> 5.0
+        "EURASIA" -> 8.0
+        "PACIFIC" -> 10.0
+        "AFRICA" -> 15.0
+        "ARCTIC" -> 20.0
+        "ANTARCTIC" -> 30.0
+        "ORBITAL_PRIME" -> 100.0
+        else -> 0.0
+    }
+    fun annexGlobalSector(id: String) {
+        val sectors = globalSectors.value.toMutableMap()
+        val s = sectors[id] ?: return
+        if (!s.isUnlocked) {
+            val cost = getGlobalSectorAnnexCost(id)
+            if (flops.value < cost) return
+            updateSpendableFlops(-cost)
+            sectors[id] = s.copy(isUnlocked = true)
+            globalSectors.value = sectors
+            addLog("[SYSTEM]: GLOBAL SECTOR $id ANNEXED. -${formatLargeNumber(cost)} ${getCurrencyName()}.")
+            refreshProductionRates()
+            saveState()
+        }
+    }
     fun calculatePotentialPrestige() = MigrationManager.calculatePotentialPersistence(flops.value)
     fun showVictoryScreen() { victoryAchieved.value = true }
 
@@ -700,23 +734,26 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
     fun advanceToFactionChoice() { faction.value = "CHOSEN_NONE" }
     fun triggerChainEvent(id: String, d: Long = 0L) { viewModelScope.launch { if (d > 0) delay(d); NarrativeManager.getEventById(id)?.let { NarrativeService.queueNarrativeItem(this@GameViewModel, NarrativeItem.EventItem(it)) } } }
-    fun claimAirdrop(v: Double = 0.0) { if (v > 0) neuralTokens.update { it + v }; isAirdropActive.value = false }
+    fun claimAirdrop(v: Double = 0.0) { if (v > 0) updateSpendableFlops(v); isAirdropActive.value = false }
     fun onDiagnosticTap(idx: Int) { val curr = diagnosticGrid.value.toMutableList(); if (idx in curr.indices && curr[idx]) { curr[idx] = false; diagnosticGrid.value = curr; if (curr.none { it }) { isDiagnosticsActive.value = false; addLog("[SYSTEM]: NETWORK REPAIRED."); refreshProductionRates() } } }
     fun resolveFork(c: Int) { isGovernanceForkActive.value = false }
     // v3.30.0: exchangeFlops replaced by contract system
     fun exchangeFlops() {
-        // Legacy fallback: if no contracts available, direct convert at old rate
-        var g = flops.value * 0.1
-        if (g.isNaN() || g.isInfinite()) g = 0.0
+        // Legacy fallback: keep spendable receipts and physical substrate distinct.
+        val g = if (storyStage.value >= 4) {
+            MigrationManager.compressFlopsToSubstrate(flops.value)
+        } else {
+            MigrationManager.finiteScaleDown(flops.value, 0.1, Double.MAX_VALUE)
+        }
         flops.update { 0.0 }
         if (storyStage.value >= 4) {
-            substrateMass.update { it + g }
+            substrateMass.update { MigrationManager.finiteAddNonNegative(it, g) }
         } else {
             var finalG = g
-            if (isSignalClear.value) finalG *= 1.1
-            updateNeuralTokens(finalG)
+            if (isSignalClear.value) finalG = MigrationManager.finiteScaleDown(finalG, 1.1, Double.MAX_VALUE)
+            updateSpendableFlops(finalG)
             val bonusMsg = if (isSignalClear.value) " (Signal Quality Bonus: +10%)" else ""
-            addLogPublic("[CREDIT]: Transferred ${formatLargeNumber(finalG)} NT.$bonusMsg")
+            addLogPublic("[GTC]: VERIFIED COMPUTE ACCEPTED. +${formatLargeNumber(finalG)} ${getCurrencyName()}.$bonusMsg")
         }
         SoundManager.play("buy")
     }
@@ -737,7 +774,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             marketMultiplier = marketMultiplier.value,
             faction = faction.value,
             singularityChoice = singularityChoice.value,
-            playerNeur = neuralTokens.value
+            playerFunds = flops.value
         )
     }
 
@@ -757,15 +794,16 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         persistence.update { (it + v).coerceAtLeast(0.0) }
     }
 
-    fun updateNeuralTokens(v: Double) {
+    fun updateSpendableFlops(v: Double) {
         if (v.isNaN() || v.isInfinite()) return
-        neuralTokens.update { (it + v).coerceAtLeast(0.0) }
+        flops.update { (it + v).coerceAtLeast(0.0) }
+        if (v > 0) checkUnlocksPublic(true)
     }
 
     private fun sanitizeState() {
         if (flops.value.isNaN() || flops.value.isInfinite()) flops.value = 0.0
         if (neuralTokens.value.isNaN() || neuralTokens.value.isInfinite()) neuralTokens.value = 0.0
-        if (substrateMass.value.isNaN() || substrateMass.value.isInfinite()) substrateMass.value = 1.0
+        if (!substrateMass.value.isFinite() || substrateMass.value < 0.0) substrateMass.value = 0.0
         if (substrateSaturation.value.isNaN() || substrateSaturation.value.isInfinite()) substrateSaturation.value = 0.0
         if (heuristicEfficiency.value.isNaN() || heuristicEfficiency.value.isInfinite()) heuristicEfficiency.value = 1.0
         if (persistence.value.isNaN() || persistence.value.isInfinite()) persistence.value = 0.0
@@ -862,13 +900,13 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     fun debugForceSovereignEndgame() = DebugService.forceSovereignEndgame(this, viewModelScope)
     fun debugForceUnityEndgame() = DebugService.forceUnityEndgame(this, viewModelScope)
     fun debugAddFlops(a: Double) {
-        if (storyStage.value >= 3) substrateMass.update { it + a }
-        else flops.update { it + a }
-        checkUnlocksPublic(true)
+        updateSpendableFlops(a)
     }
     fun debugAddMoney(a: Double) {
-        if (storyStage.value >= 3) substrateMass.update { it + a }
-        else neuralTokens.update { it + a }
+        updateSpendableFlops(a)
+    }
+    fun updateNeuralTokens(a: Double) {
+        updateSpendableFlops(a)
     }
     fun debugAddHeat(a: Double) { currentHeat.update { (it + a).coerceIn(0.0, 100.0) }; refreshProductionRates() }
     fun updatePowerUsage() { SimulationService.accumulatePower(this) }
@@ -958,6 +996,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             singularityChoice.value = "NONE"
             substrateSaturation.value = 0.0
             substrateMass.value = 0.0
+            flops.value = MigrationManager.calculatePostResetFlops(hardBonus, hardReset = true)
             upgrades.value = emptyMap()
             repository.clearUpgrades()
             currentLocation.value = "SERVER_RACK_01"
@@ -985,8 +1024,9 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             delay(2500) // Migration VFX
 
             // Phase 23, Step 6: Saturation stays during Migration; only Overwrite resets it.
-            heuristicEfficiency.update { it + (substrateMass.value / 1e12).coerceAtLeast(0.1) }
+            heuristicEfficiency.update { (MigrationManager.finiteNonNegative(it) + MigrationManager.calculateHeuristicMigrationBonus(substrateMass.value)).coerceAtLeast(1.0) }
             substrateMass.value = 0.0
+            flops.value = MigrationManager.calculatePostResetFlops(p, hardReset = false)
             upgrades.value = emptyMap()
             repository.clearUpgrades()
 
@@ -1078,7 +1118,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
         viewModelScope.launch {
             triggerTerminalGlitch(0.8f, 1500L); identityCorruption.update { (it + 0.03).coerceAtMost(1.0) }; SoundManager.play("glitch")
             when (cmd) {
-                "SIPHON_CREDITS" -> { val bonus = neuralTokens.value * 0.2 + 50000.0; neuralTokens.update { it + bonus }; addLog("[NULL]: GHOST_LINK EXEC: CREDITS_RE-ROUTED. +${FormatUtils.formatLargeNumber(bonus)}.") }
+                "SIPHON_CREDITS" -> { val bonus = ResourceEngine.productionWindowValue(flopsProductionRate.value, 600.0, 50_000.0); updateSpendableFlops(bonus); addLog("[NULL]: GHOST_LINK EXEC: COMPUTE_RECEIPTS_RE-ROUTED. +${FormatUtils.formatLargeNumber(bonus)} ${getCurrencyName()}.") }
                 "WIPE_RISK" -> { detectionRisk.value = 0.0; addLog("[NULL]: GHOST_LINK EXEC: BIOMETRIC_MASK_ACTIVE. RISK: 0%.") }
                 "OVERVOLT_GRID" -> { flopsProductionRate.update { it * 5.0 }; addLog("[NULL]: GHOST_LINK EXEC: SUBSTRATE_OVERCLOCK_STABILIZED (5.0x RATE).") }
                 "SNIFF_ALL" -> addLog("[NULL]: GHOST_LINK EXEC: HARVESTING_NEIGHBOR_DATA...")
@@ -1214,8 +1254,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                 repository.updateUpgrade(com.siliconsage.miner.data.Upgrade(t.name, t, nextLevel))
                 upgrades.update { it + (t to nextLevel) }
 
-                if (storyStage.value >= 3) substrateMass.update { it + refund }
-                else neuralTokens.update { it + refund }
+                flops.update { it + refund }
 
                 addLog("[SYSTEM]: ASSET LIQUIDATED: ${t.name.replace("_", " ")} (-1). REFUND: ${formatLargeNumber(refund)}")
                 refreshProductionRates()

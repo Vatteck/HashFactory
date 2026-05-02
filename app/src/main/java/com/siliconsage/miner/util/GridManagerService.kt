@@ -18,11 +18,11 @@ object GridManagerService {
         val powerSurgePercentage = 0.20 // 20% of total grid capacity per node
         val powerBurst = currentMaxPower * powerSurgePercentage
         
-        val canAfford = vm.neuralTokens.value >= cost
+        val canAfford = vm.flops.value >= cost
         val hasPowerHeadroom = (vm.activePowerUsage.value + powerBurst) <= currentMaxPower
 
         if (canAfford && hasPowerHeadroom) {
-            vm.neuralTokens.update { it - cost }
+            vm.updateSpendableFlops(-cost)
             vm.currentHeat.update { (it + 10.0).coerceAtMost(100.0) } // Significant heat spike
             vm.activePowerUsage.update { it + powerBurst }
             vm.nodesUnderSiege.update { it - id }
@@ -51,8 +51,8 @@ object GridManagerService {
 
     fun redactNode(vm: GameViewModel, id: String) {
         val cost = 250.0
-        if (vm.annexedNodes.value.contains(id) && vm.neuralTokens.value >= cost) {
-            vm.neuralTokens.update { it - cost }
+        if (vm.annexedNodes.value.contains(id) && vm.flops.value >= cost) {
+            vm.updateSpendableFlops(-cost)
             vm.shadowRelays.update { it + id }
             vm.nodesUnderSiege.update { it - id }
 
@@ -60,7 +60,6 @@ object GridManagerService {
                 vm.isRaidActive.value = false
             }
 
-            vm.substrateMass.update { it + 5.0 }
             vm.decisionsMade.update { it + 1 }
             
             vm.addLogPublic("[SYSTEM]: TERMINAL REDACTION SUCCESSFUL. NODE $id DEREFERENCED.")

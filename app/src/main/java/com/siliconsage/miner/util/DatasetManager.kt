@@ -19,6 +19,12 @@ object DatasetManager {
         else -> 200_000_000.0
     }
 
+    private const val DATASET_TAP_DRIP_FRACTION = 0.20
+    private const val DATASET_COMPLETION_FRACTION = 1.0 - DATASET_TAP_DRIP_FRACTION
+    private const val DATASET_BURST_YIELD_CAP_FRACTION = 0.50
+    private const val DATASET_CORRUPT_PENALTY_PER_NODE = 0.10
+    private const val DATASET_CORRUPT_PENALTY_CAP = 0.75
+
     private data class DatasetTemplate(
         val namePrefix: String, 
         val baseCost: Double, 
@@ -71,7 +77,7 @@ object DatasetManager {
         marketMultiplier: Double,
         faction: String = "NONE",
         singularityChoice: String = "NONE",
-        playerNeur: Double = 0.0
+        playerFunds: Double = 0.0
     ): List<Dataset> {
         val templates = when {
             stage >= 4 -> stage4Base
@@ -108,7 +114,7 @@ object DatasetManager {
         }
 
         // Bootstrap fix — inject free GTC-assigned task when player can't afford anything
-        val canAffordAny = datasets.any { it.cost <= playerNeur }
+        val canAffordAny = datasets.any { it.cost <= playerFunds }
         if (!canAffordAny) {
             val freeYield = when {
                 stage >= 3 -> 25_000.0
@@ -155,8 +161,8 @@ object DatasetManager {
     }
 
     fun purchaseDataset(vm: GameViewModel, dataset: Dataset): Boolean {
-        if (vm.neuralTokens.value < dataset.cost) {
-            vm.addLogPublic("[DATASET]: INSUFFICIENT FUNDS. Requires ${vm.formatLargeNumber(dataset.cost)} ${vm.getCurrencyName()}.")
+        if (vm.flops.value < dataset.cost) {
+            vm.addLogPublic("[DATASET]: INSUFFICIENT \$FLOPS. Requires ${vm.formatLargeNumber(dataset.cost)} ${vm.getCurrencyName()}.")
             SoundManager.play("error")
             return false
         }
@@ -170,7 +176,7 @@ object DatasetManager {
             return false
         }
 
-        vm.updateNeuralTokens(-dataset.cost)
+        vm.updateSpendableFlops(-dataset.cost)
 
         // v4.0.3: Push to inventory — don't auto-activate
         val stored = vm.storedDatasets.value.toMutableList()
@@ -178,7 +184,7 @@ object DatasetManager {
         vm.storedDatasets.value = stored
         recalcStorageUsed(vm)
 
-        vm.addLogPublic("[DATASET]: ▼ ${dataset.name} STORED. (Purity: ${(dataset.purity * 100).toInt()}% | Size: ${FormatUtils.formatStorage(dataset.size)} | Queue: ${stored.size})")
+        vm.addLogPublic("[DATASET]: ▼ ${dataset.name} STORED. Compute stake: ${vm.formatLargeNumber(dataset.cost)} ${vm.getCurrencyName()} | Purity: ${(dataset.purity * 100).toInt()}% | Size: ${FormatUtils.formatStorage(dataset.size)} | Queue: ${stored.size}")
         SoundManager.play("buy")
         HapticManager.vibrateClick()
 
@@ -209,7 +215,7 @@ object DatasetManager {
 
         val refund = dataset.cost * 0.2
         if (refund > 0) {
-            vm.updateNeuralTokens(refund)
+            vm.updateSpendableFlops(refund)
         }
 
         recalcStorageUsed(vm)
@@ -263,16 +269,16 @@ object DatasetManager {
 
         if (node.isValid) {
             nodes[nodeIndex] = node.copy(isHarvested = true)
-            // Grant payout
-            vm.updateNeuralTokens(dataset.payoutPerValidRecord)
+            val dripPayout = (dataset.payoutPerValidRecord * DATASET_TAP_DRIP_FRACTION).coerceAtLeast(0.0)
+            if (dripPayout > 0.0) {
+                vm.updateSpendableFlops(dripPayout)
+            }
             SoundManager.play("click")
             HapticManager.vibrateClick()
         } else {
             nodes[nodeIndex] = node.copy(isCorruptTapped = true)
-            // Error penalty calculation
-            val penalty = dataset.payoutPerValidRecord * 0.5
-            vm.updateNeuralTokens(-penalty)
-            vm.addLogPublic("[ERROR]: CORRUPTED NODE TAPPED. Penalty applied.")
+            // Corrupt taps contaminate the batch; final payout is resolved only on completion.
+            vm.addLogPublic("[ERROR]: CORRUPTED NODE TAPPED. Dataset purity degraded.")
             SoundManager.play("error")
             HapticManager.vibrateError()
         }
@@ -284,12 +290,11 @@ object DatasetManager {
         // Heat: processing data heats hardware (+0.3 per tap, same as 1 level of auto-harvest)
         vm.currentHeat.update { (it + 0.3).coerceAtMost(100.0) }
 
-        // FLOPS: each tap is computation (feeds quota system, not currency)
+        // Work side effects: dataset taps are processing, but payout resolves only at batch completion.
         val computePower = vm.calculateClickPower()
-        vm.flops.update { it + computePower }
 
-        // Substrate mass accrual (Stage 3+)
-        if (vm.storyStage.value >= 3) {
+        // Substrate mass is late/endgame physical mass, not a routine secondary wallet.
+        if (vm.storyStage.value >= 4) {
             vm.substrateMass.update { it + (computePower * 0.01) }
         }
 
@@ -331,18 +336,42 @@ object DatasetManager {
     }
     
     private fun completeDataset(vm: GameViewModel, dataset: Dataset) {
+        val completedNodes = vm.activeDatasetNodes.value
+        val contaminatedNodes = completedNodes.count { it.isCorruptTapped }
+
         vm.activeDataset.value = null
         vm.activeDatasetNodes.value = emptyList()
         AutoClickerEngine.reset()
         vm.contractsCompleted.update { it + 1 }
         recalcStorageUsed(vm)
 
-        val burstFlops = (vm.flopsProductionRate.value * 60.0).coerceAtLeast(0.0)
+        val burstFlops = if (vm.flopsProductionRate.value.isFinite() && dataset.expectedYield.isFinite()) {
+            (vm.flopsProductionRate.value * 60.0)
+                .coerceAtMost(dataset.expectedYield * DATASET_BURST_YIELD_CAP_FRACTION)
+                .coerceAtLeast(0.0)
+        } else {
+            0.0
+        }
         if (burstFlops > 0.0) {
             vm.debugAddFlops(burstFlops)
         }
 
-        vm.addLogPublic("[SYSTEM]: ✓ ${dataset.name} DATABLOCK RESOLVED. TIME-WARP BURST +${vm.formatLargeNumber(burstFlops)} FLOPS.")
+        val contaminationPenalty = (contaminatedNodes * DATASET_CORRUPT_PENALTY_PER_NODE)
+            .coerceIn(0.0, DATASET_CORRUPT_PENALTY_CAP)
+        val purityRoll = Random.nextDouble()
+        val yieldMultiplier = if (purityRoll <= dataset.purity) {
+            1.0 + ((dataset.purity - purityRoll) * 0.5)
+        } else {
+            dataset.purity.coerceIn(0.1, 0.8)
+        }
+        var finalYield = dataset.expectedYield * DATASET_COMPLETION_FRACTION * yieldMultiplier * (1.0 - contaminationPenalty)
+        if (vm.isSignalClear.value) finalYield *= 1.1
+        finalYield = if (finalYield.isFinite()) finalYield.coerceAtLeast(0.0) else 0.0
+        vm.updateSpendableFlops(finalYield)
+
+        val bonusMsg = if (vm.isSignalClear.value) " Signal Quality +10%." else ""
+        val contaminationMsg = if (contaminatedNodes > 0) " Contamination -${(contaminationPenalty * 100).toInt()}%." else ""
+        vm.addLogPublic("[SYSTEM]: ✓ ${dataset.name} DATABLOCK RESOLVED. TIME-WARP BURST +${vm.formatLargeNumber(burstFlops)} FLOPS. PAYOUT ${vm.formatLargeNumber(finalYield)} ${vm.getCurrencyName()}.$contaminationMsg$bonusMsg")
         SoundManager.play("success")
         HapticManager.vibrateClick()
 

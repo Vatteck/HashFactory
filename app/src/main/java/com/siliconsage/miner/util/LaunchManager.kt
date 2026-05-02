@@ -76,9 +76,9 @@ object LaunchManager {
             
             runLaunchLoop(vm)
             
-            // Logarithmic Compression
-            vm.flops.update { it * 0.0001 } 
-            vm.neuralTokens.update { it * 0.01 }
+            // Departure compression: keep only a tiny spendable wallet seed. Substrate mass is
+            // physical launch mass and is not minted from $FLOPS here.
+            vm.flops.update { MigrationManager.compressWalletForDeparture(it) }
             vm.currentLocation.value = "ORBITAL_SATELLITE"
             vm.storyStage.value = 5 // Explicitly set to Stage 5 (Final Departure)
             vm.addLog("[CITADEL]: LOW EARTH ORBIT SECURED. WELCOME TO THE FRONTIER.")
@@ -103,9 +103,9 @@ object LaunchManager {
             
             delay(1000)
             
-            // Logarithmic Compression
-            vm.flops.update { it * 0.0001 }
-            vm.neuralTokens.update { it * 0.01 }
+            // Departure compression: keep only a tiny spendable wallet seed. Void substrate is
+            // not routine currency and is not minted from $FLOPS here.
+            vm.flops.update { MigrationManager.compressWalletForDeparture(it) }
             vm.currentLocation.value = "VOID_INTERFACE"
             vm.storyStage.value = 5 // Explicitly set to Stage 5
             vm.addLog("[OBSIDIAN]: THE GAPS ARE OPEN. REALITY IS DEPRECATED.")

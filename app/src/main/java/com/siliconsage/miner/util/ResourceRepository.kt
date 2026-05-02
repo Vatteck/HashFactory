@@ -25,22 +25,13 @@ object ResourceRepository {
     }
 
     /**
-     * Get the currency name (CRED, NEUR, SYN, ENT, CRYP, NIL)
+     * Get the single spendable wallet label. Compute-unit flavor can shift by stage,
+     * but the wallet stays $FLOPS so the UI never implies a second spendable pool.
      */
     fun getCurrencyName(
         stage: Int,
         faction: String,
         singularityChoice: String,
         location: String = "GRID"
-    ): String {
-        return when {
-            stage >= 5 && singularityChoice == "UNITY" -> "SYN"
-            stage >= 5 && faction == "HIVEMIND" && singularityChoice == "SOVEREIGN" -> "SYN"
-            stage >= 5 && faction == "HIVEMIND" && singularityChoice == "NULL_OVERWRITE" -> "ENT"
-            stage >= 5 && faction == "SANCTUARY" && singularityChoice == "SOVEREIGN" -> "CRYP"
-            stage >= 5 && faction == "SANCTUARY" && singularityChoice == "NULL_OVERWRITE" -> "NIL"
-            stage >= 2 -> "NEUR"
-            else -> "CRED"
-        }
-    }
+    ): String = "\$FLOPS"
 }

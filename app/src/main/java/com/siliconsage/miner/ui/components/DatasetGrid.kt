@@ -208,7 +208,7 @@ fun DatasetGrid(viewModel: GameViewModel, primaryColor: Color) {
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    text = "YIELD: ≈${FormatUtils.formatLargeNumber(ds.expectedYield)} NT",
+                    text = "OUTPUT: ≈${FormatUtils.formatLargeNumber(ds.expectedYield)} \$FLOPS",
                     color = NeonGreen.copy(alpha = 0.7f),
                     fontSize = 9.sp,
                     fontFamily = FontFamily.Monospace

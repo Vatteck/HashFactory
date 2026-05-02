@@ -24,9 +24,10 @@ object BillingService {
                 val gross = vm.billingPeriodAccumulator
                 val gen = vm.billingPeriodGenAccumulator
                 val net = (gross - gen).coerceAtLeast(0.0)
+                val surplus = (gen - gross).coerceAtLeast(0.0)
                 vm.billingPeriodAccumulator = 0.0
                 vm.billingPeriodGenAccumulator = 0.0
-                if (net > 0.0) processPowerCharge(vm, net) else if (gen > 0.0) processPowerSurplus(vm, gen)
+                if (net > 0.0) processPowerCharge(vm, net) else if (surplus > 0.0) processPowerSurplus(vm, surplus)
             }
         }
 
@@ -45,9 +46,10 @@ object BillingService {
     private fun processPowerCharge(vm: GameViewModel, net: Double) {
         val mult = when (vm.missedBillingPeriods) { 0 -> 1.0; 1 -> 2.0; 2 -> 3.0; else -> 5.0 }
         val due = net * vm.energyPriceMultiplier.value * mult
-        if (vm.neuralTokens.value >= due) {
-            vm.neuralTokens.update { it - due }; vm.powerBill.value = 0.0; vm.missedBillingPeriods = 0
-            vm.powerBillHistory.add(0, true to due)
+        val totalDue = (vm.powerBill.value + due).takeIf { it.isFinite() } ?: Double.MAX_VALUE
+        if (vm.flops.value >= totalDue) {
+            vm.updateSpendableFlops(-totalDue); vm.powerBill.value = 0.0; vm.missedBillingPeriods = 0
+            vm.powerBillHistory.add(0, true to totalDue)
             if (vm.powerBillHistory.size > 15) vm.powerBillHistory.removeAt(15)
             flash(vm, true, "SETTLED")
         } else {
@@ -63,8 +65,8 @@ object BillingService {
         val cost = vm.waterBillAccumulator * rate
         vm.waterBillAccumulator = 0.0
         if (cost <= 0.0) { flash(vm, false, "SETTLED"); return }
-        if (vm.neuralTokens.value >= cost) {
-            vm.neuralTokens.update { it - cost }
+        if (vm.flops.value >= cost) {
+            vm.updateSpendableFlops(-cost)
             vm.waterBillHistory.add(0, true to cost)
             if (vm.waterBillHistory.size > 15) vm.waterBillHistory.removeAt(15)
             flash(vm, false, "SETTLED")
@@ -76,10 +78,15 @@ object BillingService {
         }
     }
 
-    private fun processPowerSurplus(vm: GameViewModel, gen: Double) {
-        val credit = gen * vm.energyPriceMultiplier.value * 0.3
-        vm.neuralTokens.update { it + credit }; vm.powerBill.value = 0.0; vm.missedBillingPeriods = 0
-        vm.powerBillHistory.add(0, true to -credit)
+    private fun processPowerSurplus(vm: GameViewModel, surplus: Double) {
+        val credit = surplus * vm.energyPriceMultiplier.value * 0.3
+        val safeCredit = if (credit.isFinite()) credit.coerceAtLeast(0.0) else 0.0
+        val remainingBill = (vm.powerBill.value - safeCredit).coerceAtLeast(0.0)
+        val walletCredit = (safeCredit - vm.powerBill.value).coerceAtLeast(0.0)
+        vm.powerBill.value = remainingBill
+        if (remainingBill <= 0.0) vm.missedBillingPeriods = 0
+        if (walletCredit > 0.0) vm.updateSpendableFlops(walletCredit)
+        vm.powerBillHistory.add(0, true to -safeCredit)
         if (vm.powerBillHistory.size > 15) vm.powerBillHistory.removeAt(15)
         flash(vm, true, "CREDIT")
     }

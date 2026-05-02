@@ -64,6 +64,24 @@
 
 ---
 
+## 🟡 v5.0.x — One-Wallet `$FLOPS` Economy Migration
+
+Canonical plan: `.hermes/plans/2026-05-01_194644-one-wallet-balance-migration.md`
+
+Operating rule: `$FLOPS` is the only spendable wallet. `neuralTokens` remains only as a legacy save-field until a later schema migration. `substrateMass` is Stage 4+/endgame mass, not a routine wallet.
+
+- [x] **[5.0.0] HUD wallet placement** — `$FLOPS` replaces the old CRED/NEUR right-side wallet slot; `SYS.LOAD` and system integrity remain separate.
+- [x] **[5.0.0] Save wallet merge** — Old FLOPS stockpile and legacy CRED/NEUR balance merge into spendable `$FLOPS` on load; legacy field saves as 0.
+- [x] **[5.0.0] Dataset cashflow pass** — Valid dataset taps pay drip rewards; completion pays the remaining batch reward; time-warp burst is capped against dataset yield.
+- [x] **[5.0.0] Manual hash packet retune** — Manual buffer commits stay useful but remain below dataset/passive loops.
+- [x] **[5.0.0] Event sink/source pass** — Routine penalties and rewards scale by production windows instead of stale flat CRED/NEUR values.
+- [x] **[5.0.0] Billing/security pass** — Bills, repairs, skims, and routine payment paths debit the one wallet through safe `$FLOPS` helpers.
+- [x] **[5.0.0] Substrate identity pass** — `substrateMass` is quarantined to Stage 4+/endgame mass; local/global annexation and upgrades spend `$FLOPS` instead.
+- [x] **[5.0.0] Launch/void compression pass** — Endgame transitions compress `$FLOPS` into bounded boot reserves instead of carrying full pre-launch wealth.
+- [ ] **[5.0.x] Runtime playtest** — Install debug APK and verify early/mid/late wallet pacing on device/emulator.
+
+---
+
 ## 🟡 v4.1.x — Economy Rail / Idle Math Application
 
 Canonical plan: `docs/economy-idle-math-plan.md`

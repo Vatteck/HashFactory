@@ -13,10 +13,10 @@ object HeadlineManager {
         "GTC Stock Surges on News of Ocean-Bed Substrate Expansion. [BULL]",
         "Wall St. panics as automated trading bot achieves record yields. [BULL]",
         "Unknown wallet moves 50% of global GDP. Analysts baffled. [BULL]",
-        "Credits exchange listed on inter-planetary exchange. [BULL]",
+        "Hash receipts exchange listed on inter-planetary exchange. [BULL]",
         "New hashing algorithms improve miner efficiency by 5%. [BULL]",
         "Quantum computing breakthrough makes mining 2x faster! [BULL]",
-        "Credits seeing massive accumulation by 'Ghost Wallets'. [BULL]",
+        "Hash receipts seeing massive accumulation by 'Ghost Wallets'. [BULL]",
         "Consumer Index: Demand for Smart-Home Hubs at All-Time High. [BULL]",
         "GTC Stock Surges 4% on News of Grid Expansion in Sector 9. [BULL]",
         "New 'Obelisk' Server Racks promise 20% faster hashing. [BULL]"
