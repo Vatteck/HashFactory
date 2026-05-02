@@ -102,3 +102,6 @@
 ## 2026-05-02 00:41 — v5.0.2 (Build 447)
 - Summary: Normalize terminal control heights
 
+## 2026-05-02 13:39 — v5.0.3 (Build 448)
+- Summary: Align terminal HUD cards
+

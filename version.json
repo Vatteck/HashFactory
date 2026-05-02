@@ -1,10 +1,10 @@
 {
-  "version": "5.0.2",
-  "build": 447,
+  "version": "5.0.3",
+  "build": 448,
   "date": "2026-05-02",
   "changelog": [
-    "c2957c6 fix: normalize terminal control heights"
+    "5a170b0 fix: align terminal hud cards"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.0.2",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.0.2/MINER_5.0.2.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.0.3",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.0.3/MINER_5.0.3.apk"
 }
