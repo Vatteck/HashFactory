@@ -59,6 +59,7 @@ private fun CorporateWorkQueue(primaryColor: Color) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(72.dp)
             .border(1.dp, primaryColor.copy(alpha = 0.35f), RoundedCornerShape(4.dp))
             .padding(horizontal = 10.dp, vertical = 7.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -85,7 +86,7 @@ private fun DatasetBrowseButton(viewModel: GameViewModel, primaryColor: Color) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp)
+            .height(72.dp)
             .border(1.dp, primaryColor, RoundedCornerShape(4.dp))
             .clickable {
                 viewModel.toggleDatasetPicker()

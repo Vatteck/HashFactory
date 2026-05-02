@@ -261,7 +261,12 @@ fun RepairSection(integrity: Double, cost: Double, color: Color, storyStage: Int
     Button(
         onClick = onRepair,
         interactionSource = interactionSource,
-        modifier = Modifier.fillMaxWidth().graphicsLayer { scaleX = scale; scaleY = scale }.background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp)).border(BorderStroke(1.dp, if (integrity < 50) com.siliconsage.miner.ui.theme.ErrorRed else color), RoundedCornerShape(4.dp)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+            .border(BorderStroke(1.dp, if (integrity < 50) com.siliconsage.miner.ui.theme.ErrorRed else color), RoundedCornerShape(4.dp)),
         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = if (integrity < 50) com.siliconsage.miner.ui.theme.ErrorRed else color),
         shape = RoundedCornerShape(4.dp)
     ) {
