@@ -141,7 +141,7 @@ TODAY=$(date +%Y-%m-%d)
 # Auto-changelog from git log since last tag
 LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 if [ -n "$LAST_TAG" ]; then
-    AUTO_LOG=$(git log "${LAST_TAG}..HEAD" --oneline 2>/dev/null | head -10 | sed 's/"/\\"/g' | awk '{printf "    \"%s\",\n", $0}' | sed '$ s/,$//')
+    AUTO_LOG=$(git log --max-count=10 "${LAST_TAG}..HEAD" --oneline 2>/dev/null | sed 's/"/\\"/g' | awk '{printf "    \"%s\",\n", $0}' | sed '$ s/,$//')
 else
     AUTO_LOG="    \"${SUMMARY:-Initial release}\""
 fi
