@@ -99,3 +99,6 @@
 ## 2026-05-02 00:14 — v5.0.1 (Build 446)
 - Summary: Hide DATAMINER until post-airgap contract access
 
+## 2026-05-02 00:41 — v5.0.2 (Build 447)
+- Summary: Normalize terminal control heights
+

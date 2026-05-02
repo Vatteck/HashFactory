@@ -1,11 +1,10 @@
 {
-  "version": "5.0.1",
-  "build": 446,
+  "version": "5.0.2",
+  "build": 447,
   "date": "2026-05-02",
   "changelog": [
-    "b4063d4 fix: unlock datasets after airgap bridge",
-    "7b783cb fix: restore manual compute buffer priority"
+    "c2957c6 fix: normalize terminal control heights"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.0.1",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.0.1/MINER_5.0.1.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.0.2",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.0.2/MINER_5.0.2.apk"
 }
