@@ -1,10 +1,12 @@
 {
-  "version": "5.1.0",
-  "build": 449,
-  "date": "2026-05-02",
+  "version": "5.2.0",
+  "build": 450,
+  "date": "2026-05-03",
   "changelog": [
-    "ae1202a feat: route production through assigned work"
+    "1229729 Merge pull request #5 from Vatteck/feat/quota-hash-buffer-alignment",
+    "a9c68ba fix: keep quota grace elapsed stable after overtime",
+    "2871867 feat: link quota to hash buffer completions"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.1.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.1.0/MINER_5.1.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.2.0",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.2.0/MINER_5.2.0.apk"
 }

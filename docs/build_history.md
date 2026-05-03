@@ -108,3 +108,6 @@
 ## 2026-05-02 18:29 — v5.1.0 (Build 449)
 - Summary: Assigned work production loop
 
+## 2026-05-03 00:29 — v5.2.0 (Build 450)
+- Summary: Quota-linked hash buffer loop
+
