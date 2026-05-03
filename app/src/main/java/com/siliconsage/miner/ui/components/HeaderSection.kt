@@ -93,6 +93,9 @@ fun HeaderSection(
     val flopsRateState = viewModel.totalEffectiveRate.collectAsState()
     val integrityState = viewModel.hardwareIntegrity.collectAsState()
     val securityLevel by viewModel.securityLevel.collectAsState()
+    val isQuotaActive by viewModel.isQuotaActive.collectAsState()
+    val shiftQuotaProgress by viewModel.shiftQuotaProgress.collectAsState()
+    val currentQuotaThreshold by viewModel.currentQuotaThreshold.collectAsState()
 
     val infiniteTransition = rememberInfiniteTransition(label = "kinetic_hud")
     val flickerAlphaState = infiniteTransition.animateFloat(0.9f, 1.0f, infiniteRepeatable(tween(800, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "voltage_droop")
@@ -282,9 +285,12 @@ fun HeaderSection(
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text(text = if (isBreachActive) "TIME_REDACTED" else "SHIFT REMAINING", color = if (isBreachActive) ErrorRed.copy(alpha = droopAlpha) else color.copy(alpha = 0.65f * droopAlpha), fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, letterSpacing = 0.5.sp, lineHeight = 7.sp)
                     Text(text = shiftTimeStr, color = (if (isBreachActive) ErrorRed else color).copy(alpha = 0.6f * droopAlpha), fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace, lineHeight = 11.sp)
+                    if (isQuotaActive) {
+                        Text(text = "QUOTA ${viewModel.formatLargeNumber(shiftQuotaProgress)}/${viewModel.formatLargeNumber(currentQuotaThreshold)} HASH", color = color.copy(alpha = 0.55f * droopAlpha), fontSize = 7.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, lineHeight = 7.sp, maxLines = 1, softWrap = false, overflow = TextOverflow.Clip)
+                    }
                 }
                 val signalStab = viewModel.signalStability.collectAsState().value
-                if (viewModel.isQuotaActive.collectAsState().value) {
+                if (isQuotaActive) {
                     val sColor = when { signalStab >= 1.0 -> color; signalStab >= 0.5 -> Color(0xFFFFCC00); else -> ErrorRed }
                     val sLabel = if (storyStage >= 2) "SYNC" else "SIG"
                     Surface(color = sColor.copy(alpha = 0.1f), border = BorderStroke(1.dp, sColor.copy(alpha = 0.4f)), shape = RoundedCornerShape(4.dp), modifier = Modifier.align(Alignment.CenterEnd).padding(top = 6.dp)) {
@@ -416,7 +422,7 @@ fun HeaderSection(
                     }
                 }
                 
-                if (viewModel.isQuotaActive.collectAsState().value) {
+                if (isQuotaActive) {
                     val billAccum = viewModel.billingAccumulatorFlow.collectAsState().value; val waterBill = viewModel.waterBillingFlow.collectAsState().value; val billFlash = viewModel.billingFlashState.collectAsState().value; val waterFlash = viewModel.waterFlashState.collectAsState().value; val balance = viewModel.flops.collectAsState().value; val billProg = viewModel.billingPeriodProgressFlow.collectAsState().value; val waterProg = viewModel.waterPeriodProgressFlow.collectAsState().value
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {

@@ -95,6 +95,7 @@ Operating rule: assigned GTC hash packets are the core work loop; DATAMINER is p
 - [x] **[5.1.x] Production-loop conversion plan** — Added `docs/plans/2026-05-02-production-loop-conversion.md` for replacing direct upgrade `$FLOPS/s` with assigned packet processing throughput while preserving idle automation.
 - [x] **[5.1.0] Assigned work production loop** — Added `ProductionLoopEngine`, routed wallet payouts through assigned hash packet completion, preserved substrate/entropy basis, and covered legacy parity with unit tests.
 - [x] **[5.1.0] Assigned queue HUD + language pass** — Added `ASSIGNED QUEUE` progress to the command buffer and aligned event/helper language to assigned-work-rate-scaled rewards.
+- [x] **[5.1.0] Quota/hash-buffer alignment** — Routed manual hash buffer commits and assigned packet completions through shared quota credit, documented stage-0 GTC shift targets, and covered quota stability/rollover edge cases in `QuotaEngineTest`.
 - [x] **[5.1.0] Production-loop verification** — `./gradlew :app:testDebugUnitTest`, `:app:compileDebugKotlin`, `:app:assembleDebug`, and `git diff --check` passed; no device runtime smoke claimed.
 - [ ] **[5.1.x] System load cleanup plan** — Decide whether this is part of production-loop conversion or a separate patch; keep heat/load/storage distinct.
 - [ ] **[5.1.x] DATAMINER sidecar balance plan** — Rebalance datasets as post-airgap opportunities, not better hashes.

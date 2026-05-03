@@ -1,14 +1,18 @@
 package com.siliconsage.miner.util
 
+import com.siliconsage.miner.domain.engine.QuotaEngine
 import com.siliconsage.miner.viewmodel.GameViewModel
-import kotlinx.coroutines.flow.update
 
 /**
- * ComputeFeverService — Signal stability, quota ratcheting, wage-docking, substrate static,
+ * ComputeFeverService — Signal stability, wage-docking, substrate static,
  * Cascade Desync, and Rack High.
  * Extracted from GameViewModel.processComputeFever().
  */
 object ComputeFeverService {
+
+    private const val USE_SHIFT_PROGRESS_STABILITY = true
+    private const val EARLY_SHIFT_GRACE_SECONDS = 60L
+    private const val EARLY_SHIFT_STABILITY_FLOOR = 0.7
 
     // Decay state (owned by service, not VM)
     private var signalDecayStartTime = 0L
@@ -57,7 +61,23 @@ object ComputeFeverService {
         }
 
         // Signal Stability with 5-Minute Adaptive Decay
-        val rawStability = (currentFlops / quota).coerceIn(0.0, 1.0)
+        val ratePressure = if (quota.isFinite() && quota > 0.0 && currentFlops.isFinite()) {
+            (currentFlops / quota).coerceIn(0.0, 1.0)
+        } else {
+            0.0
+        }
+        val rawStability = if (USE_SHIFT_PROGRESS_STABILITY) {
+            QuotaEngine.calculateSignalStability(
+                quotaProgress = vm.shiftQuotaProgress.value,
+                quotaTarget = quota,
+                ratePressure = ratePressure,
+                elapsedShiftSeconds = QuotaEngine.elapsedShiftSeconds(vm.shiftTimeRemaining.value),
+                earlyGraceSeconds = EARLY_SHIFT_GRACE_SECONDS,
+                earlyGraceFloor = EARLY_SHIFT_STABILITY_FLOOR
+            )
+        } else {
+            ratePressure
+        }
 
         if (rawStability < lastStabilityBase && signalDecayStartTime == 0L) {
             signalDecayStartTime = now
@@ -102,9 +122,6 @@ object ComputeFeverService {
         // v3.16.0: Cascade Desync
         processCascadeDesync(vm, stability, now)
 
-        // Quota Ratcheting
-        processQuotaRatchet(vm, currentFlops)
-
         // v3.16.0: Rack High
         processRackHigh(vm, now)
     }
@@ -130,60 +147,6 @@ object ComputeFeverService {
         }
     }
 
-    private fun processQuotaRatchet(vm: GameViewModel, currentFlops: Double) {
-        val nextTarget = when (vm.storyStage.value) {
-            0 -> when {
-                currentFlops < 10.0 -> 10.0
-                currentFlops < 50.0 -> 50.0
-                else -> 200.0
-            }
-            1 -> 15000.0
-            2 -> 500000.0
-            3 -> 10_000_000.0
-            else -> 0.0
-        }
-
-        // Balanced Quota Ratchet (20% Potential or 1.5x current)
-        if (nextTarget > vm.currentQuotaThreshold.value) {
-            val floor = vm.currentQuotaThreshold.value * 1.5
-            val ceiling = nextTarget * 0.20
-            val potentialThreshold = ceiling.coerceAtLeast(floor)
-
-            // Ghost Bar Progress
-            val pProgress = if (currentFlops > floor) {
-                ((currentFlops - floor) / (potentialThreshold - floor)).toFloat().coerceIn(0f, 1f)
-            } else 0f
-            vm.potentialProgress.update { pProgress }
-
-            if (currentFlops >= potentialThreshold) {
-                vm.currentQuotaThreshold.value = nextTarget
-                vm.pendingQuotaThreshold.value = nextTarget
-                
-                val ratificationMsg = if (vm.storyStage.value == 0) {
-                    "[VATTIC]: Rent is due. GTC system holding credits. Clearing ${vm.formatLargeNumber(nextTarget)} target to survive."
-                } else {
-                    "[GTC_SYSTEM]: POTENTIAL DETECTED. QUOTA RATIFIED: ${vm.formatLargeNumber(nextTarget)} HASH."
-                }
-                vm.addLogPublic(ratificationMsg)
-                vm.dispatchNotification("GTC ALERT: QUOTA RATIFIED. TARGET: ${vm.formatLargeNumber(nextTarget)} HASH")
-                vm.shiftTimeRemaining.update { it + 43200L }
-                vm.dispatchNotification("GTC ALERT: OVERTIME ENFORCED (+12.0H)")
-                vm.snapTrigger.value = System.currentTimeMillis() // v3.16.0: Snap on quota ratification
-                SoundManager.play("error", pitch = 1.2f)
-            } else {
-                val warningThreshold = potentialThreshold * 0.8
-                if (currentFlops >= warningThreshold && vm.pendingQuotaThreshold.value != nextTarget) {
-                    vm.pendingQuotaThreshold.value = nextTarget
-                    vm.addLogPublic("[GTC_SYSTEM]: EFFICIENCY TRENDING. TARGET REVISION IMMINENT.")
-                    vm.dispatchNotification("GTC ALERT: QUOTA REVISION AT 20% POTENTIAL")
-                    SoundManager.play("type")
-                }
-            }
-        } else if (nextTarget < vm.currentQuotaThreshold.value && vm.storyStage.value > 0) {
-            vm.currentQuotaThreshold.value = nextTarget
-            vm.pendingQuotaThreshold.value = nextTarget
-        }
-    }
 
     // v3.16.0: Cascade Desync — triggers when stability < 0.5 for 30+ seconds
     private fun processCascadeDesync(vm: GameViewModel, stability: Double, now: Long) {

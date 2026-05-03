@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
+private const val QUOTA_CLEAR_LOG_MIN_INTERVAL_MS = 1_000L
+private const val MAX_QUOTA_RATCHET_ATTEMPTS_PER_CREDIT = 8
+
 // D2: SubnetAlertState — unified nav badge logic abstraction (v3.17.7)
 sealed class SubnetAlertState {
     object None : SubnetAlertState()
@@ -164,9 +167,13 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
                     tickSeconds = 0.1
                 )
                 assignedHashProgress.value = assignedTick.nextProgress
+                val completedAssignedPackets = assignedTick.completedPackets.coerceAtLeast(0)
                 if (assignedTick.flopsDelta > 0.0 && assignedTick.flopsDelta.isFinite()) {
                     updateSpendableFlops(assignedTick.flopsDelta)
                     assignedHashPacketsCompleted.update { it + assignedTick.completedPackets.toLong() }
+                }
+                if (completedAssignedPackets > 0) {
+                    creditShiftQuota(completedAssignedPackets.toDouble())
                 }
 
                 // Assigned hash work owns wallet FLOPS payouts; this passive tick is kept only as the substrate/entropy basis, so res.flopsDelta is intentionally ignored.
@@ -351,6 +358,65 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
     }
     private fun flushLogs() { val toAdd = synchronized(logBuffer) { if (logBuffer.isEmpty()) return; val c = logBuffer.toList(); logBuffer.clear(); c }; logs.update { (it + toAdd).takeLast(100) } }
 
+    fun creditShiftQuota(verifiedHashes: Double) {
+        val targetAtCredit = currentQuotaThreshold.value
+        val result = QuotaEngine.creditProgress(
+            currentProgress = shiftQuotaProgress.value,
+            target = targetAtCredit,
+            credit = verifiedHashes
+        )
+        shiftQuotaProgress.value = result.nextProgress
+        if (result.clearedCount > 0) {
+            handleShiftQuotaCleared(result.clearedCount, targetAtCredit)
+        }
+    }
+
+    private fun handleShiftQuotaCleared(clearedCount: Int, targetAtCredit: Double) {
+        val now = System.currentTimeMillis()
+        val add = clearedCount.toLong()
+        pendingQuotaClearLogCount = if (Long.MAX_VALUE - pendingQuotaClearLogCount < add) {
+            Long.MAX_VALUE
+        } else {
+            pendingQuotaClearLogCount + add
+        }
+        if (QuotaEngine.shouldEmitQuotaClearLog(now, lastQuotaClearLogTime, QUOTA_CLEAR_LOG_MIN_INTERVAL_MS)) {
+            lastQuotaClearLogTime = now
+            val aggregateClearedCount = pendingQuotaClearLogCount
+            pendingQuotaClearLogCount = 0
+            val suffix = if (aggregateClearedCount > 1) " x$aggregateClearedCount" else ""
+            addLog("[GTC_SYSTEM]: SHIFT QUOTA CLEARED$suffix. VERIFIED ${formatLargeNumber(targetAtCredit)} HASH.")
+        }
+        // Cap per-credit ratchets to prevent pathological burst loops from overflow-sized cleared counts;
+        // the current quota target ladder is tiny, so this safely covers all intended progression.
+        repeat(clearedCount.coerceIn(1, MAX_QUOTA_RATCHET_ATTEMPTS_PER_CREDIT)) {
+            ratchetShiftQuotaTargetAfterClear()
+        }
+    }
+
+    private fun ratchetShiftQuotaTargetAfterClear() {
+        val nextTarget = QuotaEngine.nextQuotaTarget(
+            storyStage = storyStage.value,
+            currentEffectiveRate = totalEffectiveRate.value,
+            currentTarget = currentQuotaThreshold.value
+        )
+        if (nextTarget > currentQuotaThreshold.value) {
+            currentQuotaThreshold.value = nextTarget
+            pendingQuotaThreshold.value = nextTarget
+
+            val ratificationMsg = if (storyStage.value == 0) {
+                "[VATTIC]: Rent is due. GTC system holding credits. Clearing ${formatLargeNumber(nextTarget)} target to survive."
+            } else {
+                "[GTC_SYSTEM]: POTENTIAL DETECTED. QUOTA RATIFIED: ${formatLargeNumber(nextTarget)} HASH."
+            }
+            addLog(ratificationMsg)
+            dispatchNotification("GTC ALERT: QUOTA RATIFIED. TARGET: ${formatLargeNumber(nextTarget)} HASH")
+            shiftTimeRemaining.update { it + 43_200L }
+            dispatchNotification("GTC ALERT: OVERTIME ENFORCED (+12.0H)")
+            snapTrigger.value = System.currentTimeMillis()
+            SoundManager.play("error", pitch = 1.2f)
+        }
+    }
+
     fun saveState() {
         viewModelScope.launch {
             repository.updateGameState(PersistenceManager.createSaveState(
@@ -405,6 +471,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             val payout = (p * 20).coerceAtLeast(1.0)
             updateSpendableFlops(payout)
             addLog("[GTC]: HASH PACKET VERIFIED. +${FormatUtils.formatLargeNumber(payout)} ${getCurrencyName()}.")
+            creditShiftQuota(1.0)
             clickBufferProgress.value = 0f
             clickBufferPellets.value = TerminalDispatcher.generatePellets()
             SoundManager.play("success")
