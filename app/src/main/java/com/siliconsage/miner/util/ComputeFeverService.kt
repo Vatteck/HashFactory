@@ -71,7 +71,10 @@ object ComputeFeverService {
                 quotaProgress = vm.shiftQuotaProgress.value,
                 quotaTarget = quota,
                 ratePressure = ratePressure,
-                elapsedShiftSeconds = QuotaEngine.elapsedShiftSeconds(vm.shiftTimeRemaining.value),
+                elapsedShiftSeconds = QuotaEngine.elapsedShiftSeconds(
+                    shiftTimeRemaining = vm.shiftTimeRemaining.value,
+                    totalShiftSeconds = vm.shiftTimeTotalSeconds.value
+                ),
                 earlyGraceSeconds = EARLY_SHIFT_GRACE_SECONDS,
                 earlyGraceFloor = EARLY_SHIFT_STABILITY_FLOOR
             )

@@ -411,6 +411,7 @@ class GameViewModel(repository: GameRepository) : CoreGameState(repository) {
             addLog(ratificationMsg)
             dispatchNotification("GTC ALERT: QUOTA RATIFIED. TARGET: ${formatLargeNumber(nextTarget)} HASH")
             shiftTimeRemaining.update { it + 43_200L }
+            shiftTimeTotalSeconds.update { it + 43_200L }
             dispatchNotification("GTC ALERT: OVERTIME ENFORCED (+12.0H)")
             snapTrigger.value = System.currentTimeMillis()
             SoundManager.play("error", pitch = 1.2f)

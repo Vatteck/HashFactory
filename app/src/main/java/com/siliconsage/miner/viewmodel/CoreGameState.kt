@@ -238,7 +238,8 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     var lastQuotaClearLogTime = 0L
     var pendingQuotaClearLogCount = 0L
     
-    val shiftTimeRemaining = MutableStateFlow(43200L) 
+    val shiftTimeRemaining = MutableStateFlow(43200L)
+    val shiftTimeTotalSeconds = MutableStateFlow(43200L)
     val isWageDocking = MutableStateFlow(false)
     var lastLowSignalTime = 0L
 

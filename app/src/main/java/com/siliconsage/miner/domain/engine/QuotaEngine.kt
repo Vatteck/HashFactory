@@ -104,10 +104,12 @@ object QuotaEngine {
 
     fun elapsedShiftSeconds(
         shiftTimeRemaining: Long,
-        nominalShiftSeconds: Long = 43_200L
+        totalShiftSeconds: Long = 43_200L
     ): Long {
-        // Source of truth: CoreGameState.shiftTimeRemaining defaults to a nominal 12-hour shift (43,200 seconds).
-        return (nominalShiftSeconds - shiftTimeRemaining).coerceAtLeast(0L)
+        // Source of truth: CoreGameState.shiftTimeTotalSeconds tracks the active shift window,
+        // including overtime extensions. Do not derive elapsed time from the nominal shift length
+        // after overtime, or the early-grace floor can remain active for hours.
+        return (totalShiftSeconds - shiftTimeRemaining).coerceAtLeast(0L)
     }
 
     fun shouldEmitQuotaClearLog(

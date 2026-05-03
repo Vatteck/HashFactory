@@ -254,4 +254,15 @@ class QuotaEngineTest {
         assertEquals(0L, QuotaEngine.elapsedShiftSeconds(shiftTimeRemaining = 43_200L))
         assertEquals(60L, QuotaEngine.elapsedShiftSeconds(shiftTimeRemaining = 43_140L))
     }
+
+    @Test
+    fun `elapsed shift seconds uses extended total after overtime`() {
+        assertEquals(
+            60L,
+            QuotaEngine.elapsedShiftSeconds(
+                shiftTimeRemaining = 86_340L,
+                totalShiftSeconds = 86_400L
+            )
+        )
+    }
 }
