@@ -1,6 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [v5.2.0] - 2026-05-03
+### Added
+- **Shift Quota Loop**: Added visible shift quota progress credited by manual hash buffer completions and completed assigned hash packets.
+- **Quota Engine Coverage**: Added `QuotaEngine` with regression coverage for quota rollover, target ratcheting, stability floors, overflow, and precision edge cases.
+- **Quota HUD**: Header now surfaces compact `QUOTA current/target HASH` progress while quota pressure is active.
+
+### Changed
+- **Stage-Aware Buffer Copy**: Stage 0/1 now presents the command buffer as `HASH BUFFER`, while later stages can reveal `ASSIGNED QUEUE` language.
+- **Signal Stability Source**: Signal stability now accounts for visible quota progress plus production pressure instead of relying only on hidden rate-threshold math.
+- **Hardware Copy**: Hardware descriptions now frame `HASH/s` and `FLOPS/s` as terminal hashing/compute throughput rather than passive base production.
+
+### Fixed
+- **Hidden Quota Ratcheting**: Removed old rate-only quota ratcheting from `ComputeFeverService`; quota target increases now come from visible quota clears.
+- **Quota Log Spam**: Quota clear logs are throttled and aggregated across burst completions.
+- **Pre-Airgap Language Leak**: Pre-reveal command buffer copy no longer exposes assigned-queue terminology.
+
 ## [v5.1.0] - 2026-05-02
 ### Added
 - **Assigned Work Production Loop**: Added `ProductionLoopEngine` to model compute capacity, assigned-work rates, packet progress, and completed-packet `$FLOPS` payouts.

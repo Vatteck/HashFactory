@@ -29,11 +29,13 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
     
     val baseProgress by viewModel.clickBufferProgress.collectAsState()
     val assignedHashProgress by viewModel.assignedHashProgress.collectAsState()
+    val storyStage by viewModel.storyStage.collectAsState()
     // Manual compute owns the terminal buffer while a hash packet is in flight.
     // Dataset progress can still render when idle, but it must not mask COMPUTE HASH clicks.
     val showDatasetBuffer = activeDataset != null && baseProgress <= 0f
     val progress = if (showDatasetBuffer) activeDataset!!.progress.toFloat() else baseProgress
     val assignedQueuePercent = (assignedHashProgress * 100).toInt().coerceIn(0, 100)
+    val assignedQueueLabel = if (storyStage <= 1) "HASH BUFFER" else "ASSIGNED QUEUE"
     val pellets by viewModel.clickBufferPellets.collectAsState()
 
     val currentHeat by viewModel.currentHeat.collectAsState()
@@ -307,7 +309,7 @@ fun ActiveCommandBuffer(viewModel: GameViewModel, color: Color) {
         }
 
         Text(
-            text = "ASSIGNED QUEUE: $assignedQueuePercent%",
+            text = "$assignedQueueLabel: $assignedQueuePercent%",
             color = color.copy(alpha = 0.48f),
             fontSize = 9.sp,
             fontFamily = FontFamily.Monospace,

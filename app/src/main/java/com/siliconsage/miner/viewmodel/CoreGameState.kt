@@ -232,9 +232,14 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val potentialProgress = MutableStateFlow(0f)
     val currentQuotaThreshold = MutableStateFlow(10.0) 
     val pendingQuotaThreshold = MutableStateFlow(10.0)
+    val shiftQuotaProgress = MutableStateFlow(0.0)
     var lastQuotaRatchetTime = 0L
+    // Benign race: quota clear logging is best-effort throttling across runtime loop/manual taps.
+    var lastQuotaClearLogTime = 0L
+    var pendingQuotaClearLogCount = 0L
     
-    val shiftTimeRemaining = MutableStateFlow(43200L) 
+    val shiftTimeRemaining = MutableStateFlow(43200L)
+    val shiftTimeTotalSeconds = MutableStateFlow(43200L)
     val isWageDocking = MutableStateFlow(false)
     var lastLowSignalTime = 0L
 
