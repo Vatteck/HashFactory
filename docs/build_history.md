@@ -111,3 +111,6 @@
 ## 2026-05-03 00:29 — v5.2.0 (Build 450)
 - Summary: Quota-linked hash buffer loop
 
+## 2026-05-03 21:10 — v5.2.1 (Build 451)
+- Summary: Fix lethal early-game power bills — convert kW·s to kWh billing
+

@@ -1,12 +1,10 @@
 {
-  "version": "5.2.0",
-  "build": 450,
+  "version": "5.2.1",
+  "build": 451,
   "date": "2026-05-03",
   "changelog": [
-    "1229729 Merge pull request #5 from Vatteck/feat/quota-hash-buffer-alignment",
-    "a9c68ba fix: keep quota grace elapsed stable after overtime",
-    "2871867 feat: link quota to hash buffer completions"
+    "53ed0bd fix: convert power billing from kW·s to kWh, scale prices to match"
   ],
-  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.2.0",
-  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.2.0/MINER_5.2.0.apk"
+  "url": "https://github.com/Vatteck/SiliconSageAIMiner/releases/tag/v5.2.1",
+  "downloadUrl": "https://github.com/Vatteck/SiliconSageAIMiner/releases/download/v5.2.1/MINER_5.2.1.apk"
 }
