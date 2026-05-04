@@ -203,7 +203,7 @@ open class CoreGameState(val repository: GameRepository) : ViewModel() {
     val hallucinationText = MutableStateFlow<String?>(null)
     val marketMultiplier = MutableStateFlow(1.0)
     val thermalRateModifier = MutableStateFlow(1.0)
-    val energyPriceMultiplier = MutableStateFlow(0.02)
+    val energyPriceMultiplier = MutableStateFlow(10.0)
     val newsProductionMultiplier = MutableStateFlow(1.0)
     val lifetimePowerPaid = MutableStateFlow(0.0)
     val currentProcess = MutableStateFlow("IDLE")

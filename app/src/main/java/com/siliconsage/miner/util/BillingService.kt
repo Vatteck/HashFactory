@@ -45,7 +45,7 @@ object BillingService {
 
     private fun processPowerCharge(vm: GameViewModel, net: Double) {
         val mult = when (vm.missedBillingPeriods) { 0 -> 1.0; 1 -> 2.0; 2 -> 3.0; else -> 5.0 }
-        val due = net * vm.energyPriceMultiplier.value * mult
+        val due = (net / 3600.0) * vm.energyPriceMultiplier.value * mult
         val totalDue = (vm.powerBill.value + due).takeIf { it.isFinite() } ?: Double.MAX_VALUE
         if (vm.flops.value >= totalDue) {
             vm.updateSpendableFlops(-totalDue); vm.powerBill.value = 0.0; vm.missedBillingPeriods = 0
@@ -79,7 +79,7 @@ object BillingService {
     }
 
     private fun processPowerSurplus(vm: GameViewModel, surplus: Double) {
-        val credit = surplus * vm.energyPriceMultiplier.value * 0.3
+        val credit = (surplus / 3600.0) * vm.energyPriceMultiplier.value * 0.3
         val safeCredit = if (credit.isFinite()) credit.coerceAtLeast(0.0) else 0.0
         val remainingBill = (vm.powerBill.value - safeCredit).coerceAtLeast(0.0)
         val walletCredit = (safeCredit - vm.powerBill.value).coerceAtLeast(0.0)

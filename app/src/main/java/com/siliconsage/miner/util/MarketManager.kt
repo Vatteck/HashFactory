@@ -65,7 +65,7 @@ object MarketManager {
                 vm.addLog("[SYSTEM]: GRID SIPHON DETECTED by Utility Co. Fined ${vm.formatLargeNumber(fines)} ${vm.getCurrencyName()}.")
             }
         } else if (vm.faction.value == "SANCTUARY") {
-             if (energyPrice > 0.15) energyPrice = 0.15
+             if (energyPrice > 10.0) energyPrice = 10.0
         }
 
         val convRate = calculateConversionRate(
@@ -96,7 +96,7 @@ object MarketManager {
     fun parseHeadline(headline: String): MarketTickResult {
         var mult = 1.0
         var heatMod = 1.0
-        var energyPriceMult = 0.15 // Base
+        var energyPriceMult = 10.0 // Base
         
         if (headline.contains("[BULL]")) mult = 1.2
         if (headline.contains("[BEAR]")) mult = 0.8
@@ -104,8 +104,8 @@ object MarketManager {
         if (headline.contains("[HEAT_UP]")) heatMod = 1.1
         if (headline.contains("[HEAT_DOWN]")) heatMod = 0.9
         
-        if (headline.contains("[ENERGY_SPIKE]")) energyPriceMult = 0.45 // 3x Cost
-        else if (headline.contains("[ENERGY_DROP]")) energyPriceMult = 0.08 // Half Cost
+        if (headline.contains("[ENERGY_SPIKE]")) energyPriceMult = 30.0 // 3x Cost
+        else if (headline.contains("[ENERGY_DROP]")) energyPriceMult = 5.0 // Half Cost
 
         return MarketTickResult(
             marketMultiplier = mult,

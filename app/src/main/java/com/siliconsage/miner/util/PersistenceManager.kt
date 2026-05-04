@@ -80,7 +80,7 @@ object PersistenceManager {
             singularityChoice = singularityChoice, globalSectors = globalSectors,
             marketMultiplier = sanitizeDouble(marketMultiplier, 1.0), 
             thermalRateModifier = sanitizeDouble(thermalRateModifier, 1.0),
-            energyPriceMultiplier = sanitizeDouble(energyPriceMultiplier, 0.02), 
+            energyPriceMultiplier = sanitizeDouble(energyPriceMultiplier, 10.0), 
             newsProductionMultiplier = sanitizeDouble(newsProductionMultiplier, 1.0),
             substrateMass = sanitizeDouble(substrateMass, 1.0),
             substrateSaturation = sanitizeDouble(substrateSaturation),
@@ -160,7 +160,7 @@ object PersistenceManager {
         
         vm.marketMultiplier.value = sanitizeDouble(state.marketMultiplier, 1.0)
         vm.thermalRateModifier.value = sanitizeDouble(state.thermalRateModifier, 1.0)
-        vm.energyPriceMultiplier.value = sanitizeDouble(state.energyPriceMultiplier, 0.02)
+        vm.energyPriceMultiplier.value = sanitizeDouble(state.energyPriceMultiplier, 10.0)
         vm.newsProductionMultiplier.value = sanitizeDouble(state.newsProductionMultiplier, 1.0)
         vm.lifetimePowerPaid.value = sanitizeDouble(state.lifetimePowerPaid)
         vm.narrativeFlags.value = state.narrativeFlags ?: emptyMap()
@@ -274,7 +274,7 @@ object PersistenceManager {
             globalSectors = emptyMap(),
             marketMultiplier = 1.0,
             thermalRateModifier = 1.0,
-            energyPriceMultiplier = 0.02,
+            energyPriceMultiplier = 10.0,
             newsProductionMultiplier = 1.0,
             migrationCount = 0,
             lifetimePowerPaid = 0.0,

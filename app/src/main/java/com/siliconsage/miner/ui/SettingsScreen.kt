@@ -138,7 +138,7 @@ fun SettingsScreen(viewModel: GameViewModel, onNavigate: (Screen) -> Unit = {}) 
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("CURRENT TARIFF:", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("${String.format("%.2f", energyPrice)} ${viewModel.getCurrencyName()}/kW", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                    Text("${String.format("%.2f", energyPrice)} ${viewModel.getCurrencyName()}/kWh", color = themeColor, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
                 }
             }
 

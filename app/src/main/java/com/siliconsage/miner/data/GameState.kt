@@ -94,7 +94,7 @@ data class GameState(
     // v3.2.17: Market Modifiers
     val marketMultiplier: Double = 1.0,
     val thermalRateModifier: Double = 1.0,
-    val energyPriceMultiplier: Double = 0.02,
+    val energyPriceMultiplier: Double = 10.0,
     val newsProductionMultiplier: Double = 1.0,
 
     // v3.2.46: Resource Consolidation

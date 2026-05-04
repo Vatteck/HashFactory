@@ -127,15 +127,15 @@ object SimulationService {
         // Player needs tools to manage costs before costs start.
         val hasPowerInfrastructure = selfGeneratedKw > 0 || maxCap > 100.0 // base grid is 100kW
         if (vm.isQuotaActive.value && hasPowerInfrastructure) {
-            vm.billingPeriodAccumulator += totalKw          // gross hardware draw
+            vm.billingPeriodAccumulator += totalKw  // gross consumption (BillingService computes net)
             vm.billingPeriodGenAccumulator += selfGeneratedKw // local generation offset
 
             // Update live UI estimate: net cost so far this period
             val demandMult = when (vm.missedBillingPeriods) {
                 0 -> 1.0; 1 -> 2.0; 2 -> 3.0; else -> 5.0
             }
-            val netSoFar = (vm.billingPeriodAccumulator - vm.billingPeriodGenAccumulator).coerceAtLeast(0.0)
-            vm.billingAccumulatorFlow.value = netSoFar * vm.energyPriceMultiplier.value * demandMult
+                val netSoFar = (vm.billingPeriodAccumulator - vm.billingPeriodGenAccumulator).coerceAtLeast(0.0)
+                vm.billingAccumulatorFlow.value = (netSoFar / 3600.0) * vm.energyPriceMultiplier.value * demandMult
         }
         
         // v3.3.17: Only trip overload if it's a power issue. Don't clear active raids.
