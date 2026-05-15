@@ -143,4 +143,8 @@ object QuotaEngine {
 
         return max(safeCurrentTarget, candidate)
     }
+
+    fun quotaRatchetUserNotifications(formattedTarget: String): List<String> = listOf(
+        "GTC ALERT: QUOTA RATIFIED. TARGET: $formattedTarget HASH; OVERTIME ENFORCED (+12.0H)"
+    )
 }
