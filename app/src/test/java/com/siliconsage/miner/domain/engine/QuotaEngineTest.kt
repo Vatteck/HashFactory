@@ -249,6 +249,13 @@ class QuotaEngineTest {
     }
 
     @Test
+    fun `quota ratchet emits one user notification with target and overtime`() {
+        val notifications = QuotaEngine.quotaRatchetUserNotifications("50")
+
+        assertEquals(listOf("GTC ALERT: QUOTA RATIFIED. TARGET: 50 HASH; OVERTIME ENFORCED (+12.0H)"), notifications)
+    }
+
+    @Test
     fun `elapsed shift seconds uses nominal shift minus remaining`() {
         assertEquals(0L, QuotaEngine.elapsedShiftSeconds(shiftTimeRemaining = 43_500L))
         assertEquals(0L, QuotaEngine.elapsedShiftSeconds(shiftTimeRemaining = 43_200L))

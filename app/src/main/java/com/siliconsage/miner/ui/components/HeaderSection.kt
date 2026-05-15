@@ -428,9 +428,12 @@ fun HeaderSection(
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
                             Canvas(modifier = Modifier.size(48.dp)) {
                                 val strokeW = 3.5.dp.toPx()
+                                val diameter = minOf(size.width, size.height)
+                                val arcTopLeft = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
+                                val arcSize = Size(diameter, diameter)
                                 val arcCol = when (billFlash) { "SETTLED" -> Color(0xFF00FF88); "OVERDUE" -> ErrorRed; else -> if (billAccum > balance * 0.9) ErrorRed else if (billAccum > balance * 0.5) Color(0xFFFFCC00) else color }
-                                drawArc(color = arcCol.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = 360f, useCenter = false, style = Stroke(width = strokeW, cap = StrokeCap.Round))
-                                drawArc(color = arcCol.copy(alpha = if (billFlash != null) 1f else 0.85f), startAngle = -90f, sweepAngle = if (billFlash != null) 360f else 360f * billProg, useCenter = false, style = Stroke(width = strokeW, cap = StrokeCap.Round))
+                                drawArc(color = arcCol.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = 360f, useCenter = false, topLeft = arcTopLeft, size = arcSize, style = Stroke(width = strokeW, cap = StrokeCap.Round))
+                                drawArc(color = arcCol.copy(alpha = if (billFlash != null) 1f else 0.85f), startAngle = -90f, sweepAngle = if (billFlash != null) 360f else 360f * billProg, useCenter = false, topLeft = arcTopLeft, size = arcSize, style = Stroke(width = strokeW, cap = StrokeCap.Round))
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(imageVector = Icons.Default.Bolt, contentDescription = null, tint = color.copy(alpha = 0.8f), modifier = Modifier.size(14.dp))
@@ -440,9 +443,12 @@ fun HeaderSection(
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 4.dp).clickable { showUtilitiesPanel = true }) {
                             Canvas(modifier = Modifier.size(48.dp)) {
                                 val strokeW = 3.5.dp.toPx()
+                                val diameter = minOf(size.width, size.height)
+                                val arcTopLeft = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
+                                val arcSize = Size(diameter, diameter)
                                 val arcColW = when (waterFlash) { "SETTLED" -> Color(0xFF00FF88); "OVERDUE" -> ErrorRed; else -> ElectricBlue }
-                                drawArc(color = arcColW.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = 360f, useCenter = false, style = Stroke(width = strokeW, cap = StrokeCap.Round))
-                                drawArc(color = arcColW.copy(alpha = if (waterFlash != null) 1f else 0.85f), startAngle = -90f, sweepAngle = if (waterFlash != null) 360f else 360f * waterProg, useCenter = false, style = Stroke(width = strokeW, cap = StrokeCap.Round))
+                                drawArc(color = arcColW.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = 360f, useCenter = false, topLeft = arcTopLeft, size = arcSize, style = Stroke(width = strokeW, cap = StrokeCap.Round))
+                                drawArc(color = arcColW.copy(alpha = if (waterFlash != null) 1f else 0.85f), startAngle = -90f, sweepAngle = if (waterFlash != null) 360f else 360f * waterProg, useCenter = false, topLeft = arcTopLeft, size = arcSize, style = Stroke(width = strokeW, cap = StrokeCap.Round))
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(imageVector = Icons.Default.Opacity, contentDescription = null, tint = ElectricBlue.copy(alpha = 0.8f), modifier = Modifier.size(14.dp))
